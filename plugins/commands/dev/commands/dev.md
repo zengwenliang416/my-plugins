@@ -57,7 +57,7 @@ echo "$FEATURE" > "${RUN_DIR}/input.md"
 
 使用 AskUserQuestion 确认后继续。
 
-### Phase 2: 上下文检索
+### Phase 2: 上下文检索（强制 auggie-mcp + LSP）
 
 调用 context-retriever Skill：
 
@@ -65,12 +65,19 @@ echo "$FEATURE" > "${RUN_DIR}/input.md"
 Skill("context-retriever", args="run_dir=${RUN_DIR}")
 ```
 
+**🚨 强制工具规则**：
+
+- 第一步必须调用 `mcp__auggie-mcp__codebase-retrieval`
+- 然后使用 LSP (`documentSymbol`, `goToDefinition`, `findReferences`)
+- **禁止**直接用 Read/Grep/Glob 读文件
+
 **输出**: `${RUN_DIR}/context.md`
 
 **Gate 检查**:
 
 - context.md 存在且非空
 - 识别了 3+ 相关文件
+- 使用了 auggie-mcp 和 LSP（检查报告中的"检索方法验证"部分）
 
 ### Phase 3: 需求分析（多模型并行）
 
