@@ -1,0 +1,16 @@
+{
+  "description": "Stop hook - 检查任务完成状态并发送通知",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/stop-check.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
