@@ -1,10 +1,7 @@
 {
   "name": "ccg-tools",
-  "version": "3.0.0",
   "description": "外部工具集成 - Codex CLI、Gemini CLI、Exa 搜索、DevOps 配置",
   "author": {
     "name": "Wenliang Zeng"
-  },
-  "license": "MIT",
-  "keywords": ["codex", "gemini", "exa", "devops", "multi-model"]
+  }
 }
