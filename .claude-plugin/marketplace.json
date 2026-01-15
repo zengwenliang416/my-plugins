@@ -1,0 +1,11 @@
+{
+  "name": "CCG Workflows Marketplace",
+  "description": "Claude Code Guide 工作流编排器集合",
+  "plugins": [
+    {
+      "name": "ccg-workflows",
+      "description": "完整的开发工作流自动化 - 提交、调试、开发、测试、审查、规划等",
+      "path": "."
+    }
+  ]
+}
