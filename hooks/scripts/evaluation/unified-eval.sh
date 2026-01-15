@@ -3,9 +3,10 @@
 # 策略：Layer 1 固定精简 Agent 表 (~500字符) + Layer 2 动态 Skill 注入 (0-1K字符)
 # 优化效果：注入量从 ~12K 降至 500-1500 字符，节省 70-90% token
 
-CLAUDE_DIR="$HOME/.claude"
-PATTERNS_FILE="$CLAUDE_DIR/hooks/evaluation/patterns.json"
-LOG_FILE="$CLAUDE_DIR/logs/intent-router.log"
+# 使用插件根目录或回退到 ~/.claude
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$HOME/.claude/plugins/cache/ccg-workflows-marketplace/ccg-workflows/3.0.0}"
+PATTERNS_FILE="$PLUGIN_ROOT/hooks/scripts/evaluation/patterns.json"
+LOG_FILE="$HOME/.claude/logs/intent-router.log"
 LOG_LEVEL="${INTENT_ROUTER_LOG_LEVEL:-INFO}"
 
 # UserPromptSubmit Hook 通过 stdin 接收用户输入，而不是参数
@@ -131,7 +132,7 @@ detect_intent_and_inject() {
         for skill in $skills_to_inject; do
             # 查找 skill 目录（支持领域分组结构）
             local skill_path
-            skill_path=$(find "$CLAUDE_DIR/skills" -name "$skill" -type d 2>/dev/null | head -1)
+            skill_path=$(find "$PLUGIN_ROOT/skills" -name "$skill" -type d 2>/dev/null | head -1)
 
             if [[ -d "$skill_path" && -f "$skill_path/SKILL.md" ]]; then
                 # 提取精简描述
