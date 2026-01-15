@@ -1,0 +1,12 @@
+{
+  "name": "ccg-core",
+  "version": "3.0.0",
+  "enabledByDefault": true,
+  "description": "CCG 核心工作流 - commit/dev/debug/review/test/plan 命令及编排器",
+  "author": {
+    "name": "Wenliang Zeng"
+  },
+  "license": "MIT",
+  "keywords": ["workflow", "orchestrator", "commit", "debug", "review", "testing", "planning"],
+  "commands": ["./commands", "./commands/ccg"]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "ccg-office",
+  "version": "3.0.0",
+  "description": "文档处理技能 - PDF/DOCX/XLSX/PPTX/CSV 文件处理",
+  "author": {
+    "name": "Wenliang Zeng"
+  },
+  "license": "MIT",
+  "keywords": ["office", "pdf", "docx", "xlsx", "pptx", "csv"]
+}

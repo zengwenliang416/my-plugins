@@ -1,0 +1,10 @@
+{
+  "name": "ccg-testing",
+  "version": "3.0.0",
+  "description": "测试调试技能 - 测试生成、用例设计、假设生成、根因分析等",
+  "author": {
+    "name": "Wenliang Zeng"
+  },
+  "license": "MIT",
+  "keywords": ["testing", "debugging", "test-generation", "root-cause-analysis"]
+}

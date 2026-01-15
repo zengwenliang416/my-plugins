@@ -1,0 +1,11 @@
+{
+  "name": "ccg-ui",
+  "version": "3.0.0",
+  "description": "UI/UX 设计技能 - 图像生成、UI 设计、UX 检查等",
+  "author": {
+    "name": "Wenliang Zeng"
+  },
+  "license": "MIT",
+  "keywords": ["ui", "ux", "design", "image-generation", "frontend"],
+  "commands": ["./commands"]
+}

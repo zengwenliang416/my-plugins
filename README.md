@@ -1,21 +1,32 @@
-# CCG Workflows
+# CCG Plugins
 
-Claude Code Guide 工作流编排器集合 - 提供完整的开发工作流自动化。
+Claude Code Guide 插件集合 - 模块化设计，按需安装。
+
+## 插件列表
+
+| 插件 | 说明 | Skills |
+|------|------|--------|
+| **ccg-core** | 核心工作流命令 (必装) | 4 |
+| ccg-developing | 开发/架构/迁移/代码审查 | 39 |
+| ccg-testing | 测试生成/调试分析 | 12 |
+| ccg-writing | 规划/写作/文章/社交帖子 | 20 |
+| ccg-ui | UI/UX 设计/图像生成 | 11 |
+| ccg-office | PDF/DOCX/XLSX/PPTX 处理 | 5 |
+| ccg-tools | Codex/Gemini/Exa 集成 | 4 |
 
 ## 安装
 
 ```bash
-# 克隆仓库
-git clone https://github.com/your-username/ccg-workflows.git
+# 只装核心 (推荐大多数用户)
+claude plugins add ./plugins/ccg-core
 
-# 链接到 Claude Code
-ln -s $(pwd)/ccg-workflows ~/.claude/plugins/ccg-workflows
-
-# 或使用 claude 命令
-claude plugins add ./ccg-workflows
+# 按需追加
+claude plugins add ./plugins/ccg-developing   # 开发辅助
+claude plugins add ./plugins/ccg-testing      # 测试工具
+claude plugins add ./plugins/ccg-tools        # 多模型协作
 ```
 
-## 可用命令
+## 核心命令 (ccg-core)
 
 | 命令 | 说明 |
 |------|------|
@@ -25,32 +36,32 @@ claude plugins add ./ccg-workflows
 | `/plan` | 规划工作流 |
 | `/review` | 代码审查工作流 |
 | `/test` | 测试工作流 |
-| `/image` | 图片生成工作流 |
 | `/init` | 项目初始化分析 |
-| `/article` | 文章写作工作流 |
-| `/social-post` | 社交媒体内容工作流 |
-| `/ui-design` | UI/UX 设计工作流 |
+| `/ccg:*` | Git 工具集 (worktree/pr/rollback/...) |
 
-## 子命令
+## 扩展命令
 
-| 命令 | 说明 |
+| 插件 | 命令 |
 |------|------|
-| `/ccg:clean-branches` | 清理已合并分支 |
-| `/ccg:worktree` | Git worktree 管理 |
-| `/ccg:scaffold` | 脚手架生成 |
-| `/ccg:rollback` | Git 回滚 |
-| `/ccg:pr` | Pull Request 创建 |
-| `/ccg:help` | 帮助信息 |
+| ccg-writing | `/article`, `/social-post` |
+| ccg-ui | `/image`, `/ui-design` |
 
 ## 架构
 
 ```
-Command → Orchestrator Agent → Domain Skills
+plugins/
+├── ccg-core/           # 必装
+│   ├── commands/       # 工作流入口
+│   ├── agents/         # 编排器
+│   ├── skills/         # 共享工具
+│   └── hooks/          # 自动化钩子
+├── ccg-developing/     # 可选
+├── ccg-testing/        # 可选
+├── ccg-writing/        # 可选
+├── ccg-ui/             # 可选
+├── ccg-office/         # 可选
+└── ccg-tools/          # 可选
 ```
-
-- **Commands**: 用户入口，参数解析
-- **Agents**: 工作流编排，协调 Skills
-- **Skills**: 原子操作，可复用
 
 ## 许可证
 

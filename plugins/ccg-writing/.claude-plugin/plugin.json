@@ -1,0 +1,11 @@
+{
+  "name": "ccg-writing",
+  "version": "3.0.0",
+  "description": "规划写作技能 - 任务规划、内容研究、文章写作、社交帖子等",
+  "author": {
+    "name": "Wenliang Zeng"
+  },
+  "license": "MIT",
+  "keywords": ["planning", "writing", "article", "social-post", "content"],
+  "commands": ["./commands"]
+}
