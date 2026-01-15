@@ -1,0 +1,16 @@
+{
+  "name": "gemini-image-generator",
+  "version": "1.0.0",
+  "description": "Gemini API image generation script for CCG workflows",
+  "type": "module",
+  "scripts": {
+    "generate": "tsx gemini-image.ts"
+  },
+  "dependencies": {
+    "undici": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0"
+  }
+}

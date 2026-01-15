@@ -26,8 +26,11 @@ arguments:
 # 必需的环境变量
 export GEMINI_API_KEY="your-api-key"
 
-# 脚本位置
-~/.claude/skills/imaging/image-orchestrator/scripts/banana_image_exec.ts
+# 脚本位置（使用插件相对路径）
+${CLAUDE_PLUGIN_ROOT}/skills/imaging/image-generator/scripts/gemini-image.ts
+
+# 首次使用需安装依赖
+cd ${CLAUDE_PLUGIN_ROOT}/skills/imaging/image-generator/scripts && npm install
 ```
 
 ## 执行流程
@@ -59,7 +62,9 @@ mkdir -p "${run_dir}/images"
 ### Step 3: 调用生成脚本
 
 ```bash
-npx tsx ~/.claude/skills/imaging/image-orchestrator/scripts/banana_image_exec.ts \
+SCRIPT_DIR="${CLAUDE_PLUGIN_ROOT}/skills/imaging/image-generator/scripts"
+
+npx tsx "${SCRIPT_DIR}/gemini-image.ts" \
   -p "$PROMPT" \
   -m "$MODEL" \
   -a "$ASPECT_RATIO" \
@@ -77,10 +82,11 @@ npx tsx ~/.claude/skills/imaging/image-orchestrator/scripts/banana_image_exec.ts
   "success": true,
   "images": [
     {
-      "path": "${run_dir}/images/banana_pro_xxx.png",
+      "path": "${run_dir}/images/gemini_pro_xxx.png",
       "model": "gemini-3-pro-image-preview"
     }
-  ]
+  ],
+  "duration": 5234
 }
 ```
 
@@ -93,7 +99,7 @@ npx tsx ~/.claude/skills/imaging/image-orchestrator/scripts/banana_image_exec.ts
   "success": true,
   "images": [
     {
-      "path": "${run_dir}/images/banana_pro_xxx.png",
+      "path": "${run_dir}/images/gemini_pro_xxx.png",
       "model": "gemini-3-pro-image-preview",
       "prompt": "使用的提示词"
     }
@@ -132,7 +138,7 @@ npx tsx ~/.claude/skills/imaging/image-orchestrator/scripts/banana_image_exec.ts
 ```
 图片生成完成。
 输出文件:
-- ${run_dir}/images/banana_pro_xxx.png
+- ${run_dir}/images/gemini_pro_xxx.png
 - ${run_dir}/result.json
 
 模型: [gemini-3-pro-image-preview]
@@ -147,6 +153,6 @@ npx tsx ~/.claude/skills/imaging/image-orchestrator/scripts/banana_image_exec.ts
 
 - 不做提示词优化（交给 prompt-builder）
 - 不管理模板（交给 style-manager）
-- 复用现有 banana_image_exec.ts 脚本
+- 脚本位于插件目录内，使用 `${CLAUDE_PLUGIN_ROOT}` 引用
 - 必须输出 result.json 用于追溯
 - 所有路径使用 `${run_dir}/` 前缀
