@@ -1,0 +1,29 @@
+name: Medical Blue
+industry: Healthcare
+keywords: [professional, clinical, trust, reliable, 专业, 临床, 信任]
+palette:
+  primary: "#0077b6"
+  secondary: "#023e8a"
+  accent: "#48cae4"
+  background: "#ffffff"
+  surface: "#f7f9fc"
+  text: "#1a1a1a"
+  text-secondary: "#5a5a5a"
+  border: "#caf0f8"
+  success: "#2a9d8f"
+  error: "#e63946"
+  warning: "#f77f00"
+  info: "#0077b6"
+gradients:
+  - "linear-gradient(135deg, #0077b6 0%, #48cae4 100%)"
+use_cases:
+  - 医院管理系统
+  - 电子病历
+  - 医疗设备软件
+  - 临床应用
+参考: Healthcare Management Systems
+tips:
+  - 深蓝色传递专业和信任
+  - 适合严肃的医疗场景
+  - 清晰的信息层级
+  - 符合医疗行业标准

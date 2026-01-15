@@ -1,0 +1,22 @@
+# 运行时产物
+runs/
+*.log
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 缓存
+*.pyc
+__pycache__/
+node_modules/
+
+# 备份
+*.bak

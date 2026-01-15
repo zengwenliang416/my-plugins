@@ -1,0 +1,39 @@
+name: Playful Fun
+keywords: [playful, fun, energetic, youthful, 活泼, 有趣, 年轻]
+适用场景: [儿童应用, 游戏界面, 娱乐产品, 创意社区]
+pairing:
+  display: "Fredoka"
+  body: "Poppins"
+  code: null
+fonts:
+  display:
+    family: "Fredoka"
+    weights: [400, 600, 700]
+    type: "sans-serif"
+    google_fonts: "https://fonts.google.com/specimen/Fredoka"
+    characteristics:
+      - 圆润可爱
+      - 友好活泼
+      - 适合大标题
+  body:
+    family: "Poppins"
+    weights: [300, 400, 600]
+    type: "sans-serif"
+    google_fonts: "https://fonts.google.com/specimen/Poppins"
+    characteristics:
+      - 几何圆润
+      - 现代友好
+      - 可读性佳
+scale:
+  h1: "48px / 1.2 / 700"
+  h2: "38px / 1.3 / 600"
+  h3: "28px / 1.4 / 600"
+  h4: "22px / 1.4 / 400"
+  body: "16px / 1.6 / 400"
+  small: "14px / 1.5 / 400"
+tips:
+  - 圆润字体传递趣味感
+  - 适合儿童和年轻受众
+  - 保持清晰可读性
+  - 避免过度使用
+  - 平衡趣味性和专业性

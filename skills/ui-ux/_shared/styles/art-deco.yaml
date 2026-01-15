@@ -1,0 +1,47 @@
+name: Art Deco
+keywords: [luxury, geometric, elegant, 1920s, glamorous, 装饰艺术, 奢华, 优雅]
+适用场景: [高端品牌, 酒店网站, 奢侈品电商, 文化机构]
+参考案例: [Great Gatsby, Chrysler Building, Luxury Hotel Websites]
+css:
+  light: |
+    background: linear-gradient(135deg, #f4f1de 0%, #e8dcc4 100%);
+    color: #2c1810;
+    border: 3px solid #b8860b;
+    border-radius: 0px;
+  dark: |
+    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+    color: #d4af37;
+    border: 3px solid #d4af37;
+    border-radius: 0px;
+color_palette:
+  primary:
+    - "#d4af37" # 金色
+    - "#2c1810" # 深棕色
+    - "#000000" # 黑色
+  accent:
+    - "#8b0000" # 深红色
+    - "#006400" # 深绿色
+    - "#000080" # 海军蓝
+geometric_patterns:
+  - 扇形（Fan shapes）
+  - 阶梯形（Stepped forms）
+  - 太阳光线（Sunburst）
+  - 锯齿形（Zigzag）
+  - 对称图案
+typography:
+  display_fonts:
+    - "Poiret One"
+    - "Cinzel"
+    - "Playfair Display"
+  characteristics:
+    - 几何化衬线字体
+    - 高对比度笔画
+    - 优雅装饰细节
+tips:
+  - 使用金色、黑色、深色作为主色调
+  - 几何图案和对称性
+  - 优雅的衬线字体
+  - 奢华感和精致感
+  - 强调垂直线条
+  - 使用装饰性边框和图案
+  - 适合高端品牌和文化产品

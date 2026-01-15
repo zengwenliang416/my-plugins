@@ -1,0 +1,58 @@
+name: Y2K Aesthetic (Cyber Y2K)
+keywords: [y2k, 2000s, chrome, holographic, futuristic, 千禧, 全息, 金属]
+适用场景: [时尚品牌, 音乐平台, 创意产品, 年轻社群]
+参考案例: [Dua Lipa, Charli XCX, Y2K Fashion]
+css:
+  light: |
+    background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(4px);
+  dark: |
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(4px);
+color_schemes:
+  holographic:
+    - "#ff00ff" # 品红
+    - "#00ffff" # 青色
+    - "#ffff00" # 黄色
+    - "#00ff00" # 绿色
+  chrome:
+    - "#c0c0c0" # 银色
+    - "#e8e8e8" # 浅灰
+    - "#a8a8a8" # 中灰
+  candy:
+    - "#ff6ec7" # 粉色
+    - "#b967ff" # 紫色
+    - "#05ffa1" # 绿色
+    - "#01cdfe" # 蓝色
+visual_elements:
+  - 金属质感和反光效果
+  - 全息渐变
+  - 泡泡和液体形状
+  - 3D 图形和文字
+  - 闪烁和动画效果
+  - 蝴蝶、星星等装饰元素
+typography:
+  display_fonts:
+    - "Orbitron"
+    - "Exo 2"
+    - "Audiowide"
+  characteristics:
+    - 未来感字体
+    - 圆润或锋利的几何形状
+    - 金属质感文字效果
+tips:
+  - 使用高饱和度渐变色
+  - 金属和全息效果
+  - 圆角和流体形状
+  - 搭配动画和过渡效果
+  - 可添加模糊背景
+  - 适合年轻、时尚、创意品牌
+  - 注意可访问性（高对比度文字）

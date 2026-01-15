@@ -1,0 +1,196 @@
+{
+  "intents": {
+    "debugging": {
+      "command": "/ccg:bugfix",
+      "keywords": [
+        "报错",
+        "bug",
+        "错误",
+        "不工作",
+        "失败",
+        "异常",
+        "crash",
+        "error",
+        "fix",
+        "修复",
+        "调试",
+        "debug",
+        "问题",
+        "出错",
+        "挂了",
+        "崩溃",
+        "无法",
+        "不能",
+        "排查",
+        "定位"
+      ],
+      "skills": [
+        "symptom-collector",
+        "hypothesis-generator",
+        "root-cause-analyzer",
+        "fix-proposer"
+      ],
+      "confidence_boost": ["stack trace", "堆栈", "日志", "log", "traceback"]
+    },
+    "testing": {
+      "command": "/ccg:test",
+      "keywords": [
+        "测试",
+        "test",
+        "覆盖率",
+        "用例",
+        "单测",
+        "e2e",
+        "集成测试",
+        "单元测试",
+        "测试用例",
+        "跑测试",
+        "运行测试",
+        "验证",
+        "断言"
+      ],
+      "skills": ["test-analyzer", "test-case-designer", "test-writer"],
+      "confidence_boost": ["jest", "pytest", "vitest", "coverage", "spec"]
+    },
+    "writing": {
+      "command": "/ccg:wechat",
+      "keywords": ["写", "文章", "公众号", "小红书", "内容", "文案", "爆款"],
+      "skills": ["content-writer", "meeting-analyzer"],
+      "confidence_boost": ["爆款", "标题", "排版"]
+    },
+    "developing": {
+      "command": "/ccg:code",
+      "keywords": [
+        "实现",
+        "功能",
+        "开发",
+        "代码",
+        "添加",
+        "新增",
+        "feature",
+        "重构",
+        "优化",
+        "改造",
+        "升级",
+        "迁移",
+        "集成",
+        "接入",
+        "支持",
+        "扩展",
+        "完善"
+      ],
+      "skills": [
+        "context-retriever",
+        "code-analyzer",
+        "code-implementer",
+        "code-auditor"
+      ],
+      "confidence_boost": ["组件", "模块", "API", "接口", "库", "框架"]
+    },
+    "reviewing": {
+      "command": "/ccg:review",
+      "keywords": [
+        "审查",
+        "review",
+        "检查",
+        "代码审核",
+        "PR审核",
+        "看看",
+        "分析代码",
+        "有什么问题",
+        "质量",
+        "改进",
+        "评审"
+      ],
+      "skills": ["code-reviewer"],
+      "confidence_boost": ["PR", "diff", "变更", "合并"]
+    },
+    "committing": {
+      "command": "/ccg:commit",
+      "keywords": ["提交", "commit", "推送"],
+      "skills": ["commit-analyzer", "commit-generator"],
+      "confidence_boost": ["git", "暂存"]
+    },
+    "planning": {
+      "command": "/ccg:plan",
+      "keywords": [
+        "计划",
+        "规划",
+        "设计",
+        "方案",
+        "架构",
+        "think",
+        "分析",
+        "思考",
+        "如何",
+        "怎么做",
+        "策略",
+        "方法",
+        "实现方案",
+        "技术选型"
+      ],
+      "skills": ["task-planner", "context-researcher", "brainstorming"],
+      "confidence_boost": ["需求", "PRD", "技术方案", "调研"]
+    },
+    "imaging": {
+      "command": "/ccg:image",
+      "keywords": ["图片", "图像", "海报", "生成图", "配图"],
+      "skills": ["prompt-builder", "image-generator"],
+      "confidence_boost": ["DALL-E", "Banana", "Midjourney"]
+    },
+    "ui-ux-design": {
+      "command": "/ui-ux:ui-ux-design-orchestrator",
+      "keywords": [
+        "设计界面",
+        "界面",
+        "UI",
+        "UX",
+        "页面",
+        "组件",
+        "布局",
+        "样式",
+        "前端",
+        "仪表盘",
+        "dashboard",
+        "landing page",
+        "着陆页",
+        "网站",
+        "网页",
+        "优化界面",
+        "改进设计",
+        "重新设计",
+        "美化",
+        "配色",
+        "字体",
+        "Tailwind",
+        "React",
+        "Vue",
+        "响应式",
+        "暗色模式",
+        "从零设计",
+        "优化现有"
+      ],
+      "skills": [
+        "requirement-analyzer",
+        "style-recommender",
+        "design-variant-generator",
+        "ux-guideline-checker",
+        "code-generator"
+      ],
+      "confidence_boost": [
+        "glassmorphism",
+        "neubrutalism",
+        "bento grid",
+        "hero section",
+        "call to action",
+        "产品图",
+        "卡片",
+        "导航栏"
+      ]
+    }
+  },
+  "thresholds": {
+    "auto_suggest": 0.6,
+    "auto_execute": 0.85
+  }
+}

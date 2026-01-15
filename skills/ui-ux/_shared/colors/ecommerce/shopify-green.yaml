@@ -1,0 +1,29 @@
+name: Shopify Green
+industry: E-commerce
+keywords: [friendly, growth, commerce, approachable, 友好, 成长, 电商]
+palette:
+  primary: "#008060"
+  secondary: "#5c6ac4"
+  accent: "#00a886"
+  background: "#ffffff"
+  surface: "#f6f6f7"
+  text: "#202223"
+  text-secondary: "#6d7175"
+  border: "#e1e3e5"
+  success: "#008060"
+  error: "#d72c0d"
+  warning: "#ffc453"
+  info: "#5c6ac4"
+gradients:
+  - "linear-gradient(135deg, #008060 0%, #00a886 100%)"
+use_cases:
+  - 电商平台
+  - 商家后台
+  - 在线商店
+  - 零售管理
+参考: https://shopify.com
+tips:
+  - 绿色传递成长和成功
+  - 友好且专业的配色
+  - 适合中小商家
+  - 高可读性确保效率

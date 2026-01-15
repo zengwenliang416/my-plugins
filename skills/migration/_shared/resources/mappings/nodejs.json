@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Node.js 技术栈升级映射",
+  "version": "1.0.0",
+  "last_updated": "2025-01-13",
+  "mappings": [
+    {
+      "from": {
+        "runtime": "Node.js",
+        "version": "16",
+        "eol_date": "2023-09-11",
+        "status": "end_of_life"
+      },
+      "to": {
+        "runtime": "Node.js",
+        "version": "20",
+        "release_date": "2023-04-18",
+        "lts": true,
+        "eol_date": "2026-04-30"
+      },
+      "strategy": "required",
+      "effort": "low",
+      "duration_weeks": 2,
+      "breaking_changes": [
+        {
+          "category": "API 移除",
+          "description": "移除 url.parse()（已废弃）",
+          "impact": "medium",
+          "code_example": {
+            "before": "const url = require('url');\nconst parsed = url.parse('http://example.com/path');",
+            "after": "const parsed = new URL('http://example.com/path');"
+          }
+        }
+      ],
+      "new_features": [
+        "原生 Fetch API",
+        "Test Runner（node:test）",
+        "单一可执行应用（SEA）",
+        "性能提升 10-20%"
+      ],
+      "migration_validation": {
+        "command": "node --test",
+        "performance_test": "npx clinic doctor -- node app.js"
+      }
+    },
+    {
+      "from": {
+        "framework": "Express",
+        "version": "4"
+      },
+      "to": {
+        "framework": "Express",
+        "version": "5",
+        "release_date": "2024-09-10"
+      },
+      "strategy": "recommended",
+      "effort": "low",
+      "duration_weeks": 1,
+      "breaking_changes": [
+        {
+          "category": "路由",
+          "description": "路径匹配更严格",
+          "impact": "medium",
+          "code_example": {
+            "before": "app.get('/user/:id', handler); // 匹配 /user/123?foo=bar",
+            "after": "// 现在需要显式处理查询字符串"
+          }
+        }
+      ]
+    },
+    {
+      "from": {
+        "framework": "Express"
+      },
+      "to": {
+        "framework": "Fastify",
+        "version": "4"
+      },
+      "strategy": "strategic",
+      "effort": "high",
+      "duration_weeks": 8,
+      "advantages": [
+        "吞吐量提升 2-3x",
+        "自动 JSON Schema 验证",
+        "内置 TypeScript 支持",
+        "更好的插件系统"
+      ],
+      "migration_challenge": "中间件不兼容，需重写"
+    }
+  ],
+  "package_manager_upgrades": [
+    {
+      "from": {
+        "manager": "npm",
+        "version": "7-8"
+      },
+      "to": {
+        "manager": "npm",
+        "version": "10"
+      },
+      "benefits": ["更快的安装速度", "改进的 workspaces"]
+    },
+    {
+      "from": {
+        "manager": "npm"
+      },
+      "to": {
+        "manager": "pnpm",
+        "version": "8"
+      },
+      "strategy": "optional",
+      "advantages": ["磁盘空间节省 60%", "安装速度提升 2x", "更严格的依赖隔离"],
+      "migration": {
+        "command": "npx pnpm import",
+        "note": "自动从 package-lock.json 导入"
+      }
+    }
+  ],
+  "tools": [
+    {
+      "name": "nvm",
+      "purpose": "Node.js 版本管理",
+      "commands": {
+        "install": "nvm install 20",
+        "use": "nvm use 20",
+        "default": "nvm alias default 20"
+      }
+    },
+    {
+      "name": "npm-check-updates",
+      "purpose": "批量更新依赖",
+      "command": "npx npm-check-updates -u"
+    }
+  ]
+}

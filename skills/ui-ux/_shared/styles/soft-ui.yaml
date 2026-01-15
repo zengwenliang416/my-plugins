@@ -1,0 +1,54 @@
+name: Soft UI (Soft Shadows)
+keywords: [soft, shadows, gentle, pastel, calm, 柔和, 轻盈, 舒适]
+适用场景: [健康应用, 生活方式产品, 儿童应用, 放松工具]
+参考案例: [Calm App, Headspace, Wellness Apps]
+css:
+  light: |
+    background: #f0f0f3;
+    color: #333333;
+    border: none;
+    border-radius: 16px;
+    box-shadow:
+      9px 9px 16px rgba(163, 177, 198, 0.2),
+      -9px -9px 16px rgba(255, 255, 255, 0.9);
+  dark: |
+    background: #2a2a2a;
+    color: #e0e0e0;
+    border: none;
+    border-radius: 16px;
+    box-shadow:
+      9px 9px 16px rgba(0, 0, 0, 0.4),
+      -9px -9px 16px rgba(60, 60, 60, 0.3);
+color_palette:
+  pastels:
+    - "#e3f2fd" # 浅蓝
+    - "#f3e5f5" # 浅紫
+    - "#e8f5e9" # 浅绿
+    - "#fff3e0" # 浅橙
+    - "#fce4ec" # 浅粉
+  neutrals:
+    - "#f0f0f3" # 浅灰
+    - "#e0e0e3" # 中灰
+    - "#d0d0d3" # 深灰
+design_characteristics:
+  - 柔和阴影（双向光源）
+  - 圆润的边角
+  - 柔和的配色
+  - 微妙的深度
+  - 舒适的视觉体验
+  - 低对比度
+shadow_formula:
+  soft_shadow_light: "9px 9px 16px rgba(163, 177, 198, 0.2)"
+  soft_shadow_dark: "-9px -9px 16px rgba(255, 255, 255, 0.9)"
+  description: "模拟柔和的自然光照"
+tips:
+  - 使用柔和的双向阴影
+  - 柔和的配色方案（pastel）
+  - 圆角元素（16px+）
+  - 低对比度提升舒适感
+  - 避免锐利的边缘
+  - 适合健康、生活方式、儿童产品
+  - 注意可访问性（确保对比度）
+difference_from_neumorphism: |
+  Soft UI 相比 Neumorphism 更加柔和、低对比度，
+  阴影更轻、边界更模糊，强调舒适感而非立体感。

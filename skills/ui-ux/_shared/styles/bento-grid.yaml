@@ -1,0 +1,28 @@
+name: Bento Grid
+keywords: [grid, cards, modern, apple, 卡片, 栅格, 苹果风格]
+适用场景: [Landing Page, Feature展示, Portfolio, 产品介绍]
+参考案例: [Apple.com, Linear.app, Untitled UI]
+description: 日式便当盒风格布局，使用不规则栅格和卡片组合
+css:
+  light: |
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    background: #F5F5F5;
+  dark: |
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    background: #0A0A0A;
+tips:
+  - 使用 CSS Grid 实现不规则布局
+  - 卡片大小不统一（1x1, 2x1, 1x2, 2x2）
+  - 每个卡片包含独立功能或信息
+  - 卡片之间间距一致
+  - 圆角 8-16px
+  - 柔和阴影
+  - 适合展示多个功能/特性
+tailwind_example: |
+  className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-[200px]"
+  <div className="col-span-2 row-span-2 bg-white rounded-xl shadow">...</div>
+  <div className="col-span-1 row-span-1 bg-white rounded-xl shadow">...</div>

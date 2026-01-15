@@ -1,0 +1,57 @@
+name: Minimalist Japanese (Kanso)
+keywords: [minimal, zen, clean, wabi-sabi, japanese, 极简, 禅意, 日式]
+适用场景: [生活方式品牌, 艺术展示, 冥想应用, 高端产品]
+参考案例: [Muji, Uniqlo, Japanese Architecture, Zen Gardens]
+css:
+  light: |
+    background: #fafafa;
+    color: #2c2c2c;
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    font-family: 'Noto Sans JP', 'Hiragino Sans', sans-serif;
+  dark: |
+    background: #1a1a1a;
+    color: #e8e8e8;
+    border: 1px solid #3a3a3a;
+    border-radius: 2px;
+    font-family: 'Noto Sans JP', 'Hiragino Sans', sans-serif;
+color_palette:
+  neutrals:
+    - "#fafafa" # 米白
+    - "#e8e8e8" # 浅灰
+    - "#9e9e9e" # 中灰
+    - "#2c2c2c" # 深灰
+  natural:
+    - "#8d6e63" # 木色
+    - "#a1887f" # 浅木色
+    - "#4a4a4a" # 炭色
+    - "#d7ccc8" # 米色
+design_principles:
+  - Kanso (简素) - 简洁
+  - Fukinsei (不均齐) - 不对称
+  - Shibumi (寂寥) - 低调优雅
+  - Shizen (自然) - 自然质朴
+  - Yugen (幽玄) - 含蓄深远
+  - Datsuzoku (脱俗) - 超脱常规
+  - Seijaku (静寂) - 宁静平和
+spacing:
+  - 大量留白（负空间）
+  - 宽松的间距
+  - 不拥挤的布局
+typography:
+  japanese_fonts:
+    - "Noto Sans JP"
+    - "Hiragino Sans"
+    - "Yu Gothic"
+  characteristics:
+    - 清晰易读
+    - 中性无装饰
+    - 垂直和水平平衡
+tips:
+  - 极简色彩（中性色为主）
+  - 大量留白和负空间
+  - 自然材质感（木、纸、石）
+  - 不对称平衡
+  - 避免过度设计
+  - 强调宁静和平和
+  - 适合生活方式、艺术、高端品牌

@@ -1,0 +1,307 @@
+openapi: "3.0.3"
+
+info:
+  title: "API 名称"
+  version: "1.0.0"
+  description: "API 描述"
+  contact:
+    name: "API Support"
+    email: "api@example.com"
+  license:
+    name: "MIT"
+    url: "https://opensource.org/licenses/MIT"
+
+servers:
+  - url: "https://api.example.com/v1"
+    description: "生产环境"
+  - url: "https://staging-api.example.com/v1"
+    description: "测试环境"
+  - url: "http://localhost:3000/api/v1"
+    description: "本地开发"
+
+tags:
+  - name: "Users"
+    description: "用户管理"
+  - name: "Products"
+    description: "商品管理"
+
+paths:
+  /users:
+    get:
+      tags:
+        - "Users"
+      summary: "获取用户列表"
+      operationId: "listUsers"
+      parameters:
+        - name: "page"
+          in: "query"
+          schema:
+            type: "integer"
+            default: 1
+            minimum: 1
+          description: "页码"
+        - name: "pageSize"
+          in: "query"
+          schema:
+            type: "integer"
+            default: 20
+            minimum: 1
+            maximum: 100
+          description: "每页数量"
+        - name: "status"
+          in: "query"
+          schema:
+            type: "string"
+            enum:
+              - "active"
+              - "inactive"
+          description: "状态过滤"
+      responses:
+        "200":
+          description: "成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+    post:
+      tags:
+        - "Users"
+      summary: "创建用户"
+      operationId: "createUser"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        "201":
+          description: "创建成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /users/{id}:
+    parameters:
+      - name: "id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+        description: "用户 ID"
+
+    get:
+      tags:
+        - "Users"
+      summary: "获取用户详情"
+      operationId: "getUser"
+      responses:
+        "200":
+          description: "成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    put:
+      tags:
+        - "Users"
+      summary: "更新用户"
+      operationId: "updateUser"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        "200":
+          description: "更新成功"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags:
+        - "Users"
+      summary: "删除用户"
+      operationId: "deleteUser"
+      responses:
+        "204":
+          description: "删除成功"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  schemas:
+    User:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          description: "用户 ID"
+          example: "user-123"
+        email:
+          type: "string"
+          format: "email"
+          description: "邮箱"
+          example: "user@example.com"
+        name:
+          type: "string"
+          description: "姓名"
+          example: "张三"
+        status:
+          type: "string"
+          enum:
+            - "active"
+            - "inactive"
+          description: "状态"
+        createdAt:
+          type: "string"
+          format: "date-time"
+          description: "创建时间"
+        updatedAt:
+          type: "string"
+          format: "date-time"
+          description: "更新时间"
+      required:
+        - "id"
+        - "email"
+        - "name"
+        - "status"
+
+    UserInput:
+      type: "object"
+      properties:
+        email:
+          type: "string"
+          format: "email"
+          description: "邮箱"
+        name:
+          type: "string"
+          minLength: 1
+          maxLength: 100
+          description: "姓名"
+        password:
+          type: "string"
+          minLength: 8
+          description: "密码"
+      required:
+        - "email"
+        - "name"
+
+    UserList:
+      type: "object"
+      properties:
+        data:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/User"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    Pagination:
+      type: "object"
+      properties:
+        total:
+          type: "integer"
+          description: "总数"
+        page:
+          type: "integer"
+          description: "当前页"
+        pageSize:
+          type: "integer"
+          description: "每页数量"
+        totalPages:
+          type: "integer"
+          description: "总页数"
+
+    Error:
+      type: "object"
+      properties:
+        code:
+          type: "string"
+          description: "错误码"
+        message:
+          type: "string"
+          description: "错误信息"
+        details:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/ErrorDetail"
+      required:
+        - "code"
+        - "message"
+
+    ErrorDetail:
+      type: "object"
+      properties:
+        field:
+          type: "string"
+          description: "字段名"
+        code:
+          type: "string"
+          description: "错误码"
+        message:
+          type: "string"
+          description: "错误信息"
+
+  responses:
+    BadRequest:
+      description: "请求参数错误"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              error:
+                $ref: "#/components/schemas/Error"
+
+    Unauthorized:
+      description: "未授权"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              error:
+                $ref: "#/components/schemas/Error"
+
+    NotFound:
+      description: "资源不存在"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              error:
+                $ref: "#/components/schemas/Error"
+
+  securitySchemes:
+    BearerAuth:
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
+      description: "JWT Bearer Token"
+
+    ApiKeyAuth:
+      type: "apiKey"
+      in: "header"
+      name: "X-API-Key"
+      description: "API Key"
+
+security:
+  - BearerAuth: []
