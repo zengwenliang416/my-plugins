@@ -23,39 +23,19 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob, mcp__serena__find_symbol, mc
 
 ```bash
 # 分析文件，提取可测试接口
-python ~/.claude/skills/test-generator/scripts/analyze-testable.py \
+python "${CLAUDE_PLUGIN_ROOT}/skills/test-generator/scripts/analyze-testable.py" \
   --file ./src/services/UserService.ts \
   --lang typescript
-
-# 分析目录，生成测试计划
-python ~/.claude/skills/test-generator/scripts/analyze-testable.py \
-  --dir ./src/services \
-  --output ./test-plan.md
 ```
 
 ### 2. 测试脚手架生成
 
 ```bash
-# 生成 Jest 测试文件
-bash ~/.claude/skills/test-generator/scripts/scaffold-test.sh \
+# 生成测试文件
+bash "${CLAUDE_PLUGIN_ROOT}/skills/test-generator/scripts/scaffold-test.sh" \
   --source ./src/services/UserService.ts \
   --framework jest \
   --output ./tests/UserService.test.ts
-
-# 生成 Pytest 测试文件
-bash ~/.claude/skills/test-generator/scripts/scaffold-test.sh \
-  --source ./src/user_service.py \
-  --framework pytest \
-  --output ./tests/test_user_service.py
-```
-
-### 3. 覆盖率分析
-
-```bash
-# 分析覆盖率报告，识别未覆盖代码
-python ~/.claude/skills/test-generator/scripts/coverage-gaps.py \
-  --report ./coverage/lcov.info \
-  --source ./src
 ```
 
 ## MCP 工具使用
