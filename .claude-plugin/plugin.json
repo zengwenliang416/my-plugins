@@ -1,6 +1,7 @@
 {
   "name": "ccg-workflows",
   "version": "3.0.0",
+  "enabledByDefault": true,
   "description": "Claude Code Guide 工作流编排器集合 - 提供完整的开发工作流自动化",
   "author": {
     "name": "Wenliang Zeng"
