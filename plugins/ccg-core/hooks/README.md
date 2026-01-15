@@ -24,9 +24,9 @@ hooks/
 │   ├── session-init.sh     # 会话初始化
 │   └── stop-check.sh       # 任务完成检查+通知
 ├── evaluation/         # 评估钩子
-│   ├── unified-eval.sh         # 统一评估（Skills + Commands）
-│   ├── skill-forced-eval.sh    # 技能匹配评估（已合并）
-│   └── command-forced-eval.sh  # 命令推荐评估（已合并）
+│   └── unified-eval.sh         # 意图评估 + 工具优先级
+├── routing/            # 智能路由
+│   └── auggie-priority.sh  # auggie-mcp/LSP 优先提醒
 ├── collaboration/      # 多模型协作
 │   └── codex-guard.sh      # Codex 只读强制
 └── sanitize/           # 敏感内容处理
@@ -45,16 +45,15 @@ hooks/
 
 ## 已注册 Hooks
 
-| Hook            | 触发时机                    | 目录        | 功能                          |
-| --------------- | --------------------------- | ----------- | ----------------------------- |
-| unified-eval    | UserPromptSubmit            | evaluation/ | 统一评估（Skills + Commands） |
-| intent-enforcer | PreToolUse:Read\|Grep\|Glob | security/   | 强制执行意图路由（拦截绕过）  |
-| killshell-guard | PreToolUse:KillShell        | security/   | 保护多模型协作任务            |
-| bash-guard      | PreToolUse:Bash             | security/   | 危险命令拦截                  |
-| auto-backup     | PreToolUse:Write            | logging/    | 自动备份文件                  |
-| mcp-logger      | PreToolUse:mcp\_\_.\*       | logging/    | MCP 调用日志                  |
-| auto-format     | PostToolUse:Write\|Edit     | quality/    | 自动代码格式化                |
-| stop-check      | Stop                        | session/    | 任务完成检查+通知             |
+| Hook            | 触发时机                | 目录        | 功能                      |
+| --------------- | ----------------------- | ----------- | ------------------------- |
+| unified-eval    | UserPromptSubmit        | evaluation/ | 意图评估 + 工具优先级注入 |
+| auggie-priority | PreToolUse:Grep\|Glob   | routing/    | auggie-mcp/LSP 优先提醒   |
+| killshell-guard | PreToolUse:KillShell    | security/   | 保护多模型协作任务        |
+| auto-backup     | PreToolUse:Write        | logging/    | 自动备份文件              |
+| mcp-logger      | PreToolUse:mcp\_\_.\*   | logging/    | MCP 调用日志              |
+| auto-format     | PostToolUse:Write\|Edit | quality/    | 自动代码格式化            |
+| stop-check      | Stop                    | session/    | 任务完成检查+通知         |
 
 ## 未注册但可用的 Hooks
 
