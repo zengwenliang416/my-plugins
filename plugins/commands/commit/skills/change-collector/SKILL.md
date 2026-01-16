@@ -7,6 +7,7 @@ description: |
 allowed-tools:
   - Bash
   - Write
+  - AskUserQuestion
 arguments:
   - name: run_dir
     type: string
@@ -37,10 +38,29 @@ mkdir -p ${run_dir}
 ```bash
 # 验证是否在 Git 仓库中
 git rev-parse --is-inside-work-tree
+```
 
+**如果不是 Git 仓库**，使用 AskUserQuestion 询问：
+
+```
+问题: 当前目录不是 Git 仓库，是否需要初始化？
+选项:
+  - 初始化新仓库 (git init)
+  - 取消操作
+```
+
+**如果用户选择初始化**：
+```bash
+git init
+```
+
+**继续获取分支信息**：
+```bash
 # 获取当前分支
 git branch --show-current
 ```
+
+**注意**：新仓库可能没有分支（无提交），此时 branch 为空，记录为 `"branch": null`
 
 ### Step 3: 收集变更信息
 
@@ -152,9 +172,10 @@ git diff --staged --name-status
 
 | 情况 | 处理 |
 |------|------|
-| 不是 Git 仓库 | 报错退出 |
+| 不是 Git 仓库 | 询问用户是否初始化，用户拒绝则退出 |
 | 没有暂存变更 | 正常输出，has_staged=false |
 | git 命令失败 | 报错退出 |
+| 新仓库无分支 | 正常输出，branch=null |
 
 ---
 
