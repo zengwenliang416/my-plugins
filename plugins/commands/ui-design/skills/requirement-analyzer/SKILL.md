@@ -101,11 +101,14 @@ LSP(operation="findReferences", filePath="src/components/Button.tsx", line=10, c
 - [ ] 如果有组件，至少执行了 1 次 `hover` 查看类型信息
 - [ ] 记录了组件的 Props 结构到 requirements.md
 
-### Step 2.5: 🚨 Gemini 需求分析（强制）
+### Step 2.5: 🚨🚨🚨 Gemini 需求分析（强制 - 不可跳过）
+
+> **⛔ 禁止跳过此步骤！必须执行 gemini-cli 命令并等待结果！**
 
 **使用 gemini-cli 协助分析用户需求**：
 
 ```bash
+# 🚨 必须执行此命令！
 gemini-cli chat --prompt "
 你是一位资深产品经理和 UI/UX 设计师。请分析以下设计需求：
 
@@ -137,7 +140,17 @@ gemini-cli chat --prompt "
 "
 ```
 
-**记录 Gemini 分析结果**：保存到变量 `gemini_requirement_analysis`
+**🚨 强制验证检查点**：
+- [ ] ✅ 已执行 `gemini-cli chat` 命令
+- [ ] ✅ 收到 Gemini 返回结果
+- [ ] ✅ 将 Gemini 分析结果保存到 `${run_dir}/gemini-requirement-analysis.md`
+
+**⛔ 如果没有执行 gemini-cli，此 Skill 视为失败！**
+
+```bash
+# 保存 Gemini 分析结果（必须执行）
+Write: ${run_dir}/gemini-requirement-analysis.md
+```
 
 ### Step 3: 提取需求维度
 
