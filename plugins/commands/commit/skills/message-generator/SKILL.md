@@ -159,15 +159,13 @@ Closes #123
 
 ### Breaking Change
 
-在类型后加 `!` 表示破坏性变更：
-```
-feat(api)!: 修改响应格式
-```
+在类型后加感叹号表示破坏性变更：
+
+    feat(api)!: 修改响应格式
 
 并在 Footer 中详细说明：
-```
-BREAKING CHANGE: 所有 API 响应字段从下划线改为驼峰命名
-```
+
+    BREAKING CHANGE: 所有 API 响应字段从下划线改为驼峰命名
 
 ---
 
