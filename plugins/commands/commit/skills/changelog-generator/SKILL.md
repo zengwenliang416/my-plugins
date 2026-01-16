@@ -17,6 +17,10 @@ arguments:
     type: string
     required: false
     description: 版本号（如 "1.2.0"），不传则添加到 Unreleased 部分
+  - name: commits
+    type: string
+    required: false
+    description: 批量提交模式 - JSON 格式的提交列表，如 '[{"type":"feat","scope":"api","description":"..."}]'
 ---
 
 # Changelog Generator - 变更日志生成原子技能
@@ -63,12 +67,29 @@ arguments:
 
 ## 执行流程
 
-### Step 1: 读取分析结果
+### Step 1: 判断模式
+
+**检查 `commits` 参数**：
+- 如果有 `commits` 参数 → **批量模式**：从参数解析提交列表
+- 如果没有 → **单次模式**：读取 `run_dir` 中的分析结果
+
+### Step 1A: 单次模式 - 读取分析结果
 
 读取 `${run_dir}/changes-analysis.json` 和 `${run_dir}/commit-message.md`，提取：
 - `primary_type`（从 analysis）
 - `commit_message_title`（从 message）
 - `files_by_type`（从 analysis）
+
+### Step 1B: 批量模式 - 解析提交列表
+
+从 `commits` 参数解析 JSON：
+```json
+[
+  {"type": "chore", "scope": "project", "description": "初始化项目脚手架"},
+  {"type": "feat", "scope": "types", "description": "添加 Todo 类型定义"},
+  {"type": "feat", "scope": "hooks", "description": "添加状态管理 Hook"}
+]
+```
 
 ### Step 2: 检查现有 CHANGELOG.md
 
@@ -112,11 +133,22 @@ BREAKING  → Changed（带 **Breaking:** 前缀）
 - Breaking changes 用 `**Breaking:**` 前缀
 - 包含相关引用（如有）：`([#123](link))`
 
-**示例**：
+**单次模式示例**：
 ```markdown
 ### Added
 
 - Add Button component with multiple styles and sizes
+```
+
+**批量模式示例**（多个提交汇总）：
+```markdown
+### Added
+
+- Add Todo 类型定义 (types)
+- Add 本地存储持久化工具 (storage)
+- Add Todo 状态管理 Hook (hooks)
+- Add Todo UI 组件 (components)
+- Add 应用入口和主界面 (app)
 
 ### Changed
 
@@ -126,6 +158,11 @@ BREAKING  → Changed（带 **Breaking:** 前缀）
 
 - Fix user authentication failure on expired tokens
 ```
+
+**批量模式规则**：
+- 按 Changelog 类型分组（Added, Changed, Fixed 等）
+- 每个提交一行
+- 在描述后标注 scope：`(scope)`
 
 ### Step 5: 更新 CHANGELOG.md
 

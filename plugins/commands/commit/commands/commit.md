@@ -126,23 +126,40 @@ Skill(skill="change-analyzer", args="run_dir=${RUN_DIR}")
 
 **仅当 `should_split=true` 且用户确认拆分时执行此分支**
 
-### 对每个子提交循环执行：
+### Step 1: 取消当前暂存
+
+```bash
+git reset HEAD 2>/dev/null || git rm --cached -r . 2>/dev/null
+```
+
+### Step 2: 对每个子提交循环执行
 
 ```
+commits_info = []  # 记录所有提交信息
+
 for commit in split_recommendation.commits:
     1. 暂存该提交的文件: git add ${commit.files}
-    2. 生成提交消息: Skill("message-generator", args="...")
+    2. 构建提交消息: "${commit.type}(${commit.scope}): ${commit.description}"
     3. 执行提交: git commit -m "${message}"
+    4. 记录: commits_info.append({type, scope, description, hash})
 ```
 
-### 所有子提交完成后：
+### Step 3: 🚨 更新 CHANGELOG（必须执行）
 
-**🚨 必须执行 Phase 5.5 更新 CHANGELOG**
+**所有子提交完成后，必须更新 CHANGELOG：**
 
-- 调用 `changelog-generator`，将所有子提交汇总到 CHANGELOG
-- 每个子提交对应一条 changelog 条目
+```
+Skill(skill="changelog-generator", args="run_dir=${RUN_DIR} commits=${commits_info}")
+```
 
-**然后跳转到 Phase 7 交付**
+**规则**：
+- 如果 CHANGELOG.md 不存在，创建新文件
+- 为每个子提交添加一条 changelog 条目
+- 按提交类型分组（Added, Fixed, Changed 等）
+
+### Step 4: 跳转到 Phase 7 交付
+
+**🚨 不要跳过 CHANGELOG 更新！**
 
 ---
 
