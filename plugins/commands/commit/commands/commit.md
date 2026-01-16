@@ -19,8 +19,10 @@ Phase 1: 初始化        → 创建 RUN_DIR
 Phase 2: 收集变更      → Skill("change-collector")
 Phase 3: 分析变更      → Skill("change-analyzer")  ← 必须使用 LSP + auggie-mcp
 Phase 4: 确认提交信息  → AskUserQuestion
+                       ├─ 单次提交 → Phase 5 → 5.5 → 6 → 7
+                       └─ 分批提交 → Phase 4B → 5.5 → 7
 Phase 5: 生成消息      → Skill("message-generator")
-Phase 5.5: 更新 Changelog → Skill("changelog-generator")
+Phase 5.5: 更新 Changelog → Skill("changelog-generator")  ← 必须执行，创建 CHANGELOG.md
 Phase 6: 执行提交      → Skill("commit-executor")
 Phase 7: 交付          → 输出摘要
 ```
@@ -29,6 +31,7 @@ Phase 7: 交付          → 输出摘要
 - 每个 Skill 完成后，**立即**执行下一个 Phase，不要停止
 - Phase 3 分析完成后才能进入 Phase 4 让用户确认
 - 用户只在 Phase 4 和 Phase 5 有机会确认/修改
+- **无论单次还是分批提交，Phase 5.5 (CHANGELOG) 都必须执行**
 
 ---
 
@@ -113,11 +116,37 @@ Skill(skill="change-analyzer", args="run_dir=${RUN_DIR}")
    - 自定义类型/作用域
    - 取消提交
 
-**🚨 用户确认后立即执行 Phase 5，不要停止！**
+**🚨 分支判断**：
+- 如果用户选择**单次提交** → 继续 Phase 5
+- 如果用户选择**分批提交** → 跳转到 Phase 4B（分批提交模式）
 
 ---
 
-## Phase 5: 生成消息
+## Phase 4B: 分批提交模式（可选）
+
+**仅当 `should_split=true` 且用户确认拆分时执行此分支**
+
+### 对每个子提交循环执行：
+
+```
+for commit in split_recommendation.commits:
+    1. 暂存该提交的文件: git add ${commit.files}
+    2. 生成提交消息: Skill("message-generator", args="...")
+    3. 执行提交: git commit -m "${message}"
+```
+
+### 所有子提交完成后：
+
+**🚨 必须执行 Phase 5.5 更新 CHANGELOG**
+
+- 调用 `changelog-generator`，将所有子提交汇总到 CHANGELOG
+- 每个子提交对应一条 changelog 条目
+
+**然后跳转到 Phase 7 交付**
+
+---
+
+## Phase 5: 生成消息（单次提交模式）
 
 ### 🚨 强制执行
 
