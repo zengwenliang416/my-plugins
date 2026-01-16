@@ -1,6 +1,6 @@
 ---
-description: "UI/UX 设计工作流：需求分析 → 样式推荐 → 设计生成（并行 3 变体）→ UX 检查 → 代码生成 → 质量验证"
-argument-hint: "[--scenario=from_scratch|optimize] [--tech-stack=react|vue] [--run-id=xxx] <设计描述>"
+description: "UI/UX 设计工作流：需求分析 → 样式推荐 → 设计生成（并行 3 变体）→ UX 检查 → 代码生成 → 质量验证。支持图片参考。"
+argument-hint: "[--image=<path>] [--scenario=from_scratch|optimize] [--tech-stack=react|vue] [--run-id=xxx] <设计描述>"
 allowed-tools:
   - Skill
   - AskUserQuestion
@@ -38,7 +38,8 @@ allowed-tools:
 │  自动执行（无需询问）    │  硬停止（必须询问）                  │
 ├─────────────────────────────────────────────────────────────────┤
 │  Phase 1 → Phase 2      │  ⏸️ Phase 2: 场景确认               │
-│  Phase 3 → Phase 4      │  ⏸️ Phase 5: 方案选择               │
+│  Phase 2.5（如有图片）  │  ⏸️ Phase 5: 方案选择               │
+│  Phase 3 → Phase 4      │                                      │
 │  Phase 6 → Phase 7      │                                      │
 │  Phase 7 → Phase 8      │                                      │
 │  Phase 8 → Phase 9      │                                      │
@@ -53,6 +54,8 @@ allowed-tools:
 ```
 Phase 1: 初始化        → 创建 RUN_DIR
 Phase 2: 场景确认      → AskUserQuestion（⏸️ 硬停止）
+Phase 2.5: 图片分析    → Skill("image-analyzer")【仅当有 --image 参数时】
+                       → Gemini 多轮分析 → 自动继续 ↓
 Phase 3: 需求分析      → Skill("requirement-analyzer") → 自动继续 ↓
 Phase 4: 样式推荐      → Skill("style-recommender") → 自动继续 ↓
 Phase 5: 方案选择      → AskUserQuestion（⏸️ 硬停止）
@@ -82,6 +85,7 @@ Phase 10: 交付         → 输出摘要
 
 | 选项                 | 说明                             | 默认值       |
 | -------------------- | -------------------------------- | ------------ |
+| `--image=<path>`     | 参考图片路径（启用图片分析）     | -            |
 | `--scenario=value`   | 设计场景 (from_scratch/optimize) | from_scratch |
 | `--tech-stack=value` | 技术栈 (react/vue)               | react        |
 | `--run-id=<id>`      | 使用指定 run-id（断点续传）      | -            |
@@ -91,13 +95,18 @@ Phase 10: 交付         → 输出摘要
 ```bash
 # 初始化选项对象
 OPTIONS='{}'
+IMAGE_PATH=""
 
 # 解析各选项
+[[ "$ARGUMENTS" =~ --image=([^ ]+) ]] && IMAGE_PATH="${BASH_REMATCH[1]}" && OPTIONS=$(echo "$OPTIONS" | jq --arg v "${IMAGE_PATH}" '. + {image_path: $v}')
 [[ "$ARGUMENTS" =~ --scenario=([^ ]+) ]] && OPTIONS=$(echo "$OPTIONS" | jq --arg v "${BASH_REMATCH[1]}" '. + {scenario: $v}')
 [[ "$ARGUMENTS" =~ --tech-stack=([^ ]+) ]] && OPTIONS=$(echo "$OPTIONS" | jq --arg v "${BASH_REMATCH[1]}" '. + {tech_stack: $v}')
 
 # 提取设计描述（排除选项后的剩余部分）
 DESCRIPTION=$(echo "$ARGUMENTS" | sed -E 's/--[a-zA-Z-]+(=[^ ]+)?//g' | xargs)
+
+# 标记是否有图片参考
+HAS_IMAGE=$([[ -n "$IMAGE_PATH" ]] && echo "true" || echo "false")
 ```
 
 ### 运行目录创建
@@ -174,7 +183,74 @@ fi
 
 **验证**：用户确认后更新 `${RUN_DIR}/state.json` 中的 options。
 
-**🚨 用户确认后立即执行 Phase 3，不要停止！**
+**🚨 用户确认后：**
+- 如果有 `--image` 参数 → 执行 Phase 2.5
+- 如果没有 → 跳过 Phase 2.5，直接执行 Phase 3
+
+---
+
+## Phase 2.5: 图片分析（仅当有 --image 参数）
+
+### 🚨🚨🚨 强制执行 - Gemini 多轮分析 🚨🚨🚨
+
+**触发条件**：用户提供了 `--image=<path>` 参数
+
+**❌ 禁止行为（违反则工作流失败）：**
+- ❌ 跳过 Gemini 图片分析
+- ❌ 自己猜测图片内容
+- ❌ 只做一轮分析
+- ❌ 不保存 Gemini 原始回答
+
+**✅ 唯一正确做法：调用 Skill 工具**
+
+### 立即执行（不要犹豫）
+
+**判断是否执行：**
+```
+if HAS_IMAGE == "true":
+    → 执行 Phase 2.5
+else:
+    → 跳过，直接进入 Phase 3
+```
+
+**立即调用 Skill：**
+```
+Skill(skill="image-analyzer", args="run_dir=${RUN_DIR} image_path=${IMAGE_PATH}")
+```
+
+**关键**：`image-analyzer` Skill **会**执行以下操作：
+- 使用 `gemini-cli` 读取图片
+- 进行 **4 轮 Gemini 分析**：
+  1. 整体风格分析
+  2. 配色系统分析
+  3. 组件识别
+  4. 字体排版分析
+- Claude 综合 Gemini 回答，生成可执行设计规格
+- 输出 `${run_dir}/image-analysis.md`
+
+**产出**：
+- 提取的配色系统（HEX 值 + Tailwind 等效）
+- 识别的组件清单
+- 字体排版规格
+- 设计 Token JSON
+
+### 验证检查清单（必须全部通过）
+
+**Phase 2.5 完成后，你必须验证：**
+- [ ] `${RUN_DIR}/image-analysis.md` 已生成
+- [ ] 文档包含 "配色系统" 表格
+- [ ] 文档包含 "组件清单" 表格
+- [ ] 文档包含 "Gemini 分析原始记录" 部分
+
+**如果验证失败，不要继续，报告错误！**
+
+### ⏩ 自动继续到 Phase 3
+
+**验证通过后，不询问用户，直接执行：**
+```
+→ 输出 "✅ 图片分析完成，提取了 X 种颜色、Y 个组件..."
+→ 立即调用 Phase 3
+```
 
 ---
 
