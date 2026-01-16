@@ -6,6 +6,12 @@
   },
   "plugins": [
     {
+      "name": "commit",
+      "description": "规范提交工作流：收集 → 分析 → 生成消息 → 更新 Changelog → 执行",
+      "source": "./plugins/commands/commit",
+      "version": "1.0.0"
+    },
+    {
       "name": "dev",
       "description": "开发工作流：上下文 → 分析 → 原型 → 实施 → 审计",
       "source": "./plugins/commands/dev",
