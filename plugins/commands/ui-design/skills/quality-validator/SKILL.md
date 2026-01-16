@@ -5,8 +5,8 @@ description: |
   【核心产出】输出 ${run_dir}/quality-report.md
   【不触发】无代码产物
   【先问什么】variant_id 或 tech_stack 参数缺失时询问
-  【🚨 强制】必须使用 gemini-cli 进行代码质量和设计还原度分析
-  【依赖】gemini-cli（参考 skills/gemini-cli/）
+  【🚨 强制】必须使用 codeagent-wrapper gemini 进行代码质量和设计还原度分析
+  【依赖】gemini/codeagent-wrapper（参考 skills/gemini-cli/）
 allowed-tools:
   - Read
   - Write
@@ -106,10 +106,10 @@ for component_file in component_files:
 
 ### Step 2.5: 🚨 Gemini 代码质量分析（强制）
 
-**使用 gemini-cli 进行专业代码质量和设计还原度分析**：
+**使用 codeagent-wrapper gemini 进行专业代码质量和设计还原度分析**：
 
 ```bash
-gemini-cli chat --prompt "
+~/.claude/bin/codeagent-wrapper gemini --role frontend --prompt "
 你是一位资深前端架构师和代码审查专家。请对以下代码进行全面的质量验证：
 
 技术栈：${tech_stack}

@@ -13,46 +13,54 @@ allowed-tools:
 
 # Gemini CLI - UI 设计视觉分析
 
-Design image analyzer via `gemini-cli`. **设计截图/参考图** → 结构化设计规格 → 供其他 Skills 使用。Context limit: **32k tokens**.
+Design image analyzer via `gemini` CLI or `codeagent-wrapper gemini`. **设计截图/参考图** → 结构化设计规格 → 供其他 Skills 使用。Context limit: **32k tokens**.
 
 ## 执行命令
 
-```bash
-# 首次调用（获取 SESSION_ID）
-gemini-cli chat --image "${image_path}" --prompt "Your analysis request"
+### 图片分析（使用原生 gemini 命令）
 
-# 多轮对话（继续会话）
-gemini-cli chat --image "${image_path}" --session "${SESSION_ID}" --prompt "Continue..."
+```bash
+# Gemini 会自动使用 read_file 工具读取图片
+gemini "请分析这张设计图片 ${image_path}：[你的分析请求]" -o text -y
+```
+
+### 文本任务（使用 codeagent-wrapper）
+
+```bash
+# 文本任务优先使用 codeagent-wrapper
+~/.claude/bin/codeagent-wrapper gemini --role frontend --prompt "你的任务描述"
 ```
 
 ## 强制协作流程
 
-### Step 1: 首轮分析
+### Step 1: 首轮分析（图片）
 
 ```bash
-gemini-cli chat --image "${image_path}" --prompt "
-你是一位资深 UI/UX 设计师。请分析这张设计图：
+# 使用 gemini 命令分析图片
+gemini "请分析这张设计图片 ${image_path}：
+
+你是一位资深 UI/UX 设计师。请分析：
 1. 界面类型（网页、App、Dashboard 等）
 2. 设计语言（Material、Apple HIG、扁平化等）
 3. 视觉风格（极简、信息密集、装饰性）
 4. 品牌调性
-"
+" -o text -y
 ```
 
-- 获取 SESSION_ID
 - 记录整体风格判断
+- 保存分析结果
 
 ### Step 2: 深入分析（多轮）
 
 ```bash
-gemini-cli chat --image "${image_path}" --session "${SESSION_ID}" --prompt "
-继续分析：[配色/组件/字体/图标/布局]
+# 继续分析配色/组件/字体/图标/布局
+gemini "请继续分析这张图片 ${image_path}，聚焦于配色系统：
 请给出具体数值（HEX、px、rem）。
-"
+" -o text -y
 ```
 
 - ⚠️ 每轮聚焦单一维度
-- 保持 SESSION_ID 连续
+- 保持上下文连续
 
 ### Step 3: Claude 整合
 
@@ -63,50 +71,38 @@ gemini-cli chat --image "${image_path}" --session "${SESSION_ID}" --prompt "
 
 ## 分析维度
 
-| 维度 | 分析内容 | 输出格式 |
-|------|----------|----------|
-| 整体风格 | 界面类型、设计语言、品牌调性 | 文本描述 |
-| 配色系统 | 主色、辅助色、背景、文字、功能色 | HEX 值 |
-| UI 组件 | 按钮、卡片、输入框等样式 | 圆角/阴影/边框 |
-| 字体排版 | 字体家族、字号层级、字重 | px/rem |
-| 图标系统 | 图标类型、粗细、推荐图标库 | 描述 + 推荐 |
-| 布局规格 | 栅格、间距、容器宽度 | px |
+| 维度     | 分析内容                               | 输出格式    |
+| -------- | -------------------------------------- | ----------- |
+| 整体风格 | 界面类型、设计语言、品牌调性           | 文本描述    |
+| 配色系统 | 主色、辅助色、背景、文字、功能色       | HEX 值      |
+| UI 组件  | 按钮、卡片、输入框等样式               | 圆角/阴影   |
+| 字体排版 | 字体家族、字号层级、字重               | px/rem      |
+| 图标系统 | 图标类型、粗细、推荐图标库             | 描述 + 推荐 |
+| 布局规格 | 栅格、间距、容器宽度                   | px          |
 
-## 会话管理
+## 命令选择指南
 
-```bash
-# 第一次调用 - 获取 SESSION_ID
-result=$(gemini-cli chat --image "${image_path}" --prompt "..." 2>&1)
-SESSION_ID=$(echo "$result" | grep -oE 'session[=:]\s*[a-zA-Z0-9-]+' | head -1 | cut -d= -f2)
-
-# 后续调用 - 继续会话
-gemini-cli chat --image "${image_path}" --session "$SESSION_ID" --prompt "..."
-```
-
-## 上下文管理 (32k 限制)
-
-| 策略 | 方法 |
-|------|------|
-| 单维度分析 | 一次只分析一个方面（配色/组件/字体） |
-| 结构化输出 | 要求 Gemini 输出表格或列表格式 |
-| 多轮递进 | 整体 → 配色 → 组件 → 字体 → 图标 分步 |
-| 会话续接 | 使用 `--session` 保持上下文 |
+| 任务类型     | 推荐命令                                     | 原因                   |
+| ------------ | -------------------------------------------- | ---------------------- |
+| 图片分析     | `gemini "分析图片 ${path}..." -o text -y`    | 原生支持 read_file     |
+| 文本生成     | `codeagent-wrapper gemini --prompt "..."`    | 角色注入、会话管理     |
+| 代码生成     | `codeagent-wrapper gemini --role frontend`   | 前端专业角色           |
+| 设计方案     | `codeagent-wrapper gemini --role analyzer`   | 分析角色               |
 
 ## 强制约束
 
-| 必须执行 | 禁止事项 |
-|----------|----------|
-| ✅ 保存 SESSION_ID | ❌ 不传图片路径 |
-| ✅ 每轮聚焦单一维度 | ❌ 一次问太多问题 |
-| ✅ 输出用 HEX/px 标准格式 | ❌ 使用模糊的颜色描述 |
-| ✅ Claude 整合后再输出 | ❌ 直接使用 Gemini 原始输出 |
+| 必须执行                      | 禁止事项                     |
+| ----------------------------- | ---------------------------- |
+| ✅ 图片分析用 `gemini` 命令   | ❌ 图片分析用 codeagent-wrapper |
+| ✅ 每轮聚焦单一维度           | ❌ 一次问太多问题            |
+| ✅ 输出用 HEX/px 标准格式     | ❌ 使用模糊的颜色描述        |
+| ✅ Claude 整合后再输出        | ❌ 直接使用 Gemini 原始输出  |
 
 ## 输出格式
 
 ```json
 {
   "success": true,
-  "SESSION_ID": "uuid",
   "analysis": "Gemini 的分析结果"
 }
 ```

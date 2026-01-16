@@ -219,7 +219,7 @@ Skill(skill="image-analyzer", args="run_dir=${RUN_DIR} image_path=${IMAGE_PATH}"
 ```
 
 **关键**：`image-analyzer` Skill **会**执行以下操作：
-- 使用 `gemini-cli` 读取图片
+- 使用 `gemini` 命令读取图片
 - 进行 **4 轮 Gemini 分析**：
   1. 整体风格分析
   2. 配色系统分析
@@ -511,7 +511,7 @@ Skill(skill="code-generator", args="run_dir=${RUN_DIR} variant_id=${FINAL_VARIAN
 **关键**：`code-generator` Skill **必须**执行以下操作：
 1. 使用 `mcp__auggie-mcp__codebase-retrieval` 分析现有代码
 2. **如果发现组件文件**：使用 `LSP` 分析组件结构
-3. **🚨🚨🚨 必须使用 gemini-cli 生成原型**（不可跳过！）
+3. **🚨🚨🚨 必须使用 codeagent-wrapper gemini 生成原型**（不可跳过！）
 4. Claude 重构 Gemini 的输出
 
 **双模型协作流程**（Skill 内部执行）：

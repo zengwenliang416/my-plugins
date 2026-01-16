@@ -6,8 +6,8 @@ description: |
   【不触发】无推荐方案文件
   【先问什么】variant_id 参数缺失时，询问生成哪个变体 (A/B/C)
   【并行支持】✅ 可同时启动多个实例生成 design-A/B/C.md
-  【🚨 强制】必须使用 gemini-cli 生成设计规格详情
-  【依赖】gemini-cli（参考 skills/gemini-cli/）
+  【🚨 强制】必须使用 codeagent-wrapper gemini 生成设计规格详情
+  【依赖】gemini/codeagent-wrapper（参考 skills/gemini-cli/）
 allowed-tools:
   - Read
   - Write
@@ -120,10 +120,10 @@ LSP(operation="hover", filePath="src/components/Button.tsx", line=10, character=
 
 ### Step 2.5: 🚨 Gemini 设计规格生成（强制）
 
-**使用 gemini-cli 生成详细的设计规格**：
+**使用 codeagent-wrapper gemini 生成详细的设计规格**：
 
 ```bash
-gemini-cli chat --prompt "
+~/.claude/bin/codeagent-wrapper gemini --role frontend --prompt "
 你是一位顶级 UI/UX 设计师和前端架构师。请根据以下推荐方案生成完整的设计规格文档：
 
 设计方案：${variant_id}

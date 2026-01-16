@@ -5,8 +5,8 @@ description: |
   【核心产出】输出 ${run_dir}/style-recommendations.md，包含 2-3 套样式方案
   【不触发】用户已明确指定设计方案（如"就用 Glassmorphism"）
   【先问什么】requirements.md 不存在时，先调用 requirement-analyzer
-  【🚨 强制】必须使用 gemini-cli 生成创意配色和样式方案
-  【依赖】gemini-cli（参考 skills/gemini-cli/）
+  【🚨 强制】必须使用 codeagent-wrapper gemini 生成创意配色和样式方案
+  【依赖】gemini/codeagent-wrapper（参考 skills/gemini-cli/）
 allowed-tools:
   - Read
   - Write
@@ -40,17 +40,17 @@ arguments:
 
 | 步骤 | ❌ 禁止使用 | ✅ 必须使用 |
 |------|------------|------------|
-| 创意方案生成 | 自己编写方案、复制模板 | `gemini-cli chat --prompt` |
+| 创意方案生成 | 自己编写方案、复制模板 | `codeagent-wrapper gemini --prompt` |
 | 样式系统分析 | Glob, Grep, Search | `mcp__auggie-mcp__codebase-retrieval` |
 | 配置文件分析 | Read 直接读 | `LSP` (documentSymbol, hover) |
 
 ### ✅ 必须执行的工具调用
 
-1. **Step 1.5**: `gemini-cli chat` - 生成 3 套创意方案，**不可跳过**
+1. **Step 1.5**: `codeagent-wrapper gemini` - 生成 3 套创意方案，**不可跳过**
 2. **Step 2**: `mcp__auggie-mcp__codebase-retrieval` - 分析现有样式系统
 3. **Step 2**: `LSP` - 分析 tailwind.config.js 符号
 
-**⛔ 如果没有执行 gemini-cli 生成方案，此 Skill 视为失败！**
+**⛔ 如果没有执行 codeagent-wrapper gemini 生成方案，此 Skill 视为失败！**
 
 ---
 
@@ -83,13 +83,13 @@ Read: ${run_dir}/image-analysis.md  # 如果存在
 
 ### Step 1.5: 🚨🚨🚨 Gemini 创意方案生成（强制 - 不可跳过）
 
-> **⛔ 禁止跳过此步骤！必须执行 gemini-cli 命令并等待结果！**
+> **⛔ 禁止跳过此步骤！必须执行 codeagent-wrapper gemini 命令并等待结果！**
 
-**使用 gemini-cli 生成创意设计方案**：
+**使用 codeagent-wrapper gemini 生成创意设计方案**：
 
 ```bash
 # 🚨 必须执行此命令！
-gemini-cli chat --prompt "
+~/.claude/bin/codeagent-wrapper gemini --role frontend --prompt "
 你是一位顶级 UI/UX 设计师。请根据以下需求生成 3 套差异化的设计方案：
 
 产品类型：${product_type}
@@ -127,11 +127,11 @@ gemini-cli chat --prompt "
 ```
 
 **🚨 强制验证检查点**：
-- [ ] ✅ 已执行 `gemini-cli chat` 命令
+- [ ] ✅ 已执行 `codeagent-wrapper gemini` 命令
 - [ ] ✅ 收到 Gemini 返回的 3 套设计方案
 - [ ] ✅ 将 Gemini 方案保存到 `${run_dir}/gemini-style-recommendations.md`
 
-**⛔ 如果没有执行 gemini-cli，此 Skill 视为失败！**
+**⛔ 如果没有执行 codeagent-wrapper gemini，此 Skill 视为失败！**
 
 ```bash
 # 保存 Gemini 方案（必须执行）

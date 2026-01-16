@@ -5,8 +5,8 @@ description: |
   【核心产出】输出 ${run_dir}/requirements.md，包含结构化需求分析
   【不触发】已有明确设计规格文档的场景
   【先问什么】缺少需求描述时，询问：产品类型、核心功能、目标用户、设计偏好
-  【🚨 强制】必须使用 gemini-cli 协助分析需求
-  【依赖】gemini-cli（参考 skills/gemini-cli/）
+  【🚨 强制】必须使用 codeagent-wrapper gemini 协助分析需求
+  【依赖】gemini/codeagent-wrapper（参考 skills/gemini-cli/）
 allowed-tools:
   - Read
   - Write
@@ -46,14 +46,14 @@ arguments:
 | 步骤 | ❌ 禁止使用 | ✅ 必须使用 |
 |------|------------|------------|
 | 代码库分析 | Glob, Grep, Search, Read 直接读文件 | `mcp__auggie-mcp__codebase-retrieval` |
-| 需求分析 | 自己分析、直接写文档 | `gemini-cli chat --prompt` |
+| 需求分析 | 自己分析、直接写文档 | `codeagent-wrapper gemini --prompt` |
 | 符号分析 | Read 读代码 | `LSP` (documentSymbol, hover) |
 
 ### ✅ 必须执行的工具调用
 
 1. **Step 1**: `mcp__auggie-mcp__codebase-retrieval` - 不可用 Glob/Search 替代
 2. **Step 2**: `LSP` documentSymbol + hover - 不可用 Read 替代
-3. **Step 2.5**: `gemini-cli chat` - 必须执行，不可跳过
+3. **Step 2.5**: `codeagent-wrapper gemini` - 必须执行，不可跳过
 
 **⛔ 如果使用了禁止的工具替代必须的工具，此 Skill 视为失败！**
 
@@ -125,13 +125,13 @@ LSP(operation="findReferences", filePath="src/components/Button.tsx", line=10, c
 
 ### Step 2.5: 🚨🚨🚨 Gemini 需求分析（强制 - 不可跳过）
 
-> **⛔ 禁止跳过此步骤！必须执行 gemini-cli 命令并等待结果！**
+> **⛔ 禁止跳过此步骤！必须执行 codeagent-wrapper gemini 命令并等待结果！**
 
-**使用 gemini-cli 协助分析用户需求**：
+**使用 codeagent-wrapper gemini 协助分析用户需求**：
 
 ```bash
 # 🚨 必须执行此命令！
-gemini-cli chat --prompt "
+~/.claude/bin/codeagent-wrapper gemini --role analyzer --prompt "
 你是一位资深产品经理和 UI/UX 设计师。请分析以下设计需求：
 
 用户描述：${description}
@@ -163,11 +163,11 @@ gemini-cli chat --prompt "
 ```
 
 **🚨 强制验证检查点**：
-- [ ] ✅ 已执行 `gemini-cli chat` 命令
+- [ ] ✅ 已执行 `codeagent-wrapper gemini` 命令
 - [ ] ✅ 收到 Gemini 返回结果
 - [ ] ✅ 将 Gemini 分析结果保存到 `${run_dir}/gemini-requirement-analysis.md`
 
-**⛔ 如果没有执行 gemini-cli，此 Skill 视为失败！**
+**⛔ 如果没有执行 codeagent-wrapper gemini，此 Skill 视为失败！**
 
 ```bash
 # 保存 Gemini 分析结果（必须执行）

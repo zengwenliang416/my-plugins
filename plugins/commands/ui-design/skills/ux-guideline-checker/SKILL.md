@@ -5,8 +5,8 @@ description: |
   【核心产出】输出 ${run_dir}/ux-check-report.md
   【不触发】无设计方案文件
   【先问什么】variant_id 参数缺失时，询问检查哪个变体
-  【🚨 强制】必须使用 gemini-cli 进行 UX 准则专家分析
-  【依赖】gemini-cli（参考 skills/gemini-cli/）
+  【🚨 强制】必须使用 codeagent-wrapper gemini 进行 UX 准则专家分析
+  【依赖】gemini/codeagent-wrapper（参考 skills/gemini-cli/）
 allowed-tools:
   - Read
   - Write
@@ -110,10 +110,10 @@ LSP(operation="documentSymbol", filePath="src/components/Form.tsx", line=1, char
 
 ### Step 2.5: 🚨 Gemini UX 专家分析（强制）
 
-**使用 gemini-cli 进行专业 UX 准则检查**：
+**使用 codeagent-wrapper gemini 进行专业 UX 准则检查**：
 
 ```bash
-gemini-cli chat --prompt "
+~/.claude/bin/codeagent-wrapper gemini --role frontend --prompt "
 你是一位资深 UX 设计师和可访问性专家（WCAG 认证）。请对以下设计方案进行全面的 UX 准则检查：
 
 设计方案内容：
