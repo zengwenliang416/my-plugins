@@ -48,13 +48,13 @@ Skill(skill="change-collector", args="run_dir=${RUN_DIR}")
 
 **验证**：确认 `${RUN_DIR}/changes-raw.json` 已生成
 
-**检查**：如果没有已暂存的变更，提示用户先执行 `git add`
+**⚠️ 无论是否有暂存变更，都必须继续执行 Phase 3**
 
 ---
 
 ## Phase 3: 分析变更
 
-### 🚨 强制执行
+### 🚨 强制执行（使用 LSP + auggie-mcp）
 
 **立即调用 Skill：**
 ```
@@ -63,9 +63,18 @@ Skill(skill="change-analyzer", args="run_dir=${RUN_DIR}")
 
 **验证**：确认 `${RUN_DIR}/changes-analysis.json` 已生成
 
+**关键**：`change-analyzer` 会使用 LSP 和 auggie-mcp 进行智能分析：
+- LSP：获取文件符号结构（函数、类、方法）
+- auggie-mcp：语义理解变更内容和功能模块
+
+**处理无暂存变更的情况**：
+- 如果 `has_staged=false` 但有未跟踪/未暂存文件
+- `change-analyzer` 会分析这些文件，生成智能暂存建议
+- 按功能模块分组，推荐分批暂存方案
+
 **检查拆分建议**：
 - 如果 `should_split=true`，使用 AskUserQuestion 询问用户是否拆分
-- 展示建议的拆分方案
+- 展示建议的拆分方案（基于 LSP 符号分析）
 
 ---
 
