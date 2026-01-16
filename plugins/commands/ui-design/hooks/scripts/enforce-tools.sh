@@ -10,7 +10,8 @@ TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 TOOL_INPUT=$(echo "$INPUT" | jq -r '.tool_input // empty')
 
 # 查找最新的 ui-design run 目录
-RUN_DIR=$(find .claude/ui-design/runs -maxdepth 1 -type d -name "run-*" 2>/dev/null | sort -r | head -1 || echo "")
+# 格式: 20260116T162538Z (ISO 8601 日期时间格式)
+RUN_DIR=$(find .claude/ui-design/runs -maxdepth 1 -type d -name "[0-9]*T[0-9]*Z" 2>/dev/null | sort -r | head -1 || echo "")
 
 if [[ -z "$RUN_DIR" ]]; then
   # 不在 ui-design 工作流中，允许所有工具
@@ -21,15 +22,15 @@ fi
 # Phase 检测（基于文件存在性）
 # ============================================================
 
-# Phase 3 (requirement-analyzer): input.md 存在，但 requirement-analysis.md 不存在
+# Phase 3 (requirement-analyzer): input.md 存在，但 requirements.md 不存在
 IN_PHASE_3=false
-if [[ -f "${RUN_DIR}/input.md" ]] && [[ ! -f "${RUN_DIR}/requirement-analysis.md" ]]; then
+if [[ -f "${RUN_DIR}/input.md" ]] && [[ ! -f "${RUN_DIR}/requirements.md" ]]; then
   IN_PHASE_3=true
 fi
 
-# Phase 4 (style-recommender): requirement-analysis.md 存在，但 style-recommendations.md 不存在
+# Phase 4 (style-recommender): requirements.md 存在，但 style-recommendations.md 不存在
 IN_PHASE_4=false
-if [[ -f "${RUN_DIR}/requirement-analysis.md" ]] && [[ ! -f "${RUN_DIR}/style-recommendations.md" ]]; then
+if [[ -f "${RUN_DIR}/requirements.md" ]] && [[ ! -f "${RUN_DIR}/style-recommendations.md" ]]; then
   IN_PHASE_4=true
 fi
 
@@ -53,12 +54,12 @@ if [[ "$IN_PHASE_3" == "true" ]]; then
       fi
       ;;
     Write)
-      # 阻止直接写 requirement-analysis.md（必须先有 auggie 和 gemini 输出）
-      if echo "$TOOL_INPUT" | grep -q "requirement-analysis\.md"; then
+      # 阻止直接写 requirements.md（必须先有 gemini 输出）
+      if echo "$TOOL_INPUT" | grep -q "requirements\.md"; then
         if [[ ! -f "$GEMINI_REQ_OUTPUT" ]]; then
           jq -n '{
             "decision": "block",
-            "reason": "⛔ ui-design Phase 3 必须先执行 codeagent-wrapper gemini 分析需求！\n\n❌ 你正在尝试直接写 requirement-analysis.md\n✅ 请先执行: Bash(~/.claude/bin/codeagent-wrapper gemini --prompt \"...\")\n✅ 然后保存到: '"$GEMINI_REQ_OUTPUT"'\n✅ 最后才能写: requirement-analysis.md"
+            "reason": "⛔ ui-design Phase 3 必须先执行 codeagent-wrapper gemini 分析需求！\n\n❌ 你正在尝试直接写 requirements.md\n✅ 请先执行: Bash(~/.claude/bin/codeagent-wrapper gemini --role analyzer --prompt \"...\")\n✅ 然后保存到: '"$GEMINI_REQ_OUTPUT"'\n✅ 最后才能写: requirements.md"
           }'
           exit 0
         fi
