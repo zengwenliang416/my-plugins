@@ -10,9 +10,25 @@ allowed-tools:
 
 # /commit - 规范提交命令
 
-## 🚨 强制执行规则
+## 🚨🚨🚨 强制执行规则（不可跳过）
 
-**必须按照 Phase 顺序调用 Skill，禁止跳过任何阶段。**
+**你必须按顺序完成以下所有阶段，每个阶段完成后立即执行下一阶段：**
+
+```
+Phase 1: 初始化        → 创建 RUN_DIR
+Phase 2: 收集变更      → Skill("change-collector")
+Phase 3: 分析变更      → Skill("change-analyzer")  ← 必须使用 LSP + auggie-mcp
+Phase 4: 确认提交信息  → AskUserQuestion
+Phase 5: 生成消息      → Skill("message-generator")
+Phase 5.5: 更新 Changelog → Skill("changelog-generator")
+Phase 6: 执行提交      → Skill("commit-executor")
+Phase 7: 交付          → 输出摘要
+```
+
+**⚠️ 关键规则：**
+- 每个 Skill 完成后，**立即**执行下一个 Phase，不要停止
+- Phase 3 分析完成后才能进入 Phase 4 让用户确认
+- 用户只在 Phase 4 和 Phase 5 有机会确认/修改
 
 ---
 
@@ -48,11 +64,11 @@ Skill(skill="change-collector", args="run_dir=${RUN_DIR}")
 
 **验证**：确认 `${RUN_DIR}/changes-raw.json` 已生成
 
-**⚠️ 无论是否有暂存变更，都必须继续执行 Phase 3**
+**🚨 完成后立即执行 Phase 3，不要停止！**
 
 ---
 
-## Phase 3: 分析变更
+## Phase 3: 分析变更（LSP + auggie-mcp）
 
 ### 🚨 强制执行（使用 LSP + auggie-mcp）
 
@@ -76,6 +92,8 @@ Skill(skill="change-analyzer", args="run_dir=${RUN_DIR}")
 - 如果 `should_split=true`，使用 AskUserQuestion 询问用户是否拆分
 - 展示建议的拆分方案（基于 LSP 符号分析）
 
+**🚨 完成后立即执行 Phase 4，不要停止！**
+
 ---
 
 ## Phase 4: 确认提交信息
@@ -94,6 +112,8 @@ Skill(skill="change-analyzer", args="run_dir=${RUN_DIR}")
    - 使用建议的类型和作用域
    - 自定义类型/作用域
    - 取消提交
+
+**🚨 用户确认后立即执行 Phase 5，不要停止！**
 
 ---
 
@@ -114,6 +134,8 @@ Skill(skill="message-generator", args="run_dir=${RUN_DIR} options=${OPTIONS_JSON
 - 确认提交
 - 修改后提交
 - 取消
+
+**🚨 用户确认后立即执行 Phase 5.5，不要停止！**
 
 ---
 
@@ -136,6 +158,8 @@ Skill(skill="changelog-generator", args="run_dir=${RUN_DIR} version=${VERSION}")
 - 如果是 `test`、`ci`、`chore` 类型的提交，询问用户是否跳过 changelog
 - 这些类型通常不记录到 changelog
 
+**🚨 完成后立即执行 Phase 6，不要停止！**
+
 ---
 
 ## Phase 6: 执行提交
@@ -148,6 +172,8 @@ Skill(skill="commit-executor", args="run_dir=${RUN_DIR} options=${OPTIONS_JSON}"
 ```
 
 **验证**：确认 `${RUN_DIR}/commit-result.json` 已生成
+
+**🚨 完成后立即执行 Phase 7 交付！**
 
 ---
 
