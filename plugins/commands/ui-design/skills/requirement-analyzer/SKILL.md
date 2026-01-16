@@ -5,9 +5,12 @@ description: |
   【核心产出】输出 ${run_dir}/requirements.md，包含结构化需求分析
   【不触发】已有明确设计规格文档的场景
   【先问什么】缺少需求描述时，询问：产品类型、核心功能、目标用户、设计偏好
+  【🚨 强制】必须使用 gemini-cli 协助分析需求
+  【依赖】gemini-cli（参考 skills/gemini-cli/）
 allowed-tools:
   - Read
   - Write
+  - Bash
   - AskUserQuestion
   - mcp__auggie-mcp__codebase-retrieval
   - LSP
@@ -97,6 +100,44 @@ LSP(operation="findReferences", filePath="src/components/Button.tsx", line=10, c
 - [ ] 如果有组件，至少对 2 个组件执行了 `documentSymbol`
 - [ ] 如果有组件，至少执行了 1 次 `hover` 查看类型信息
 - [ ] 记录了组件的 Props 结构到 requirements.md
+
+### Step 2.5: 🚨 Gemini 需求分析（强制）
+
+**使用 gemini-cli 协助分析用户需求**：
+
+```bash
+gemini-cli chat --prompt "
+你是一位资深产品经理和 UI/UX 设计师。请分析以下设计需求：
+
+用户描述：${description}
+
+请提取并结构化以下信息：
+
+## 1. 产品定位
+- 产品类型：SaaS / 电商 / 社交 / 工具 / 内容平台 / 企业内部 / 营销网站？
+- 目标用户：企业客户 / 个人用户 / 开发者 / 创作者 / 普通消费者？
+- 核心价值主张：一句话描述产品解决什么问题
+
+## 2. 功能需求
+- 核心功能列表（按优先级排序）
+- 每个功能的简短描述
+- 预期的用户交互流程
+
+## 3. 设计方向建议
+- 推荐的设计风格：简约 / 专业 / 创意 / 科技感 / 高端？
+- 情感基调：信任 / 活力 / 专业 / 亲和？
+- 参考竞品或灵感来源（如果能推断）
+
+## 4. 技术考量
+- 推荐的技术栈
+- 响应式策略
+- 性能关注点
+
+请给出详细、可执行的分析结果。
+"
+```
+
+**记录 Gemini 分析结果**：保存到变量 `gemini_requirement_analysis`
 
 ### Step 3: 提取需求维度
 

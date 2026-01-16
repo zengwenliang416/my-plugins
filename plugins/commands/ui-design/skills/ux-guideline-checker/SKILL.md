@@ -5,9 +5,12 @@ description: |
   【核心产出】输出 ${run_dir}/ux-check-report.md
   【不触发】无设计方案文件
   【先问什么】variant_id 参数缺失时，询问检查哪个变体
+  【🚨 强制】必须使用 gemini-cli 进行 UX 准则专家分析
+  【依赖】gemini-cli（参考 skills/gemini-cli/）
 allowed-tools:
   - Read
   - Write
+  - Bash
   - mcp__auggie-mcp__codebase-retrieval
   - LSP
 arguments:
@@ -104,6 +107,58 @@ LSP(operation="documentSymbol", filePath="src/components/Form.tsx", line=1, char
 **跳过条件**（仅以下情况可跳过）：
 - 全新项目（from_scratch 场景），无现有代码
 - auggie-mcp 返回空结果
+
+### Step 2.5: 🚨 Gemini UX 专家分析（强制）
+
+**使用 gemini-cli 进行专业 UX 准则检查**：
+
+```bash
+gemini-cli chat --prompt "
+你是一位资深 UX 设计师和可访问性专家（WCAG 认证）。请对以下设计方案进行全面的 UX 准则检查：
+
+设计方案内容：
+${design_doc_content}
+
+请从以下 5 个维度进行专业评估：
+
+## 1. 可访问性检查 (Accessibility)
+- 对比度是否符合 WCAG AA 标准（文本 ≥4.5:1，大文本 ≥3:1）？
+- 所有颜色组合的具体对比度值
+- 交互元素是否可键盘访问？
+- 焦点状态是否明显可见？
+- 是否有 ARIA 属性建议？
+
+## 2. 可用性检查 (Usability)
+- 按钮/点击区域是否 ≥44x44px（移动端）？
+- 是否定义了加载状态、空状态、错误状态？
+- 表单验证是否清晰？
+- 用户反馈是否及时（Toast、Alert）？
+
+## 3. 一致性检查 (Consistency)
+- 间距是否符合 4px/8px 基数？
+- 颜色是否统一使用 Design Token？
+- 组件样式是否一致？
+- 命名是否规范？
+
+## 4. 性能检查 (Performance)
+- 动画时长是否合理（≤300ms）？
+- 是否使用 GPU 加速属性（transform/opacity）？
+- 字体加载策略是否合理？
+
+## 5. 响应式检查 (Responsive)
+- 是否定义了完整的断点（Mobile/Tablet/Desktop）？
+- 字号是否响应式缩放？
+- 布局是否有移动端适配？
+
+请为每个检查项给出：
+- 状态：✅ 通过 / ⚠️ 警告 / ❌ 失败
+- 严重级别：高 / 中 / 低
+- 具体问题描述
+- 修复建议（包含具体值）
+"
+```
+
+**记录 Gemini 分析结果**：保存到变量 `gemini_ux_analysis`
 
 ### Step 3: UX 准则检查
 

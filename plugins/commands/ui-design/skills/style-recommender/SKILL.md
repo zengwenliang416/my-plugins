@@ -5,6 +5,8 @@ description: |
   【核心产出】输出 ${run_dir}/style-recommendations.md，包含 2-3 套样式方案
   【不触发】用户已明确指定设计方案（如"就用 Glassmorphism"）
   【先问什么】requirements.md 不存在时，先调用 requirement-analyzer
+  【🚨 强制】必须使用 gemini-cli 生成创意配色和样式方案
+  【依赖】gemini-cli（参考 skills/gemini-cli/）
 allowed-tools:
   - Read
   - Write
@@ -58,6 +60,50 @@ Read: ${run_dir}/image-analysis.md  # 如果存在
 
 **容错处理**：
 - 如果 requirements.md 不存在 → 返回错误，提示先运行 `requirement-analyzer`
+
+### Step 1.5: 🚨 Gemini 创意方案生成（强制）
+
+**使用 gemini-cli 生成创意设计方案**：
+
+```bash
+gemini-cli chat --prompt "
+你是一位顶级 UI/UX 设计师。请根据以下需求生成 3 套差异化的设计方案：
+
+产品类型：${product_type}
+目标用户：${target_users}
+核心功能：${core_functions}
+设计偏好：${design_preference}
+
+请为每套方案提供：
+
+## 方案 A：稳妥专业型
+### 配色系统
+- 主色（Primary）: HEX 值 + 使用场景
+- 辅助色（Secondary）: HEX 值 + 使用场景
+- 强调色（Accent）: HEX 值 + 使用场景
+- 背景色系列: 3-4 个层级
+- 文字色系列: 主/次/辅助
+- 功能色: 成功/警告/错误/信息
+
+### 字体系统
+- 推荐字体家族
+- 字号层级（H1-H6, Body, Small）
+- 字重使用规范
+
+### 风格关键词
+- 3-5 个形容词
+
+## 方案 B：创意大胆型
+（同上结构，但更具创意和差异化）
+
+## 方案 C：混合平衡型
+（同上结构，在 A 和 B 之间找平衡）
+
+请确保所有颜色值使用 HEX 格式，字号使用 px。
+"
+```
+
+**记录 Gemini 方案**：保存到变量 `gemini_style_recommendations`
 - 如果 image-analysis.md 不存在 → 正常继续，使用预定义方案
 - 如果必填字段缺失 → 使用默认值继续
 
