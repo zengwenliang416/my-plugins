@@ -20,6 +20,22 @@ arguments:
 
 # Message Generator - 提交信息生成原子技能
 
+## 🚨🚨🚨 强制执行规则（不可跳过）
+
+**禁止以下行为：**
+- ❌ 不使用 emoji
+- ❌ 使用英文描述
+- ❌ 自行决定格式
+- ❌ 跳过 emoji 映射表
+
+**必须遵守：**
+- ✅ 格式必须是：`type(scope): emoji 简短描述`
+- ✅ emoji 必须来自下方映射表
+- ✅ 描述必须使用中文
+- ✅ 示例：`feat(components): ✨ 新增 Button 组件`
+
+---
+
 ## 职责边界
 
 - **输入**: `run_dir`（包含 `changes-analysis.json`）+ `options`
@@ -192,3 +208,16 @@ Emoji: ${emoji}
 - 不执行提交（交给 commit-executor）
 - 标题长度必须 ≤ 72 字符
 - 遵循 Conventional Commits 规范
+- **🚨 格式必须是 `type(scope): emoji 中文描述`**
+- **🚨 必须使用 emoji（从映射表选取）**
+- **🚨 描述必须使用中文**
+
+## 验证检查点
+
+生成提交信息后，自检以下内容：
+
+- [ ] 标题包含 emoji（✨🐛📝💄♻️⚡✅📦👷🔧⏪ 之一）
+- [ ] 描述是中文
+- [ ] 格式符合 `type(scope): emoji 中文描述`
+
+**如果不符合，必须重新生成！**
