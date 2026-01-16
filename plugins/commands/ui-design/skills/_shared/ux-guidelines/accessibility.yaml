@@ -1,0 +1,335 @@
+category: 可访问性 (Accessibility)
+total_count: 20
+description: 确保所有用户（包括残障人士）都能使用产品
+priority: 高
+guidelines:
+  - id: UI-A-001
+    title: 对比度符合 WCAG AA 标准
+    description: 正文对比度 ≥ 4.5:1, 大文本（18px+）对比度 ≥ 3:1
+    priority: 高
+    check_method: 使用对比度检查工具（如 Contrast Checker）
+    example: |
+      ✅ 白底黑字 (#000 on #fff): 21:1
+      ✅ 白底深灰字 (#333 on #fff): 12.6:1
+      ❌ 浅灰底灰字 (#666 on #eee): 2.8:1（不符合）
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html"
+
+  - id: UI-A-002
+    title: 所有交互元素可键盘访问
+    description: 按钮、链接、表单元素必须支持 Tab 键导航，确保无鼠标也能操作
+    priority: 高
+    check_method: 仅用键盘测试所有功能（Tab、Enter、Space、方向键）
+    example: |
+      ✅ <button>: 默认可聚焦
+      ✅ <a href>: 默认可聚焦
+      ❌ <div onclick>: 不可聚焦，需添加 tabindex="0"
+    code_example: |
+      <!-- 正确 -->
+      <button onClick={handleClick}>Submit</button>
+
+      <!-- 错误：div 不可键盘访问 -->
+      <div onClick={handleClick}>Submit</div>
+
+      <!-- 修正：添加 tabindex 和键盘事件 -->
+      <div
+        tabIndex={0}
+        role="button"
+        onClick={handleClick}
+        onKeyDown={(e) => e.key === 'Enter' && handleClick()}
+      >Submit</div>
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html"
+
+  - id: UI-A-003
+    title: 为非文本内容提供替代文本
+    description: 所有图片、图标、图表必须有 alt 文本或 aria-label
+    priority: 高
+    check_method: 检查所有 <img> 是否有 alt，装饰性图片使用 alt=""
+    example: |
+      ✅ <img src="logo.png" alt="Acme 公司 Logo">
+      ✅ <img src="decorative.svg" alt="" /> (装饰性图片)
+      ❌ <img src="chart.png"> (缺少 alt)
+    code_example: |
+      <!-- 信息性图片 -->
+      <img src="chart.png" alt="2024年销售增长趋势图，Q1-Q4分别为120%、135%、150%、180%" />
+
+      <!-- 装饰性图片 -->
+      <img src="pattern.svg" alt="" aria-hidden="true" />
+
+      <!-- 图标按钮 -->
+      <button aria-label="关闭对话框">
+        <CloseIcon aria-hidden="true" />
+      </button>
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html"
+
+  - id: UI-A-004
+    title: 表单控件有清晰的标签
+    description: 每个输入框、选择器、复选框必须有关联的 <label>
+    priority: 高
+    check_method: 检查所有表单控件是否有 label，点击 label 应聚焦控件
+    example: |
+      ✅ <label htmlFor="email">邮箱</label><input id="email" />
+      ❌ <span>邮箱</span><input /> (span 不是 label)
+    code_example: |
+      <!-- 正确：使用 htmlFor 关联 -->
+      <label htmlFor="email">邮箱地址</label>
+      <input id="email" type="email" required />
+
+      <!-- 正确：包裹式 label -->
+      <label>
+        邮箱地址
+        <input type="email" required />
+      </label>
+
+      <!-- 错误：无 label -->
+      <input type="email" placeholder="邮箱地址" /> ❌
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/labels-or-instructions.html"
+
+  - id: UI-A-005
+    title: 不仅依赖颜色传达信息
+    description: 错误、成功、警告等状态除了颜色，还需要图标、文字说明
+    priority: 中
+    check_method: 模拟色盲模式查看，信息是否仍能理解
+    example: |
+      ✅ 错误提示：红色背景 + ❌ 图标 + "邮箱格式错误"
+      ❌ 错误提示：仅红色边框（色盲用户无法识别）
+    code_example: |
+      <!-- 正确：颜色+图标+文字 -->
+      <div className="text-red-600 flex items-center gap-2">
+        <ErrorIcon aria-hidden="true" />
+        <span>邮箱格式错误，请检查后重试</span>
+      </div>
+
+      <!-- 错误：仅颜色 -->
+      <input className="border-red-500" /> ❌
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/use-of-color.html"
+
+  - id: UI-A-006
+    title: 焦点指示器清晰可见
+    description: 键盘聚焦时，元素必须有明显的视觉指示器（outline/border/shadow）
+    priority: 高
+    check_method: Tab 导航时观察焦点是否清晰可见
+    example: |
+      ✅ 默认蓝色 outline
+      ✅ 自定义 2px 实线边框
+      ❌ outline: none 且无替代样式
+    code_example: |
+      /* 正确：自定义焦点样式 */
+      button:focus-visible {
+        outline: 2px solid #0070f3;
+        outline-offset: 2px;
+      }
+
+      /* 错误：移除焦点样式 */
+      button:focus { outline: none; } ❌
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/focus-visible.html"
+
+  - id: UI-A-007
+    title: 提供跳过重复内容的机制
+    description: 提供"跳到主内容"链接，让键盘用户快速跳过导航
+    priority: 中
+    check_method: Tab 键检查页面首个可聚焦元素是否为跳过链接
+    code_example: |
+      <a href="#main-content" className="skip-link">
+        跳到主内容
+      </a>
+      <nav>...</nav>
+      <main id="main-content">...</main>
+
+      /* CSS */
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 0;
+      }
+      .skip-link:focus {
+        top: 0;
+      }
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/bypass-blocks.html"
+
+  - id: UI-A-008
+    title: 页面标题描述页面内容
+    description: <title> 标签准确描述当前页面，便于屏幕阅读器用户识别
+    priority: 中
+    check_method: 检查 <title> 是否唯一且描述性
+    example: |
+      ✅ "用户设置 - Acme Dashboard"
+      ❌ "页面" 或 "Untitled"
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/page-titled.html"
+
+  - id: UI-A-009
+    title: 标题层级按顺序嵌套
+    description: 标题从 h1 开始，不跳级（h1 → h2 → h3），便于屏幕阅读器导航
+    priority: 中
+    check_method: 使用 headingsMap 工具检查标题层级
+    example: |
+      ✅ h1 → h2 → h3 → h2
+      ❌ h1 → h3（跳过 h2）
+    code_example: |
+      <!-- 正确 -->
+      <h1>页面标题</h1>
+      <h2>章节 1</h2>
+      <h3>小节 1.1</h3>
+      <h2>章节 2</h2>
+
+      <!-- 错误 -->
+      <h1>页面标题</h1>
+      <h3>章节 1</h3> ❌
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/headings-and-labels.html"
+
+  - id: UI-A-010
+    title: 链接文本描述目标
+    description: 链接文本应描述目标内容，避免"点击这里"等模糊文字
+    priority: 中
+    check_method: 检查所有链接脱离上下文是否有意义
+    example: |
+      ✅ "查看完整文档"
+      ❌ "点击这里" 或 "更多"
+    code_example: |
+      <!-- 正确 -->
+      <a href="/docs">查看完整文档</a>
+
+      <!-- 错误 -->
+      <a href="/docs">点击这里</a> ❌
+
+      <!-- 补救：使用 aria-label -->
+      <a href="/docs" aria-label="查看产品文档">
+        更多 →
+      </a>
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/link-purpose-in-context.html"
+
+  - id: UI-A-011
+    title: 为复杂操作提供撤销机制
+    description: 删除、提交等重要操作应有确认或撤销功能
+    priority: 中
+    check_method: 测试所有危险操作是否有二次确认
+    example: |
+      ✅ 删除前弹出确认对话框
+      ✅ 删除后提供"撤销"按钮（3秒内）
+      ❌ 点击即删除，无确认
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/error-prevention-legal-financial-data.html"
+
+  - id: UI-A-012
+    title: 表单错误提示清晰具体
+    description: 错误提示指出具体问题和解决方法，而非泛泛而谈
+    priority: 高
+    check_method: 触发表单错误，检查提示是否具体
+    example: |
+      ✅ "邮箱格式错误，示例：user@example.com"
+      ❌ "输入无效"
+    code_example: |
+      <!-- 正确 -->
+      {error && (
+        <div role="alert" className="text-red-600">
+          <ErrorIcon />
+          邮箱格式错误，示例：user@example.com
+        </div>
+      )}
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/error-identification.html"
+
+  - id: UI-A-013
+    title: 动态内容变化通知屏幕阅读器
+    description: 使用 ARIA live regions 通知动态更新（如加载状态、成功提示）
+    priority: 中
+    check_method: 使用屏幕阅读器测试动态更新是否被朗读
+    code_example: |
+      <!-- 礼貌通知（不打断） -->
+      <div role="status" aria-live="polite">
+        数据加载中...
+      </div>
+
+      <!-- 紧急通知（立即打断） -->
+      <div role="alert" aria-live="assertive">
+        操作失败，请重试
+      </div>
+    reference: "https://www.w3.org/WAI/ARIA/apg/practices/live-regions/"
+
+  - id: UI-A-014
+    title: 最小触摸目标尺寸
+    description: 触摸目标至少 44x44 px（iOS）或 48x48 px（Android）
+    priority: 中
+    check_method: 使用浏览器开发工具测量按钮尺寸
+    example: |
+      ✅ 按钮 48x48 px
+      ✅ 图标按钮 44x44 px（加 padding）
+      ❌ 纯图标 24x24 px
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/target-size.html"
+
+  - id: UI-A-015
+    title: 不依赖音频或视频传达关键信息
+    description: 视频提供字幕，音频提供文字稿
+    priority: 高
+    check_method: 静音播放视频，检查是否理解内容
+    example: |
+      ✅ 视频有字幕或文字稿
+      ✅ 音频有完整文字记录
+      ❌ 纯音频说明，无文字
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/captions-prerecorded.html"
+
+  - id: UI-A-016
+    title: 语言属性正确标注
+    description: 设置 lang 属性，帮助屏幕阅读器选择正确发音
+    priority: 低
+    check_method: 检查 <html lang="zh-CN"> 是否正确
+    code_example: |
+      <html lang="zh-CN">
+        <head>...</head>
+        <body>
+          <p>中文段落</p>
+          <p lang="en">English paragraph</p>
+        </body>
+      </html>
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/language-of-page.html"
+
+  - id: UI-A-017
+    title: 避免自动播放音视频
+    description: 音视频默认静音或暂停，由用户主动播放
+    priority: 中
+    check_method: 打开页面，检查是否自动播放
+    example: |
+      ✅ 用户点击播放按钮
+      ✅ 自动播放但静音 + 显示取消静音按钮
+      ❌ 页面加载即大声播放
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/audio-control.html"
+
+  - id: UI-A-018
+    title: 表格有表头和标题
+    description: 数据表格使用 <th> 标注表头，复杂表格使用 scope
+    priority: 中
+    check_method: 使用屏幕阅读器浏览表格
+    code_example: |
+      <table>
+        <caption>2024年销售数据</caption>
+        <thead>
+          <tr>
+            <th scope="col">月份</th>
+            <th scope="col">销售额</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">1月</th>
+            <td>¥120,000</td>
+          </tr>
+        </tbody>
+      </table>
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html"
+
+  - id: UI-A-019
+    title: 时间限制可调整
+    description: 会话超时前提供警告和延长选项
+    priority: 中
+    check_method: 测试超时场景，是否有提示
+    example: |
+      ✅ 倒计时 2 分钟提示："即将超时，是否继续？"
+      ❌ 静默超时，直接跳转登录页
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/timing-adjustable.html"
+
+  - id: UI-A-020
+    title: 避免闪烁内容引发癫痫
+    description: 避免内容每秒闪烁超过 3 次，或提供警告
+    priority: 高
+    check_method: 检查动画频率，避免红色快速闪烁
+    example: |
+      ✅ 柔和的渐变动画
+      ❌ 红蓝快速闪烁（每秒 5 次）
+    reference: "https://www.w3.org/WAI/WCAG21/Understanding/three-flashes-or-below-threshold.html"

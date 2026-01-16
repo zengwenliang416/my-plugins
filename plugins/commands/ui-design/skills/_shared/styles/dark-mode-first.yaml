@@ -1,0 +1,25 @@
+name: Dark Mode First
+keywords: [dark, night, modern, tech, 暗色, 夜间, 科技感]
+适用场景: [开发工具, SaaS产品, Dashboard, 创作者工具]
+参考案例: [GitHub Dark, VS Code, Discord, Figma]
+description: 暗色模式优先设计，低亮度背景、高对比度文字、柔和配色
+css:
+  light: |
+    background: #F5F5F5;
+    border: 1px solid #E0E0E0;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  dark: |
+    background: #1C1C1E;
+    border: 1px solid #2C2C2E;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+tips:
+  - 背景色使用深灰而非纯黑（#1C1C1E）
+  - 文字使用略灰的白色（#E5E5E7）
+  - 强调色使用柔和的亮色（蓝、紫、绿）
+  - 避免纯白文字（眼睛疲劳）
+  - 阴影使用黑色半透明
+  - 边框使用微妙的灰色
+tailwind_example: |
+  className="bg-gray-900 text-gray-100 border border-gray-800 rounded-lg shadow-lg"

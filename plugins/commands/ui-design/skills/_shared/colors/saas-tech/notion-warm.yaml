@@ -1,0 +1,29 @@
+name: Notion Warm
+industry: SaaS
+keywords: [warm, friendly, productive, modern, 温暖, 友好]
+palette:
+  primary: "#eb5757"
+  secondary: "#f2994a"
+  accent: "#f2c94c"
+  background: "#ffffff"
+  surface: "#fafafa"
+  text: "#37352f"
+  text-secondary: "#787774"
+  border: "#e9e9e7"
+  success: "#6fcf97"
+  error: "#eb5757"
+  warning: "#f2c94c"
+  info: "#2f80ed"
+gradients:
+  - "linear-gradient(135deg, #eb5757 0%, #f2994a 100%)"
+  - "linear-gradient(135deg, #f2994a 0%, #f2c94c 100%)"
+use_cases:
+  - 知识管理工具
+  - 协作平台
+  - 笔记应用
+  - 生产力工具
+参考: https://notion.so
+tips:
+  - 温暖的橙红色系营造友好氛围
+  - 适合长时间使用的应用
+  - 柔和的对比度减少视觉疲劳

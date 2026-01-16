@@ -1,0 +1,276 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Java & Spring 技术栈升级映射",
+  "version": "1.0.0",
+  "last_updated": "2025-01-13",
+  "mappings": [
+    {
+      "from": {
+        "language": "Java",
+        "version": "8",
+        "eol_date": "2030-12-31",
+        "status": "extended_support"
+      },
+      "to": {
+        "language": "Java",
+        "version": "17",
+        "release_date": "2021-09-14",
+        "lts": true,
+        "eol_date": "2029-09-30"
+      },
+      "strategy": "recommended",
+      "effort": "medium",
+      "duration_weeks": 4,
+      "breaking_changes": [
+        {
+          "category": "JEP 396",
+          "description": "默认强封装 JDK 内部 API",
+          "impact": "high",
+          "solution": "替换 sun.* 包使用，添加 --add-opens 参数（临时）",
+          "code_example": {
+            "before": "import sun.misc.BASE64Encoder;\nString encoded = new BASE64Encoder().encode(bytes);",
+            "after": "import java.util.Base64;\nString encoded = Base64.getEncoder().encodeToString(bytes);"
+          }
+        },
+        {
+          "category": "删除工具",
+          "description": "移除 Java EE 模块（JAXB, JAX-WS）",
+          "impact": "high",
+          "solution": "添加 jakarta.xml.bind 依赖",
+          "maven_dependency": "<dependency>\n  <groupId>jakarta.xml.bind</groupId>\n  <artifactId>jakarta.xml.bind-api</artifactId>\n  <version>4.0.0</version>\n</dependency>"
+        },
+        {
+          "category": "语言特性",
+          "description": "var 关键字（局部变量类型推断）",
+          "impact": "low",
+          "solution": "可选使用，提升代码可读性",
+          "code_example": {
+            "before": "Map<String, List<User>> usersByRole = new HashMap<>();",
+            "after": "var usersByRole = new HashMap<String, List<User>>();"
+          }
+        }
+      ],
+      "performance_gains": {
+        "startup_time": "-20%",
+        "memory_footprint": "-10%",
+        "throughput": "+15%"
+      },
+      "testing_checklist": [
+        "运行完整单元测试套件",
+        "性能基准测试（JMH）",
+        "内存泄漏检测（VisualVM）",
+        "兼容性验证（各操作系统）"
+      ]
+    },
+    {
+      "from": {
+        "framework": "Spring Framework",
+        "version": "4.3",
+        "eol_date": "2020-12-31",
+        "status": "end_of_life"
+      },
+      "to": {
+        "framework": "Spring Boot",
+        "version": "3.2",
+        "release_date": "2023-11-23",
+        "min_java_version": "17"
+      },
+      "strategy": "required",
+      "effort": "high",
+      "duration_weeks": 12,
+      "breaking_changes": [
+        {
+          "category": "包名变更",
+          "description": "javax.* → jakarta.*",
+          "impact": "critical",
+          "solution": "全局替换包名或使用 OpenRewrite",
+          "automation": {
+            "tool": "OpenRewrite",
+            "recipe": "org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta",
+            "maven_plugin": "<plugin>\n  <groupId>org.openrewrite.maven</groupId>\n  <artifactId>rewrite-maven-plugin</artifactId>\n  <version>5.20.0</version>\n  <configuration>\n    <activeRecipes>\n      <recipe>org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta</recipe>\n    </activeRecipes>\n  </configuration>\n</plugin>"
+          }
+        },
+        {
+          "category": "配置变更",
+          "description": "application.properties 配置属性重命名",
+          "impact": "medium",
+          "examples": [
+            {
+              "before": "spring.datasource.platform=h2",
+              "after": "spring.sql.init.platform=h2"
+            },
+            {
+              "before": "spring.jpa.hibernate.use-new-id-generator-mappings=false",
+              "after": "已移除，默认使用新生成器"
+            }
+          ]
+        },
+        {
+          "category": "安全配置",
+          "description": "Spring Security 6.0 新配置方式",
+          "impact": "high",
+          "code_example": {
+            "before": "@EnableWebSecurity\npublic class SecurityConfig extends WebSecurityConfigurerAdapter {\n  @Override\n  protected void configure(HttpSecurity http) throws Exception {\n    http.authorizeRequests()\n      .antMatchers(\"/api/**\").authenticated();\n  }\n}",
+            "after": "@Configuration\n@EnableWebSecurity\npublic class SecurityConfig {\n  @Bean\n  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n    return http\n      .authorizeHttpRequests(auth -> auth\n        .requestMatchers(\"/api/**\").authenticated())\n      .build();\n  }\n}"
+          }
+        }
+      ],
+      "migration_path": [
+        {
+          "step": 1,
+          "description": "升级到 Spring Boot 2.7（过渡版本）",
+          "duration_days": 7,
+          "validation": "运行集成测试"
+        },
+        {
+          "step": 2,
+          "description": "升级 Java 版本到 17",
+          "duration_days": 3,
+          "validation": "性能基准测试"
+        },
+        {
+          "step": 3,
+          "description": "执行 OpenRewrite javax → jakarta 迁移",
+          "duration_days": 2,
+          "validation": "编译通过"
+        },
+        {
+          "step": 4,
+          "description": "升级到 Spring Boot 3.2",
+          "duration_days": 10,
+          "validation": "端到端测试 + 灰度发布"
+        }
+      ],
+      "dependencies_update": {
+        "hibernate": {
+          "from": "5.6.x",
+          "to": "6.4.x",
+          "note": "Hibernate 6 与 Jakarta EE 10 兼容"
+        },
+        "jackson": {
+          "from": "2.13.x",
+          "to": "2.16.x",
+          "note": "更新到支持 Java 17 的版本"
+        }
+      }
+    },
+    {
+      "from": {
+        "framework": "Spring Boot",
+        "version": "2.7",
+        "eol_date": "2025-08-24",
+        "status": "maintenance"
+      },
+      "to": {
+        "framework": "Spring Boot",
+        "version": "3.2",
+        "release_date": "2023-11-23"
+      },
+      "strategy": "recommended",
+      "effort": "medium",
+      "duration_weeks": 6,
+      "breaking_changes": [
+        {
+          "category": "JPA",
+          "description": "Hibernate 6 查询行为变更",
+          "impact": "medium",
+          "solution": "审查 JPQL 查询，尤其是隐式 JOIN",
+          "code_example": {
+            "before": "@Query(\"SELECT u FROM User u WHERE u.role.name = :roleName\")",
+            "after": "@Query(\"SELECT u FROM User u JOIN u.role r WHERE r.name = :roleName\")",
+            "reason": "Hibernate 6 不再支持隐式 JOIN"
+          }
+        },
+        {
+          "category": "Actuator",
+          "description": "健康检查端点默认不显示详情",
+          "impact": "low",
+          "solution": "配置 management.endpoint.health.show-details=always"
+        }
+      ]
+    },
+    {
+      "from": {
+        "build_tool": "Maven",
+        "version": "3.6.x"
+      },
+      "to": {
+        "build_tool": "Maven",
+        "version": "3.9.x",
+        "min_java_version": "8"
+      },
+      "strategy": "optional",
+      "effort": "low",
+      "duration_weeks": 1,
+      "improvements": ["更快的依赖解析", "支持 HTTP/2", "改进的并行构建"]
+    },
+    {
+      "from": {
+        "build_tool": "Maven"
+      },
+      "to": {
+        "build_tool": "Gradle",
+        "version": "8.5",
+        "kotlin_dsl": true
+      },
+      "strategy": "optional",
+      "effort": "high",
+      "duration_weeks": 8,
+      "advantages": [
+        "增量构建（速度提升 40%）",
+        "更灵活的依赖管理",
+        "Kotlin DSL 类型安全",
+        "更好的多模块支持"
+      ],
+      "migration_tool": {
+        "name": "Gradle Migration Plugin",
+        "url": "https://github.com/gradle/gradle-migration-tool",
+        "command": "gradle init --type pom"
+      }
+    }
+  ],
+  "common_pitfalls": [
+    {
+      "issue": "依赖冲突",
+      "description": "Spring Boot 3 与老版本第三方库不兼容",
+      "solution": "使用 mvn dependency:tree 检查冲突，更新或排除问题依赖",
+      "prevention": "提前检查依赖兼容性（Spring Initializr）"
+    },
+    {
+      "issue": "测试失败",
+      "description": "Mockito 版本过低不支持 Java 17",
+      "solution": "升级 Mockito 到 5.x",
+      "maven_dependency": "<dependency>\n  <groupId>org.mockito</groupId>\n  <artifactId>mockito-core</artifactId>\n  <version>5.8.0</version>\n  <scope>test</scope>\n</dependency>"
+    }
+  ],
+  "tools": [
+    {
+      "name": "OpenRewrite",
+      "purpose": "自动化代码迁移",
+      "url": "https://docs.openrewrite.org/",
+      "use_case": "javax → jakarta 包名替换"
+    },
+    {
+      "name": "Spring Boot Migrator",
+      "purpose": "辅助升级 Spring Boot 应用",
+      "url": "https://github.com/spring-projects-experimental/spring-boot-migrator",
+      "use_case": "分析兼容性问题，生成迁移建议"
+    },
+    {
+      "name": "JDeps",
+      "purpose": "分析 JDK 内部 API 依赖",
+      "command": "jdeps --jdk-internals -R --multi-release 17 myapp.jar",
+      "use_case": "检测 sun.* 等非公开 API 使用"
+    }
+  ],
+  "references": [
+    {
+      "title": "Spring Boot 3.0 Migration Guide",
+      "url": "https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.0-Migration-Guide"
+    },
+    {
+      "title": "Java 17 Release Notes",
+      "url": "https://www.oracle.com/java/technologies/javase/17-relnote-issues.html"
+    }
+  ]
+}

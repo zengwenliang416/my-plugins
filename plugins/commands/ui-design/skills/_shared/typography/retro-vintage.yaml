@@ -1,0 +1,39 @@
+name: Retro Vintage
+keywords: [retro, vintage, nostalgic, classic, 复古, 怀旧, 经典]
+适用场景: [音乐网站, 时尚品牌, 文化产品, 创意工作室]
+pairing:
+  display: "Bebas Neue"
+  body: "Roboto"
+  code: null
+fonts:
+  display:
+    family: "Bebas Neue"
+    weights: [400]
+    type: "sans-serif"
+    google_fonts: "https://fonts.google.com/specimen/Bebas+Neue"
+    characteristics:
+      - 紧缩型字体
+      - 复古标题感
+      - 大写字母为主
+  body:
+    family: "Roboto"
+    weights: [300, 400, 500]
+    type: "sans-serif"
+    google_fonts: "https://fonts.google.com/specimen/Roboto"
+    characteristics:
+      - 现代易读
+      - 中性平衡
+      - 适合长文本
+scale:
+  h1: "64px / 1.1 / 400"
+  h2: "48px / 1.2 / 400"
+  h3: "36px / 1.3 / 400"
+  h4: "28px / 1.4 / 400"
+  body: "17px / 1.6 / 400"
+  small: "15px / 1.5 / 300"
+tips:
+  - 紧缩型标题营造复古感
+  - 大写字母增强视觉冲击
+  - 现代正文字体保持可读性
+  - 适合音乐、时尚、文化产品
+  - 注意标题不宜过长
