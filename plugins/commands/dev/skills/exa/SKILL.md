@@ -18,9 +18,18 @@ AI-native search engine for finding documentation, code examples, and web conten
 ## Quick Start
 
 ```bash
-npx tsx ~/.claude/skills/exa/scripts/exa_exec.ts \
-  search "React 19 useActionState hook examples" \
-  --content --limit 5
+# 使用插件相对路径
+EXA_SCRIPT="${CLAUDE_PLUGIN_ROOT}/skills/exa/scripts/exa_exec.ts"
+npx tsx "$EXA_SCRIPT" search "React 19 useActionState hook examples" --content --limit 5
+```
+
+## 执行方式
+
+当被其他 Skill 通过 `Skill("exa", "search ...")` 调用时，执行：
+
+```bash
+EXA_SCRIPT="${CLAUDE_PLUGIN_ROOT}/skills/exa/scripts/exa_exec.ts"
+npx tsx "$EXA_SCRIPT" $ARGS
 ```
 
 ## When to Use
