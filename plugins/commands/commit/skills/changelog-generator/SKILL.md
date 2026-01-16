@@ -1,9 +1,10 @@
 ---
 name: changelog-generator
 description: |
-  【触发条件】commit 工作流可选步骤：生成/更新 CHANGELOG.md 条目。
+  【触发条件】commit 工作流 Phase 5.5：必须执行，更新 CHANGELOG.md。
   【核心产出】更新项目根目录的 CHANGELOG.md，添加新的变更条目。
   【不触发】生成提交消息（用 message-generator）、执行提交（用 commit-executor）。
+  【🚨 强制】除非用户指定 --no-changelog，否则必须执行此 Skill。
 allowed-tools:
   - Read
   - Write
@@ -24,6 +25,24 @@ arguments:
 ---
 
 # Changelog Generator - 变更日志生成原子技能
+
+## 🚨🚨🚨 强制执行规则（不可跳过）
+
+**此 Skill 是 commit 工作流的必须步骤（Phase 5.5）**
+
+**禁止以下行为：**
+- ❌ 跳过此 Skill（除非用户指定 --no-changelog）
+- ❌ 不创建 CHANGELOG.md（如果不存在）
+- ❌ 不更新 CHANGELOG.md（如果已存在）
+- ❌ 忘记写入 changelog-entry.md 记录
+
+**必须遵守：**
+- ✅ 读取 changes-analysis.json 和 commit-message.md
+- ✅ 如果 CHANGELOG.md 不存在，创建它
+- ✅ 将变更条目添加到 [Unreleased] 部分
+- ✅ 写入 ${run_dir}/changelog-entry.md
+
+---
 
 ## 职责边界
 
@@ -270,3 +289,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 日期格式：YYYY-MM-DD (ISO 8601)
 - 使用祈使语气描述变更
 - test/ci/chore 类型通常不记录到 changelog
+- **🚨 必须执行此 Skill（除非 --no-changelog）**
+- **🚨 必须创建/更新 CHANGELOG.md**
+
+## 验证检查点
+
+执行完成后，自检以下内容：
+
+- [ ] CHANGELOG.md 存在于项目根目录
+- [ ] [Unreleased] 部分包含新条目
+- [ ] ${run_dir}/changelog-entry.md 已写入
+
+**如果任一检查失败，必须重新执行！**
