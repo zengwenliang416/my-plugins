@@ -152,11 +152,15 @@ Skill(skill="changelog-generator", args="run_dir=${RUN_DIR} version=${VERSION}")
 
 其中 `VERSION` 为用户指定的版本号（如有），否则添加到 `[Unreleased]` 部分。
 
+**⚠️ 重要**：
+- 如果 CHANGELOG.md 不存在，skill 会自动创建
+- 不要因为文件不存在就跳过这个阶段
+
 **验证**：确认 `${run_dir}/changelog-entry.md` 已生成
 
-**注意**：
-- 如果是 `test`、`ci`、`chore` 类型的提交，询问用户是否跳过 changelog
-- 这些类型通常不记录到 changelog
+**跳过条件**（仅以下情况可跳过）：
+- 用户指定了 `--no-changelog`
+- `test`、`ci`、`chore` 类型提交 **且** 用户确认跳过
 
 **🚨 完成后立即执行 Phase 6，不要停止！**
 
