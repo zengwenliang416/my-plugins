@@ -15,7 +15,7 @@ arguments:
   - name: options
     type: string
     required: false
-    description: 用户选项 JSON（如 '{"emoji": true, "type": "feat", "scope": "api"}'）
+    description: 用户选项 JSON（如 '{"type": "feat", "scope": "api"}'）
 ---
 
 # Message Generator - 提交信息生成原子技能
@@ -44,50 +44,37 @@ arguments:
 
 | 选项 | 说明 | 默认值 |
 |------|------|--------|
-| `emoji` | 是否使用 emoji | true |
 | `type` | 强制指定类型 | 来自分析 |
 | `scope` | 强制指定作用域 | 来自分析 |
 | `breaking` | 是否为 Breaking Change | false |
 | `issue` | 关联的 issue 编号 | - |
 
-### Step 3: 选择 Emoji
+### Step 3: 生成标题
 
-| 类型 | Emoji |
-|------|-------|
-| feat | ✨ |
-| fix | 🐛 |
-| docs | 📝 |
-| style | 💄 |
-| refactor | ♻️ |
-| perf | ⚡ |
-| test | ✅ |
-| build | 📦 |
-| ci | 👷 |
-| chore | 🔧 |
-| revert | ⏪ |
-
-### Step 4: 生成标题
-
-**格式**：`type(scope): emoji 简短描述`
+**格式**：`type(scope): 简短描述`
 
 **规则**：
 - 总长度 ≤ 72 字符
-- 使用祈使语气（Add, Fix, Update...）
+- 使用祈使语气（add, fix, update...）
+- 首字母小写
 - 不以句号结尾
+- 不使用 emoji
 
 **示例**：
 ```
-feat(components): ✨ 新增 Button 组件
-fix(api): 🐛 修复用户认证失败问题
-docs(readme): 📝 更新安装说明
+feat(components): add Button component
+fix(api): fix user authentication failure
+docs(readme): update installation guide
+style(app): apply dark theme layout
+chore(tailwind): add dark theme config
 ```
 
 **Breaking Change 标题**：
 ```
-feat(api)!: ✨ 修改响应数据格式
+feat(api)!: change response data format
 ```
 
-### Step 5: 生成正文
+### Step 4: 生成正文
 
 **内容**：
 1. 简要说明变更目的
@@ -96,22 +83,22 @@ feat(api)!: ✨ 修改响应数据格式
 
 **示例**：
 ```markdown
-新增可复用的 Button 组件，支持多种样式和尺寸。
+add reusable Button component with multiple styles and sizes
 
-变更文件:
-- src/components/Button.tsx: 组件实现
-- src/components/Button.test.tsx: 单元测试
+Changes:
+- src/components/Button.tsx: component implementation
+- src/components/Button.test.tsx: unit tests
 
-统计: 2 个文件，+80/-0 行
+Stats: 2 files, +80/-0 lines
 ```
 
-### Step 6: 生成 Footer
+### Step 5: 生成 Footer
 
 **包含**：
 - `Closes #123`（如有关联 issue）
 - `BREAKING CHANGE: 描述`（如有）
 
-### Step 7: 写入结果
+### Step 6: 写入结果
 
 使用 Write 工具将结果写入 `${run_dir}/commit-message.md`：
 
@@ -120,17 +107,17 @@ feat(api)!: ✨ 修改响应数据格式
 
 ## 标题
 
-feat(components): ✨ 新增 Button 组件
+feat(components): add Button component
 
 ## 正文
 
-新增可复用的 Button 组件，支持多种样式和尺寸。
+add reusable Button component with multiple styles and sizes
 
-变更文件:
-- src/components/Button.tsx: 组件实现
-- src/components/Button.test.tsx: 单元测试
+Changes:
+- src/components/Button.tsx: component implementation
+- src/components/Button.test.tsx: unit tests
 
-统计: 2 个文件，+80/-0 行
+Stats: 2 files, +80/-0 lines
 
 ## Footer
 
@@ -174,12 +161,11 @@ Closes #123
 执行完成后，返回：
 
 ```
-📝 提交信息生成完成
+提交信息生成完成
 
 标题: ${title}
 类型: ${type}
 作用域: ${scope}
-Emoji: ${emoji}
 
 输出: ${run_dir}/commit-message.md
 ```
