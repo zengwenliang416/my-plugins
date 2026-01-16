@@ -1,6 +1,6 @@
 ---
 description: "规范提交工作流：收集变更 → 分析 → 生成消息 → 执行提交"
-argument-hint: "[--no-verify] [--amend] [--scope <scope>] [--type <type>]"
+argument-hint: "[--no-verify] [--amend] [--scope <scope>] [--type <type>] [--no-changelog] [--version <version>]"
 allowed-tools:
   - Skill
   - AskUserQuestion
@@ -23,6 +23,8 @@ allowed-tools:
    - `--amend`: 修改上次提交
    - `--scope <name>`: 指定作用域
    - `--type <type>`: 强制提交类型（feat/fix/docs 等）
+   - `--no-changelog`: 跳过 CHANGELOG.md 更新
+   - `--version <version>`: 指定版本号（默认添加到 Unreleased）
 
 2. 生成运行目录：
    - RUN_ID: 当前 UTC 时间戳，格式 `YYYYMMDDTHHMMSSZ`
@@ -106,6 +108,27 @@ Skill(skill="message-generator", args="run_dir=${RUN_DIR} options=${OPTIONS_JSON
 
 ---
 
+## Phase 5.5: 更新 Changelog
+
+### 🚨 默认执行
+
+**除非用户指定 `--no-changelog`，否则必须执行**
+
+**调用 Skill：**
+```
+Skill(skill="changelog-generator", args="run_dir=${RUN_DIR} version=${VERSION}")
+```
+
+其中 `VERSION` 为用户指定的版本号（如有），否则添加到 `[Unreleased]` 部分。
+
+**验证**：确认 `${run_dir}/changelog-entry.md` 已生成
+
+**注意**：
+- 如果是 `test`、`ci`、`chore` 类型的提交，询问用户是否跳过 changelog
+- 这些类型通常不记录到 changelog
+
+---
+
 ## Phase 6: 执行提交
 
 ### 🚨 强制执行
@@ -136,7 +159,8 @@ Skill(skill="commit-executor", args="run_dir=${RUN_DIR} options=${OPTIONS_JSON}"
   ├── changes-raw.json
   ├── changes-analysis.json
   ├── commit-message.md
-  └── commit-result.json
+  ├── commit-result.json
+  └── changelog-entry.md
 
 🔄 后续:
   - 推送代码: git push
