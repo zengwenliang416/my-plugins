@@ -81,6 +81,44 @@ Read: ${run_dir}/image-analysis.md  # 如果存在
 **容错处理**：
 - 如果 requirements.md 不存在 → 返回错误，提示先运行 `requirement-analyzer`
 
+### Step 1.2: 加载共享设计资源库
+
+从 `skills/_shared/` 加载预定义的设计资源作为推荐参考：
+
+```bash
+# 获取 SKILL 根目录
+SKILL_ROOT="${CLAUDE_PLUGIN_ROOT}/plugins/commands/ui-design/skills"
+
+# 读取资源索引
+Read: ${SKILL_ROOT}/_shared/index.json
+```
+
+**从 index.json 提取可用资源**：
+- `styles`: 可用风格模板（glassmorphism, neubrutalism, minimalist-swiss 等）
+- `colors`: 预定义配色方案
+- `typography`: 字体排版规格
+- `ux_guidelines`: UX 准则
+
+**根据 design_preference 匹配推荐**：
+
+| 用户偏好关键词 | 推荐风格 |
+|---------------|---------|
+| 现代、简约 | minimalist-swiss, clean-modern |
+| 玻璃、高端 | glassmorphism |
+| 大胆、创意 | neubrutalism, bold-expressive |
+| 专业、商务 | corporate-professional |
+| 年轻、活泼 | playful-colorful |
+
+**加载匹配的资源文件**：
+```bash
+# 示例：如果匹配到 glassmorphism
+Read: ${SKILL_ROOT}/_shared/styles/glassmorphism.yaml
+Read: ${SKILL_ROOT}/_shared/colors/modern-neutral.yaml
+Read: ${SKILL_ROOT}/_shared/typography/inter-system.yaml
+```
+
+**将加载的资源作为 Gemini 的参考上下文**。
+
 ### Step 1.5: 🚨🚨🚨 Gemini 创意方案生成（强制 - 不可跳过）
 
 > **⛔ 禁止跳过此步骤！必须执行 codeagent-wrapper gemini 命令并等待结果！**
@@ -92,10 +130,18 @@ Read: ${run_dir}/image-analysis.md  # 如果存在
 ~/.claude/bin/codeagent-wrapper gemini --role frontend --prompt "
 你是一位顶级 UI/UX 设计师。请根据以下需求生成 3 套差异化的设计方案：
 
+## 需求信息
 产品类型：${product_type}
 目标用户：${target_users}
 核心功能：${core_functions}
 设计偏好：${design_preference}
+
+## 参考资源（来自设计资源库）
+${matched_style_yaml}
+${matched_color_yaml}
+${matched_typography_yaml}
+
+请基于以上参考资源，结合需求生成 3 套方案。可以直接使用参考资源中的配色和字体，也可以在此基础上进行创意变化。
 
 请为每套方案提供：
 

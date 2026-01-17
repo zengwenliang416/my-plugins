@@ -65,6 +65,23 @@ Read: ${run_dir}/design-{variant_id}.md
 - 组件样式规格
 - 响应式策略
 
+### Step 1.5: 加载 UX 准则参考
+
+从共享资源库加载 UX 检查标准：
+
+```bash
+SKILL_ROOT="${CLAUDE_PLUGIN_ROOT}/plugins/commands/ui-design/skills"
+
+# 加载所有 UX 准则
+Read: ${SKILL_ROOT}/_shared/ux-guidelines/accessibility.yaml   # 可访问性
+Read: ${SKILL_ROOT}/_shared/ux-guidelines/usability.yaml       # 可用性
+Read: ${SKILL_ROOT}/_shared/ux-guidelines/consistency.yaml     # 一致性
+Read: ${SKILL_ROOT}/_shared/ux-guidelines/performance.yaml     # 性能
+Read: ${SKILL_ROOT}/_shared/ux-guidelines/responsive.yaml      # 响应式
+```
+
+**将这些准则作为 Gemini 检查的标准**。
+
 ### Step 2: 🚨 强制分析现有 UX 实践（auggie-mcp + LSP）
 
 **🚨 如果是优化现有界面，此步骤必须执行**

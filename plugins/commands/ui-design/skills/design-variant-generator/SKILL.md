@@ -75,6 +75,22 @@ Read: ${run_dir}/style-recommendations.md
 - 字体配置
 - 使用建议
 
+### Step 1.5: 加载共享设计资源
+
+根据推荐方案中的样式名称，加载对应的详细规格：
+
+```bash
+SKILL_ROOT="${CLAUDE_PLUGIN_ROOT}/plugins/commands/ui-design/skills"
+
+# 根据 style_name 加载对应资源
+# 例如：如果方案使用 glassmorphism
+Read: ${SKILL_ROOT}/_shared/styles/${style_name}.yaml
+Read: ${SKILL_ROOT}/_shared/colors/${color_scheme}.yaml
+Read: ${SKILL_ROOT}/_shared/typography/${typography_name}.yaml
+```
+
+**将预定义的样式规格作为 Gemini 生成详细设计的基础**。
+
 ### Step 2: 🚨 强制分析现有组件结构（auggie-mcp + LSP）
 
 **🚨 如果是优化现有项目（requirements.md 显示 has_existing_code: true），此步骤必须执行**
