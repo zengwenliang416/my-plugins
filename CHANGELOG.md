@@ -20,3 +20,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add emoji mapping table and format specification for batch commits (commit)
 - Add mandatory continuation instructions and next_phase return value to all skills (ui-design)
+- Update image-analyzer to use codeagent-wrapper `--file` parameter for multimodal input (ui-design)
