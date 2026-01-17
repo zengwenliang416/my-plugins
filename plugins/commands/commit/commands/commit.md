@@ -134,15 +134,38 @@ git reset HEAD 2>/dev/null || git rm --cached -r . 2>/dev/null
 
 ### Step 2: 对每个子提交循环执行
 
+**🚨 提交消息格式必须与 message-generator 一致：`type(scope): emoji 中文描述`**
+
+**Emoji 映射表**（必须使用）：
+
+| 类型 | Emoji |
+|------|-------|
+| feat | ✨ |
+| fix | 🐛 |
+| docs | 📝 |
+| style | 💄 |
+| refactor | ♻️ |
+| perf | ⚡ |
+| test | ✅ |
+| build | 📦 |
+| ci | 👷 |
+| chore | 🔧 |
+| revert | ⏪ |
+
 ```
 commits_info = []  # 记录所有提交信息
 
 for commit in split_recommendation.commits:
     1. 暂存该提交的文件: git add ${commit.files}
-    2. 构建提交消息: "${commit.type}(${commit.scope}): ${commit.description}"
-    3. 执行提交: git commit -m "${message}"
-    4. 记录: commits_info.append({type, scope, description, hash})
+    2. 选择 emoji: EMOJI = emoji_map[commit.type]
+    3. 构建提交消息: "${commit.type}(${commit.scope}): ${EMOJI} ${commit.description}"
+    4. 执行提交: git commit -m "${message}"
+    5. 记录: commits_info.append({type, scope, emoji, description, hash})
 ```
+
+**示例**：
+- ✅ `fix(ui-design): 🐛 添加 requirement-analyzer 强制继续指令`
+- ❌ `fix(ui-design): 添加 requirement-analyzer 强制继续指令`（缺少 emoji）
 
 ### Step 3: 🚨 更新 CHANGELOG（必须执行）
 
