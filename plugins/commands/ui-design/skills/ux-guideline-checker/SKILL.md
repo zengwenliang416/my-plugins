@@ -634,3 +634,77 @@ variant_id: "{A/B/C}"
 1. auggie-mcp 错误 → 使用 Grep 搜索 aria-* 属性
 2. LSP 错误 → 使用 Read 读取组件文件
 3. 全新项目 → 跳过现有代码分析，只分析设计文档
+
+---
+
+## 返回值（补充 next_phase）
+
+**通过时**：
+```json
+{
+  "status": "pass",
+  "variant_id": "A",
+  "pass_rate": 0.92,
+  "output_file": "${run_dir}/ux-check-report.md",
+  "next_phase": {
+    "phase": 8,
+    "name": "code-generator",
+    "action": "CONTINUE_IMMEDIATELY"
+  }
+}
+```
+
+**失败时**：
+```json
+{
+  "status": "fail",
+  "variant_id": "A",
+  "pass_rate": 0.80,
+  "high_priority_issues": [...],
+  "fixes_json": "{\"fixes\": [...]}",
+  "output_file": "${run_dir}/ux-check-report.md",
+  "next_action": {
+    "action": "RETRY_DESIGN",
+    "target_skill": "design-variant-generator",
+    "reason": "UX 检查未通过，需要修复设计方案"
+  }
+}
+```
+
+---
+
+## ⏩ 强制继续指令（Skill 完成后必须执行）
+
+**🚨🚨🚨 Skill 执行完成后，你必须立即执行以下操作：**
+
+### 如果 UX 检查通过（status: pass）
+
+```bash
+# 1. 更新 workflow-loop 状态
+sed -i '' 's/^current_phase: .*/current_phase: 8/' .claude/ccg-workflow.local.md
+
+# 2. 输出进度
+echo "✅ Phase 7 完成（UX 检查通过），进入 Phase 8: 代码生成..."
+```
+
+**然后立即调用下一个 Skill：**
+```
+Skill(skill="code-generator", args="run_dir=${run_dir} variant_id=${variant_id} tech_stack=${tech_stack}")
+```
+
+**⛔ 禁止在此停止！必须继续执行 Phase 8！**
+
+### 如果 UX 检查失败（status: fail）
+
+```bash
+# 1. 输出失败信息
+echo "❌ Phase 7 UX 检查失败，需要修复设计方案..."
+echo "高优先级问题：${high_priority_issues}"
+```
+
+**然后回退调用设计生成 Skill：**
+```
+Skill(skill="design-variant-generator", args="run_dir=${run_dir} variant_id=${variant_id} fixes=${fixes_json}")
+```
+
+**⛔ 禁止在此停止！必须调用 design-variant-generator 修复设计！**

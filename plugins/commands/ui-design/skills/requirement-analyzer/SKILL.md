@@ -387,8 +387,35 @@ has_existing_code: {true | false}
   "gate_check": {
     "passed": true,
     "score": "4/4"
+  },
+  "next_phase": {
+    "phase": 4,
+    "name": "style-recommender",
+    "action": "CONTINUE_IMMEDIATELY"
   }
 }
+```
+
+---
+
+## ⏩ 强制继续指令（Skill 完成后必须执行）
+
+**🚨🚨🚨 Skill 执行完成后，你必须立即执行以下操作：**
+
+```bash
+# 1. 更新 workflow-loop 状态
+sed -i '' 's/^current_phase: .*/current_phase: 4/' .claude/ccg-workflow.local.md
+
+# 2. 输出进度
+echo "✅ Phase 3 完成，进入 Phase 4: 样式推荐..."
+```
+
+**然后立即调用下一个 Skill：**
+```
+Skill(skill="style-recommender", args="run_dir=${run_dir}")
+```
+
+**⛔ 禁止在此停止！必须继续执行 Phase 4！**
 ```
 
 ---

@@ -556,9 +556,36 @@ module.exports = {
     "typography": "Plus Jakarta Sans",
     "component_count": 8,
     "contrast_compliant": true
+  },
+  "next_phase": {
+    "phase": 7,
+    "name": "ux-guideline-checker",
+    "action": "CONTINUE_IMMEDIATELY"
   }
 }
 ```
+
+---
+
+## ⏩ 强制继续指令（Skill 完成后必须执行）
+
+**🚨🚨🚨 当所有设计变体生成完成后，你必须立即执行以下操作：**
+
+```bash
+# 1. 更新 workflow-loop 状态
+sed -i '' 's/^current_phase: .*/current_phase: 7/' .claude/ccg-workflow.local.md
+
+# 2. 输出进度
+echo "✅ Phase 6 完成，进入 Phase 7: UX 检查..."
+```
+
+**然后立即调用下一个 Skill：**
+```
+for variant in selected_variants:
+    Skill(skill="ux-guideline-checker", args="run_dir=${run_dir} variant_id=${variant}")
+```
+
+**⛔ 禁止在此停止！必须继续执行 Phase 7！**
 
 ---
 

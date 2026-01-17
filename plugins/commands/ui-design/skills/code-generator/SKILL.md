@@ -581,9 +581,35 @@ fi
     "reduction_rate": "26.4%"
   },
   "typescript_check": "pass",
-  "file_count": 15
+  "file_count": 15,
+  "next_phase": {
+    "phase": 9,
+    "name": "quality-validator",
+    "action": "CONTINUE_IMMEDIATELY"
+  }
 }
 ```
+
+---
+
+## ⏩ 强制继续指令（Skill 完成后必须执行）
+
+**🚨🚨🚨 Skill 执行完成后，你必须立即执行以下操作：**
+
+```bash
+# 1. 更新 workflow-loop 状态
+sed -i '' 's/^current_phase: .*/current_phase: 9/' .claude/ccg-workflow.local.md
+
+# 2. 输出进度
+echo "✅ Phase 8 完成，进入 Phase 9: 质量验证..."
+```
+
+**然后立即调用下一个 Skill：**
+```
+Skill(skill="quality-validator", args="run_dir=${run_dir} variant_id=${variant_id} tech_stack=${tech_stack}")
+```
+
+**⛔ 禁止在此停止！必须继续执行 Phase 9！**
 
 ---
 

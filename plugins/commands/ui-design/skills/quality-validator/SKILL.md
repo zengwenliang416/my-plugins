@@ -673,6 +673,28 @@ $ npx tsc --noEmit
 
 ---
 
+## ⏩ 强制继续指令（Skill 完成后必须执行）
+
+**🚨🚨🚨 Skill 执行完成后，你必须立即执行以下操作：**
+
+```bash
+# 1. 更新 workflow-loop 状态
+sed -i '' 's/^current_phase: .*/current_phase: 10/' .claude/ccg-workflow.local.md
+
+# 2. 输出进度
+echo "✅ Phase 9 完成，进入 Phase 10: 交付..."
+```
+
+**然后立即执行 Phase 10 交付：**
+
+1. 输出完成摘要（包含所有产物路径）
+2. 删除 workflow-loop 状态文件：`rm -f .claude/ccg-workflow.local.md`
+3. 输出 `<promise>ui-design 工作流完成</promise>`
+
+**⛔ 禁止在此停止！必须继续执行 Phase 10 交付！**
+
+---
+
 ## 注意事项
 
 1. **客观评分**：严格按照评分标准，不主观臆断

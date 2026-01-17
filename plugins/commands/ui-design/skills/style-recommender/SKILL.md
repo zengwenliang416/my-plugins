@@ -729,9 +729,35 @@ ls -la ${run_dir}/previews/
       "positioning": "混合平衡型",
       "preview_file": "${run_dir}/previews/preview-C.html"
     }
-  ]
+  ],
+  "next_phase": {
+    "phase": 5,
+    "name": "variant-selection",
+    "action": "ASK_USER_QUESTION"
+  }
 }
 ```
+
+---
+
+## ⏩ 强制继续指令（Skill 完成后必须执行）
+
+**🚨🚨🚨 Skill 执行完成后，你必须立即执行以下操作：**
+
+```bash
+# 1. 更新 workflow-loop 状态
+sed -i '' 's/^current_phase: .*/current_phase: 5/' .claude/ccg-workflow.local.md
+
+# 2. 输出进度
+echo "✅ Phase 4 完成，进入 Phase 5: 方案选择..."
+```
+
+**然后立即提示用户查看预览并使用 AskUserQuestion 询问选择：**
+
+1. 提示用户在浏览器中打开 `${run_dir}/previews/index.html`
+2. 使用 AskUserQuestion 询问用户选择哪个方案
+
+**⛔ 这是硬停止点，必须等待用户选择！**
 
 ---
 
