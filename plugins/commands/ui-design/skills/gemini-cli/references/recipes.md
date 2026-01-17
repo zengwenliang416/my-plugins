@@ -3,17 +3,21 @@
 ## 快速参考
 
 ```bash
-# 图片分析（原生 gemini 命令）
-gemini "请分析这张设计图片 ${image_path}：[你的分析请求]" -o text -y
+# 🚨 统一使用 codeagent-wrapper gemini
+# 第一轮分析
+~/.claude/bin/codeagent-wrapper gemini --prompt "请分析这张设计图片 ${image_path}：[你的分析请求]"
 
-# 文本任务（codeagent-wrapper）
+# 后续轮次（保持上下文）
+~/.claude/bin/codeagent-wrapper gemini --session "$SESSION_ID" --prompt "请继续分析..."
+
+# 指定角色
 ~/.claude/bin/codeagent-wrapper gemini --role frontend --prompt "你的任务"
 ```
 
 ## 配方 1：整体风格分析
 
 ```bash
-gemini "请分析这张设计图片 ${image_path}：
+~/.claude/bin/codeagent-wrapper gemini --prompt "请分析这张设计图片 ${image_path}：
 
 你是一位资深 UI/UX 设计师。请分析这张设计图：
 
@@ -29,13 +33,13 @@ gemini "请分析这张设计图片 ${image_path}：
 3. **内容区域**: 列出所有可见区域
 4. **响应式**: 是否有响应式设计迹象？
 
-请用结构化格式回答。" -o text -y
+请用结构化格式回答。"
 ```
 
 ## 配方 2：配色系统提取
 
 ```bash
-gemini "请继续分析这张图片 ${image_path}，提取完整配色系统，用 HEX 格式：
+~/.claude/bin/codeagent-wrapper gemini --session "$SESSION_ID" --prompt "请继续分析这张图片 ${image_path}，提取完整配色系统，用 HEX 格式：
 
 ## 主要颜色
 - 主色（Primary）: #______
@@ -59,13 +63,13 @@ gemini "请继续分析这张图片 ${image_path}，提取完整配色系统，�
 ## 渐变（如有）
 - 渐变方向和颜色
 
-请给出准确的 HEX 值。" -o text -y
+请给出准确的 HEX 值。"
 ```
 
 ## 配方 3：UI 组件识别
 
 ```bash
-gemini "请分析这张图片 ${image_path} 中的所有 UI 组件：
+~/.claude/bin/codeagent-wrapper gemini --session "$SESSION_ID" --prompt "请分析这张图片 ${image_path} 中的所有 UI 组件：
 
 ## 导航组件
 - Header: 高度、背景、Logo 位置
@@ -86,13 +90,13 @@ gemini "请分析这张图片 ${image_path} 中的所有 UI 组件：
 ## 反馈组件
 - Modal/Toast/Progress（如有）
 
-对每个组件给出具体样式值（px）。" -o text -y
+对每个组件给出具体样式值（px）。"
 ```
 
 ## 配方 4：字体排版分析
 
 ```bash
-gemini "请分析这张图片 ${image_path} 的字体排版系统：
+~/.claude/bin/codeagent-wrapper gemini --session "$SESSION_ID" --prompt "请分析这张图片 ${image_path} 的字体排版系统：
 
 ## 字体识别
 - 主字体: Inter/Roboto/SF Pro/思源黑体？
@@ -114,13 +118,13 @@ gemini "请分析这张图片 ${image_path} 的字体排版系统：
 - Medium/500: 用在哪里？
 - Regular/400: 用在哪里？
 
-请给出准确的数值估算。" -o text -y
+请给出准确的数值估算。"
 ```
 
 ## 配方 5：图标系统分析
 
 ```bash
-gemini "请分析这张图片 ${image_path} 的图标系统：
+~/.claude/bin/codeagent-wrapper gemini --session "$SESSION_ID" --prompt "请分析这张图片 ${image_path} 的图标系统：
 
 ## 图标风格
 1. **类型**: 线性/填充/双色/混合？
@@ -139,13 +143,13 @@ gemini "请分析这张图片 ${image_path} 的图标系统：
 ## 尺寸规范
 - 小图标: __px
 - 默认: __px
-- 大图标: __px" -o text -y
+- 大图标: __px"
 ```
 
 ## 配方 6：布局规格提取
 
 ```bash
-gemini "请分析这张图片 ${image_path} 的布局规格：
+~/.claude/bin/codeagent-wrapper gemini --session "$SESSION_ID" --prompt "请分析这张图片 ${image_path} 的布局规格：
 
 ## 页面结构
 - Header 高度: __px
@@ -162,26 +166,27 @@ gemini "请分析这张图片 ${image_path} 的布局规格：
 - 最大宽度: __px
 - 边距: __px
 
-请画出 ASCII 结构图。" -o text -y
+请画出 ASCII 结构图。"
 ```
 
 ## 多轮分析流程
 
 ```bash
-# Round 1: 整体风格
-gemini "请分析这张设计图片 ${image_path}：[配方1内容]" -o text -y
+# Round 1: 整体风格（获取 SESSION_ID）
+result=$(~/.claude/bin/codeagent-wrapper gemini --prompt "[配方1内容]")
+SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 
-# Round 2: 配色
-gemini "请继续分析这张图片 ${image_path}：[配方2内容]" -o text -y
+# Round 2: 配色（使用 SESSION_ID）
+~/.claude/bin/codeagent-wrapper gemini --session "$SESSION_ID" --prompt "[配方2内容]"
 
 # Round 3: 组件
-gemini "请分析这张图片 ${image_path}：[配方3内容]" -o text -y
+~/.claude/bin/codeagent-wrapper gemini --session "$SESSION_ID" --prompt "[配方3内容]"
 
 # Round 4: 字体
-gemini "请分析这张图片 ${image_path}：[配方4内容]" -o text -y
+~/.claude/bin/codeagent-wrapper gemini --session "$SESSION_ID" --prompt "[配方4内容]"
 
 # Round 5: 图标
-gemini "请分析这张图片 ${image_path}：[配方5内容]" -o text -y
+~/.claude/bin/codeagent-wrapper gemini --session "$SESSION_ID" --prompt "[配方5内容]"
 ```
 
 ## 输出转换示例
