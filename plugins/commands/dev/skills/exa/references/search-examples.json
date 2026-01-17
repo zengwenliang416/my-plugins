@@ -1,0 +1,31 @@
+{
+  "search_types": {
+    "neural": {
+      "description": "语义搜索，理解查询意图",
+      "example": "How to implement JWT authentication in Express.js",
+      "best_for": ["概念理解", "最佳实践", "教程"]
+    },
+    "keyword": {
+      "description": "精确关键词匹配",
+      "example": "site:github.com useActionState React 19",
+      "best_for": ["特定代码", "API 文档", "配置示例"]
+    },
+    "auto": {
+      "description": "自动选择最佳模式",
+      "example": "Latest React Server Components patterns 2026",
+      "best_for": ["通用搜索"]
+    }
+  },
+  "domain_filters": {
+    "docs": ["docs.github.com", "developer.mozilla.org", "react.dev", "nextjs.org"],
+    "code": ["github.com", "gitlab.com", "stackoverflow.com"],
+    "blog": ["medium.com", "dev.to", "hashnode.dev"]
+  },
+  "query_templates": {
+    "api_docs": "{library} {method} API documentation official",
+    "code_example": "{language} {feature} code example github",
+    "tutorial": "{topic} tutorial step by step 2026",
+    "comparison": "{tech1} vs {tech2} comparison pros cons"
+  },
+  "output_fields": ["title", "url", "text", "highlights", "publishedDate"]
+}

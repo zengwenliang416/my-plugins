@@ -2,10 +2,9 @@
 name: codex-cli
 description: |
   【触发条件】当需要后端逻辑分析、跨文件修改、调试错误、安全/性能审查，或需要第二意见时使用。
-  【触发关键词】复杂逻辑、后端、调试、代码审查、Codex、第二意见
-  【核心能力】只读沙箱分析代码 → 输出 unified diff patch → Claude 审查重构后应用
+  【核心产出】只读沙箱分析代码 → 输出 unified diff patch → Claude 审查重构后应用
   【不触发】前端 UI/CSS（改用 gemini-cli）、简单单文件修复、不需要读取代码库的问题
-  【注意】Codex 无写入权限，所有输出仅为参考原型
+  【先问什么】无需询问，根据任务类型自动判断是否适合使用 Codex
 allowed-tools:
   - Bash
   - Read

@@ -1,0 +1,57 @@
+{
+  "patterns": {
+    "extract_function": {
+      "name": "提取函数",
+      "when": "代码块被复用或过长",
+      "example": {
+        "before": "// 重复的验证逻辑散落各处",
+        "after": "function validateInput(input) { ... }"
+      }
+    },
+    "extract_variable": {
+      "name": "提取变量",
+      "when": "复杂表达式难以理解",
+      "example": {
+        "before": "if (user.age > 18 && user.country === 'US' && user.verified)",
+        "after": "const isEligible = user.age > 18 && user.country === 'US' && user.verified"
+      }
+    },
+    "replace_conditional_with_polymorphism": {
+      "name": "用多态替换条件",
+      "when": "大量 switch/if-else 基于类型判断",
+      "example": {
+        "before": "switch(shape.type) { case 'circle': ... }",
+        "after": "shape.calculateArea() // 多态方法"
+      }
+    },
+    "introduce_parameter_object": {
+      "name": "引入参数对象",
+      "when": "函数参数过多(>3个)",
+      "example": {
+        "before": "function createUser(name, email, age, country, verified)",
+        "after": "function createUser(options: CreateUserOptions)"
+      }
+    },
+    "replace_magic_number": {
+      "name": "替换魔术数字",
+      "when": "代码中有未解释的字面量",
+      "example": {
+        "before": "if (status === 200)",
+        "after": "if (status === HTTP_STATUS.OK)"
+      }
+    }
+  },
+  "principles": {
+    "DRY": "Don't Repeat Yourself - 消除重复",
+    "KISS": "Keep It Simple, Stupid - 保持简单",
+    "YAGNI": "You Ain't Gonna Need It - 不过度设计",
+    "SRP": "Single Responsibility Principle - 单一职责"
+  },
+  "red_flags": [
+    "函数超过 50 行",
+    "嵌套超过 3 层",
+    "参数超过 4 个",
+    "类超过 300 行",
+    "重复代码块"
+  ]
+}

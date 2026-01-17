@@ -2,10 +2,9 @@
 name: gemini-cli
 description: |
   【触发条件】当需要 UI 组件设计、CSS 样式、响应式布局、视觉原型时使用。
-  【触发关键词】React 组件、Tailwind、CSS、UI/UX、表单设计、前端原型、Gemini
-  【核心能力】输出 React/HTML/CSS 代码，上下文限制 32k tokens
+  【核心产出】输出 React/HTML/CSS 代码，上下文限制 32k tokens
   【不触发】后端逻辑、数据库操作、API 实现、复杂业务逻辑（改用 codex-cli）
-  【注意】适合快速前端原型，复杂逻辑交给 Codex
+  【先问什么】无需询问，根据任务类型自动判断是否适合使用 Gemini
 allowed-tools:
   - Bash
   - Read

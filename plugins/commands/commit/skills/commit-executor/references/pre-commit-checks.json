@@ -1,0 +1,45 @@
+{
+  "checks": [
+    {
+      "name": "staged_files",
+      "description": "确保有暂存的文件",
+      "command": "git diff --cached --name-only | wc -l",
+      "expect": "> 0",
+      "error": "没有暂存的文件，请先 git add"
+    },
+    {
+      "name": "no_conflict_markers",
+      "description": "检查冲突标记",
+      "command": "git diff --cached | grep -c '^[<>=]\\{7\\}'",
+      "expect": "= 0",
+      "error": "发现冲突标记，请解决后重试"
+    },
+    {
+      "name": "no_debug_code",
+      "description": "检查调试代码",
+      "patterns": [
+        "console.log",
+        "debugger",
+        "print(",
+        "TODO:",
+        "FIXME:"
+      ],
+      "severity": "warning"
+    }
+  ],
+  "hooks": {
+    "pre-commit": {
+      "description": "提交前检查",
+      "skip_flag": "--no-verify"
+    },
+    "commit-msg": {
+      "description": "提交消息格式检查",
+      "skip_flag": "--no-verify"
+    }
+  },
+  "safe_defaults": {
+    "allow_empty": false,
+    "allow_amend": false,
+    "sign_off": false
+  }
+}

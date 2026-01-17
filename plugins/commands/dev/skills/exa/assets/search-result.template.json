@@ -1,0 +1,15 @@
+{
+  "query": "${QUERY}",
+  "timestamp": "${TIMESTAMP}",
+  "results": [
+    {
+      "title": "${TITLE}",
+      "url": "${URL}",
+      "snippet": "${SNIPPET}",
+      "score": 0.95,
+      "published_date": "${DATE}"
+    }
+  ],
+  "total_results": 0,
+  "search_type": "${SEARCH_TYPE}"
+}

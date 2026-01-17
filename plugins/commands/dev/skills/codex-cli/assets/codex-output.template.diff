@@ -1,0 +1,7 @@
+--- a/${FILE_PATH}
++++ b/${FILE_PATH}
+@@ -${START_LINE},${OLD_COUNT} +${START_LINE},${NEW_COUNT} @@
+ ${CONTEXT_BEFORE}
+-${OLD_CODE}
++${NEW_CODE}
+ ${CONTEXT_AFTER}

@@ -1,0 +1,40 @@
+{
+  "security": {
+    "name": "安全审计",
+    "checks": [
+      { "id": "SEC-001", "name": "输入验证", "description": "所有用户输入都经过验证和清理" },
+      { "id": "SEC-002", "name": "SQL 注入", "description": "使用参数化查询，无字符串拼接" },
+      { "id": "SEC-003", "name": "XSS 防护", "description": "输出编码，使用安全的 DOM 操作" },
+      { "id": "SEC-004", "name": "认证授权", "description": "敏感操作有权限检查" },
+      { "id": "SEC-005", "name": "敏感数据", "description": "密钥、密码不硬编码，使用环境变量" },
+      { "id": "SEC-006", "name": "依赖安全", "description": "无已知漏洞的依赖" }
+    ]
+  },
+  "performance": {
+    "name": "性能审计",
+    "checks": [
+      { "id": "PERF-001", "name": "N+1 查询", "description": "无 N+1 数据库查询问题" },
+      { "id": "PERF-002", "name": "内存泄漏", "description": "事件监听器正确清理" },
+      { "id": "PERF-003", "name": "缓存使用", "description": "适当使用缓存机制" },
+      { "id": "PERF-004", "name": "异步处理", "description": "耗时操作使用异步" },
+      { "id": "PERF-005", "name": "批量操作", "description": "使用批量而非循环单条操作" }
+    ]
+  },
+  "quality": {
+    "name": "代码质量",
+    "checks": [
+      { "id": "QUAL-001", "name": "错误处理", "description": "异常被正确捕获和处理" },
+      { "id": "QUAL-002", "name": "类型安全", "description": "使用 TypeScript 严格模式" },
+      { "id": "QUAL-003", "name": "代码重复", "description": "无明显的代码重复" },
+      { "id": "QUAL-004", "name": "函数长度", "description": "函数不超过 50 行" },
+      { "id": "QUAL-005", "name": "命名规范", "description": "变量和函数命名清晰" }
+    ]
+  },
+  "severity_levels": {
+    "critical": "必须立即修复",
+    "high": "发布前必须修复",
+    "medium": "应该修复",
+    "low": "建议修复",
+    "info": "仅供参考"
+  }
+}

@@ -4,6 +4,7 @@ description: |
   【触发条件】commit 工作流 Phase 5.5：必须执行，更新 CHANGELOG.md。
   【核心产出】更新项目根目录的 CHANGELOG.md，添加新的变更条目。
   【不触发】生成提交消息（用 message-generator）、执行提交（用 commit-executor）。
+  【先问什么】发布版本时，询问版本号（不传则添加到 Unreleased）
   【🚨 强制】除非用户指定 --no-changelog，否则必须执行此 Skill。
 allowed-tools:
   - Read

@@ -4,6 +4,7 @@ description: |
   【触发条件】commit 工作流第三步：生成 Conventional Commit 提交信息。
   【核心产出】输出 ${run_dir}/commit-message.md，包含标题、正文、footer。
   【不触发】分析变更（用 change-analyzer）、执行提交（用 commit-executor）。
+  【先问什么】changes-analysis.json 缺失时，询问是否先执行变更分析
 allowed-tools:
   - Read
   - Write

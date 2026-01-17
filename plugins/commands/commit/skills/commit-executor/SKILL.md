@@ -4,6 +4,7 @@ description: |
   【触发条件】commit 工作流最后一步：执行 git commit。
   【核心产出】输出 ${run_dir}/commit-result.json，包含提交哈希和结果。
   【不触发】生成消息（用 message-generator）、分析变更（用 change-analyzer）。
+  【先问什么】pre-commit hook 失败时，询问是否跳过 hook 或修复问题
 allowed-tools:
   - Read
   - Write

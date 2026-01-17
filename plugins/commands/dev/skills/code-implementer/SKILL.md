@@ -4,6 +4,7 @@ description: |
   【触发条件】开发工作流第四步：基于原型重构并实施代码到项目中。
   【核心产出】输出 ${run_dir}/changes.md + 实际代码变更。
   【不触发】原型生成（用 prototype-generator）、审计审查（用 audit-reviewer）。
+  【先问什么】prototype-{model}.diff 缺失时，询问是否先执行原型生成
   【强制工具】必须调用 codex-cli 或 gemini-cli Skill 重构原型，禁止 Claude 自行实施。
 allowed-tools:
   - Read

@@ -4,6 +4,7 @@ description: |
   【触发条件】开发工作流第二步：多模型并行分析需求，生成实施方案。
   【核心产出】输出 ${run_dir}/analysis-{model}.md，包含实施方案。
   【不触发】上下文检索（用 context-retriever）、原型生成（用 prototype-generator）。
+  【先问什么】context.md 缺失时，询问是否先执行上下文检索
   【强制工具】必须调用 codex-cli 或 gemini-cli Skill，禁止 Claude 自行分析。
 allowed-tools:
   - Read

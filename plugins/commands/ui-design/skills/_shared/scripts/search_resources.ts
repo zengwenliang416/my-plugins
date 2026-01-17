@@ -261,4 +261,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 
-export { searchResources, SearchOptions, Resource };
+export { searchResources };
+export type { SearchOptions, Resource };

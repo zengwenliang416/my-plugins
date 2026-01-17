@@ -1,0 +1,100 @@
+{
+  "types": {
+    "feat": {
+      "emoji": "✨",
+      "description": "新功能",
+      "templates": [
+        "feat({scope}): add {feature}",
+        "feat({scope}): implement {feature}",
+        "feat({scope}): support {feature}"
+      ]
+    },
+    "fix": {
+      "emoji": "🐛",
+      "description": "Bug 修复",
+      "templates": [
+        "fix({scope}): resolve {issue}",
+        "fix({scope}): correct {issue}",
+        "fix({scope}): handle {issue}"
+      ]
+    },
+    "docs": {
+      "emoji": "📝",
+      "description": "文档更新",
+      "templates": [
+        "docs({scope}): update {document}",
+        "docs({scope}): add {document}",
+        "docs({scope}): improve {document}"
+      ]
+    },
+    "style": {
+      "emoji": "💄",
+      "description": "代码格式",
+      "templates": [
+        "style({scope}): format {target}",
+        "style({scope}): fix linting in {target}"
+      ]
+    },
+    "refactor": {
+      "emoji": "♻️",
+      "description": "代码重构",
+      "templates": [
+        "refactor({scope}): restructure {target}",
+        "refactor({scope}): simplify {target}",
+        "refactor({scope}): extract {target}"
+      ]
+    },
+    "perf": {
+      "emoji": "⚡️",
+      "description": "性能优化",
+      "templates": [
+        "perf({scope}): optimize {target}",
+        "perf({scope}): improve {target} performance"
+      ]
+    },
+    "test": {
+      "emoji": "✅",
+      "description": "测试相关",
+      "templates": [
+        "test({scope}): add tests for {target}",
+        "test({scope}): update tests for {target}"
+      ]
+    },
+    "build": {
+      "emoji": "📦",
+      "description": "构建系统",
+      "templates": [
+        "build({scope}): update {target}",
+        "build({scope}): configure {target}"
+      ]
+    },
+    "ci": {
+      "emoji": "👷",
+      "description": "CI 配置",
+      "templates": [
+        "ci({scope}): update {target}",
+        "ci({scope}): add {target}"
+      ]
+    },
+    "chore": {
+      "emoji": "🔧",
+      "description": "其他更改",
+      "templates": [
+        "chore({scope}): update {target}",
+        "chore({scope}): configure {target}"
+      ]
+    },
+    "revert": {
+      "emoji": "⏪",
+      "description": "回滚提交",
+      "templates": [
+        "revert: {original_commit}"
+      ]
+    }
+  },
+  "scopes_examples": [
+    "auth", "api", "ui", "db", "config", "deps",
+    "components", "hooks", "utils", "types", "tests"
+  ],
+  "breaking_change_format": "BREAKING CHANGE: {description}"
+}

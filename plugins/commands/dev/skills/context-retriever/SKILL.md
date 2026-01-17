@@ -4,6 +4,7 @@ description: |
   【触发条件】开发工作流第一步：检索与功能需求相关的上下文。
   【核心产出】输出 ${run_dir}/context.md，包含内部代码 + 外部文档。
   【不触发】直接分析（用 multi-model-analyzer）、代码生成（用 prototype-generator）。
+  【先问什么】需求描述模糊时，询问具体需要检索什么上下文
   【强制工具】内部代码用 auggie-mcp + LSP，外部文档用 exa skill。
 allowed-tools:
   - Write

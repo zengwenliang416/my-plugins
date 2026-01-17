@@ -4,6 +4,7 @@ description: |
   【触发条件】开发工作流第三步：根据分析方案生成代码原型。
   【核心产出】输出 ${run_dir}/prototype-{model}.diff，包含 Unified Diff 格式的代码变更。
   【不触发】分析方案（用 multi-model-analyzer）、最终实施（用 code-implementer）。
+  【先问什么】analysis-{model}.md 缺失时，询问是否先执行需求分析
   【强制工具】必须调用 codex-cli 或 gemini-cli Skill，禁止 Claude 自行生成。
 allowed-tools:
   - Read

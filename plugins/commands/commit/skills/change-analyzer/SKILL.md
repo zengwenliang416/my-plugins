@@ -4,6 +4,7 @@ description: |
   【触发条件】commit 工作流第二步：分析变更类型、作用域、拆分建议。
   【核心产出】输出 ${run_dir}/changes-analysis.json，包含提交策略建议。
   【不触发】收集变更（用 change-collector）、生成消息（用 message-generator）。
+  【先问什么】无暂存变更时，询问是否分析未暂存文件
 allowed-tools:
   - Read
   - Write

@@ -27,11 +27,11 @@ arguments:
 - **输出**: `${run_dir}/code-analysis.md`
 - **核心能力**: 代码理解、样式提取、UX 问题检测
 
+---
+
 ## 执行流程
 
 ### Step 1: 定位目标代码
-
-确定需要分析的代码范围。
 
 **策略 1：用户明确指定路径**
 
@@ -53,10 +53,7 @@ arguments:
 
 ```
 → 使用 AskUserQuestion 询问：
-   "请提供需要分析的文件路径或目录，例如：
-    - src/pages/Dashboard.tsx
-    - src/components/
-    - 或描述功能：登录页面、首页、等"
+   "请提供需要分析的文件路径或目录"
 ```
 
 ### Step 2: 分析组件结构
@@ -65,31 +62,9 @@ arguments:
 
 **LSP 操作序列**：
 
-1. **documentSymbol**：获取文件符号列表
-
-   ```typescript
-   // 识别：
-   - 函数组件 / 类组件
-   - Props 接口
-   - State 变量
-   - 子组件引用
-   ```
-
-2. **goToDefinition**：跟踪依赖
-
-   ```typescript
-   // 对每个导入的组件/样式：
-   - 查找定义位置
-   - 识别样式系统（CSS Modules / Tailwind / Styled Components）
-   - 识别设计 token（colors.ts / theme.ts）
-   ```
-
-3. **findReferences**：分析使用范围
-   ```typescript
-   // 对于被分析的组件：
-   - 查找所有使用处
-   - 评估影响范围（局部组件 vs 全局组件）
-   ```
+1. **documentSymbol**：获取文件符号列表（函数组件、Props 接口、State 变量）
+2. **goToDefinition**：跟踪依赖（样式系统、设计 token）
+3. **findReferences**：分析使用范围（局部组件 vs 全局组件）
 
 **输出数据结构**：
 
@@ -109,8 +84,6 @@ arguments:
 
 ### Step 3: 识别样式系统
 
-提取当前使用的样式方案。
-
 **3.1 识别样式技术**
 
 使用 Grep 搜索样式模式：
@@ -121,50 +94,29 @@ Grep: className=["'].*?["']
 
 # CSS Modules
 Grep: import.*\.module\.css
-Grep: styles\.[a-zA-Z]+
 
 # Styled Components
 Grep: styled\.[a-z]+`
-Grep: import styled from
-
-# Inline Styles
-Grep: style=\{\{
 ```
 
 **3.2 提取配色方案**
-
-搜索配置文件和使用模式：
 
 ```typescript
 // 查找配置文件
 Glob: "**/{tailwind.config,theme,colors}.{js,ts}"
 
-// 读取配置文件
-Read: tailwind.config.js
-
 // 提取色值模式
 Grep: (bg|text|border)-(red|blue|green|gray|...)
 Grep: #[0-9A-Fa-f]{6}
-Grep: rgb\(|rgba\(
 
-// 统计高频色值
-分析结果 → 推断主色调/辅助色/强调色
+// 统计高频色值 → 推断主色调/辅助色/强调色
 ```
 
 **3.3 识别字体系统**
 
 ```typescript
-// 查找字体配置
 Grep: font-(sans|serif|mono)
-Grep: fontFamily
-Glob: "**/*.{woff,woff2,ttf}"
-
-// 提取字体族
-识别：主字体 / 标题字体 / 等宽字体
-
-// 提取字号系统
 Grep: text-(xs|sm|base|lg|xl|2xl|...)
-统计 → 推断字号阶梯
 ```
 
 **输出数据结构**：
@@ -176,16 +128,10 @@ Grep: text-(xs|sm|base|lg|xl|2xl|...)
     "primary": "#3B82F6",
     "secondary": "#8B5CF6",
     "background": "#FFFFFF",
-    "text": "#1F2937",
-    "usage_frequency": {
-      "#3B82F6": 42,
-      "#8B5CF6": 18
-    }
+    "text": "#1F2937"
   },
   "typography": {
     "primary_font": "Inter",
-    "heading_font": "Inter",
-    "mono_font": "Consolas",
     "scale": ["12px", "14px", "16px", "18px", "24px", "30px"]
   }
 }
@@ -195,245 +141,32 @@ Grep: text-(xs|sm|base|lg|xl|2xl|...)
 
 扫描代码中的常见 UX 问题。
 
-**4.1 可访问性 (Accessibility) 问题**
+> 📚 完整检测规则见 [references/analysis-checklist.md](references/analysis-checklist.md#1-ux-问题检测规则)
 
-| 检测项          | 代码模式                    | 问题判定              |
-| --------------- | --------------------------- | --------------------- |
-| 缺少 alt 属性   | `<img` without `alt=`       | ❌ 图片无替代文本     |
-| 按钮无标签      | `<button>` with only icon   | ❌ 屏幕阅读器无法理解 |
-| 颜色对比度      | 提取色值 → 计算对比度       | ❌ 对比度 < 4.5:1     |
-| 无 label 的表单 | `<input>` without `<label>` | ❌ 表单不可访问       |
-| 非语义化标签    | `<div onClick>`             | ⚠️ 应使用 `<button>`  |
+**检测类别**：
 
-**检测方法**：
-
-```typescript
-// 使用 Grep 搜索反模式
-Grep: <img(?![^>]*alt=)
-Grep: <button[^>]*>\s*<(svg|i|icon)
-Grep: <div[^>]*onClick
-Grep: <input(?![^>]*id=)
-
-// 读取代码 → 提取色值 → 计算对比度
-对于每个 (文本色, 背景色) 组合:
-  contrast_ratio = calculate_contrast(text_color, bg_color)
-  if contrast_ratio < 4.5:
-    记录问题
-```
-
-**4.2 响应式设计问题**
-
-| 检测项   | 代码模式             | 问题判定          |
-| -------- | -------------------- | ----------------- |
-| 固定宽度 | `width: 1200px`      | ⚠️ 移动端会溢出   |
-| 无断点   | 无 `@media` 或 `md:` | ⚠️ 未考虑不同屏幕 |
-| 横向滚动 | `overflow-x: scroll` | ⚠️ 可能体验不佳   |
-| 小字号   | `font-size: 10px`    | ❌ 移动端难以阅读 |
-
-**检测方法**：
-
-```typescript
-Grep: width:\s*\d+px
-Grep: @media|sm:|md:|lg:|xl:
-Grep: overflow-x:\s*scroll
-Grep: text-(xs|10|11|12)(?!-|px|rem)
-```
-
-**4.3 性能问题**
-
-| 检测项      | 代码模式                | 问题判定       |
-| ----------- | ----------------------- | -------------- |
-| 大图片      | `<img src="large.jpg">` | ⚠️ 未压缩/优化 |
-| 内联 Base64 | `data:image/png;base64` | ⚠️ 增大 bundle |
-| 未优化列表  | 长列表无虚拟化          | ⚠️ 性能问题    |
-| 过度渲染    | 缺少 memo/useMemo       | ⚠️ 可优化      |
-
-**检测方法**：
-
-```typescript
-Grep: data:image/
-Grep: \.map\(\(
-统计: 如果列表渲染 > 100 项 且无虚拟化 → 标记
-```
-
-**4.4 一致性问题**
-
-| 检测项       | 代码模式                  | 问题判定          |
-| ------------ | ------------------------- | ----------------- |
-| 魔法数字     | `margin: 17px`            | ⚠️ 不符合设计系统 |
-| 不一致间距   | `gap-3`, `gap-5`, `gap-7` | ⚠️ 间距不统一     |
-| 混用样式方案 | Tailwind + inline styles  | ⚠️ 应统一方案     |
-
-**输出数据结构**：
-
-```json
-{
-  "accessibility_issues": [
-    {
-      "severity": "high",
-      "type": "missing_alt",
-      "location": "src/components/Dashboard.tsx:42",
-      "description": "图片缺少 alt 属性",
-      "fix_suggestion": "添加 alt=\"Dashboard overview chart\""
-    }
-  ],
-  "responsive_issues": [
-    {
-      "severity": "medium",
-      "type": "fixed_width",
-      "location": "src/components/Header.tsx:15",
-      "description": "使用固定宽度 1200px",
-      "fix_suggestion": "改为 max-width: 1200px 或使用响应式单位"
-    }
-  ],
-  "performance_issues": [],
-  "consistency_issues": [
-    {
-      "severity": "low",
-      "type": "magic_number",
-      "location": "src/components/Card.tsx:28",
-      "description": "使用魔法数字 margin: 17px",
-      "fix_suggestion": "使用设计 token: m-4 (16px)"
-    }
-  ]
-}
-```
+| 类别 | 检测项示例 |
+|------|-----------|
+| 可访问性 | 缺少 alt、按钮无标签、颜色对比度不足 |
+| 响应式 | 固定宽度、无断点、小字号 |
+| 性能 | 大图片、内联 Base64、未优化列表 |
+| 一致性 | 魔法数字、不一致间距、混用样式方案 |
 
 ### Step 5: 生成分析报告
 
-将所有分析结果整合为结构化报告。
-
 **输出路径**：`${run_dir}/code-analysis.md`
 
-**文档模板**：
+> 📚 完整文档模板见 [references/analysis-checklist.md](references/analysis-checklist.md#2-输出文档模板)
 
-```markdown
----
-analyzed_at: { ISO 8601 时间戳 }
-analyzer_version: "1.0"
-target_files: [{ 文件路径列表 }]
----
-
-# 现有代码分析报告
-
-## 分析概览
-
-**分析范围**: {文件数量} 个文件，{代码行数} 行代码
-**主组件**: {主要组件名称}
-**影响范围**: {局部 / 全局}
-
-## 当前设计系统
-
-### 样式技术
-
-- **方案**: {Tailwind CSS / CSS Modules / Styled Components}
-- **版本**: {如 Tailwind v3.4}
-- **配置文件**: {tailwind.config.js}
-
-### 配色方案
-
-- **主色调**: {#3B82F6} (使用 42 次)
-- **辅助色**: {#8B5CF6} (使用 18 次)
-- **背景色**: {#FFFFFF}
-- **文本色**: {#1F2937}
-
-**色板图**：
-```
-
-████ Primary #3B82F6 (42 次)
-████ Secondary #8B5CF6 (18 次)
-████ Text #1F2937 (156 次)
-
-```
-
-### 字体系统
-- **主字体**: {Inter, sans-serif}
-- **标题字体**: {Inter Bold}
-- **等宽字体**: {Consolas, monospace}
-- **字号阶梯**: 12px, 14px, 16px, 18px, 24px, 30px
-
-## UX 问题清单
-
-### 🔴 高优先级问题 ({数量})
-
-{列出所有高优先级问题}
-
-1. **[可访问性]** 图片缺少 alt 属性
-   - 位置: `src/components/Dashboard.tsx:42`
-   - 修复: 添加 `alt="Dashboard overview chart"`
-
-### 🟡 中优先级问题 ({数量})
-
-{列出所有中优先级问题}
-
-### 🟢 低优先级问题 ({数量})
-
-{列出所有低优先级问题}
-
-## 改进建议
-
-### 1. 可访问性改进
-- [ ] 为所有图片添加 alt 属性
-- [ ] 为交互元素添加 aria-label
-- [ ] 修复颜色对比度不足的问题
-
-### 2. 响应式改进
-- [ ] 添加移动端断点样式
-- [ ] 将固定宽度改为响应式单位
-- [ ] 优化小屏幕下的布局
-
-### 3. 性能优化
-- [ ] 压缩图片资源
-- [ ] 对长列表实现虚拟化
-- [ ] 添加代码分割
-
-### 4. 一致性提升
-- [ ] 统一间距系统（使用 4px 基数）
-- [ ] 移除魔法数字，使用设计 token
-- [ ] 统一样式方案（仅使用 Tailwind）
-
-## 组件结构
-
-{如果分析了多个组件，展示组件树}
-
-```
-
-Dashboard (全局组件)
-├── Header
-│ ├── Logo
-│ └── UserMenu
-├── Sidebar
-│ └── Navigation
-└── MainContent
-├── Chart (使用 recharts)
-└── Table
-
-```
-
-## 依赖分析
-
-**核心依赖**:
-- react: ^18.2.0
-- recharts: ^2.5.0
-- date-fns: ^2.29.0
-
-**样式依赖**:
-- tailwindcss: ^3.4.0
-
-## 影响范围评估
-
-**使用次数**: {3} 处
-**使用位置**:
-1. src/pages/dashboard/index.tsx
-2. src/layouts/MainLayout.tsx
-3. src/app/App.tsx
-
-**修改风险**: {低 / 中 / 高}
-```
+**报告包含**：
+- 分析概览（文件数、代码行数、主组件）
+- 当前设计系统（样式技术、配色、字体）
+- UX 问题清单（按优先级分组）
+- 改进建议（可访问性、响应式、性能、一致性）
+- 组件结构和依赖分析
+- 影响范围评估
 
 ### Step 6: Gate 检查
-
-验证分析是否完整。
 
 **检查项**：
 
@@ -444,9 +177,9 @@ Dashboard (全局组件)
 
 **通过标准**：至少 3 项检查通过
 
-## 返回值
+---
 
-成功时返回：
+## 返回值
 
 ```json
 {
@@ -462,37 +195,13 @@ Dashboard (全局组件)
 }
 ```
 
+---
+
 ## 错误处理
 
 - **文件不存在**：提示用户提供正确路径，或使用 codebase-retrieval 搜索
 - **LSP 不可用**：降级为纯文本分析（Grep + Read）
 - **无法识别样式系统**：标记为 "未识别"，建议人工检查
-
-## 使用示例
-
-**场景 1: 分析单个组件**
-
-```
-用户输入: "分析 src/pages/Login.tsx 的代码"
-
-执行流程:
-  1. Read: src/pages/Login.tsx
-  2. LSP documentSymbol: 获取组件结构
-  3. LSP goToDefinition: 跟踪样式导入
-  4. Grep: 搜索样式模式和 UX 问题
-  5. 生成报告: ✅ 发现 5 个问题
-```
-
-**场景 2: 分析整个目录**
-
-```
-用户输入: "分析 src/components/ 目录"
-
-执行流程:
-  1. Glob: "src/components/**/*.{tsx,jsx}"
-  2. 对每个文件执行分析
-  3. 聚合结果，生成汇总报告
-```
 
 ## 注意事项
 

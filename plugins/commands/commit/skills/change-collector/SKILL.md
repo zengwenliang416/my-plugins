@@ -4,6 +4,7 @@ description: |
   【触发条件】commit 工作流第一步：收集 git 变更信息。
   【核心产出】输出 ${run_dir}/changes-raw.json，包含暂存变更、未暂存变更、统计信息。
   【不触发】分析变更（用 change-analyzer）、生成消息（用 message-generator）。
+  【先问什么】当前目录不是 Git 仓库时，询问是否初始化
 allowed-tools:
   - Bash
   - Write

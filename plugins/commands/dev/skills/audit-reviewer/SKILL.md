@@ -4,6 +4,7 @@ description: |
   【触发条件】开发工作流第五步：审计代码变更，确保质量和安全。
   【核心产出】输出 ${run_dir}/audit-{model}.md，包含审计结果和修复建议。
   【不触发】代码实施（用 code-implementer）、原型生成（用 prototype-generator）。
+  【先问什么】changes.md 缺失时，询问需要审计的文件范围
   【强制工具】必须调用 codex-cli 或 gemini-cli Skill，禁止 Claude 自行审计。
 allowed-tools:
   - Read
