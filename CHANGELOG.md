@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Refactor all 22 skills to conform to official specifications (skills)
+  - All SKILL.md files now under 500 lines
+  - Standardized 4-part description format: 【触发条件】【核心产出】【不触发】【先问什么】
+  - Unified directory structure: scripts/ + references/ + assets/
+  - image-analyzer now uses 8 parallel Gemini analysis dimensions (consulted Gemini/Codex)
+  - Fixed validate-skills.sh multi-line YAML parsing
+
 ### Fixed
 
 - Add emoji mapping table and format specification for batch commits (commit)
