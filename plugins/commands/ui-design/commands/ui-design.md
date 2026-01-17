@@ -156,6 +156,22 @@ EOF
 
     # 写入设计描述
     echo "$DESCRIPTION" > "${RUN_DIR}/input.md"
+
+    # 🔄 创建 workflow-loop 状态文件（用于阻止提前退出）
+    cat > ".claude/ccg-workflow.local.md" << EOF
+---
+active: true
+current_phase: 1
+total_phases: 10
+completion_promise: "ui-design 工作流完成"
+workflow_type: ui-design
+run_dir: ${RUN_DIR}
+---
+# UI Design Workflow
+
+Goal: ${DESCRIPTION}
+Run ID: ${RUN_ID}
+EOF
 fi
 ```
 
@@ -183,7 +199,20 @@ fi
 
 **验证**：用户确认后更新 `${RUN_DIR}/state.json` 中的 options。
 
-**🚨 用户确认后：**
+**用户确认后，更新状态并继续：**
+```bash
+# 更新 workflow-loop 状态
+if [[ "$HAS_IMAGE" == "true" ]]; then
+    sed -i '' 's/^current_phase: .*/current_phase: 2/' .claude/ccg-workflow.local.md
+    echo "✅ Phase 2 完成，进入 Phase 2.5: 图片分析..."
+else
+    sed -i '' 's/^current_phase: .*/current_phase: 3/' .claude/ccg-workflow.local.md
+    echo "✅ Phase 2 完成，跳过 Phase 2.5，进入 Phase 3: 需求分析..."
+fi
+```
+
+**🚨 用户确认后立即继续，不要停止！**
+
 - 如果有 `--image` 参数 → 执行 Phase 2.5
 - 如果没有 → 跳过 Phase 2.5，直接执行 Phase 3
 
@@ -247,10 +276,15 @@ Skill(skill="image-analyzer", args="run_dir=${RUN_DIR} image_path=${IMAGE_PATH}"
 ### ⏩ 自动继续到 Phase 3
 
 **验证通过后，不询问用户，直接执行：**
+```bash
+# 更新 workflow-loop 状态
+sed -i '' 's/^current_phase: .*/current_phase: 3/' .claude/ccg-workflow.local.md
+
+# 输出进度
+echo "✅ Phase 2.5 完成，进入 Phase 3: 需求分析..."
 ```
-→ 输出 "✅ 图片分析完成，提取了 X 种颜色、Y 个组件..."
-→ 立即调用 Phase 3
-```
+
+**🚨 立即调用 Phase 3，不要停止！**
 
 ---
 
@@ -291,10 +325,15 @@ Skill(skill="requirement-analyzer", args="run_dir=${RUN_DIR} description=${DESCR
 ### ⏩ 自动继续到 Phase 4
 
 **验证通过后，不询问用户，直接执行：**
+```bash
+# 更新 workflow-loop 状态
+sed -i '' 's/^current_phase: .*/current_phase: 4/' .claude/ccg-workflow.local.md
+
+# 输出进度
+echo "✅ Phase 3 完成，进入 Phase 4: 样式推荐..."
 ```
-→ 输出 "✅ 需求分析完成，进入样式推荐阶段..."
-→ 立即调用 Phase 4
-```
+
+**🚨 立即调用 Phase 4，不要停止！**
 
 ---
 
@@ -343,12 +382,15 @@ Skill(skill="style-recommender", args="run_dir=${RUN_DIR}")
 ### ⏩ 自动继续到 Phase 5
 
 **验证通过后，直接进入 Phase 5（硬停止）：**
+```bash
+# 更新 workflow-loop 状态
+sed -i '' 's/^current_phase: .*/current_phase: 5/' .claude/ccg-workflow.local.md
+
+# 输出进度
+echo "✅ Phase 4 完成，进入 Phase 5: 方案选择..."
 ```
-→ 输出 "✅ 样式推荐完成，HTML 预览页面已生成！"
-→ 输出预览文件路径
-→ 提示用户在浏览器中打开预览
-→ 调用 AskUserQuestion 让用户选择方案
-```
+
+**输出预览文件路径，提示用户在浏览器中打开，然后调用 AskUserQuestion。**
 
 ---
 
@@ -405,7 +447,15 @@ Skill(skill="style-recommender", args="run_dir=${RUN_DIR}")
 
 **记录选择**：将用户选择写入 `${RUN_DIR}/selected-variants.txt`
 
-**🚨 用户确认后立即执行 Phase 6，不要停止！**
+**用户确认后，更新状态并继续：**
+```bash
+# 更新 workflow-loop 状态
+sed -i '' 's/^current_phase: .*/current_phase: 6/' .claude/ccg-workflow.local.md
+
+echo "✅ Phase 5 完成，进入 Phase 6: 设计生成..."
+```
+
+**🚨 立即执行 Phase 6，不要停止！**
 
 ---
 
@@ -446,7 +496,15 @@ Skill(skill="design-variant-generator", args="run_dir=${RUN_DIR} variant_id=${SE
 
 **验证**：确认 `${RUN_DIR}/design-{A,B,C}.md` 已生成
 
-**🚨 完成后立即执行 Phase 7，不要停止！**
+**更新状态并继续：**
+```bash
+# 更新 workflow-loop 状态
+sed -i '' 's/^current_phase: .*/current_phase: 7/' .claude/ccg-workflow.local.md
+
+echo "✅ Phase 6 完成，进入 Phase 7: UX 检查..."
+```
+
+**🚨 立即执行 Phase 7，不要停止！**
 
 ---
 
@@ -481,7 +539,15 @@ for variant in failed_variants:
         AskUserQuestion("UX 检查多次失败，是否继续使用当前设计？")
 ```
 
-**🚨 所有变体通过后立即执行 Phase 8，不要停止！**
+**所有变体通过后，更新状态并继续：**
+```bash
+# 更新 workflow-loop 状态
+sed -i '' 's/^current_phase: .*/current_phase: 8/' .claude/ccg-workflow.local.md
+
+echo "✅ Phase 7 完成，进入 Phase 8: 代码生成..."
+```
+
+**🚨 立即执行 Phase 8，不要停止！**
 
 ---
 
@@ -527,7 +593,15 @@ Skill(skill="code-generator", args="run_dir=${RUN_DIR} variant_id=${FINAL_VARIAN
 
 **如果 gemini-raw/ 目录不存在，说明没有使用 Gemini，这是 Skill 失败！**
 
-**🚨 完成后立即执行 Phase 9，不要停止！**
+**更新状态并继续：**
+```bash
+# 更新 workflow-loop 状态
+sed -i '' 's/^current_phase: .*/current_phase: 9/' .claude/ccg-workflow.local.md
+
+echo "✅ Phase 8 完成，进入 Phase 9: 质量验证..."
+```
+
+**🚨 立即执行 Phase 9，不要停止！**
 
 ---
 
@@ -546,7 +620,15 @@ Skill(skill="quality-validator", args="run_dir=${RUN_DIR} variant_id=${FINAL_VAR
 - **通过条件**：总分 ≥ 7.5/10
 - **失败处理**：展示报告，询问用户是否接受当前质量
 
-**🚨 完成后立即执行 Phase 10 交付！**
+**更新状态并继续：**
+```bash
+# 更新 workflow-loop 状态
+sed -i '' 's/^current_phase: .*/current_phase: 10/' .claude/ccg-workflow.local.md
+
+echo "✅ Phase 9 完成，进入 Phase 10: 交付..."
+```
+
+**🚨 立即执行 Phase 10 交付！**
 
 ---
 
@@ -584,6 +666,19 @@ Skill(skill="quality-validator", args="run_dir=${RUN_DIR} variant_id=${FINAL_VAR
   - 断点续传: /ui-design --run-id=${RUN_ID}
   - 安装依赖: cd ${RUN_DIR}/code/${TECH_STACK} && npm install
   - 启动开发: npm run dev
+```
+
+**工作流完成，清理状态文件：**
+```bash
+# 删除 workflow-loop 状态文件
+rm -f .claude/ccg-workflow.local.md
+
+echo "✅ ui-design 工作流完成！"
+```
+
+**🚨 输出完成 promise：**
+```
+<promise>ui-design 工作流完成</promise>
 ```
 
 ---
