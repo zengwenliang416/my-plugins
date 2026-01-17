@@ -88,46 +88,16 @@ cp "${image_path}" "${run_dir}/reference-image.$(basename ${image_path##*.})"
 
 **🚨 执行方式**：在**单个消息**中发起 8 个 Bash 工具调用，**每个必须设置 `run_in_background=true`**
 
-**工具调用格式示例**（每个任务都这样调用）：
-```
-Bash(
-  command: ~/.claude/bin/codeagent-wrapper gemini --file "${image_path}" --prompt "${prompt_N}",
-  run_in_background: true
-)
-```
-
-**8 个任务的命令**：
+**命令格式**：
 ```bash
-# Task 1: 整体风格 + 布局结构 (run_in_background=true)
-~/.claude/bin/codeagent-wrapper gemini --file "${image_path}" --prompt "${prompt_1}"
-
-# Task 2: 完整配色系统 (run_in_background=true)
-~/.claude/bin/codeagent-wrapper gemini --file "${image_path}" --prompt "${prompt_2}"
-
-# Task 3: 字体排版系统 (run_in_background=true)
-~/.claude/bin/codeagent-wrapper gemini --file "${image_path}" --prompt "${prompt_3}"
-
-# Task 4: 间距系统 (run_in_background=true)
-~/.claude/bin/codeagent-wrapper gemini --file "${image_path}" --prompt "${prompt_4}"
-
-# Task 5: UI 组件识别 (run_in_background=true)
-~/.claude/bin/codeagent-wrapper gemini --file "${image_path}" --prompt "${prompt_5}"
-
-# Task 6: 交互状态 (run_in_background=true)
-~/.claude/bin/codeagent-wrapper gemini --file "${image_path}" --prompt "${prompt_6}"
-
-# Task 7: 图标系统 (run_in_background=true)
-~/.claude/bin/codeagent-wrapper gemini --file "${image_path}" --prompt "${prompt_7}"
-
-# Task 8: 细节系统 (run_in_background=true)
-~/.claude/bin/codeagent-wrapper gemini --file "${image_path}" --prompt "${prompt_8}"
+~/.claude/bin/codeagent-wrapper gemini --file "${image_path}" --prompt "${prompt_N}"
 ```
 
 **⚠️ 重要**：
 - **必须** 在每个 Bash 调用中设置 `run_in_background=true`，否则会串行执行
+- `--file` 参数传递图片路径，wrapper 会自动转换为 Gemini 的 `@` 语法
 - 每个任务独立会话（不共享 SESSION_ID）
 - 记录每个后台任务的 `task_id`，用于 Step 3 获取结果
-- 记录每个任务的 task_id，用于后续获取结果
 
 ### Step 3: 等待所有任务完成
 
