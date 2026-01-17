@@ -98,7 +98,7 @@ Read: ${run_dir}/design-{variant_id}.md
 **🚨 必须调用 Gemini**：
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini --model gemini-2.5-flash --prompt "${prompt}"
+~/.claude/bin/codeagent-wrapper gemini --prompt "${prompt}"
 ```
 
 > 📚 Gemini 提示词模板见 [references/tech-stack-templates.md](references/tech-stack-templates.md#5-gemini-提示词模板)
