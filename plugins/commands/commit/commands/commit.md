@@ -157,14 +157,19 @@ commits_info = []  # 记录所有提交信息
 
 for commit in split_recommendation.commits:
     1. 暂存该提交的文件: git add ${commit.files}
-    2. 选择 emoji: EMOJI = emoji_map[commit.type]
-    3. 构建提交消息: "${commit.type}(${commit.scope}): ${EMOJI} ${commit.description}"
-    4. 执行提交: git commit -m "${message}"
-    5. 记录: commits_info.append({type, scope, emoji, description, hash})
+    2. 🚨 直接使用 commit.message 字段（已包含正确格式）
+    3. 执行提交: git commit -m "${commit.message}"
+    4. 记录: commits_info.append({type, scope, emoji, description, hash})
 ```
+
+**🚨 关键规则**：
+- `commit.message` 由 change-analyzer 生成，格式已正确
+- **禁止手动拼接** commit message，直接使用 `commit.message`
+- 如果 `commit.message` 不存在，使用公式：`${type}(${scope}): ${emoji} ${description}`
 
 **示例**：
 - ✅ `fix(ui-design): 🐛 添加 requirement-analyzer 强制继续指令`
+- ❌ `🐛 fix(ui-design): 添加 requirement-analyzer 强制继续指令`（emoji 位置错误）
 - ❌ `fix(ui-design): 添加 requirement-analyzer 强制继续指令`（缺少 emoji）
 
 ### Step 3: 🚨 更新 CHANGELOG（必须执行）

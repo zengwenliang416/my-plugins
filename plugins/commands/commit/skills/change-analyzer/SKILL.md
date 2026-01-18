@@ -178,6 +178,24 @@ LSP(operation="documentSymbol", filePath="${file_path}", line=1, character=1)
 
 **拆分建议示例（should_split=true 时）：**
 
+**🚨 每个 commit 必须包含 `message` 字段，格式为 `type(scope): emoji 描述`**
+
+**Emoji 映射表**：
+
+| 类型 | Emoji |
+|------|-------|
+| feat | ✨ |
+| fix | 🐛 |
+| docs | 📝 |
+| style | 💄 |
+| refactor | ♻️ |
+| perf | ⚡ |
+| test | ✅ |
+| build | 📦 |
+| ci | 👷 |
+| chore | 🔧 |
+| revert | ⏪ |
+
 ```json
 {
   "should_split": true,
@@ -187,16 +205,20 @@ LSP(operation="documentSymbol", filePath="${file_path}", line=1, character=1)
       {
         "type": "feat",
         "scope": "auth-service",
+        "emoji": "✨",
         "files": ["src/auth/AuthService.ts"],
         "description": "新增 token 刷新功能",
+        "message": "feat(auth-service): ✨ 新增 token 刷新功能",
         "symbols": ["refreshToken", "TokenManager"],
         "priority": 1
       },
       {
         "type": "docs",
         "scope": "docs",
+        "emoji": "📝",
         "files": ["docs/README.md"],
         "description": "更新认证文档",
+        "message": "docs(docs): 📝 更新认证文档",
         "priority": 2
       }
     ]
