@@ -34,6 +34,12 @@
       "description": "UI/UX 设计工作流：需求分析 → 样式推荐 → 设计生成（并行 3 变体）→ UX 检查 → 代码生成（双模型协作）→ 质量验证",
       "source": "./plugins/commands/ui-design",
       "version": "1.0.0"
+    },
+    {
+      "name": "brainstorm",
+      "description": "头脑风暴工作流：主题研究 → 多模型发散 → 创意评估 → 报告生成",
+      "source": "./plugins/commands/brainstorm",
+      "version": "1.0.0"
     }
   ]
 }
