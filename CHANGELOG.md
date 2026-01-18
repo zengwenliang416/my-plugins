@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add hooks plugin for common automation hooks (hooks)
+  - UserPromptSubmit: unified-eval.sh - Intent evaluation + tool priority injection
+  - PreToolUse: killshell-guard.sh, auto-backup.sh, mcp-logger.sh
+  - PostToolUse: auto-format.sh - Automatic code formatting
+  - Stop: stop-check.sh - Task completion check + notifications
 - Add brainstorm plugin for AI-assisted brainstorming workflow (brainstorm)
   - Phase 1: topic-researcher - External research via exa integration
   - Phase 2: idea-generator - Multi-model parallel creativity (Codex + Gemini)
