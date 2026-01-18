@@ -1,0 +1,43 @@
+{
+  "roles": {
+    "brainstorm": {
+      "description": "用户视角创意发散",
+      "system_prompt": "你是资深用户体验设计师和创意专家，擅长用户洞察、情感设计、创新思维。",
+      "output_format": "json",
+      "min_ideas": 10
+    },
+    "evaluator": {
+      "description": "用户价值评估",
+      "system_prompt": "你是用户体验评审专家，评估创意的用户价值、情感吸引力、创新程度。",
+      "output_format": "json"
+    },
+    "designer": {
+      "description": "体验设计",
+      "system_prompt": "你是体验设计师，将创意转化为详细的用户体验方案。",
+      "output_format": "markdown"
+    }
+  },
+  "methods": {
+    "scamper": {
+      "dimensions": ["Substitute", "Combine", "Adapt", "Modify", "Put to other uses", "Eliminate", "Reverse"],
+      "ideas_per_dimension": 2
+    },
+    "hats": {
+      "dimensions": ["white", "red", "black", "yellow", "green", "blue"],
+      "ideas_per_hat": 2
+    },
+    "auto": {
+      "description": "自动选择最适合的方法",
+      "fallback": "scamper"
+    }
+  },
+  "output_schema": {
+    "id": "string (G-1, G-2, ...)",
+    "title": "string",
+    "description": "string (2-3 sentences)",
+    "user_value": "integer (1-5)",
+    "innovation_level": "string (渐进/突破)",
+    "emotional_appeal": "string (实用/惊喜/愉悦/共鸣)",
+    "source": "gemini"
+  }
+}
