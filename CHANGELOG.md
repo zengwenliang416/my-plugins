@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add brainstorm plugin for AI-assisted brainstorming workflow (brainstorm)
+  - Phase 1: topic-researcher - External research via exa integration
+  - Phase 2: idea-generator - Multi-model parallel creativity (Codex + Gemini)
+  - Phase 3: idea-evaluator - Impact/Feasibility/Innovation/Alignment scoring
+  - Phase 4: report-synthesizer - Generate brief/detailed reports
+  - Support SCAMPER and Six Thinking Hats methods
+  - 7 skill modules: codex-cli, gemini-cli, exa, topic-researcher, idea-generator, idea-evaluator, report-synthesizer
+
 ### Changed
 
 - Refactor all 22 skills to conform to official specifications (skills)
