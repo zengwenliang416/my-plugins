@@ -1,5 +1,0 @@
-{
-  "name": "workflow-loop",
-  "description": "工作流循环控制 - 阻止工作流提前退出，确保所有阶段完成",
-  "version": "1.0.0"
-}

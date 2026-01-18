@@ -18,18 +18,6 @@
       "version": "1.0.0"
     },
     {
-      "name": "workflow-loop",
-      "description": "工作流循环控制 Hook",
-      "source": "./plugins/hooks/workflow-loop",
-      "version": "1.0.0"
-    },
-    {
-      "name": "stop-check",
-      "description": "任务完成检查 + Bark/Telegram/ntfy 通知",
-      "source": "./plugins/hooks/stop-check",
-      "version": "1.0.0"
-    },
-    {
       "name": "ui-design",
       "description": "UI/UX 设计工作流：需求分析 → 样式推荐 → 设计生成（并行 3 变体）→ UX 检查 → 代码生成（双模型协作）→ 质量验证",
       "source": "./plugins/commands/ui-design",

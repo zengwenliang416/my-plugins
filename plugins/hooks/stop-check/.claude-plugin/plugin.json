@@ -1,5 +1,0 @@
-{
-  "name": "stop-check",
-  "description": "任务完成检查 + Bark/Telegram/ntfy 通知",
-  "version": "1.0.0"
-}
