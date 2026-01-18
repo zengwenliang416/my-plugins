@@ -40,6 +40,12 @@
       "description": "头脑风暴工作流：主题研究 → 多模型发散 → 创意评估 → 报告生成",
       "source": "./plugins/commands/brainstorm",
       "version": "1.0.0"
+    },
+    {
+      "name": "hooks",
+      "description": "通用钩子集合：意图评估、日志备份、代码质量、智能路由、安全防护、会话管理",
+      "source": "./plugins/commands/hooks",
+      "version": "1.0.0"
     }
   ]
 }
