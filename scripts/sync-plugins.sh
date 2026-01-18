@@ -28,7 +28,8 @@ sync_plugin() {
   echo -e "${BLUE}Syncing ${plugin}...${NC}"
   rm -rf "$dst"
   mkdir -p "$dst"
-  cp -r "${src}"/* "$dst/"
+  # 复制所有文件包括隐藏文件夹
+  cp -r "${src}"/. "$dst/"
   echo -e "${GREEN}✅ ${plugin} synced${NC}"
 }
 
