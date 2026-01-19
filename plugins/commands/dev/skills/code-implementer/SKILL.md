@@ -12,6 +12,7 @@ allowed-tools:
   - Edit
   - Skill
   - LSP
+  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -55,7 +56,34 @@ arguments:
 - **单一职责**: 只做代码重构和实施，不做分析或审计
 - **核心原则**: 外部模型重构原型，Claude 验证并应用
 
+## MCP 工具集成
+
+| MCP 工具              | 用途                                 | 触发条件        |
+| --------------------- | ------------------------------------ | --------------- |
+| `sequential-thinking` | 结构化实施策略，确保重构质量和完整性 | 🚨 每次执行必用 |
+
 ## 执行流程
+
+### Step 0: 结构化实施规划（sequential-thinking）
+
+🚨 **必须首先使用 sequential-thinking 规划实施策略**
+
+```
+mcp__sequential-thinking__sequentialthinking({
+  thought: "规划代码实施策略。需要：1) 理解原型内容 2) LSP 影响范围分析 3) 重构优化点 4) 应用顺序规划 5) 验证策略",
+  thoughtNumber: 1,
+  totalThoughts: 5,
+  nextThoughtNeeded: true
+})
+```
+
+**思考步骤**：
+
+1. **原型内容理解**：从 prototype-{model}.diff 提取变更内容
+2. **LSP 影响范围分析**：使用 LSP 确认每个符号的引用
+3. **重构优化点识别**：识别原型中需要重构的部分
+4. **应用顺序规划**：确定文件修改顺序，避免循环依赖
+5. **验证策略制定**：规划类型检查、语法检查、测试
 
 ### Step 1: 读取原型
 
@@ -100,6 +128,7 @@ LSP(operation="outgoingCalls", filePath="<file>", line=<line>, character=<char>)
 **🚨🚨🚨 这是关键步骤！**
 
 **❌ 禁止行为：**
+
 - ❌ 使用 Bash 工具调用 codeagent-wrapper
 - ❌ 自己实施代码
 - ❌ 使用 Write/Edit 工具直接写代码
