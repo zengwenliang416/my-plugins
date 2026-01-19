@@ -9,6 +9,7 @@ allowed-tools:
   - Bash
   - Write
   - AskUserQuestion
+  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -17,6 +18,37 @@ arguments:
 ---
 
 # Change Collector - 变更收集原子技能
+
+## MCP 工具集成
+
+| MCP 工具              | 用途                               | 触发条件        |
+| --------------------- | ---------------------------------- | --------------- |
+| `sequential-thinking` | 结构化变更收集策略，确保数据完整性 | 🚨 每次执行必用 |
+
+## 执行流程
+
+### Step 0: 结构化变更收集规划（sequential-thinking）
+
+🚨 **必须首先使用 sequential-thinking 规划变更收集策略**
+
+```
+mcp__sequential-thinking__sequentialthinking({
+  thought: "规划变更收集策略。需要：1) 创建运行目录 2) 验证 Git 仓库 3) 收集变更信息 4) 解析状态构建 JSON 5) 写入结果文件",
+  thoughtNumber: 1,
+  totalThoughts: 5,
+  nextThoughtNeeded: true
+})
+```
+
+**思考步骤**：
+
+1. **运行目录创建**：确保 run_dir 存在
+2. **Git 仓库验证**：检查是否在 Git 仓库中，处理初始化
+3. **变更信息收集**：执行 git status/diff 命令
+4. **JSON 构建**：解析 git 输出，构建结构化数据
+5. **结果写入**：写入 changes-raw.json
+
+---
 
 ## 职责边界
 
@@ -51,11 +83,13 @@ git rev-parse --is-inside-work-tree
 ```
 
 **如果用户选择初始化**：
+
 ```bash
 git init
 ```
 
 **继续获取分支信息**：
+
 ```bash
 # 获取当前分支
 git branch --show-current
@@ -110,12 +144,12 @@ git diff --staged --name-status
 
 **字段说明：**
 
-| 字段 | 说明 |
-|------|------|
-| `status` | Git 状态码（M=修改, A=新增, D=删除, R=重命名） |
-| `type` | 变更类型（modified, added, deleted, renamed） |
-| `file_type` | 文件类型（根据扩展名：ts→typescript, py→python 等） |
-| `scope` | 作用域（路径第二级目录，如 src/components/Foo.tsx → components） |
+| 字段        | 说明                                                             |
+| ----------- | ---------------------------------------------------------------- |
+| `status`    | Git 状态码（M=修改, A=新增, D=删除, R=重命名）                   |
+| `type`      | 变更类型（modified, added, deleted, renamed）                    |
+| `file_type` | 文件类型（根据扩展名：ts→typescript, py→python 等）              |
+| `scope`     | 作用域（路径第二级目录，如 src/components/Foo.tsx → components） |
 
 ### Step 5: 写入结果
 
@@ -125,29 +159,29 @@ git diff --staged --name-status
 
 ## 文件类型映射
 
-| 扩展名 | file_type |
-|--------|-----------|
-| ts, tsx | typescript |
-| js, jsx | javascript |
-| py | python |
-| go | go |
-| rs | rust |
-| md, mdx | markdown |
-| json | json |
-| yaml, yml | yaml |
-| sh, bash | shell |
-| 其他 | other |
+| 扩展名    | file_type  |
+| --------- | ---------- |
+| ts, tsx   | typescript |
+| js, jsx   | javascript |
+| py        | python     |
+| go        | go         |
+| rs        | rust       |
+| md, mdx   | markdown   |
+| json      | json       |
+| yaml, yml | yaml       |
+| sh, bash  | shell      |
+| 其他      | other      |
 
 ## Git 状态码映射
 
-| 状态码 | type |
-|--------|------|
-| `M` | modified |
-| `A` | added |
-| `D` | deleted |
-| `R` | renamed |
-| `C` | copied |
-| `??` | untracked |
+| 状态码 | type      |
+| ------ | --------- |
+| `M`    | modified  |
+| `A`    | added     |
+| `D`    | deleted   |
+| `R`    | renamed   |
+| `C`    | copied    |
+| `??`   | untracked |
 
 ---
 
@@ -171,12 +205,12 @@ git diff --staged --name-status
 
 ## 错误处理
 
-| 情况 | 处理 |
-|------|------|
+| 情况          | 处理                               |
+| ------------- | ---------------------------------- |
 | 不是 Git 仓库 | 询问用户是否初始化，用户拒绝则退出 |
-| 没有暂存变更 | 正常输出，has_staged=false |
-| git 命令失败 | 报错退出 |
-| 新仓库无分支 | 正常输出，branch=null |
+| 没有暂存变更  | 正常输出，has_staged=false         |
+| git 命令失败  | 报错退出                           |
+| 新仓库无分支  | 正常输出，branch=null              |
 
 ---
 

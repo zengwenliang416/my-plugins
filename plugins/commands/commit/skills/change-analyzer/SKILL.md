@@ -10,6 +10,7 @@ allowed-tools:
   - Write
   - LSP
   - mcp__auggie-mcp__codebase-retrieval
+  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -18,6 +19,38 @@ arguments:
 ---
 
 # Change Analyzer - 变更分析原子技能
+
+## MCP 工具集成
+
+| MCP 工具              | 用途                                 | 触发条件        |
+| --------------------- | ------------------------------------ | --------------- |
+| `sequential-thinking` | 结构化变更分析策略，确保分析全面准确 | 🚨 每次执行必用 |
+| `auggie-mcp`          | 语义检索代码库，理解变更业务语义     | 🚨 必须首先使用 |
+
+## 执行流程
+
+### Step 0: 结构化变更分析规划（sequential-thinking）
+
+🚨 **必须首先使用 sequential-thinking 规划变更分析策略**
+
+```
+mcp__sequential-thinking__sequentialthinking({
+  thought: "规划变更分析策略。需要：1) 读取变更数据 2) 语义分析（auggie-mcp） 3) 符号分析（LSP） 4) 类型和作用域提取 5) 拆分评估和结果构建",
+  thoughtNumber: 1,
+  totalThoughts: 5,
+  nextThoughtNeeded: true
+})
+```
+
+**思考步骤**：
+
+1. **变更数据读取**：从 changes-raw.json 提取文件列表和统计
+2. **语义分析**：使用 auggie-mcp 理解变更的业务语义和功能分组
+3. **符号分析**：使用 LSP 获取变更文件的符号结构
+4. **类型作用域提取**：推断 Conventional Commit 类型和作用域
+5. **拆分评估**：评估是否需要拆分提交，构建分析结果
+
+---
 
 ## 职责边界
 
@@ -32,6 +65,7 @@ arguments:
 ### Step 1: 读取变更数据
 
 读取 `${run_dir}/changes-raw.json`，提取：
+
 - `staged` 数组（已暂存文件列表）
 - `unstaged` 数组（未暂存文件列表）
 - `untracked` 数组（未跟踪文件列表）
@@ -41,13 +75,14 @@ arguments:
 
 **根据变更状态确定分析目标**：
 
-| 情况 | 分析目标 | 模式 |
-|------|----------|------|
-| `has_staged=true` | `staged` 文件 | 正常提交模式 |
+| 情况                                         | 分析目标                 | 模式         |
+| -------------------------------------------- | ------------------------ | ------------ |
+| `has_staged=true`                            | `staged` 文件            | 正常提交模式 |
 | `has_staged=false` 但有 `unstaged/untracked` | `unstaged` + `untracked` | 智能暂存模式 |
-| 全部为空 | 无 | 报错退出 |
+| 全部为空                                     | 无                       | 报错退出     |
 
 **智能暂存模式**：
+
 - 分析所有未暂存/未跟踪文件
 - 使用 LSP + auggie-mcp 按功能模块分组
 - 生成分批暂存建议
@@ -70,6 +105,7 @@ mcp__auggie-mcp__codebase-retrieval(
 ```
 
 **产出**：
+
 - `semantic_groups`: 按功能模块分组的文件
 - `semantic_summary`: 变更的语义摘要
 - `affected_features`: 影响的功能列表
@@ -83,20 +119,23 @@ LSP(operation="documentSymbol", filePath="${file_path}", line=1, character=1)
 ```
 
 **跳过条件**（仅以下情况可跳过）：
+
 - 配置文件（.json, .yaml, .toml 等）
 - 纯文本文件（.md, .txt 等）
 - LSP 返回错误
 
 **提取**：
+
 - 变更涉及的函数/类/方法名
 - 主要符号的类型（function, class, interface, variable）
 
 **示例**：
+
 ```json
 {
   "symbols": [
-    {"name": "validateToken", "kind": "function", "line": 42},
-    {"name": "AuthService", "kind": "class", "line": 10}
+    { "name": "validateToken", "kind": "function", "line": 42 },
+    { "name": "AuthService", "kind": "class", "line": 10 }
   ]
 }
 ```
@@ -105,14 +144,14 @@ LSP(operation="documentSymbol", filePath="${file_path}", line=1, character=1)
 
 根据文件变更推断 Conventional Commit 类型（作为 auggie-mcp 的补充）：
 
-| 文件变更 | 推断类型 |
-|----------|----------|
-| 新增文件 | feat |
+| 文件变更     | 推断类型                    |
+| ------------ | --------------------------- |
+| 新增文件     | feat                        |
 | 修改代码文件 | fix 或 feat（取决于上下文） |
-| 删除文件 | refactor |
-| 修改文档 | docs |
-| 修改测试 | test |
-| 修改配置 | chore |
+| 删除文件     | refactor                    |
+| 修改文档     | docs                        |
+| 修改测试     | test                        |
+| 修改配置     | chore                       |
 
 ### Step 6: 智能作用域提取（基于 LSP + auggie-mcp 结果）
 
@@ -134,12 +173,12 @@ LSP(operation="documentSymbol", filePath="${file_path}", line=1, character=1)
 
 **拆分规则：**
 
-| 规则 | 触发条件 | 建议 |
-|------|----------|------|
-| 多作用域 | 涉及 2+ 个不同作用域 | 建议拆分 |
-| 大变更 | 文件数 > 10 或变更行数 > 300 | 建议拆分 |
-| 混合类型 | 同时有 feat + fix | 可选拆分 |
-| 新增+删除 | 同时有新增和删除文件 | 建议拆分 |
+| 规则       | 触发条件                      | 建议     |
+| ---------- | ----------------------------- | -------- |
+| 多作用域   | 涉及 2+ 个不同作用域          | 建议拆分 |
+| 大变更     | 文件数 > 10 或变更行数 > 300  | 建议拆分 |
+| 混合类型   | 同时有 feat + fix             | 可选拆分 |
+| 新增+删除  | 同时有新增和删除文件          | 建议拆分 |
 | 语义不相关 | auggie-mcp 判断变更语义不相关 | 建议拆分 |
 
 ### Step 8: 构建分析结果
@@ -182,19 +221,19 @@ LSP(operation="documentSymbol", filePath="${file_path}", line=1, character=1)
 
 **Emoji 映射表**：
 
-| 类型 | Emoji |
-|------|-------|
-| feat | ✨ |
-| fix | 🐛 |
-| docs | 📝 |
-| style | 💄 |
-| refactor | ♻️ |
-| perf | ⚡ |
-| test | ✅ |
-| build | 📦 |
-| ci | 👷 |
-| chore | 🔧 |
-| revert | ⏪ |
+| 类型     | Emoji |
+| -------- | ----- |
+| feat     | ✨    |
+| fix      | 🐛    |
+| docs     | 📝    |
+| style    | 💄    |
+| refactor | ♻️    |
+| perf     | ⚡    |
+| test     | ✅    |
+| build    | 📦    |
+| ci       | 👷    |
+| chore    | 🔧    |
+| revert   | ⏪    |
 
 ```json
 {
@@ -234,19 +273,19 @@ LSP(operation="documentSymbol", filePath="${file_path}", line=1, character=1)
 
 ## 复杂度评估
 
-| 复杂度 | 条件 |
-|--------|------|
-| low | ≤3 文件 且 ≤50 行变更 |
+| 复杂度 | 条件                    |
+| ------ | ----------------------- |
+| low    | ≤3 文件 且 ≤50 行变更   |
 | medium | ≤10 文件 且 ≤300 行变更 |
-| high | >10 文件 或 >300 行变更 |
+| high   | >10 文件 或 >300 行变更 |
 
 ## 置信度评估
 
-| 置信度 | 条件 |
-|--------|------|
-| high | 单一作用域 + 单一类型 + low 复杂度 + 语义一致 |
-| medium | 单一作用域 或 medium 复杂度 |
-| low | 多作用域 + high 复杂度 + 语义不一致 |
+| 置信度 | 条件                                          |
+| ------ | --------------------------------------------- |
+| high   | 单一作用域 + 单一类型 + low 复杂度 + 语义一致 |
+| medium | 单一作用域 或 medium 复杂度                   |
+| low    | 多作用域 + high 复杂度 + 语义不一致           |
 
 ---
 
@@ -267,6 +306,7 @@ LSP(operation="documentSymbol", filePath="${file_path}", line=1, character=1)
 ### 降级策略
 
 如果 auggie-mcp 或 LSP 不可用：
+
 1. 跳过语义分析，使用基础类型推断
 2. 跳过符号分析，使用路径推断作用域
 3. 在结果中标记 `"analysis_mode": "basic"`

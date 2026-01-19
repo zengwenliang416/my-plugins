@@ -10,6 +10,7 @@ allowed-tools:
   - Read
   - Write
   - Bash
+  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -27,17 +28,50 @@ arguments:
 
 # Changelog Generator - 变更日志生成原子技能
 
+## MCP 工具集成
+
+| MCP 工具              | 用途                                    | 触发条件        |
+| --------------------- | --------------------------------------- | --------------- |
+| `sequential-thinking` | 结构化 Changelog 更新策略，确保格式规范 | 🚨 每次执行必用 |
+
+## 执行流程
+
+### Step 0: 结构化 Changelog 更新规划（sequential-thinking）
+
+🚨 **必须首先使用 sequential-thinking 规划 Changelog 更新策略**
+
+```
+mcp__sequential-thinking__sequentialthinking({
+  thought: "规划 Changelog 更新策略。需要：1) 判断模式（单次/批量） 2) 检查现有 CHANGELOG.md 3) 确定变更类型 4) 生成条目内容 5) 更新文件并写入记录",
+  thoughtNumber: 1,
+  totalThoughts: 5,
+  nextThoughtNeeded: true
+})
+```
+
+**思考步骤**：
+
+1. **模式判断**：检查 commits 参数，确定单次或批量模式
+2. **文件检查**：检查 CHANGELOG.md 是否存在，必要时创建
+3. **类型映射**：将 Conventional Commit 类型映射到 Changelog 类型
+4. **条目生成**：生成符合 Keep a Changelog 规范的条目
+5. **文件更新**：更新 CHANGELOG.md 并写入 changelog-entry.md 记录
+
+---
+
 ## 🚨🚨🚨 强制执行规则（不可跳过）
 
 **此 Skill 是 commit 工作流的必须步骤（Phase 5.5）**
 
 **禁止以下行为：**
+
 - ❌ 跳过此 Skill（除非用户指定 --no-changelog）
 - ❌ 不创建 CHANGELOG.md（如果不存在）
 - ❌ 不更新 CHANGELOG.md（如果已存在）
 - ❌ 忘记写入 changelog-entry.md 记录
 
 **必须遵守：**
+
 - ✅ 读取 changes-analysis.json 和 commit-message.md
 - ✅ 如果 CHANGELOG.md 不存在，创建它
 - ✅ 将变更条目添加到 [Unreleased] 部分
@@ -59,19 +93,19 @@ arguments:
 
 ### 变更类型映射
 
-| Conventional Commit | Changelog 类型 |
-|---------------------|----------------|
-| feat                | Added          |
-| fix                 | Fixed          |
-| docs                | Changed        |
-| style               | Changed        |
-| refactor            | Changed        |
-| perf                | Changed        |
-| test                | -（通常不记录） |
-| build               | Changed        |
-| ci                  | -（通常不记录） |
-| chore               | -（通常不记录） |
-| revert              | Removed        |
+| Conventional Commit | Changelog 类型                   |
+| ------------------- | -------------------------------- |
+| feat                | Added                            |
+| fix                 | Fixed                            |
+| docs                | Changed                          |
+| style               | Changed                          |
+| refactor            | Changed                          |
+| perf                | Changed                          |
+| test                | -（通常不记录）                  |
+| build               | Changed                          |
+| ci                  | -（通常不记录）                  |
+| chore               | -（通常不记录）                  |
+| revert              | Removed                          |
 | BREAKING CHANGE     | Changed（带 **Breaking:** 前缀） |
 
 ### Changelog 类型优先级
@@ -90,12 +124,14 @@ arguments:
 ### Step 1: 判断模式
 
 **检查 `commits` 参数**：
+
 - 如果有 `commits` 参数 → **批量模式**：从参数解析提交列表
 - 如果没有 → **单次模式**：读取 `run_dir` 中的分析结果
 
 ### Step 1A: 单次模式 - 读取分析结果
 
 读取 `${run_dir}/changes-analysis.json` 和 `${run_dir}/commit-message.md`，提取：
+
 - `primary_type`（从 analysis）
 - `commit_message_title`（从 message）
 - `files_by_type`（从 analysis）
@@ -103,11 +139,12 @@ arguments:
 ### Step 1B: 批量模式 - 解析提交列表
 
 从 `commits` 参数解析 JSON：
+
 ```json
 [
-  {"type": "chore", "scope": "project", "description": "初始化项目脚手架"},
-  {"type": "feat", "scope": "types", "description": "添加 Todo 类型定义"},
-  {"type": "feat", "scope": "hooks", "description": "添加状态管理 Hook"}
+  { "type": "chore", "scope": "project", "description": "初始化项目脚手架" },
+  { "type": "feat", "scope": "types", "description": "添加 Todo 类型定义" },
+  { "type": "feat", "scope": "hooks", "description": "添加状态管理 Hook" }
 ]
 ```
 
@@ -129,7 +166,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
 ```
 
 ### Step 3: 确定变更类型
@@ -148,12 +184,14 @@ BREAKING  → Changed（带 **Breaking:** 前缀）
 ### Step 4: 生成条目内容
 
 **格式规范**：
+
 - 使用祈使语气（Add, Fix, Update, Remove）
 - 每行以 `- ` 开头
 - Breaking changes 用 `**Breaking:**` 前缀
 - 包含相关引用（如有）：`([#123](link))`
 
 **单次模式示例**：
+
 ```markdown
 ### Added
 
@@ -161,6 +199,7 @@ BREAKING  → Changed（带 **Breaking:** 前缀）
 ```
 
 **批量模式示例**（多个提交汇总）：
+
 ```markdown
 ### Added
 
@@ -180,6 +219,7 @@ BREAKING  → Changed（带 **Breaking:** 前缀）
 ```
 
 **批量模式规则**：
+
 - 按 Changelog 类型分组（Added, Changed, Fixed 等）
 - 每个提交一行
 - 在描述后标注 scope：`(scope)`
@@ -189,6 +229,7 @@ BREAKING  → Changed（带 **Breaking:** 前缀）
 **读取现有文件**，找到 `## [Unreleased]` 部分，在对应类型下添加新条目。
 
 **如果版本号已指定**：
+
 - 创建新版本部分：`## [X.Y.Z] - YYYY-MM-DD`
 - 将 Unreleased 内容移至新版本
 - 在文件底部添加版本链接
