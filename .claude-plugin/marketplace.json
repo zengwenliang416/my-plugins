@@ -18,6 +18,12 @@
       "version": "1.0.0"
     },
     {
+      "name": "plan",
+      "description": "开发规划工作流：需求解析 → 上下文检索 → 架构分析 → 任务分解 → 风险评估 → 计划整合",
+      "source": "./plugins/commands/plan",
+      "version": "1.0.0"
+    },
+    {
       "name": "ui-design",
       "description": "UI/UX 设计工作流：需求分析 → 样式推荐 → 设计生成（并行 3 变体）→ UX 检查 → 代码生成（双模型协作）→ 质量验证",
       "source": "./plugins/commands/ui-design",

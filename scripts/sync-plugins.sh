@@ -39,7 +39,7 @@ if [ -n "$1" ]; then
   sync_plugin "$1"
 else
   # Sync all plugins
-  for plugin in commit dev ui-design; do
+  for plugin in brainstorm commit dev hooks plan ui-design; do
     sync_plugin "$plugin"
   done
 fi

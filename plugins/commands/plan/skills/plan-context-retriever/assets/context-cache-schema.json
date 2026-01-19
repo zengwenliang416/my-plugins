@@ -1,0 +1,237 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Context Cache Schema",
+  "description": "上下文缓存结构",
+  "type": "object",
+  "required": ["cache_id", "created_at", "requirement_id", "context"],
+  "properties": {
+    "cache_id": {
+      "type": "string",
+      "description": "缓存唯一标识符",
+      "pattern": "^CTX-[0-9]{8}T[0-9]{6}Z$",
+      "examples": ["CTX-20240119T100000Z"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "缓存创建时间"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "缓存过期时间"
+    },
+    "requirement_id": {
+      "type": "string",
+      "description": "关联的需求 ID"
+    },
+    "task_type": {
+      "type": "string",
+      "enum": ["frontend", "backend", "fullstack"],
+      "description": "任务类型"
+    },
+    "context": {
+      "type": "object",
+      "description": "缓存的上下文数据",
+      "properties": {
+        "internal": {
+          "type": "object",
+          "description": "内部代码上下文",
+          "properties": {
+            "core_modules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "path": { "type": "string" },
+                  "type": { "type": "string" },
+                  "relevance_score": { "type": "number" },
+                  "last_modified": { "type": "string", "format": "date-time" },
+                  "responsibility": { "type": "string" },
+                  "exports": { "type": "array", "items": { "type": "string" } },
+                  "snippet": { "type": "string" },
+                  "language": { "type": "string" },
+                  "evidence_id": { "type": "string" }
+                }
+              }
+            },
+            "dependencies": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "path": { "type": "string" },
+                  "dependency_type": {
+                    "type": "string",
+                    "enum": ["direct", "transitive", "dev", "peer"]
+                  },
+                  "evidence_id": { "type": "string" }
+                }
+              }
+            },
+            "tests": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string" },
+                  "coverage": { "type": "string" },
+                  "status": {
+                    "type": "string",
+                    "enum": ["passing", "failing", "skipped", "unknown"]
+                  }
+                }
+              }
+            },
+            "configs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string" },
+                  "type": { "type": "string" },
+                  "keys": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "external": {
+          "type": "array",
+          "description": "外部文档上下文",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "source": { "type": "string" },
+              "url": { "type": "string", "format": "uri" },
+              "type": { "type": "string" },
+              "retrieved_at": { "type": "string", "format": "date-time" },
+              "relevance_score": { "type": "number" },
+              "summary": { "type": "string" },
+              "key_points": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "call_graph": {
+          "type": "array",
+          "description": "调用关系图",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": { "type": "string" },
+              "to": { "type": "string" },
+              "type": {
+                "type": "string",
+                "enum": ["calls", "imports", "extends", "implements"]
+              }
+            }
+          }
+        },
+        "module_boundaries": {
+          "type": "array",
+          "description": "模块边界",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "boundary_type": { "type": "string" },
+              "entry": { "type": "string" },
+              "api_count": { "type": "integer" }
+            }
+          }
+        }
+      }
+    },
+    "evidence_chain": {
+      "type": "array",
+      "description": "证据链",
+      "items": {
+        "$ref": "#/definitions/evidence"
+      }
+    },
+    "stats": {
+      "type": "object",
+      "description": "检索统计",
+      "properties": {
+        "total_queries": { "type": "integer" },
+        "semantic_queries": { "type": "integer" },
+        "symbol_queries": { "type": "integer" },
+        "external_queries": { "type": "integer" },
+        "files_found": { "type": "integer" },
+        "evidence_count": { "type": "integer" },
+        "duration_ms": { "type": "integer" }
+      }
+    },
+    "retrieval_log": {
+      "type": "array",
+      "description": "检索日志",
+      "items": {
+        "type": "object",
+        "properties": {
+          "timestamp": { "type": "string", "format": "date-time" },
+          "tool": { "type": "string" },
+          "query": { "type": "string" },
+          "result_count": { "type": "integer" },
+          "duration_ms": { "type": "integer" },
+          "success": { "type": "boolean" }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "description": "上下文覆盖度",
+      "properties": {
+        "implementation": {
+          "type": "string",
+          "enum": ["complete", "partial", "none"]
+        },
+        "implementation_note": { "type": "string" },
+        "types": { "type": "string", "enum": ["complete", "partial", "none"] },
+        "types_note": { "type": "string" },
+        "tests": { "type": "string", "enum": ["complete", "partial", "none"] },
+        "tests_note": { "type": "string" },
+        "configs": {
+          "type": "string",
+          "enum": ["complete", "partial", "none"]
+        },
+        "configs_note": { "type": "string" },
+        "external": {
+          "type": "string",
+          "enum": ["complete", "partial", "none"]
+        },
+        "external_note": { "type": "string" }
+      }
+    },
+    "gaps": {
+      "type": "array",
+      "description": "待补充项",
+      "items": { "type": "string" }
+    },
+    "checksum": {
+      "type": "string",
+      "description": "缓存数据校验和（用于验证完整性）"
+    }
+  },
+  "definitions": {
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "file": { "type": "string" },
+        "line": { "type": "string" },
+        "line_start": { "type": "integer" },
+        "line_end": { "type": "integer" },
+        "description": { "type": "string" },
+        "tool_used": { "type": "string" },
+        "query": { "type": "string" },
+        "collected_at": { "type": "string", "format": "date-time" },
+        "language": { "type": "string" },
+        "snippet": { "type": "string" }
+      }
+    }
+  }
+}

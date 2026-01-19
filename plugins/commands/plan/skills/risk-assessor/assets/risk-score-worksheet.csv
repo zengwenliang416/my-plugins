@@ -1,0 +1,33 @@
+risk_id,factor_category,factor_group,factor_name,score,max_score,weight,notes
+R-001,likelihood,threat_agent,skill_level,5,9,1.0,中级 - 需要了解 SQL 语法
+R-001,likelihood,threat_agent,motive,6,9,1.0,高回报 - 可获取数据库数据
+R-001,likelihood,threat_agent,opportunity,9,9,1.0,无需访问 - 公开搜索功能
+R-001,likelihood,threat_agent,size,9,9,1.0,全球 - 任何人可尝试
+R-001,likelihood,vulnerability,ease_of_discovery,7,9,1.0,自动化工具可发现
+R-001,likelihood,vulnerability,ease_of_exploit,7,9,1.0,容易 - 有公开 PoC
+R-001,likelihood,vulnerability,awareness,9,9,1.0,常识 - OWASP Top 10
+R-001,likelihood,vulnerability,intrusion_detection,5,9,1.0,偶尔日志 - 仅错误日志
+R-001,impact,technical,confidentiality,7,9,1.0,大量敏感 - 批量凭证泄露
+R-001,impact,technical,integrity,0,9,1.0,无篡改 - 只读查询
+R-001,impact,technical,availability,0,9,1.0,无中断 - 服务正常
+R-001,impact,technical,accountability,4,9,1.0,部分追溯 - 有查询日志
+R-001,impact,business,financial,6,9,1.0,重大影响 - 需要赔偿和安全改造
+R-001,impact,business,reputation,6,9,1.0,大量用户 - 信任危机
+R-001,impact,business,non_compliance,4,9,1.0,明确违规 - 需要通知用户和监管
+R-001,impact,business,privacy,7,9,1.0,数万用户 - 大规模隐私泄露
+R-002,likelihood,threat_agent,skill_level,1,9,1.0,初学者 - 无需技术知识
+R-002,likelihood,threat_agent,motive,4,9,1.0,可能有益 - 调试信息泄露
+R-002,likelihood,threat_agent,opportunity,4,9,1.0,部分访问 - 需要知道 URL
+R-002,likelihood,threat_agent,size,6,9,1.0,大型群体 - 自动化扫描
+R-002,likelihood,vulnerability,ease_of_discovery,7,9,1.0,自动化工具 - 可扫描出调试页面
+R-002,likelihood,vulnerability,ease_of_exploit,9,9,1.0,自动化 - 直接访问即可
+R-002,likelihood,vulnerability,awareness,7,9,1.0,公开 - 常见配置问题
+R-002,likelihood,vulnerability,intrusion_detection,7,9,1.0,最小日志 - 正常访问无告警
+R-002,impact,technical,confidentiality,4,9,1.0,大量非敏感 - 调试信息泄露
+R-002,impact,technical,integrity,0,9,1.0,无篡改
+R-002,impact,technical,availability,0,9,1.0,无中断
+R-002,impact,technical,accountability,2,9,1.0,可能追溯 - 有访问日志
+R-002,impact,business,financial,2,9,1.0,小于利润 - 信息收集阶段
+R-002,impact,business,reputation,2,9,1.0,少量用户 - 安全研究者可能发现
+R-002,impact,business,non_compliance,2,9,1.0,轻微违规 - 信息披露
+R-002,impact,business,privacy,0,9,1.0,无影响 - 无用户数据
