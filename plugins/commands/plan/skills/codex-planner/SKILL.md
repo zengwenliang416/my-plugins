@@ -9,6 +9,7 @@ allowed-tools:
   - Bash
   - Read
   - Task
+  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -32,6 +33,33 @@ Backend architecture planning via `codeagent-wrapper` in **plan mode**. Read-onl
 - **Deep Exploration**: 深度探索代码库、依赖关系、外部资源
 - **Long-horizon Thinking**: 支持复杂任务的长期规划（7+ 小时）
 
+## MCP 工具集成
+
+| MCP 工具              | 用途                             | 触发条件        |
+| --------------------- | -------------------------------- | --------------- |
+| `sequential-thinking` | 结构化后端架构规划，确保方案完整 | 🚨 每次执行必用 |
+
+### 预规划思考（sequential-thinking）
+
+🚨 **必须首先使用 sequential-thinking 规划分析策略**
+
+```
+mcp__sequential-thinking__sequentialthinking({
+  thought: "规划后端架构分析。需要：1) 理解需求范围 2) 探索代码库 3) 设计架构方案 4) 制定技术规格 5) 规划实施路径",
+  thoughtNumber: 1,
+  totalThoughts: 5,
+  nextThoughtNeeded: true
+})
+```
+
+**思考步骤**：
+
+1. **需求理解**：核心功能边界、技术约束、待澄清问题
+2. **代码库探索**：相关模块、现有模式、依赖分析
+3. **架构方案设计**：多方案对比、推荐方案、决策理由
+4. **技术规格定义**：API 设计、数据模型、安全策略
+5. **实施路径规划**：阶段划分、任务分解、关键路径
+
 ## 执行命令
 
 ```bash
@@ -40,8 +68,7 @@ Backend architecture planning via `codeagent-wrapper` in **plan mode**. Read-onl
   --workdir "$PROJECT_DIR" \
   --role planner \
   --prompt "$PLANNING_PROMPT" \
-  --sandbox read-only \
-  --mode plan
+  --sandbox read-only
 ```
 
 ## 🚨🚨🚨 强制规划流程 🚨🚨🚨
@@ -266,7 +293,7 @@ SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 | 必须执行                      | 禁止事项                  |
 | ----------------------------- | ------------------------- |
 | ✅ 使用 `--sandbox read-only` | ❌ 生成可执行代码         |
-| ✅ 使用 `--mode plan`         | ❌ 跳过代码库探索         |
+| ✅ 使用 `--role planner`      | ❌ 跳过代码库探索         |
 | ✅ 输出 PLANS.md 格式         | ❌ 直接给出实施方案不分析 |
 | ✅ 多方案对比                 | ❌ 盲从单一方案           |
 | ✅ 保存 SESSION_ID            | ❌ 丢失规划上下文         |
