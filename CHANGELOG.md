@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add Top 5 hooks for enhanced session management (hooks)
+  - SessionStart: night-guardian.sh - Deep night rest reminder (23:00-05:00)
+  - SessionEnd: handover-assistant.sh - Team handover document generation
+  - UserPromptSubmit: emotion-resonance.sh - Emotion detection and support
+  - PreToolUse:Bash: team-standards.sh - Git operation standards checking
+  - PreCompact: compact-evaluator.sh - Context compression evaluation
 - Add hooks plugin for common automation hooks (hooks)
   - UserPromptSubmit: unified-eval.sh - Intent evaluation + tool priority injection
   - PreToolUse: killshell-guard.sh, auto-backup.sh, mcp-logger.sh
