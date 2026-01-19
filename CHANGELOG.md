@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add sequential-thinking MCP tool integration to all workflow skills (skills)
+  - commit: 5 skills - structured analysis and generation workflow
+  - dev: 5 skills - structured development and audit workflow
+  - plan: 8 skills - structured planning and architecture workflow
+  - ui-design: 8 skills - structured design and code generation workflow
 - Add Top 5 hooks for enhanced session management (hooks)
   - SessionStart: night-guardian.sh - Deep night rest reminder (23:00-05:00)
   - SessionEnd: handover-assistant.sh - Team handover document generation
