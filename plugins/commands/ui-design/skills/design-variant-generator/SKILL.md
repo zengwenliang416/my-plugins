@@ -13,6 +13,7 @@ allowed-tools:
   - Write
   - Bash
   - mcp__auggie-mcp__codebase-retrieval
+  - mcp__sequential-thinking__sequentialthinking
   - LSP
 arguments:
   - name: run_dir
@@ -41,9 +42,42 @@ arguments:
 
 ---
 
+## MCP 工具集成
+
+| MCP 工具              | 用途                   | 触发条件        |
+| --------------------- | ---------------------- | --------------- |
+| `sequential-thinking` | 结构化设计规格生成策略 | 🚨 每次执行必用 |
+| `auggie-mcp`          | 语义检索现有组件结构   | 优化现有项目时  |
+
+## 执行流程
+
+### Step 0: 结构化设计规格规划（sequential-thinking）
+
+🚨 **必须首先使用 sequential-thinking 规划设计规格生成策略**
+
+```
+mcp__sequential-thinking__sequentialthinking({
+  thought: "规划设计规格生成策略。需要：1) 解析推荐方案 2) 分析现有组件 3) 定义布局结构 4) 生成组件规格 5) 完善响应式策略",
+  thoughtNumber: 1,
+  totalThoughts: 5,
+  nextThoughtNeeded: true
+})
+```
+
+**思考步骤**：
+
+1. **推荐方案解析**：从 style-recommendations.md 提取选定方案的详细信息
+2. **现有组件分析**：使用 auggie-mcp + LSP 分析现有组件结构
+3. **布局结构定义**：定义 Header、Hero、Main、Footer 等布局
+4. **组件规格生成**：为 Button、Card、Input 等组件生成详细规格
+5. **响应式策略完善**：定义断点和响应式适配方案
+
+---
+
 ## 🚨 强制执行规则
 
 **禁止行为**：
+
 - ❌ 跳过 auggie-mcp 代码分析（优化现有项目时）
 - ❌ 跳过 LSP 符号分析（发现组件文件时）
 - ❌ 自己直接写设计规格而不使用 Gemini
@@ -52,7 +86,7 @@ arguments:
 
 ---
 
-## 执行流程
+## 执行流程（续）
 
 ### Step 1: 读取输入文件
 
@@ -109,14 +143,14 @@ LSP(operation="hover", filePath="src/components/Button.tsx", line=10, character=
 
 **核心章节**：
 
-| 章节 | 内容 |
-|------|------|
-| 布局结构 | Header, Hero, Main, Sidebar, Footer |
-| 组件清单 | Button, Card, Input, Select, Modal, Toast 等 |
-| 详细样式 | Border radius, Spacing, Shadow, Animation |
-| 色值映射 | Primary, Secondary, Accent, Success/Warning/Error |
-| 字体规格 | H1-H6, Body, Small, Caption |
-| 响应式断点 | Mobile, Tablet, Desktop |
+| 章节       | 内容                                              |
+| ---------- | ------------------------------------------------- |
+| 布局结构   | Header, Hero, Main, Sidebar, Footer               |
+| 组件清单   | Button, Card, Input, Select, Modal, Toast 等      |
+| 详细样式   | Border radius, Spacing, Shadow, Animation         |
+| 色值映射   | Primary, Secondary, Accent, Success/Warning/Error |
+| 字体规格   | H1-H6, Body, Small, Caption                       |
+| 响应式断点 | Mobile, Tablet, Desktop                           |
 
 > 📚 完整模板见 [references/variant-specs.md](references/variant-specs.md#2-设计文档模板)
 
@@ -147,6 +181,7 @@ for fix in fix_items:
 ### Step 6: Gate 检查
 
 **检查项**：
+
 - [ ] 设计定位明确
 - [ ] 布局结构完整
 - [ ] 至少包含 5 个组件规格
@@ -172,7 +207,11 @@ for fix in fix_items:
     "component_count": 8,
     "contrast_compliant": true
   },
-  "next_phase": { "phase": 7, "name": "ux-guideline-checker", "action": "CONTINUE_IMMEDIATELY" }
+  "next_phase": {
+    "phase": 7,
+    "name": "ux-guideline-checker",
+    "action": "CONTINUE_IMMEDIATELY"
+  }
 }
 ```
 
@@ -188,6 +227,7 @@ echo "✅ Phase 6 完成，进入 Phase 7: UX 检查..."
 ```
 
 **立即调用**：
+
 ```
 for variant in selected_variants:
     Skill(skill="ux-guideline-checker", args="run_dir=${run_dir} variant_id=${variant}")
@@ -225,6 +265,7 @@ wait_all()
 ## 工具降级策略
 
 仅当工具返回错误时才可降级：
+
 1. auggie-mcp 错误 → 使用 Glob + Grep 查找组件
 2. LSP 错误 → 使用 Read 读取组件文件
 3. 全新项目 → 跳过现有代码分析

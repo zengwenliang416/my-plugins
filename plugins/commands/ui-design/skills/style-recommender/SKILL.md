@@ -12,6 +12,7 @@ allowed-tools:
   - Write
   - Bash
   - mcp__auggie-mcp__codebase-retrieval
+  - mcp__sequential-thinking__sequentialthinking
   - LSP
   - WebSearch
   - WebFetch
@@ -34,15 +35,47 @@ arguments:
 
 ---
 
+## MCP 工具集成
+
+| MCP 工具              | 用途                               | 触发条件        |
+| --------------------- | ---------------------------------- | --------------- |
+| `sequential-thinking` | 结构化样式推荐策略，确保方案多样性 | 🚨 每次执行必用 |
+| `auggie-mcp`          | 语义检索现有样式系统               | 有现有代码时    |
+
+## 执行流程
+
+### Step 0: 结构化样式推荐规划（sequential-thinking）
+
+🚨 **必须首先使用 sequential-thinking 规划推荐策略**
+
+```
+mcp__sequential-thinking__sequentialthinking({
+  thought: "规划样式推荐策略。需要：1) 理解需求文档 2) 分析现有样式 3) 匹配风格库 4) 生成差异化方案 5) 创建预览页面",
+  thoughtNumber: 1,
+  totalThoughts: 5,
+  nextThoughtNeeded: true
+})
+```
+
+**思考步骤**：
+
+1. **需求文档理解**：从 requirements.md 提取产品类型和设计偏好
+2. **现有样式分析**：使用 auggie-mcp 分析现有样式系统
+3. **风格库匹配**：根据需求匹配合适的设计风格
+4. **差异化方案生成**：生成 3 套差异化设计方案（稳妥/创意/混合）
+5. **预览页面创建**：生成 HTML 预览页面供用户选择
+
+---
+
 ## 🚨 强制工具使用规则
 
 ### ⛔ 禁止行为
 
-| 步骤 | ❌ 禁止使用 | ✅ 必须使用 |
-|------|------------|------------|
-| 创意方案生成 | 自己编写方案、复制模板 | `codeagent-wrapper gemini --prompt` |
-| 样式系统分析 | Glob, Grep, Search | `mcp__auggie-mcp__codebase-retrieval` |
-| 配置文件分析 | Read 直接读 | `LSP` (documentSymbol, hover) |
+| 步骤         | ❌ 禁止使用            | ✅ 必须使用                           |
+| ------------ | ---------------------- | ------------------------------------- |
+| 创意方案生成 | 自己编写方案、复制模板 | `codeagent-wrapper gemini --prompt`   |
+| 样式系统分析 | Glob, Grep, Search     | `mcp__auggie-mcp__codebase-retrieval` |
+| 配置文件分析 | Read 直接读            | `LSP` (documentSymbol, hover)         |
 
 ### ✅ 必须执行的工具调用
 
@@ -78,12 +111,12 @@ Read: ${SKILL_ROOT}/_shared/index.json
 
 **用户偏好匹配**：
 
-| 关键词 | 推荐风格 |
-|-------|---------|
+| 关键词     | 推荐风格                       |
+| ---------- | ------------------------------ |
 | 现代、简约 | minimalist-swiss, clean-modern |
-| 玻璃、高端 | glassmorphism |
-| 大胆、创意 | neubrutalism, bold-expressive |
-| 专业、商务 | corporate-professional |
+| 玻璃、高端 | glassmorphism                  |
+| 大胆、创意 | neubrutalism, bold-expressive  |
+| 专业、商务 | corporate-professional         |
 
 **加载匹配的资源文件**作为 Gemini 的参考上下文。
 
@@ -115,6 +148,7 @@ ${matched_typography_yaml}
 ```
 
 **强制验证**：
+
 - [ ] 已执行 `codeagent-wrapper gemini` 命令
 - [ ] 收到 Gemini 返回的 3 套设计方案
 - [ ] 保存到 `${run_dir}/gemini-style-recommendations.md`
@@ -152,11 +186,11 @@ WebSearch({ query: "${product_type} ${design_preference} UI design trends 2026" 
 
 ### Step 5: 生成三套方案
 
-| 方案 | 目标 | 样式选择 | 配色选择 |
-|------|------|---------|---------|
-| A 稳妥专业型 | 快速上线，降低风险 | 成熟、广泛使用 | 中性色调 |
-| B 创意大胆型 | 差异化，吸引年轻用户 | 视觉冲击力强 | 高对比度/撞色 |
-| C 混合平衡型 | 兼顾专业与个性 | 混合两种风格 | 渐变色/双色调 |
+| 方案         | 目标                 | 样式选择       | 配色选择      |
+| ------------ | -------------------- | -------------- | ------------- |
+| A 稳妥专业型 | 快速上线，降低风险   | 成熟、广泛使用 | 中性色调      |
+| B 创意大胆型 | 差异化，吸引年轻用户 | 视觉冲击力强   | 高对比度/撞色 |
+| C 混合平衡型 | 兼顾专业与个性       | 混合两种风格   | 渐变色/双色调 |
 
 ### Step 6: 生成推荐文档
 
@@ -165,6 +199,7 @@ WebSearch({ query: "${product_type} ${design_preference} UI design trends 2026" 
 > 📚 完整模板见 [references/style-library.md](references/style-library.md#2-方案输出模板)
 
 文档须包含：
+
 - YAML frontmatter（时间戳、版本、来源）
 - 需求摘要
 - 每套方案的完整设计组合（样式 + 配色 + 字体 + Tailwind 示例）
@@ -218,11 +253,30 @@ ls -la ${run_dir}/previews/
   "preview_index": "${run_dir}/previews/index.html",
   "variant_count": 3,
   "recommendations": [
-    { "variant_id": "A", "style": "Glassmorphism 2.0", "color": "Vercel Dark", "typography": "Plus Jakarta Sans" },
-    { "variant_id": "B", "style": "Neubrutalism", "color": "黄+黑撞色", "typography": "Clash Display + Manrope" },
-    { "variant_id": "C", "style": "Dark Mode First + Bento Grid", "color": "Linear Purple", "typography": "Geist Sans + Geist Mono" }
+    {
+      "variant_id": "A",
+      "style": "Glassmorphism 2.0",
+      "color": "Vercel Dark",
+      "typography": "Plus Jakarta Sans"
+    },
+    {
+      "variant_id": "B",
+      "style": "Neubrutalism",
+      "color": "黄+黑撞色",
+      "typography": "Clash Display + Manrope"
+    },
+    {
+      "variant_id": "C",
+      "style": "Dark Mode First + Bento Grid",
+      "color": "Linear Purple",
+      "typography": "Geist Sans + Geist Mono"
+    }
   ],
-  "next_phase": { "phase": 5, "name": "variant-selection", "action": "ASK_USER_QUESTION" }
+  "next_phase": {
+    "phase": 5,
+    "name": "variant-selection",
+    "action": "ASK_USER_QUESTION"
+  }
 }
 ```
 
@@ -238,6 +292,7 @@ echo "✅ Phase 4 完成，进入 Phase 5: 方案选择..."
 ```
 
 **然后**：
+
 1. 提示用户打开 `${run_dir}/previews/index.html`
 2. 使用 AskUserQuestion 询问用户选择哪个方案
 
@@ -257,6 +312,7 @@ echo "✅ Phase 4 完成，进入 Phase 5: 方案选择..."
 ## 工具降级策略
 
 如果 auggie-mcp 或 LSP 不可用：
+
 1. 跳过现有样式分析
 2. 在推荐文档中标记"未分析现有样式"
 3. 推荐通用方案

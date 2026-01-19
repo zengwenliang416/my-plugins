@@ -5,7 +5,14 @@ description: |
   【核心产出】输出 ${run_dir}/code-analysis.md
   【不触发】从零设计场景
   【先问什么】缺少代码文件路径时，询问：需要分析哪个文件/目录
-allowed-tools: Read, Grep, Glob, LSP, mcp__auggie-mcp__codebase-retrieval, AskUserQuestion
+allowed-tools:
+  - Read
+  - Grep
+  - Glob
+  - LSP
+  - mcp__auggie-mcp__codebase-retrieval
+  - mcp__sequential-thinking__sequentialthinking
+  - AskUserQuestion
 arguments:
   - name: run_dir
     type: string
@@ -18,6 +25,38 @@ arguments:
 ---
 
 # Existing Code Analyzer
+
+## MCP 工具集成
+
+| MCP 工具              | 用途                             | 触发条件        |
+| --------------------- | -------------------------------- | --------------- |
+| `sequential-thinking` | 结构化代码分析策略，确保全面覆盖 | 🚨 每次执行必用 |
+| `auggie-mcp`          | 语义检索代码库                   | 定位目标代码时  |
+
+## 执行流程
+
+### Step 0: 结构化代码分析规划（sequential-thinking）
+
+🚨 **必须首先使用 sequential-thinking 规划代码分析策略**
+
+```
+mcp__sequential-thinking__sequentialthinking({
+  thought: "规划代码分析策略。需要：1) 定位目标代码 2) 分析组件结构 3) 识别样式系统 4) 检测 UX 问题 5) 生成分析报告",
+  thoughtNumber: 1,
+  totalThoughts: 5,
+  nextThoughtNeeded: true
+})
+```
+
+**思考步骤**：
+
+1. **目标代码定位**：根据用户输入定位要分析的文件或目录
+2. **组件结构分析**：使用 LSP 分析组件符号、Props、依赖
+3. **样式系统识别**：识别 Tailwind/CSS Modules/Styled Components
+4. **UX 问题检测**：扫描可访问性、响应式、性能、一致性问题
+5. **分析报告生成**：汇总发现并生成结构化报告
+
+---
 
 ## 职责边界
 
@@ -145,12 +184,12 @@ Grep: text-(xs|sm|base|lg|xl|2xl|...)
 
 **检测类别**：
 
-| 类别 | 检测项示例 |
-|------|-----------|
+| 类别     | 检测项示例                           |
+| -------- | ------------------------------------ |
 | 可访问性 | 缺少 alt、按钮无标签、颜色对比度不足 |
-| 响应式 | 固定宽度、无断点、小字号 |
-| 性能 | 大图片、内联 Base64、未优化列表 |
-| 一致性 | 魔法数字、不一致间距、混用样式方案 |
+| 响应式   | 固定宽度、无断点、小字号             |
+| 性能     | 大图片、内联 Base64、未优化列表      |
+| 一致性   | 魔法数字、不一致间距、混用样式方案   |
 
 ### Step 5: 生成分析报告
 
@@ -159,6 +198,7 @@ Grep: text-(xs|sm|base|lg|xl|2xl|...)
 > 📚 完整文档模板见 [references/analysis-checklist.md](references/analysis-checklist.md#2-输出文档模板)
 
 **报告包含**：
+
 - 分析概览（文件数、代码行数、主组件）
 - 当前设计系统（样式技术、配色、字体）
 - UX 问题清单（按优先级分组）

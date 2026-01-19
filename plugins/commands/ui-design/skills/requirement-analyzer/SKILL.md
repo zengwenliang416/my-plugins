@@ -13,6 +13,7 @@ allowed-tools:
   - Bash
   - AskUserQuestion
   - mcp__auggie-mcp__codebase-retrieval
+  - mcp__sequential-thinking__sequentialthinking
   - LSP
   - WebSearch
   - WebFetch
@@ -39,15 +40,47 @@ arguments:
 
 ---
 
+## MCP 工具集成
+
+| MCP 工具              | 用途                                 | 触发条件        |
+| --------------------- | ------------------------------------ | --------------- |
+| `sequential-thinking` | 结构化需求分析策略，确保需求完整提取 | 🚨 每次执行必用 |
+| `auggie-mcp`          | 语义检索现有代码库                   | 🚨 必须首先使用 |
+
+## 执行流程
+
+### Step 0: 结构化需求分析规划（sequential-thinking）
+
+🚨 **必须首先使用 sequential-thinking 规划需求分析策略**
+
+```
+mcp__sequential-thinking__sequentialthinking({
+  thought: "规划需求分析策略。需要：1) 解析用户描述 2) 检索现有代码库 3) 识别产品类型 4) 提取核心功能 5) 确定设计偏好",
+  thoughtNumber: 1,
+  totalThoughts: 5,
+  nextThoughtNeeded: true
+})
+```
+
+**思考步骤**：
+
+1. **用户描述解析**：从描述中提取关键词和需求要素
+2. **代码库检索**：使用 auggie-mcp 分析现有组件和样式
+3. **产品类型识别**：根据关键词判断产品类型
+4. **核心功能提取**：识别需要实现的主要功能
+5. **设计偏好确定**：确定用户期望的设计风格
+
+---
+
 ## 🚨🚨🚨 强制工具使用规则（违反则 Skill 失败）
 
 ### ⛔ 禁止行为
 
-| 步骤 | ❌ 禁止使用 | ✅ 必须使用 |
-|------|------------|------------|
+| 步骤       | ❌ 禁止使用                         | ✅ 必须使用                           |
+| ---------- | ----------------------------------- | ------------------------------------- |
 | 代码库分析 | Glob, Grep, Search, Read 直接读文件 | `mcp__auggie-mcp__codebase-retrieval` |
-| 需求分析 | 自己分析、直接写文档 | `codeagent-wrapper gemini --prompt` |
-| 符号分析 | Read 读代码 | `LSP` (documentSymbol, hover) |
+| 需求分析   | 自己分析、直接写文档                | `codeagent-wrapper gemini --prompt`   |
+| 符号分析   | Read 读代码                         | `LSP` (documentSymbol, hover)         |
 
 ### ✅ 必须执行的工具调用
 
@@ -80,6 +113,7 @@ mcp__auggie-mcp__codebase-retrieval(
 ```
 
 **产出**：
+
 - `existing_components`: 现有组件列表和文件路径
 - `style_framework`: 样式框架类型
 - `design_tokens`: 设计 Token（颜色、字体、间距）
@@ -96,6 +130,7 @@ LSP(operation="documentSymbol", filePath="${component_file_path}", line=1, chara
 ```
 
 **跳过条件**（仅以下情况可跳过）：
+
 - auggie-mcp 返回空结果（新项目，无现有代码）
 - LSP 返回错误
 
@@ -114,11 +149,13 @@ LSP(operation="findReferences", filePath="src/components/Button.tsx", line=10, c
 ```
 
 **产出**：
+
 - `component_symbols`: 组件的函数/类/接口定义
 - `component_props`: 组件 Props 结构
 - `usage_count`: 组件使用次数
 
 **验证检查点**：
+
 - [ ] 如果有组件，至少对 2 个组件执行了 `documentSymbol`
 - [ ] 如果有组件，至少执行了 1 次 `hover` 查看类型信息
 - [ ] 记录了组件的 Props 结构到 requirements.md
@@ -163,6 +200,7 @@ LSP(operation="findReferences", filePath="src/components/Button.tsx", line=10, c
 ```
 
 **🚨 强制验证检查点**：
+
 - [ ] ✅ 已执行 `codeagent-wrapper gemini` 命令
 - [ ] ✅ 收到 Gemini 返回结果
 - [ ] ✅ 将 Gemini 分析结果保存到 `${run_dir}/gemini-requirement-analysis.md`
@@ -188,6 +226,7 @@ Write: ${run_dir}/gemini-requirement-analysis.md
 6. 补充提问（使用 AskUserQuestion）
 
 **🚨 如果存在 image-analysis.md：**
+
 ```
 # 读取图片分析结果
 Read("${run_dir}/image-analysis.md")
@@ -229,6 +268,7 @@ Read("${run_dir}/image-analysis.md")
 如果关键信息缺失，使用 AskUserQuestion 收集。
 
 **触发条件**：
+
 - 产品类型为 "未明确"
 - 核心功能为空数组
 - 设计偏好过于模糊
@@ -256,6 +296,7 @@ Read("${run_dir}/image-analysis.md")
 如果用户提供了参考链接或希望寻找灵感，使用 WebSearch 搜索类似案例。
 
 **触发条件**：
+
 - 用户提供了参考网站 URL
 - 用户描述中包含 "类似 XXX" 或 "参考 XXX"
 - 设计偏好明确且适合搜索（如 "Stripe 风格"）
@@ -278,10 +319,10 @@ WebSearch({
 
 ```markdown
 ---
-generated_at: {ISO 8601 时间戳}
+generated_at: { ISO 8601 时间戳 }
 analyzer_version: "2.0"
-confidence: {high | medium | low}
-has_existing_code: {true | false}
+confidence: { high | medium | low }
+has_existing_code: { true | false }
 ---
 
 # UI/UX 设计需求分析
@@ -318,10 +359,10 @@ has_existing_code: {true | false}
 
 {从 auggie-mcp 和 LSP 分析提取}
 
-| 组件名 | 位置 | Props | 使用次数 |
-|--------|------|-------|----------|
-| Button | src/components/Button.tsx | variant, size, onClick | 45 |
-| Card   | src/components/Card.tsx   | title, children | 23 |
+| 组件名 | 位置                      | Props                  | 使用次数 |
+| ------ | ------------------------- | ---------------------- | -------- |
+| Button | src/components/Button.tsx | variant, size, onClick | 45       |
+| Card   | src/components/Card.tsx   | title, children        | 23       |
 
 ### 现有样式系统
 
@@ -353,6 +394,7 @@ has_existing_code: {true | false}
 验证需求文档是否完整。
 
 **检查项**：
+
 - [ ] 产品类型已明确（非 "未明确"）
 - [ ] 至少有 1 个核心功能
 - [ ] 目标用户已明确（非 "通用"）
@@ -361,6 +403,7 @@ has_existing_code: {true | false}
 **通过标准**：至少 3 项检查通过
 
 **如果失败**：
+
 1. 标记低置信度字段
 2. 返回警告信息，建议用户补充
 3. 仍然输出文档（允许后续人工补充）
@@ -411,11 +454,13 @@ echo "✅ Phase 3 完成，进入 Phase 4: 样式推荐..."
 ```
 
 **然后立即调用下一个 Skill：**
+
 ```
 Skill(skill="style-recommender", args="run_dir=${run_dir}")
 ```
 
 **⛔ 禁止在此停止！必须继续执行 Phase 4！**
+
 ```
 
 ---
@@ -449,3 +494,4 @@ Skill(skill="style-recommender", args="run_dir=${run_dir}")
 1. 跳过代码分析，仅使用用户输入
 2. 在 requirements.md 中标记 `has_existing_code: false`
 3. 在结果中标记 `"analysis_mode": "basic"`
+```

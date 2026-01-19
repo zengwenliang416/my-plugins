@@ -11,6 +11,7 @@ allowed-tools:
   - Read
   - Write
   - Bash
+  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -24,15 +25,48 @@ arguments:
 
 # Image Analyzer - 图片设计分析技能
 
+## MCP 工具集成
+
+| MCP 工具              | 用途                                    | 触发条件        |
+| --------------------- | --------------------------------------- | --------------- |
+| `sequential-thinking` | 结构化图片分析策略，确保 8 维度全面覆盖 | 🚨 每次执行必用 |
+
+## 执行流程
+
+### Step 0: 结构化图片分析规划（sequential-thinking）
+
+🚨 **必须首先使用 sequential-thinking 规划图片分析策略**
+
+```
+mcp__sequential-thinking__sequentialthinking({
+  thought: "规划图片分析策略。需要：1) 验证图片文件 2) 并行启动 8 个 Gemini 分析任务 3) 等待任务完成 4) 综合分析结果 5) 生成结构化文档",
+  thoughtNumber: 1,
+  totalThoughts: 5,
+  nextThoughtNeeded: true
+})
+```
+
+**思考步骤**：
+
+1. **图片文件验证**：检查图片存在性和格式
+2. **并行分析任务**：启动 8 个 Gemini 任务分析不同维度（风格/配色/字体/间距/组件/交互/图标/细节）
+3. **任务完成等待**：使用 TaskOutput 获取所有后台任务结果
+4. **综合分析结果**：验证一致性、补充细节、转换为可执行规格
+5. **结构化文档生成**：输出 image-analysis.md
+
+---
+
 ## 🚨 强制执行规则
 
 **禁止行为**：
+
 - ❌ 跳过 gemini 命令调用
 - ❌ 自己猜测图片内容
 - ❌ 串行执行分析任务（必须并行）
 - ❌ 只做一次分析就结束
 
 **必须遵守**：
+
 - ✅ 使用 `codeagent-wrapper gemini` 进行图片分析
 - ✅ **并行启动 8 个 Gemini 分析任务**（使用 `run_in_background=true`）
 - ✅ 等待所有后台任务完成后综合分析
@@ -75,25 +109,27 @@ cp "${image_path}" "${run_dir}/reference-image.$(basename ${image_path##*.})"
 
 **必须使用 `run_in_background=true` 并行启动所有分析任务**：
 
-| 任务 | 分析维度 | 提示词模板 |
-|------|----------|------------|
-| Task 1 | 整体风格 + 布局结构 | [analysis-dimensions.md#round-1](references/analysis-dimensions.md#round-1-整体风格--布局) |
-| Task 2 | 完整配色系统 | [analysis-dimensions.md#round-2](references/analysis-dimensions.md#round-2-完整配色系统) |
-| Task 3 | 字体排版系统 | [analysis-dimensions.md#round-3](references/analysis-dimensions.md#round-3-字体排版系统) |
-| Task 4 | 间距系统 | [analysis-dimensions.md#round-4](references/analysis-dimensions.md#round-4-间距系统) |
-| Task 5 | UI 组件识别 | [analysis-dimensions.md#round-5](references/analysis-dimensions.md#round-5-ui-组件识别) |
-| Task 6 | 交互状态 | [analysis-dimensions.md#round-6](references/analysis-dimensions.md#round-6-交互状态) |
-| Task 7 | 图标系统 | [analysis-dimensions.md#round-7](references/analysis-dimensions.md#round-7-图标系统) |
-| Task 8 | 细节系统（圆角/阴影/边框） | [analysis-dimensions.md#round-8](references/analysis-dimensions.md#round-8-细节系统) |
+| 任务   | 分析维度                   | 提示词模板                                                                                 |
+| ------ | -------------------------- | ------------------------------------------------------------------------------------------ |
+| Task 1 | 整体风格 + 布局结构        | [analysis-dimensions.md#round-1](references/analysis-dimensions.md#round-1-整体风格--布局) |
+| Task 2 | 完整配色系统               | [analysis-dimensions.md#round-2](references/analysis-dimensions.md#round-2-完整配色系统)   |
+| Task 3 | 字体排版系统               | [analysis-dimensions.md#round-3](references/analysis-dimensions.md#round-3-字体排版系统)   |
+| Task 4 | 间距系统                   | [analysis-dimensions.md#round-4](references/analysis-dimensions.md#round-4-间距系统)       |
+| Task 5 | UI 组件识别                | [analysis-dimensions.md#round-5](references/analysis-dimensions.md#round-5-ui-组件识别)    |
+| Task 6 | 交互状态                   | [analysis-dimensions.md#round-6](references/analysis-dimensions.md#round-6-交互状态)       |
+| Task 7 | 图标系统                   | [analysis-dimensions.md#round-7](references/analysis-dimensions.md#round-7-图标系统)       |
+| Task 8 | 细节系统（圆角/阴影/边框） | [analysis-dimensions.md#round-8](references/analysis-dimensions.md#round-8-细节系统)       |
 
 **🚨 执行方式**：在**单个消息**中发起 8 个 Bash 工具调用，**每个必须设置 `run_in_background=true`**
 
 **命令格式**：
+
 ```bash
 ~/.claude/bin/codeagent-wrapper gemini --file "${image_path}" --prompt "${prompt_N}"
 ```
 
 **⚠️ 重要**：
+
 - **必须** 在每个 Bash 调用中设置 `run_in_background=true`，否则会串行执行
 - `--file` 参数传递图片路径，wrapper 会自动转换为 Gemini 的 `@` 语法
 - 每个任务独立会话（不共享 SESSION_ID）
@@ -115,6 +151,7 @@ TaskOutput(task_id="task_8_id", block=true)  # 细节系统
 ```
 
 将结果分别保存到：
+
 - `gemini_round1` - 整体风格 + 布局结构
 - `gemini_round2` - 完整配色系统
 - `gemini_round3` - 字体排版系统

@@ -11,6 +11,7 @@ allowed-tools:
   - Write
   - Bash
   - mcp__auggie-mcp__codebase-retrieval
+  - mcp__sequential-thinking__sequentialthinking
   - LSP
 arguments:
   - name: run_dir
@@ -55,9 +56,42 @@ arguments:
 
 ---
 
+## MCP 工具集成
+
+| MCP 工具              | 用途                                   | 触发条件        |
+| --------------------- | -------------------------------------- | --------------- |
+| `sequential-thinking` | 结构化代码生成策略，确保双模型协作质量 | 🚨 每次执行必用 |
+| `auggie-mcp`          | 语义检索现有代码结构                   | 🚨 必须首先使用 |
+
+## 执行流程
+
+### Step 00: 结构化代码生成规划（sequential-thinking）
+
+🚨 **必须首先使用 sequential-thinking 规划代码生成策略**
+
+```
+mcp__sequential-thinking__sequentialthinking({
+  thought: "规划代码生成策略。需要：1) 分析现有代码结构 2) Gemini 生成原型 3) Claude 重构精简 4) 类型补全 5) 目录结构验证",
+  thoughtNumber: 1,
+  totalThoughts: 5,
+  nextThoughtNeeded: true
+})
+```
+
+**思考步骤**：
+
+1. **现有代码分析**：使用 auggie-mcp + LSP 分析现有组件和样式系统
+2. **Gemini 原型生成**：调用 codeagent-wrapper gemini 生成组件原型
+3. **Claude 重构精简**：移除冗余、合并样式、统一命名
+4. **类型补全**：添加 TypeScript 类型、ARIA 属性、JSDoc
+5. **目录结构验证**：验证输出结构完整性和 TypeScript 编译
+
+---
+
 ## 🚨 强制执行规则
 
 **禁止行为**：
+
 - ❌ 跳过 Gemini，自己直接写代码
 - ❌ 跳过 auggie-mcp 代码分析
 - ❌ 跳过 LSP 符号分析（发现组件文件时）
@@ -66,7 +100,7 @@ arguments:
 
 ---
 
-## 执行流程
+## 执行流程（续）
 
 ### Step 0: 🚨 强制分析现有代码结构（auggie-mcp + LSP）
 
@@ -104,6 +138,7 @@ Read: ${run_dir}/design-{variant_id}.md
 > 📚 Gemini 提示词模板见 [references/tech-stack-templates.md](references/tech-stack-templates.md#5-gemini-提示词模板)
 
 **验证检查点**：
+
 - [ ] 执行了 `codeagent-wrapper gemini` 命令
 - [ ] `${run_dir}/code/gemini-raw/` 目录已创建
 
@@ -113,13 +148,13 @@ Read: ${run_dir}/design-{variant_id}.md
 
 Claude 读取 Gemini 输出，执行重构检查清单：
 
-| 检查项 | 说明 |
-|--------|------|
-| 移除 wrapper div | 去除无意义嵌套 |
-| 合并重复样式 | 提取为 @apply 或组件 |
-| 提取魔法数字 | 使用 Tailwind 或常量 |
-| 统一命名规范 | PascalCase/camelCase/UPPER_SNAKE |
-| 移除多余注释 | 保留有意义的注释 |
+| 检查项           | 说明                             |
+| ---------------- | -------------------------------- |
+| 移除 wrapper div | 去除无意义嵌套                   |
+| 合并重复样式     | 提取为 @apply 或组件             |
+| 提取魔法数字     | 使用 Tailwind 或常量             |
+| 统一命名规范     | PascalCase/camelCase/UPPER_SNAKE |
+| 移除多余注释     | 保留有意义的注释                 |
 
 > 📚 详细重构示例见 [references/tech-stack-templates.md](references/tech-stack-templates.md#1-重构检查清单)
 
@@ -129,11 +164,11 @@ Claude 读取 Gemini 输出，执行重构检查清单：
 
 确保代码达到生产级质量：
 
-| 补全项 | 说明 |
-|--------|------|
+| 补全项          | 说明                  |
+| --------------- | --------------------- |
 | TypeScript 类型 | 完整的 Props 接口定义 |
-| 可访问性属性 | ARIA 标签、键盘支持 |
-| JSDoc 文档 | 组件使用示例 |
+| 可访问性属性    | ARIA 标签、键盘支持   |
+| JSDoc 文档      | 组件使用示例          |
 
 > 📚 类型补全模板见 [references/tech-stack-templates.md](references/tech-stack-templates.md#2-typescript-类型补全模板)
 
@@ -143,12 +178,12 @@ Claude 读取 Gemini 输出，执行重构检查清单：
 
 基于设计规格生成配置文件：
 
-| 文件 | 说明 |
-|------|------|
+| 文件               | 说明                 |
+| ------------------ | -------------------- |
 | tailwind.config.js | 颜色、字体、间距配置 |
-| package.json | 依赖和脚本 |
-| tsconfig.json | TypeScript 配置 |
-| postcss.config.js | PostCSS 配置 |
+| package.json       | 依赖和脚本           |
+| tsconfig.json      | TypeScript 配置      |
+| postcss.config.js  | PostCSS 配置         |
 
 > 📚 配置文件模板见 [references/tech-stack-templates.md](references/tech-stack-templates.md#3-配置文件模板)
 
@@ -166,6 +201,7 @@ npx tsc --noEmit
 ```
 
 **检查项**：
+
 - [ ] TypeScript 编译无错误
 - [ ] 所有组件都已生成
 - [ ] 文件结构完整
@@ -181,14 +217,27 @@ npx tsc --noEmit
   "variant_id": "A",
   "tech_stack": "react-tailwind",
   "output_dir": "${run_dir}/code/react-tailwind/",
-  "components": ["Button", "Card", "Input", "Select", "Modal", "Header", "Hero", "Footer"],
+  "components": [
+    "Button",
+    "Card",
+    "Input",
+    "Select",
+    "Modal",
+    "Header",
+    "Hero",
+    "Footer"
+  ],
   "model_collaboration": {
     "gemini_raw_lines": 1250,
     "claude_final_lines": 920,
     "reduction_rate": "26.4%"
   },
   "typescript_check": "pass",
-  "next_phase": { "phase": 9, "name": "quality-validator", "action": "CONTINUE_IMMEDIATELY" }
+  "next_phase": {
+    "phase": 9,
+    "name": "quality-validator",
+    "action": "CONTINUE_IMMEDIATELY"
+  }
 }
 ```
 
@@ -204,6 +253,7 @@ echo "✅ Phase 8 完成，进入 Phase 9: 质量验证..."
 ```
 
 **立即调用**：
+
 ```
 Skill(skill="quality-validator", args="run_dir=${run_dir} variant_id=${variant_id} tech_stack=${tech_stack}")
 ```
@@ -223,6 +273,7 @@ Skill(skill="quality-validator", args="run_dir=${run_dir} variant_id=${variant_i
 ## 工具降级策略
 
 仅当工具返回错误时才可降级：
+
 1. auggie-mcp 错误 → 使用 Glob + Grep 查找组件
 2. LSP 错误 → 使用 Read 读取文件内容
 3. codeagent-wrapper gemini 错误 → **报告错误，询问用户**（不可自己写代码替代）
