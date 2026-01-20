@@ -34,6 +34,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Phase 4: report-synthesizer - Generate brief/detailed reports
   - Support SCAMPER and Six Thinking Hats methods
   - 7 skill modules: codex-cli, gemini-cli, exa, topic-researcher, idea-generator, idea-evaluator, report-synthesizer
+- Add memory plugin for intelligent context management (memory)
+  - context-loader: Context loading with priority management
+  - session-compactor: Session compression and summarization
+  - code-map-generator: Code map and dependency analysis
+  - skill-indexer/loader: Skill indexing and dynamic loading
+  - workflow-memory: Workflow state persistence
+  - style-memory: Code style detection and memory
+  - doc-planner/generator/updater: Documentation management (5 skills)
+  - swagger-generator: OpenAPI documentation generation
+  - tech-rules-generator: Technical rules generation
+  - Integrates codex-cli, gemini-cli, exa for multi-model collaboration
 
 ### Changed
 
@@ -41,6 +52,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Flatten plugin hierarchy for simpler navigation
   - Update marketplace.json, sync-plugins.sh, validate-skills.sh references
   - Add refactor plugin to sync list
+  - Clean up deprecated plugin directories (869 files removed):
+    - commands/ (343), ccg-office (136), ccg-core (125), ccg-developing (97)
+    - ccg-ui (77), ccg-writing (44), ccg-testing (26), ccg-tools (14)
 - Refactor all 22 skills to conform to official specifications (skills)
   - All SKILL.md files now under 500 lines
   - Standardized 4-part description format: 【触发条件】【核心产出】【不触发】【先问什么】
