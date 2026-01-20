@@ -37,6 +37,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Restructure plugin directories from plugins/commands/ to plugins/ (plugins)
+  - Flatten plugin hierarchy for simpler navigation
+  - Update marketplace.json, sync-plugins.sh, validate-skills.sh references
+  - Add refactor plugin to sync list
 - Refactor all 22 skills to conform to official specifications (skills)
   - All SKILL.md files now under 500 lines
   - Standardized 4-part description format: 【触发条件】【核心产出】【不触发】【先问什么】
