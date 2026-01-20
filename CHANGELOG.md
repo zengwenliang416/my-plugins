@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add thinking plugin registration to marketplace (marketplace)
+- Add thinking plugin to sync script (scripts)
 - Add sequential-thinking MCP tool integration to all workflow skills (skills)
   - commit: 5 skills - structured analysis and generation workflow
   - dev: 5 skills - structured development and audit workflow
