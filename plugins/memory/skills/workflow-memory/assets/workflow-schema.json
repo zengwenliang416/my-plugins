@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Workflow State Schema",
+  "type": "object",
+  "properties": {
+    "workflow_id": { "type": "string" },
+    "name": { "type": "string" },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "in_progress", "paused", "completed", "failed"]
+    },
+    "current_phase": { "type": "string" },
+    "phases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "status": { "type": "string" },
+          "started_at": { "type": "string", "format": "date-time" },
+          "completed_at": { "type": "string", "format": "date-time" },
+          "outputs": { "type": "object" }
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "user_request": { "type": "string" },
+        "files_involved": { "type": "array", "items": { "type": "string" } },
+        "decisions": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["workflow_id", "name", "status"]
+}

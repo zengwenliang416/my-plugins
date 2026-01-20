@@ -1,0 +1,32 @@
+{
+  "output_formats": ["markdown", "json", "mermaid"],
+  "default_format": "markdown",
+  "analysis_depth": {
+    "shallow": 1,
+    "medium": 2,
+    "deep": 3
+  },
+  "include_patterns": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
+    "**/*.py",
+    "**/*.go",
+    "**/*.rs"
+  ],
+  "exclude_patterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.git/**",
+    "**/coverage/**",
+    "**/__pycache__/**"
+  ],
+  "module_detection": {
+    "typescript": ["package.json", "tsconfig.json"],
+    "python": ["setup.py", "pyproject.toml"],
+    "go": ["go.mod"],
+    "rust": ["Cargo.toml"]
+  }
+}

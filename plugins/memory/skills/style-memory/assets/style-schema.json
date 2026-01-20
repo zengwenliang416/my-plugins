@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Style Memory Schema",
+  "type": "object",
+  "properties": {
+    "project_id": { "type": "string" },
+    "detected_styles": {
+      "type": "object",
+      "properties": {
+        "code_style": {
+          "type": "object",
+          "properties": {
+            "indent": { "type": "string", "enum": ["spaces", "tabs"] },
+            "indent_size": { "type": "integer" },
+            "quotes": { "type": "string", "enum": ["single", "double"] },
+            "semicolons": { "type": "boolean" },
+            "trailing_comma": {
+              "type": "string",
+              "enum": ["none", "es5", "all"]
+            }
+          }
+        },
+        "naming_convention": {
+          "type": "object",
+          "properties": {
+            "files": {
+              "type": "string",
+              "enum": ["kebab-case", "camelCase", "snake_case", "PascalCase"]
+            },
+            "functions": { "type": "string" },
+            "classes": { "type": "string" },
+            "constants": { "type": "string" },
+            "interfaces": { "type": "string" }
+          }
+        },
+        "patterns": {
+          "type": "object",
+          "properties": {
+            "error_handling": { "type": "string" },
+            "async_style": { "type": "string" },
+            "import_style": { "type": "string" }
+          }
+        }
+      }
+    },
+    "user_preferences": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "learned_from": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file": { "type": "string" },
+          "confidence": { "type": "number" }
+        }
+      }
+    },
+    "updated_at": { "type": "string", "format": "date-time" }
+  }
+}

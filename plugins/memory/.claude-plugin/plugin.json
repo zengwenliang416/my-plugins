@@ -1,0 +1,25 @@
+{
+  "name": "memory",
+  "description": "项目记忆管理插件 - 支持上下文加载、会话压缩、代码地图生成、技能记忆、文档管理和技术规则生成",
+  "version": "1.0.0",
+  "commands": ["commands/run.md"],
+  "skills": [
+    "skills/codex-cli",
+    "skills/gemini-cli",
+    "skills/exa",
+    "skills/context-loader",
+    "skills/session-compactor",
+    "skills/code-map-generator",
+    "skills/skill-indexer",
+    "skills/skill-loader",
+    "skills/workflow-memory",
+    "skills/style-memory",
+    "skills/doc-planner",
+    "skills/doc-full-generator",
+    "skills/doc-related-generator",
+    "skills/doc-full-updater",
+    "skills/doc-incremental-updater",
+    "skills/swagger-generator",
+    "skills/tech-rules-generator"
+  ]
+}

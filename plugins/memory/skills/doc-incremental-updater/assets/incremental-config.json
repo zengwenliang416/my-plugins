@@ -1,0 +1,27 @@
+{
+  "git_integration": {
+    "enabled": true,
+    "default_since": "HEAD~1",
+    "track_file_changes": true,
+    "track_function_changes": true
+  },
+  "change_mapping": {
+    "source_to_doc": ".claude/memory/docs/source-to-doc.json",
+    "auto_update": true
+  },
+  "update_granularity": {
+    "function_level": true,
+    "type_level": true,
+    "signature_level": true,
+    "section_replacement": true
+  },
+  "dry_run": {
+    "show_diff": true,
+    "show_affected_docs": true,
+    "show_proposed_changes": true
+  },
+  "auto_trigger": {
+    "post_commit_hook": false,
+    "ci_integration": false
+  }
+}

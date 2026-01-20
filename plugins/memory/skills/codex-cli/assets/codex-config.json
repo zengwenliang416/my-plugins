@@ -1,0 +1,128 @@
+{
+  "cli": {
+    "command": "codex",
+    "default_flags": ["--approval-mode", "full-auto", "--full-stdout"],
+    "timeout_ms": 120000,
+    "retry": {
+      "max_attempts": 3,
+      "backoff_multiplier": 2,
+      "initial_delay_ms": 1000
+    }
+  },
+  "analysis_types": {
+    "module_structure": {
+      "name": "模块结构分析",
+      "description": "分析代码的模块结构、依赖关系和导出接口",
+      "focus_areas": [
+        "entry_points",
+        "module_dependencies",
+        "exports",
+        "internal_calls"
+      ],
+      "output_formats": ["markdown", "json", "mermaid"]
+    },
+    "call_chain": {
+      "name": "函数调用链追踪",
+      "description": "追踪函数的完整调用链，包括参数传递和异步调用",
+      "focus_areas": [
+        "function_calls",
+        "parameter_flow",
+        "async_boundaries",
+        "error_propagation"
+      ],
+      "output_formats": ["mermaid", "markdown"]
+    },
+    "api_extraction": {
+      "name": "API 端点提取",
+      "description": "扫描项目提取所有 API 端点定义",
+      "supported_frameworks": [
+        "express",
+        "nestjs",
+        "fastapi",
+        "spring",
+        "go-gin",
+        "go-echo",
+        "koa",
+        "fastify",
+        "hono"
+      ],
+      "output_formats": ["markdown", "json", "yaml"]
+    },
+    "data_flow": {
+      "name": "数据流分析",
+      "description": "分析数据在系统中的流转路径",
+      "tracking_depth": ["variable", "function", "module", "external"],
+      "output_formats": ["mermaid", "markdown"]
+    }
+  },
+  "prompt_templates": {
+    "module_structure": {
+      "system": "你是一个代码分析专家。分析代码结构时要准确识别模块边界、依赖关系和导出接口。",
+      "task_prefix": "分析以下代码的模块结构:\n\n",
+      "output_instruction": "\n\n请以 {format} 格式输出分析结果。"
+    },
+    "call_chain": {
+      "system": "你是一个代码追踪专家。追踪函数调用链时要包含所有调用路径、参数传递和异步边界。",
+      "task_prefix": "追踪函数 {function_name} 的完整调用链:\n\n",
+      "output_instruction": "\n\n请以 Mermaid 序列图格式输出结果。"
+    },
+    "api_extraction": {
+      "system": "你是一个 API 分析专家。提取 API 端点时要识别 HTTP 方法、路径、参数和处理函数。",
+      "task_prefix": "扫描以下代码，提取所有 API 端点:\n\n",
+      "output_instruction": "\n\n请以表格形式输出: Method | Path | Handler | Parameters"
+    },
+    "data_flow": {
+      "system": "你是一个数据流分析专家。追踪数据流转时要识别所有变换点和边界跨越。",
+      "task_prefix": "分析数据从 {source} 到 {target} 的流转路径:\n\n",
+      "output_instruction": "\n\n请以 Mermaid 流程图格式输出结果。"
+    }
+  },
+  "output_formats": {
+    "markdown": {
+      "extension": ".md",
+      "template": "# Analysis Result\n\n## Summary\n\n{summary}\n\n## Details\n\n{details}\n\n## Recommendations\n\n{recommendations}"
+    },
+    "json": {
+      "extension": ".json",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "summary": { "type": "string" },
+          "modules": { "type": "array" },
+          "dependencies": { "type": "array" },
+          "exports": { "type": "array" }
+        }
+      }
+    },
+    "mermaid": {
+      "extension": ".mmd",
+      "graph_types": [
+        "graph TD",
+        "sequenceDiagram",
+        "classDiagram",
+        "flowchart"
+      ]
+    }
+  },
+  "fallback": {
+    "enabled": true,
+    "strategies": {
+      "network_error": {
+        "action": "retry",
+        "max_retries": 3
+      },
+      "quota_exceeded": {
+        "action": "notify_user",
+        "message": "Codex API 配额已耗尽，请稍后重试"
+      },
+      "service_error": {
+        "action": "local_fallback",
+        "tools": ["grep", "glob", "ast-grep"]
+      }
+    },
+    "local_analysis": {
+      "capabilities": ["pattern_match", "file_scan", "basic_structure"],
+      "limitations": ["no_semantic_analysis", "limited_type_inference"]
+    }
+  }
+}
