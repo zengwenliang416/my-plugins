@@ -40,6 +40,12 @@
       "description": "通用钩子集合：意图评估、日志备份、代码质量、智能路由、安全防护、会话管理",
       "source": "./plugins/commands/hooks",
       "version": "1.0.0"
+    },
+    {
+      "name": "thinking",
+      "description": "深度思考工作流：复杂度评估 → 智能路由 → 多模型并行思考（Claude ultrathink + Codex + Gemini）→ 思考整合 → 结论生成",
+      "source": "./plugins/commands/thinking",
+      "version": "1.0.0"
     }
   ]
 }
