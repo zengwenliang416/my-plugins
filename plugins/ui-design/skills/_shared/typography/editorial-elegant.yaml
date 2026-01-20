@@ -1,0 +1,38 @@
+name: Editorial Elegant
+keywords: [editorial, elegant, luxury, sophisticated, 编辑, 优雅, 奢华]
+适用场景: [杂志网站, 出版物, 奢侈品牌, 文化机构]
+pairing:
+  display: "Playfair Display"
+  body: "Source Sans Pro"
+  code: null
+fonts:
+  display:
+    family: "Playfair Display"
+    weights: [400, 700, 900]
+    type: "serif"
+    google_fonts: "https://fonts.google.com/specimen/Playfair+Display"
+    characteristics:
+      - 高对比度衬线
+      - 优雅的笔画
+      - 适合大标题
+  body:
+    family: "Source Sans Pro"
+    weights: [300, 400, 600]
+    type: "sans-serif"
+    google_fonts: "https://fonts.google.com/specimen/Source+Sans+Pro"
+    characteristics:
+      - 清晰易读
+      - 现代无衬线
+      - 适合长文本
+scale:
+  h1: "48px / 1.2 / 700"
+  h2: "36px / 1.3 / 700"
+  h3: "28px / 1.4 / 700"
+  h4: "22px / 1.4 / 600"
+  body: "17px / 1.6 / 400"
+  small: "14px / 1.5 / 400"
+tips:
+  - 衬线用于标题，无衬线用于正文
+  - 高对比度营造奢华感
+  - 适合内容丰富的网站
+  - 注意行高和字间距

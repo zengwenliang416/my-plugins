@@ -1,0 +1,25 @@
+name: Minimalist Swiss
+keywords: [minimalist, clean, grid, typography, 极简, 瑞士, 栅格, 字体]
+适用场景: [企业官网, 作品集, 文档, 金融产品]
+参考案例: [Stripe, Linear, Notion]
+description: 瑞士风格极简主义，强调栅格系统、字体层级、留白
+css:
+  light: |
+    background: #FFFFFF;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  dark: |
+    background: #000000;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+tips:
+  - 使用栅格系统（8px 基准）
+  - 字体层级清晰（48/32/24/16/14）
+  - 大量留白（空间即内容）
+  - 单色或有限色板（黑白+1个强调色）
+  - Sans Serif 字体
+  - 左对齐为主
+tailwind_example: |
+  className="bg-white text-black grid grid-cols-12 gap-8 p-8"

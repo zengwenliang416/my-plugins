@@ -1,0 +1,53 @@
+{
+  "levels": {
+    "low": {
+      "description": "中等深度推理",
+      "model": "o4-mini",
+      "reasoning": "standard",
+      "token_budget": 8000,
+      "timeout_seconds": 60
+    },
+    "high": {
+      "description": "最大深度推理",
+      "model": "o3",
+      "reasoning": "high",
+      "token_budget": 32000,
+      "timeout_seconds": 180
+    }
+  },
+  "roles": {
+    "technical_expert": {
+      "description": "技术专家角色",
+      "system_prompt": "你是一位资深技术专家，擅长技术可行性分析、架构设计、代码审查。"
+    },
+    "system_architect": {
+      "description": "系统架构师角色",
+      "system_prompt": "你是一位顶级系统架构师，擅长复杂系统设计、多方案对比、风险评估。"
+    },
+    "security_expert": {
+      "description": "安全专家角色",
+      "system_prompt": "你是一位安全专家，擅长漏洞分析、威胁建模、安全加固。"
+    }
+  },
+  "output_sections": {
+    "problem_understanding": "问题理解",
+    "reasoning_steps": "推理步骤",
+    "key_assumptions": "关键假设",
+    "core_conclusion": "核心结论",
+    "confidence_assessment": "置信度评估"
+  },
+  "confidence_levels": {
+    "high": {
+      "score_range": [8, 10],
+      "description": "证据充分，推理严谨"
+    },
+    "medium": {
+      "score_range": [5, 7],
+      "description": "有一定依据，部分假设"
+    },
+    "low": {
+      "score_range": [1, 4],
+      "description": "信息不足，需要更多验证"
+    }
+  }
+}

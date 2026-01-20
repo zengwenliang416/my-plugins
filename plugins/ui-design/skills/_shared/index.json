@@ -1,0 +1,780 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-01-13",
+  "total_count": {
+    "styles": 23,
+    "colors": 17,
+    "typography": 11,
+    "ux_guidelines": 5
+  },
+  "resources": [
+    {
+      "id": "style-glassmorphism",
+      "domain": "style",
+      "name": "Glassmorphism 2.0",
+      "file_path": "styles/glassmorphism.yaml",
+      "keywords": [
+        "glass",
+        "blur",
+        "translucent",
+        "modern",
+        "premium",
+        "玻璃",
+        "模糊",
+        "半透明"
+      ],
+      "description": "玻璃拟态设计风格，使用毛玻璃效果和半透明背景",
+      "use_cases": ["系统 UI", "控制面板", "高端产品", "Dashboard"]
+    },
+    {
+      "id": "style-neubrutalism",
+      "domain": "style",
+      "name": "Neubrutalism",
+      "file_path": "styles/neubrutalism.yaml",
+      "keywords": [
+        "brutal",
+        "bold",
+        "2D",
+        "flat",
+        "粗野",
+        "大胆",
+        "扁平",
+        "撞色"
+      ],
+      "description": "新粗野主义设计风格，大胆色块+粗黑边框+硬阴影",
+      "use_cases": ["个性化产品", "创意网站", "年轻用户", "营销页面"]
+    },
+    {
+      "id": "style-minimalist-swiss",
+      "domain": "style",
+      "name": "Minimalist Swiss",
+      "file_path": "styles/minimalist-swiss.yaml",
+      "keywords": [
+        "grid",
+        "typography",
+        "minimal",
+        "clean",
+        "网格",
+        "排版",
+        "极简"
+      ],
+      "description": "瑞士极简主义，强调网格系统和排版层次",
+      "use_cases": ["设计工具", "作品集", "编辑平台", "文档网站"]
+    },
+    {
+      "id": "style-dark-mode-first",
+      "domain": "style",
+      "name": "Dark Mode First",
+      "file_path": "styles/dark-mode-first.yaml",
+      "keywords": ["dark", "low-light", "OLED", "暗色", "护眼", "夜间"],
+      "description": "暗色优先设计，针对低光环境和 OLED 屏幕优化",
+      "use_cases": ["开发者工具", "代码编辑器", "夜间使用", "长时间阅读"]
+    },
+    {
+      "id": "style-bento-grid",
+      "domain": "style",
+      "name": "Bento Grid",
+      "file_path": "styles/bento-grid.yaml",
+      "keywords": [
+        "grid",
+        "cards",
+        "irregular",
+        "Apple",
+        "网格",
+        "卡片",
+        "不规则"
+      ],
+      "description": "日式便当盒风格布局，不规则栅格和卡片组合",
+      "use_cases": ["产品展示", "Dashboard", "特性介绍", "内容聚合"]
+    },
+    {
+      "id": "style-terminal-ui",
+      "domain": "style",
+      "name": "Terminal UI",
+      "file_path": "styles/terminal-ui.yaml",
+      "keywords": [
+        "terminal",
+        "cli",
+        "monospace",
+        "retro",
+        "hacker",
+        "终端",
+        "命令行",
+        "黑客"
+      ],
+      "description": "终端/CLI 风格，等宽字体+ANSI 颜色+高对比度",
+      "use_cases": ["开发者工具", "CLI 产品", "技术文档", "代码展示"]
+    },
+    {
+      "id": "style-ios-design",
+      "domain": "style",
+      "name": "iOS Design System",
+      "file_path": "styles/ios-design-system.yaml",
+      "keywords": [
+        "ios",
+        "apple",
+        "clean",
+        "human interface",
+        "SF",
+        "苹果",
+        "简洁"
+      ],
+      "description": "Apple iOS 设计系统，毛玻璃+SF 字体+圆角",
+      "use_cases": ["iOS 应用", "Apple 生态", "移动优先"]
+    },
+    {
+      "id": "style-material-3",
+      "domain": "style",
+      "name": "Material Design 3",
+      "file_path": "styles/material-design-3.yaml",
+      "keywords": [
+        "material",
+        "google",
+        "adaptive",
+        "dynamic",
+        "color",
+        "材质设计",
+        "动态"
+      ],
+      "description": "Google Material Design 3，动态配色+Design Tokens",
+      "use_cases": ["Android 应用", "Google 生态", "企业产品"]
+    },
+    {
+      "id": "style-neumorphism",
+      "domain": "style",
+      "name": "Neumorphism",
+      "file_path": "styles/neumorphism.yaml",
+      "keywords": [
+        "soft",
+        "shadow",
+        "embossed",
+        "depth",
+        "subtle",
+        "新拟态",
+        "柔和"
+      ],
+      "description": "新拟态风格，柔和阴影+浮雕效果",
+      "use_cases": ["移动应用", "简约产品", "工具类 App"]
+    },
+    {
+      "id": "style-flat-2",
+      "domain": "style",
+      "name": "Flat Design 2.0",
+      "file_path": "styles/flat-design-2.yaml",
+      "keywords": [
+        "flat",
+        "clean",
+        "minimal",
+        "colorful",
+        "simple",
+        "扁平",
+        "简约"
+      ],
+      "description": "扁平设计2.0，纯色块+轻阴影+简洁图标",
+      "use_cases": ["企业应用", "管理后台", "移动应用", "教育产品"]
+    },
+    {
+      "id": "style-brutalism",
+      "domain": "style",
+      "name": "Brutalism",
+      "file_path": "styles/brutalism.yaml",
+      "keywords": [
+        "raw",
+        "bold",
+        "unconventional",
+        "rebellious",
+        "粗野",
+        "大胆",
+        "反传统"
+      ],
+      "description": "网页粗野主义，粗边框+硬阴影+原始结构",
+      "use_cases": ["创意工作室", "艺术项目", "实验性产品", "潮流品牌"]
+    },
+    {
+      "id": "style-claymorphism",
+      "domain": "style",
+      "name": "Claymorphism",
+      "file_path": "styles/claymorphism.yaml",
+      "keywords": [
+        "clay",
+        "3d",
+        "playful",
+        "soft",
+        "tactile",
+        "黏土",
+        "立体",
+        "可爱"
+      ],
+      "description": "黏土形态风格，3D 柔和质感+双重阴影",
+      "use_cases": ["儿童应用", "游戏界面", "创意产品", "插画风格网站"]
+    },
+    {
+      "id": "style-aurora-ui",
+      "domain": "style",
+      "name": "Aurora UI",
+      "file_path": "styles/aurora-ui.yaml",
+      "keywords": [
+        "gradient",
+        "colorful",
+        "vibrant",
+        "mesh",
+        "aurora",
+        "渐变",
+        "炫彩",
+        "极光"
+      ],
+      "description": "极光渐变网格背景，径向渐变+模糊滤镜",
+      "use_cases": ["创意网站", "品牌展示", "音乐应用", "艺术平台"]
+    },
+    {
+      "id": "style-retro-vintage",
+      "domain": "style",
+      "name": "Retro & Vintage",
+      "file_path": "styles/retro-vintage.yaml",
+      "keywords": [
+        "retro",
+        "vintage",
+        "nostalgic",
+        "80s",
+        "90s",
+        "复古",
+        "怀旧",
+        "经典"
+      ],
+      "description": "复古风格，饱和色+等宽字体+硬阴影",
+      "use_cases": ["音乐网站", "时尚品牌", "文化产品", "创意工作室"]
+    },
+    {
+      "id": "style-swiss",
+      "domain": "style",
+      "name": "Swiss Design",
+      "file_path": "styles/swiss-design.yaml",
+      "keywords": [
+        "grid",
+        "minimal",
+        "helvetica",
+        "clean",
+        "systematic",
+        "瑞士",
+        "网格",
+        "理性"
+      ],
+      "description": "瑞士设计风格，严格网格+Helvetica+黑白灰",
+      "use_cases": ["企业官网", "出版物", "品牌设计", "高端产品"]
+    },
+    {
+      "id": "style-memphis",
+      "domain": "style",
+      "name": "Memphis Design",
+      "file_path": "styles/memphis-design.yaml",
+      "keywords": [
+        "playful",
+        "geometric",
+        "colorful",
+        "80s",
+        "postmodern",
+        "孟菲斯",
+        "几何",
+        "波普"
+      ],
+      "description": "孟菲斯设计，几何图案+撞色+不对称布局",
+      "use_cases": ["创意产品", "年轻品牌", "娱乐应用", "艺术项目"]
+    },
+    {
+      "id": "style-skeuomorphism",
+      "domain": "style",
+      "name": "Skeuomorphism",
+      "file_path": "styles/skeuomorphism.yaml",
+      "keywords": [
+        "realistic",
+        "texture",
+        "3d",
+        "leather",
+        "wood",
+        "拟物",
+        "真实",
+        "质感"
+      ],
+      "description": "拟物化设计，真实材质+多层阴影+渐变",
+      "use_cases": ["音乐应用", "游戏界面", "工具模拟器", "怀旧产品"]
+    },
+    {
+      "id": "style-cyberpunk",
+      "domain": "style",
+      "name": "Cyberpunk / Sci-Fi",
+      "file_path": "styles/cyberpunk.yaml",
+      "keywords": [
+        "neon",
+        "futuristic",
+        "tech",
+        "cyber",
+        "dark",
+        "赛博朋克",
+        "霓虹",
+        "未来"
+      ],
+      "description": "赛博朋克风格，霓虹色+发光效果+深色背景",
+      "use_cases": ["游戏界面", "科技品牌", "区块链产品", "创意工作室"]
+    },
+    {
+      "id": "style-art-deco",
+      "domain": "style",
+      "name": "Art Deco",
+      "file_path": "styles/art-deco.yaml",
+      "keywords": [
+        "luxury",
+        "geometric",
+        "elegant",
+        "1920s",
+        "glamorous",
+        "装饰艺术",
+        "奢华",
+        "优雅"
+      ],
+      "description": "装饰艺术风格，金色+几何图案+对称",
+      "use_cases": ["高端品牌", "酒店网站", "奢侈品电商", "文化机构"]
+    },
+    {
+      "id": "style-y2k",
+      "domain": "style",
+      "name": "Y2K Aesthetic",
+      "file_path": "styles/y2k-aesthetic.yaml",
+      "keywords": [
+        "y2k",
+        "2000s",
+        "chrome",
+        "holographic",
+        "futuristic",
+        "千禧",
+        "全息",
+        "金属"
+      ],
+      "description": "千禧年美学，全息渐变+金属质感+泡泡形状",
+      "use_cases": ["时尚品牌", "音乐平台", "创意产品", "年轻社群"]
+    },
+    {
+      "id": "style-bauhaus",
+      "domain": "style",
+      "name": "Bauhaus",
+      "file_path": "styles/bauhaus.yaml",
+      "keywords": [
+        "geometric",
+        "primary colors",
+        "functional",
+        "modernist",
+        "包豪斯",
+        "几何",
+        "现代主义"
+      ],
+      "description": "包豪斯风格，基本几何形+红黄蓝+功能优先",
+      "use_cases": ["艺术机构", "设计工作室", "教育平台", "文化产品"]
+    },
+    {
+      "id": "style-japanese-minimal",
+      "domain": "style",
+      "name": "Minimalist Japanese",
+      "file_path": "styles/minimalist-japanese.yaml",
+      "keywords": [
+        "minimal",
+        "zen",
+        "clean",
+        "wabi-sabi",
+        "japanese",
+        "极简",
+        "禅意",
+        "日式"
+      ],
+      "description": "日式极简风格，大量留白+中性色+自然质感",
+      "use_cases": ["生活方式品牌", "艺术展示", "冥想应用", "高端产品"]
+    },
+    {
+      "id": "style-soft-ui",
+      "domain": "style",
+      "name": "Soft UI",
+      "file_path": "styles/soft-ui.yaml",
+      "keywords": [
+        "soft",
+        "shadows",
+        "gentle",
+        "pastel",
+        "calm",
+        "柔和",
+        "轻盈",
+        "舒适"
+      ],
+      "description": "柔和UI风格，柔和阴影+pastel色+圆角",
+      "use_cases": ["健康应用", "生活方式产品", "儿童应用", "放松工具"]
+    },
+    {
+      "id": "color-vercel-dark",
+      "domain": "color",
+      "name": "Vercel Dark",
+      "industry": "SaaS",
+      "file_path": "colors/saas-tech/vercel-dark.yaml",
+      "keywords": [
+        "专业",
+        "现代",
+        "科技",
+        "极简",
+        "professional",
+        "modern",
+        "tech"
+      ],
+      "description": "Vercel 配色，黑色主调+蓝紫强调",
+      "use_cases": ["开发者产品", "技术平台", "云服务"],
+      "primary": "#000000"
+    },
+    {
+      "id": "color-linear-purple",
+      "domain": "color",
+      "name": "Linear Purple",
+      "industry": "SaaS",
+      "file_path": "colors/saas-tech/linear-purple.yaml",
+      "keywords": ["紫色", "渐变", "现代", "科技"],
+      "description": "Linear 配色，紫色渐变主题",
+      "use_cases": ["项目管理", "协作工具"],
+      "primary": "#5E6AD2"
+    },
+    {
+      "id": "color-stripe-neutral",
+      "domain": "color",
+      "name": "Stripe Neutral",
+      "industry": "Fintech",
+      "file_path": "colors/fintech/stripe-neutral.yaml",
+      "keywords": ["中性", "专业", "信任", "金融"],
+      "description": "Stripe 配色，中性色+蓝紫强调",
+      "use_cases": ["支付平台", "金融产品"],
+      "primary": "#635BFF"
+    },
+    {
+      "id": "color-notion-warm",
+      "domain": "color",
+      "name": "Notion Warm",
+      "industry": "SaaS",
+      "file_path": "colors/saas-tech/notion-warm.yaml",
+      "keywords": ["warm", "friendly", "productive", "温暖", "友好"],
+      "description": "Notion 温暖配色，橙红色系",
+      "use_cases": ["知识管理", "协作平台", "笔记应用"],
+      "primary": "#eb5757"
+    },
+    {
+      "id": "color-github-dark",
+      "domain": "color",
+      "name": "GitHub Dark",
+      "industry": "SaaS",
+      "file_path": "colors/saas-tech/github-dark.yaml",
+      "keywords": ["dark", "developer", "professional", "开发者"],
+      "description": "GitHub 暗色配色，深色背景+绿蓝紫",
+      "use_cases": ["代码托管", "开发者工具"],
+      "primary": "#238636"
+    },
+    {
+      "id": "color-figma-purple",
+      "domain": "color",
+      "name": "Figma Purple",
+      "industry": "SaaS",
+      "file_path": "colors/saas-tech/figma-purple.yaml",
+      "keywords": ["creative", "vibrant", "design", "创意", "设计"],
+      "description": "Figma 配色，紫蓝青绿多彩",
+      "use_cases": ["设计工具", "创意协作"],
+      "primary": "#a259ff"
+    },
+    {
+      "id": "color-paypal-blue",
+      "domain": "color",
+      "name": "PayPal Blue",
+      "industry": "Fintech",
+      "file_path": "colors/fintech/paypal-blue.yaml",
+      "keywords": ["trust", "secure", "payment", "信任", "安全"],
+      "description": "PayPal 蓝色配色，深蓝传递信任",
+      "use_cases": ["支付平台", "金融服务"],
+      "primary": "#0070ba"
+    },
+    {
+      "id": "color-revolut-dark",
+      "domain": "color",
+      "name": "Revolut Dark",
+      "industry": "Fintech",
+      "file_path": "colors/fintech/revolut-dark.yaml",
+      "keywords": ["modern", "bold", "innovative", "现代", "创新"],
+      "description": "Revolut 暗色配色，黑底+亮蓝",
+      "use_cases": ["数字银行", "金融科技"],
+      "primary": "#0075eb"
+    },
+    {
+      "id": "color-shopify-green",
+      "domain": "color",
+      "name": "Shopify Green",
+      "industry": "E-commerce",
+      "file_path": "colors/ecommerce/shopify-green.yaml",
+      "keywords": ["friendly", "growth", "commerce", "友好", "成长"],
+      "description": "Shopify 绿色配色，传递成长",
+      "use_cases": ["电商平台", "商家后台"],
+      "primary": "#008060"
+    },
+    {
+      "id": "color-amazon-orange",
+      "domain": "color",
+      "name": "Amazon Orange",
+      "industry": "E-commerce",
+      "file_path": "colors/ecommerce/amazon-orange.yaml",
+      "keywords": ["energetic", "reliable", "global", "活力", "可靠"],
+      "description": "Amazon 橙色配色，活力可靠",
+      "use_cases": ["电商市场", "在线零售"],
+      "primary": "#ff9900"
+    },
+    {
+      "id": "color-etsy-coral",
+      "domain": "color",
+      "name": "Etsy Coral",
+      "industry": "E-commerce",
+      "file_path": "colors/ecommerce/etsy-coral.yaml",
+      "keywords": ["handmade", "creative", "warm", "手工", "温暖"],
+      "description": "Etsy 珊瑚橙配色，温暖创意",
+      "use_cases": ["手工艺品", "创意商品"],
+      "primary": "#f56400"
+    },
+    {
+      "id": "color-behance-blue",
+      "domain": "color",
+      "name": "Behance Blue",
+      "industry": "Creative",
+      "file_path": "colors/creative/behance-blue.yaml",
+      "keywords": ["creative", "portfolio", "design", "作品集"],
+      "description": "Behance 蓝色配色，激发创意",
+      "use_cases": ["作品集", "创意社区"],
+      "primary": "#1769ff"
+    },
+    {
+      "id": "color-dribbble-pink",
+      "domain": "color",
+      "name": "Dribbble Pink",
+      "industry": "Creative",
+      "file_path": "colors/creative/dribbble-pink.yaml",
+      "keywords": ["playful", "vibrant", "design", "活泼", "鲜艳"],
+      "description": "Dribbble 粉色配色，大胆吸睛",
+      "use_cases": ["设计社区", "创意展示"],
+      "primary": "#ea4c89"
+    },
+    {
+      "id": "color-calm-teal",
+      "domain": "color",
+      "name": "Calm Teal",
+      "industry": "Healthcare",
+      "file_path": "colors/healthcare/calm-teal.yaml",
+      "keywords": ["calm", "healing", "trust", "平静", "治愈"],
+      "description": "青绿色配色，传递平静治愈",
+      "use_cases": ["医疗健康", "冥想应用"],
+      "primary": "#00a896"
+    },
+    {
+      "id": "color-medical-blue",
+      "domain": "color",
+      "name": "Medical Blue",
+      "industry": "Healthcare",
+      "file_path": "colors/healthcare/medical-blue.yaml",
+      "keywords": ["professional", "clinical", "trust", "专业", "临床"],
+      "description": "医疗蓝配色，专业信任",
+      "use_cases": ["医院系统", "临床应用"],
+      "primary": "#0077b6"
+    },
+    {
+      "id": "color-coursera-blue",
+      "domain": "color",
+      "name": "Coursera Blue",
+      "industry": "Education",
+      "file_path": "colors/education/coursera-blue.yaml",
+      "keywords": ["learning", "academic", "knowledge", "学习", "学术"],
+      "description": "Coursera 蓝色配色，传递知识",
+      "use_cases": ["在线教育", "课程平台"],
+      "primary": "#0056d2"
+    },
+    {
+      "id": "color-duolingo-green",
+      "domain": "color",
+      "name": "Duolingo Green",
+      "industry": "Education",
+      "file_path": "colors/education/duolingo-green.yaml",
+      "keywords": ["fun", "gamified", "friendly", "有趣", "游戏化"],
+      "description": "Duolingo 绿色配色，活力成长",
+      "use_cases": ["语言学习", "游戏化教育"],
+      "primary": "#58cc02"
+    },
+    {
+      "id": "typography-modern-tech",
+      "domain": "typography",
+      "name": "Modern Tech",
+      "file_path": "typography/modern-tech.yaml",
+      "keywords": ["现代", "科技", "清晰"],
+      "description": "Satoshi + Plus Jakarta Sans",
+      "heading_font": "Satoshi",
+      "body_font": "Plus Jakarta Sans",
+      "use_cases": ["SaaS产品", "科技公司"]
+    },
+    {
+      "id": "typography-geometric-clean",
+      "domain": "typography",
+      "name": "Geometric Clean",
+      "file_path": "typography/geometric-clean.yaml",
+      "keywords": ["几何", "清爽", "现代"],
+      "description": "Geist Sans + Geist Mono",
+      "heading_font": "Geist Sans",
+      "body_font": "Geist Sans",
+      "use_cases": ["开发者产品", "文档网站"]
+    },
+    {
+      "id": "typography-editorial-elegant",
+      "domain": "typography",
+      "name": "Editorial Elegant",
+      "file_path": "typography/editorial-elegant.yaml",
+      "keywords": ["editorial", "elegant", "luxury", "编辑", "优雅"],
+      "description": "Playfair Display + Source Sans Pro",
+      "heading_font": "Playfair Display",
+      "body_font": "Source Sans Pro",
+      "use_cases": ["杂志网站", "出版物", "奢侈品牌"]
+    },
+    {
+      "id": "typography-tech-professional",
+      "domain": "typography",
+      "name": "Tech Professional",
+      "file_path": "typography/tech-professional.yaml",
+      "keywords": ["tech", "professional", "developer", "技术", "专业"],
+      "description": "Inter + JetBrains Mono",
+      "heading_font": "Inter",
+      "body_font": "Inter",
+      "use_cases": ["技术文档", "开发者工具"]
+    },
+    {
+      "id": "typography-friendly-approachable",
+      "domain": "typography",
+      "name": "Friendly Approachable",
+      "file_path": "typography/friendly-approachable.yaml",
+      "keywords": ["friendly", "warm", "humanist", "友好", "温暖"],
+      "description": "Nunito + Open Sans",
+      "heading_font": "Nunito",
+      "body_font": "Open Sans",
+      "use_cases": ["社交应用", "教育产品"]
+    },
+    {
+      "id": "typography-corporate-formal",
+      "domain": "typography",
+      "name": "Corporate Formal",
+      "file_path": "typography/corporate-formal.yaml",
+      "keywords": ["corporate", "formal", "business", "企业", "正式"],
+      "description": "Merriweather + Lato",
+      "heading_font": "Merriweather",
+      "body_font": "Lato",
+      "use_cases": ["企业官网", "金融服务", "B2B产品"]
+    },
+    {
+      "id": "typography-creative-display",
+      "domain": "typography",
+      "name": "Creative Display",
+      "file_path": "typography/creative-display.yaml",
+      "keywords": ["creative", "bold", "artistic", "创意", "大胆"],
+      "description": "Montserrat + Raleway",
+      "heading_font": "Montserrat",
+      "body_font": "Raleway",
+      "use_cases": ["创意工作室", "品牌展示", "作品集"]
+    },
+    {
+      "id": "typography-minimal-clean",
+      "domain": "typography",
+      "name": "Minimal Clean",
+      "file_path": "typography/minimal-clean.yaml",
+      "keywords": ["minimal", "clean", "neutral", "极简", "简洁"],
+      "description": "Work Sans + Fira Code",
+      "heading_font": "Work Sans",
+      "body_font": "Work Sans",
+      "use_cases": ["极简产品", "工具应用"]
+    },
+    {
+      "id": "typography-retro-vintage",
+      "domain": "typography",
+      "name": "Retro Vintage",
+      "file_path": "typography/retro-vintage.yaml",
+      "keywords": ["retro", "vintage", "classic", "复古", "怀旧"],
+      "description": "Bebas Neue + Roboto",
+      "heading_font": "Bebas Neue",
+      "body_font": "Roboto",
+      "use_cases": ["音乐网站", "时尚品牌"]
+    },
+    {
+      "id": "typography-playful-fun",
+      "domain": "typography",
+      "name": "Playful Fun",
+      "file_path": "typography/playful-fun.yaml",
+      "keywords": ["playful", "fun", "youthful", "活泼", "有趣"],
+      "description": "Fredoka + Poppins",
+      "heading_font": "Fredoka",
+      "body_font": "Poppins",
+      "use_cases": ["儿童应用", "游戏界面"]
+    },
+    {
+      "id": "typography-monospace-tech",
+      "domain": "typography",
+      "name": "Monospace Tech",
+      "file_path": "typography/monospace-tech.yaml",
+      "keywords": ["monospace", "tech", "code", "等宽", "技术"],
+      "description": "Space Mono + IBM Plex Mono",
+      "heading_font": "Space Mono",
+      "body_font": "IBM Plex Mono",
+      "use_cases": ["开发者工具", "CLI工具", "终端UI"]
+    },
+    {
+      "id": "ux-accessibility",
+      "domain": "ux-guideline",
+      "name": "可访问性 (Accessibility)",
+      "file_path": "ux-guidelines/accessibility.yaml",
+      "keywords": ["a11y", "WCAG", "keyboard", "screen-reader", "无障碍"],
+      "description": "确保所有用户（包括残障人士）都能使用产品",
+      "category": "accessibility",
+      "priority": "高",
+      "guideline_count": 20
+    },
+    {
+      "id": "ux-usability",
+      "domain": "ux-guideline",
+      "name": "可用性 (Usability)",
+      "file_path": "ux-guidelines/usability.yaml",
+      "keywords": ["易用", "高效", "用户体验", "反馈"],
+      "description": "确保产品易学、易用、高效、减少用户错误",
+      "category": "usability",
+      "priority": "高",
+      "guideline_count": 25
+    },
+    {
+      "id": "ux-consistency",
+      "domain": "ux-guideline",
+      "name": "一致性 (Consistency)",
+      "file_path": "ux-guidelines/consistency.yaml",
+      "keywords": ["一致", "规范", "统一", "视觉语言"],
+      "description": "保持视觉、交互、内容的一致性，降低学习成本",
+      "category": "consistency",
+      "priority": "中",
+      "guideline_count": 18
+    },
+    {
+      "id": "ux-performance",
+      "domain": "ux-guideline",
+      "name": "性能 (Performance)",
+      "file_path": "ux-guidelines/performance.yaml",
+      "keywords": ["性能", "速度", "优化", "加载"],
+      "description": "确保快速加载、流畅交互、高效渲染",
+      "category": "performance",
+      "priority": "高",
+      "guideline_count": 15
+    },
+    {
+      "id": "ux-responsive",
+      "domain": "ux-guideline",
+      "name": "响应式 (Responsive)",
+      "file_path": "ux-guidelines/responsive.yaml",
+      "keywords": ["响应式", "移动", "适配", "断点"],
+      "description": "确保在不同设备和屏幕尺寸下良好体验",
+      "category": "responsive",
+      "priority": "高",
+      "guideline_count": 20
+    }
+  ]
+}

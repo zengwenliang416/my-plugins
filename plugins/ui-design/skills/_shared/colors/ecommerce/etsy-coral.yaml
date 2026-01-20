@@ -1,0 +1,29 @@
+name: Etsy Coral
+industry: E-commerce
+keywords: [handmade, creative, artisan, warm, 手工, 创意, 温暖]
+palette:
+  primary: "#f56400"
+  secondary: "#222222"
+  accent: "#ff6e4a"
+  background: "#ffffff"
+  surface: "#f9f9f9"
+  text: "#222222"
+  text-secondary: "#595959"
+  border: "#e8e8e8"
+  success: "#00a8a0"
+  error: "#ff0000"
+  warning: "#ffb400"
+  info: "#005dcc"
+gradients:
+  - "linear-gradient(135deg, #f56400 0%, #ff6e4a 100%)"
+use_cases:
+  - 手工艺品市场
+  - 创意商品平台
+  - 独立设计师商店
+  - 个性化定制
+参考: https://etsy.com
+tips:
+  - 珊瑚橙色传递温暖和创意
+  - 适合手工艺和创意产品
+  - 友好且平易近人的配色
+  - 强调个性化和独特性

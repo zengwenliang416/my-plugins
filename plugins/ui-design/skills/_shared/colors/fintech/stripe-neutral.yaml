@@ -1,0 +1,26 @@
+name: Stripe Neutral
+industry: Fintech
+keywords: [中性, 专业, 信任, 金融, neutral, trust]
+description: Stripe 配色方案，中性色调+蓝紫色强调
+palette:
+  primary: "#635BFF"
+  secondary: "#0A2540"
+  accent: "#00D4FF"
+  background: "#FFFFFF"
+  surface: "#F6F9FC"
+  text: "#0A2540"
+  text-secondary: "#425466"
+  border: "#E3E8EE"
+  success: "#00D924"
+  error: "#DF1B41"
+  warning: "#FF9900"
+gradients:
+  - "linear-gradient(180deg, #635BFF 0%, #0A2540 100%)"
+适用场景: [支付平台, 金融产品, 企业服务]
+参考: https://stripe.com
+tailwind_config: |
+  colors: {
+    primary: '#635BFF',
+    secondary: '#0A2540',
+    accent: '#00D4FF',
+  }

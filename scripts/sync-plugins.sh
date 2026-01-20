@@ -8,7 +8,7 @@
 set -e
 
 CACHE_DIR="$HOME/.claude/plugins/cache/ccg-workflows"
-SOURCE_DIR="plugins/commands"
+SOURCE_DIR="plugins"
 
 # Colors
 GREEN='\033[0;32m'
@@ -39,7 +39,7 @@ if [ -n "$1" ]; then
   sync_plugin "$1"
 else
   # Sync all plugins
-  for plugin in brainstorm commit dev hooks plan thinking ui-design; do
+  for plugin in brainstorm commit dev hooks plan refactor thinking ui-design; do
     sync_plugin "$plugin"
   done
 fi

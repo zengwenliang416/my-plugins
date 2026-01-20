@@ -1,0 +1,257 @@
+%% 组件图模板 - Mermaid 格式
+%% 使用说明：根据实际架构替换占位符
+
+%% ============================================
+%% 模板 1: 分层架构
+%% ============================================
+
+graph TB
+    subgraph "表现层 Presentation"
+        UI[Web UI]
+        API[REST API]
+        WS[WebSocket]
+    end
+
+    subgraph "业务层 Business"
+        AuthService[Auth Service]
+        UserService[User Service]
+        OrderService[Order Service]
+    end
+
+    subgraph "数据层 Data"
+        UserRepo[User Repository]
+        OrderRepo[Order Repository]
+        CacheRepo[Cache Repository]
+    end
+
+    subgraph "基础设施 Infrastructure"
+        DB[(PostgreSQL)]
+        Cache[(Redis)]
+        MQ[Message Queue]
+    end
+
+    UI --> API
+    API --> AuthService
+    API --> UserService
+    API --> OrderService
+    WS --> OrderService
+
+    AuthService --> UserRepo
+    UserService --> UserRepo
+    OrderService --> OrderRepo
+    OrderService --> CacheRepo
+
+    UserRepo --> DB
+    OrderRepo --> DB
+    CacheRepo --> Cache
+    OrderService --> MQ
+
+%% ============================================
+%% 模板 2: 微服务架构
+%% ============================================
+
+graph TB
+    subgraph "API Gateway"
+        Gateway[Kong / Nginx]
+    end
+
+    subgraph "Core Services"
+        Auth[Auth Service]
+        User[User Service]
+        Product[Product Service]
+        Order[Order Service]
+    end
+
+    subgraph "Supporting Services"
+        Notification[Notification Service]
+        Search[Search Service]
+        Analytics[Analytics Service]
+    end
+
+    subgraph "Data Stores"
+        AuthDB[(Auth DB)]
+        UserDB[(User DB)]
+        ProductDB[(Product DB)]
+        OrderDB[(Order DB)]
+        ES[(Elasticsearch)]
+        Kafka[Kafka]
+    end
+
+    Gateway --> Auth
+    Gateway --> User
+    Gateway --> Product
+    Gateway --> Order
+
+    Auth --> AuthDB
+    User --> UserDB
+    Product --> ProductDB
+    Order --> OrderDB
+
+    Product --> Kafka
+    Order --> Kafka
+    Kafka --> Notification
+    Kafka --> Search
+    Kafka --> Analytics
+
+    Search --> ES
+
+%% ============================================
+%% 模板 3: 前端组件结构
+%% ============================================
+
+graph TB
+    subgraph "Pages"
+        HomePage[Home Page]
+        ProductPage[Product Page]
+        CartPage[Cart Page]
+        CheckoutPage[Checkout Page]
+    end
+
+    subgraph "Layouts"
+        MainLayout[Main Layout]
+        AuthLayout[Auth Layout]
+    end
+
+    subgraph "Organisms"
+        Header[Header]
+        Footer[Footer]
+        ProductList[Product List]
+        CartSummary[Cart Summary]
+    end
+
+    subgraph "Molecules"
+        ProductCard[Product Card]
+        SearchBar[Search Bar]
+        NavMenu[Nav Menu]
+        CartItem[Cart Item]
+    end
+
+    subgraph "Atoms"
+        Button[Button]
+        Input[Input]
+        Icon[Icon]
+        Badge[Badge]
+    end
+
+    HomePage --> MainLayout
+    ProductPage --> MainLayout
+    CartPage --> MainLayout
+    CheckoutPage --> AuthLayout
+
+    MainLayout --> Header
+    MainLayout --> Footer
+    HomePage --> ProductList
+    CartPage --> CartSummary
+
+    Header --> SearchBar
+    Header --> NavMenu
+    ProductList --> ProductCard
+    CartSummary --> CartItem
+
+    ProductCard --> Button
+    ProductCard --> Badge
+    SearchBar --> Input
+    SearchBar --> Icon
+
+%% ============================================
+%% 模板 4: 状态管理架构
+%% ============================================
+
+graph LR
+    subgraph "Views"
+        Component1[Component A]
+        Component2[Component B]
+        Component3[Component C]
+    end
+
+    subgraph "State Management"
+        Store[(Zustand Store)]
+        QueryCache[(React Query Cache)]
+    end
+
+    subgraph "Actions"
+        Action1[fetchUsers]
+        Action2[updateUser]
+        Action3[deleteUser]
+    end
+
+    subgraph "API Layer"
+        APIClient[API Client]
+    end
+
+    subgraph "Server"
+        Backend[Backend API]
+    end
+
+    Component1 --> Store
+    Component2 --> Store
+    Component3 --> Store
+    Component1 --> QueryCache
+    Component2 --> QueryCache
+
+    Store --> Action1
+    Store --> Action2
+    Store --> Action3
+
+    Action1 --> APIClient
+    Action2 --> APIClient
+    Action3 --> APIClient
+
+    APIClient --> Backend
+
+%% ============================================
+%% 模板 5: 部署架构
+%% ============================================
+
+graph TB
+    subgraph "CDN"
+        CF[CloudFront]
+    end
+
+    subgraph "Load Balancer"
+        ALB[Application Load Balancer]
+    end
+
+    subgraph "Compute"
+        subgraph "ECS Cluster"
+            API1[API Instance 1]
+            API2[API Instance 2]
+            Worker1[Worker 1]
+        end
+    end
+
+    subgraph "Data"
+        RDS[(RDS PostgreSQL)]
+        Redis[(ElastiCache Redis)]
+        S3[(S3 Bucket)]
+    end
+
+    subgraph "Messaging"
+        SQS[SQS Queue]
+        SNS[SNS Topic]
+    end
+
+    subgraph "Monitoring"
+        CW[CloudWatch]
+        Xray[X-Ray]
+    end
+
+    CF --> ALB
+    ALB --> API1
+    ALB --> API2
+
+    API1 --> RDS
+    API2 --> RDS
+    API1 --> Redis
+    API2 --> Redis
+    API1 --> S3
+
+    API1 --> SQS
+    SQS --> Worker1
+    Worker1 --> RDS
+    Worker1 --> SNS
+
+    API1 --> CW
+    API2 --> CW
+    Worker1 --> CW
+    API1 --> Xray

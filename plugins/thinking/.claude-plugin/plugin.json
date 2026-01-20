@@ -1,0 +1,5 @@
+{
+  "name": "thinking",
+  "version": "1.0.0",
+  "description": "深度思考工作流：复杂度评估 → 智能路由 → 多模型并行思考（Claude ultrathink + Codex reasoning + Gemini Deep Think）→ 思考整合 → 结论生成"
+}

@@ -1,0 +1,26 @@
+{
+  "timestamp": "${TIMESTAMP}",
+  "analyzed_files": 0,
+  "primary_type": "${TYPE}",
+  "primary_scope": "${SCOPE}",
+  "scopes": [],
+  "complexity": "low",
+  "should_split": false,
+  "split_recommendation": null,
+  "commit_strategy": {
+    "suggested_type": "${TYPE}",
+    "suggested_scope": "${SCOPE}",
+    "confidence": "high",
+    "reason": ""
+  },
+  "semantic_analysis": {
+    "summary": "",
+    "affected_features": [],
+    "type_confidence": "high"
+  },
+  "symbol_analysis": {
+    "primary_symbols": [],
+    "symbol_types": {}
+  },
+  "files_by_type": {}
+}

@@ -1,0 +1,25 @@
+{
+  "conventional_to_changelog": {
+    "feat": "Added",
+    "fix": "Fixed",
+    "docs": "Changed",
+    "style": "Changed",
+    "refactor": "Changed",
+    "perf": "Changed",
+    "test": null,
+    "build": "Changed",
+    "ci": null,
+    "chore": null,
+    "revert": "Removed"
+  },
+  "changelog_sections_order": [
+    "Changed",
+    "Added",
+    "Deprecated",
+    "Removed",
+    "Fixed",
+    "Security"
+  ],
+  "skip_types": ["test", "ci", "chore"],
+  "breaking_change_prefix": "**Breaking:**"
+}

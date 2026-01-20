@@ -4,7 +4,7 @@
 
 set -e
 
-PLUGINS_DIR="plugins/commands"
+PLUGINS_DIR="plugins"
 ERRORS=0
 WARNINGS=0
 

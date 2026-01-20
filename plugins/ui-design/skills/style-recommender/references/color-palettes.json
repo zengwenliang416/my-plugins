@@ -1,0 +1,65 @@
+{
+  "palettes": {
+    "vercel_dark": {
+      "name": "Vercel Dark",
+      "colors": {
+        "primary": "#000000",
+        "secondary": "#171717",
+        "accent": "#0070F3",
+        "text": "#EDEDED",
+        "muted": "#888888"
+      },
+      "suitable_for": ["科技", "开发者工具", "SaaS"]
+    },
+    "stripe_clean": {
+      "name": "Stripe Clean",
+      "colors": {
+        "primary": "#635BFF",
+        "secondary": "#0A2540",
+        "accent": "#00D4FF",
+        "background": "#FFFFFF",
+        "text": "#425466"
+      },
+      "suitable_for": ["金融", "支付", "企业"]
+    },
+    "linear_purple": {
+      "name": "Linear Purple",
+      "colors": {
+        "primary": "#5E6AD2",
+        "secondary": "#1A1A2E",
+        "accent": "#8B5CF6",
+        "background": "#0D0D12",
+        "text": "#F5F5F5"
+      },
+      "suitable_for": ["效率工具", "项目管理"]
+    },
+    "notion_warm": {
+      "name": "Notion Warm",
+      "colors": {
+        "primary": "#000000",
+        "secondary": "#FFFFFF",
+        "accent": "#EB5757",
+        "background": "#FFFDF9",
+        "text": "#37352F"
+      },
+      "suitable_for": ["笔记", "知识库", "协作"]
+    },
+    "figma_gradient": {
+      "name": "Figma Gradient",
+      "colors": {
+        "primary": "#0ACF83",
+        "secondary": "#A259FF",
+        "accent": "#F24E1E",
+        "background": "#1E1E1E",
+        "text": "#FFFFFF"
+      },
+      "suitable_for": ["设计工具", "创意平台"]
+    }
+  },
+  "contrast_ratios": {
+    "AA_normal": 4.5,
+    "AA_large": 3,
+    "AAA_normal": 7,
+    "AAA_large": 4.5
+  }
+}

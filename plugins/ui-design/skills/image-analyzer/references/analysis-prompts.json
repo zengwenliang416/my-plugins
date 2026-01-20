@@ -1,0 +1,26 @@
+{
+  "dimensions": {
+    "colors": {
+      "prompt": "分析这张设计图片的配色方案：\n1. 主色调识别（HEX 值）\n2. 配色模式（单色/互补/类似）\n3. 色彩应用（背景/文字/按钮）",
+      "expected_output": ["primaryColor", "secondaryColors", "accentColor", "backgroundColor", "colorSchemeType"]
+    },
+    "layout": {
+      "prompt": "分析这张设计图片的布局结构：\n1. 整体布局（单栏/双栏/网格）\n2. 网格系统（列数/间距）\n3. 响应式考量",
+      "expected_output": ["layoutType", "columns", "gutter", "margin", "sections"]
+    },
+    "typography": {
+      "prompt": "分析这张设计图片的字体排版：\n1. 字体识别（标题/正文）\n2. 字体层级（各级大小）\n3. 排版细节（行高/字间距）",
+      "expected_output": ["fontFamilies", "fontSizes", "fontWeights", "lineHeights"]
+    },
+    "components": {
+      "prompt": "分析这张设计图片中的 UI 组件：\n1. 组件识别（按类型分组）\n2. 组件样式（圆角/阴影/边框）\n3. 状态变体",
+      "expected_output": ["components", "buttons", "cards", "inputs", "navigation"]
+    },
+    "spacing": {
+      "prompt": "分析这张设计图片的间距系统：\n1. 间距测量（元素间距）\n2. 间距规律（4px/8px 基准）\n3. 留白处理",
+      "expected_output": ["baseUnit", "spacingScale", "contentPadding", "sectionGap"]
+    }
+  },
+  "gemini_command_template": "~/.claude/bin/codeagent-wrapper gemini --prompt \"{prompt}\" --file \"{image_path}\"",
+  "supported_formats": ["png", "jpg", "jpeg", "webp", "gif"]
+}

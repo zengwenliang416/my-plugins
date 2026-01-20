@@ -1,0 +1,46 @@
+{
+  "structure_analysis": {
+    "name": "项目结构分析",
+    "checks": [
+      "识别框架类型（React/Vue/Angular）",
+      "识别样式方案（Tailwind/CSS Modules/Styled）",
+      "识别组件库（MUI/Antd/Shadcn）",
+      "识别状态管理（Redux/Zustand/Pinia）"
+    ]
+  },
+  "design_system_analysis": {
+    "name": "设计系统分析",
+    "checks": [
+      "提取颜色变量（CSS 变量/Tailwind 配置）",
+      "提取字体配置",
+      "提取间距系统",
+      "提取阴影/圆角配置"
+    ]
+  },
+  "component_analysis": {
+    "name": "组件分析",
+    "checks": [
+      "列出现有组件",
+      "识别组件模式（Atomic/Compound）",
+      "分析 Props 接口",
+      "检查复用性"
+    ]
+  },
+  "ux_issues": {
+    "name": "UX 问题检测",
+    "checks": [
+      "可访问性问题",
+      "响应式问题",
+      "一致性问题",
+      "性能问题"
+    ]
+  },
+  "output_format": {
+    "framework": "string",
+    "styling": "string",
+    "components": "array",
+    "design_tokens": "object",
+    "issues": "array",
+    "recommendations": "array"
+  }
+}

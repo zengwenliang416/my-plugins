@@ -1,0 +1,117 @@
+category: 性能 (Performance)
+total_count: 15
+description: 确保快速加载、流畅交互、高效渲染
+priority: 高
+guidelines:
+  - id: UI-P-001
+    title: 首屏加载时间 < 2.5s
+    description: 用户可见内容（LCP）应在 2.5 秒内加载完成
+    priority: 高
+    check_method: 使用 Lighthouse 测量 LCP
+    reference: "https://web.dev/lcp/"
+
+  - id: UI-P-002
+    title: 首次输入延迟 < 100ms
+    description: 用户首次交互到响应时间（FID）应 < 100ms
+    priority: 高
+    check_method: 使用 Chrome DevTools Performance
+    reference: "https://web.dev/fid/"
+
+  - id: UI-P-003
+    title: 布局偏移最小化
+    description: 累积布局偏移（CLS）< 0.1
+    priority: 中
+    check_method: 避免未设置尺寸的图片/广告
+    example: |
+      ✅ <img width="300" height="200" />
+      ❌ <img /> 加载后撑开布局
+
+  - id: UI-P-004
+    title: 图片优化和懒加载
+    description: 使用 WebP/AVIF 格式，非首屏图片懒加载
+    priority: 高
+    example: |
+      ✅ <img loading="lazy" src="image.webp" />
+      ❌ 加载 5MB 原图
+
+  - id: UI-P-005
+    title: 代码分割和按需加载
+    description: 使用动态 import，按路由分割代码
+    priority: 中
+    code_example: |
+      // 路由级别代码分割
+      const Dashboard = lazy(() => import('./Dashboard'))
+
+  - id: UI-P-006
+    title: 减少主线程阻塞
+    description: 长任务分割为小任务，避免阻塞 > 50ms
+    priority: 高
+    check_method: DevTools Performance 检查 Long Tasks
+
+  - id: UI-P-007
+    title: 使用 CDN 加速静态资源
+    description: 图片、CSS、JS 托管到 CDN
+    priority: 中
+    example: |
+      ✅ https://cdn.example.com/assets/
+      ❌ 从应用服务器加载
+
+  - id: UI-P-008
+    title: 启用 HTTP/2 或 HTTP/3
+    description: 利用多路复用减少请求延迟
+    priority: 中
+    check_method: 检查 Network 面板 Protocol 列
+
+  - id: UI-P-009
+    title: 缓存策略合理
+    description: 静态资源长缓存，API 短缓存或协商缓存
+    priority: 中
+    example: |
+      ✅ Cache-Control: max-age=31536000 (CSS/JS)
+      ✅ Cache-Control: no-cache (HTML)
+
+  - id: UI-P-010
+    title: 压缩文本资源
+    description: 启用 Gzip 或 Brotli 压缩
+    priority: 高
+    check_method: 检查 Response Headers: Content-Encoding
+
+  - id: UI-P-011
+    title: 避免不必要的重渲染
+    description: 使用 memo、useMemo、useCallback 优化 React
+    priority: 中
+    code_example: |
+      const MemoizedComponent = memo(ExpensiveComponent)
+
+  - id: UI-P-012
+    title: 虚拟化长列表
+    description: 大列表使用虚拟滚动（react-window/react-virtualized）
+    priority: 高
+    example: |
+      ✅ 1000 项列表虚拟化，仅渲染可见 20 项
+      ❌ 直接渲染 1000 个 DOM 节点
+
+  - id: UI-P-013
+    title: 预加载关键资源
+    description: 使用 preload/prefetch 优化关键路径
+    priority: 中
+    code_example: |
+      <link rel="preload" href="critical.css" as="style" />
+      <link rel="prefetch" href="next-page.js" />
+
+  - id: UI-P-014
+    title: 减少 DOM 节点数量
+    description: 页面 DOM 节点 < 1500 个
+    priority: 低
+    check_method: 控制台: document.querySelectorAll('*').length
+
+  - id: UI-P-015
+    title: 防抖和节流高频事件
+    description: scroll、resize、input 事件使用防抖/节流
+    priority: 中
+    code_example: |
+      // 防抖：延迟执行
+      const debouncedSearch = debounce(handleSearch, 300)
+
+      // 节流：限制频率
+      const throttledScroll = throttle(handleScroll, 100)

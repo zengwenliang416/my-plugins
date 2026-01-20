@@ -1,0 +1,51 @@
+{
+  "formats": {
+    "brief": {
+      "name": "简洁版",
+      "description": "快速概览，适合汇报和分享",
+      "sections": ["核心洞察", "Top 3 方案", "下一步行动"],
+      "max_length": "~500 words"
+    },
+    "detailed": {
+      "name": "详细版",
+      "description": "完整报告，包含所有分析细节",
+      "sections": [
+        "执行概要",
+        "研究发现",
+        "创意概览",
+        "评估结果",
+        "Top 5 方案详解",
+        "风险与盲点",
+        "下一步行动",
+        "附录"
+      ],
+      "max_length": "~3000 words"
+    }
+  },
+  "templates": {
+    "top_idea": {
+      "fields": ["title", "description", "scores", "pros", "cons", "next_steps", "resources"]
+    },
+    "action_item": {
+      "fields": ["task", "owner", "deadline", "priority", "status"]
+    }
+  },
+  "visualizations": {
+    "mindmap": {
+      "enabled": true,
+      "format": "mermaid",
+      "max_depth": 3
+    },
+    "quadrant_chart": {
+      "enabled": true,
+      "x_axis": "可行性",
+      "y_axis": "影响力"
+    },
+    "ranking_chart": {
+      "enabled": true,
+      "show_top": 5
+    }
+  },
+  "export_formats": ["markdown", "pdf", "html"],
+  "default_format": "detailed"
+}

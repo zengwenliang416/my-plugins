@@ -1,0 +1,42 @@
+{
+  "levels": {
+    "A": {
+      "description": "最低可访问性标准",
+      "rules": [
+        { "id": "1.1.1", "name": "Non-text Content", "check": "所有图片有 alt 属性" },
+        { "id": "1.3.1", "name": "Info and Relationships", "check": "使用语义化 HTML" },
+        { "id": "2.1.1", "name": "Keyboard", "check": "所有功能可通过键盘访问" },
+        { "id": "2.4.1", "name": "Bypass Blocks", "check": "提供跳过导航的方法" },
+        { "id": "4.1.1", "name": "Parsing", "check": "HTML 有效，无重复 ID" },
+        { "id": "4.1.2", "name": "Name, Role, Value", "check": "表单控件有可访问名称" }
+      ]
+    },
+    "AA": {
+      "description": "推荐的可访问性标准",
+      "rules": [
+        { "id": "1.4.3", "name": "Contrast (Minimum)", "check": "文本对比度至少 4.5:1" },
+        { "id": "1.4.4", "name": "Resize Text", "check": "文本可放大 200%" },
+        { "id": "2.4.6", "name": "Headings and Labels", "check": "标题和标签描述性" },
+        { "id": "2.4.7", "name": "Focus Visible", "check": "焦点状态可见" },
+        { "id": "3.1.2", "name": "Language of Parts", "check": "标注不同语言内容" },
+        { "id": "3.3.1", "name": "Error Identification", "check": "错误提示明确" }
+      ]
+    },
+    "AAA": {
+      "description": "最高可访问性标准",
+      "rules": [
+        { "id": "1.4.6", "name": "Contrast (Enhanced)", "check": "对比度至少 7:1" },
+        { "id": "2.2.3", "name": "No Timing", "check": "无时间限制" },
+        { "id": "2.4.9", "name": "Link Purpose", "check": "链接文本描述性" }
+      ]
+    }
+  },
+  "quick_checks": [
+    "所有图片有描述性 alt",
+    "颜色对比度足够",
+    "可通过键盘导航",
+    "焦点状态可见",
+    "表单有标签",
+    "错误提示清晰"
+  ]
+}

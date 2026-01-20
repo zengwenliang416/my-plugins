@@ -1,0 +1,39 @@
+name: Minimal Clean
+keywords: [minimal, clean, simple, neutral, 极简, 简洁, 中性]
+适用场景: [极简产品, 生活方式品牌, 工具应用, 内容平台]
+pairing:
+  display: "Work Sans"
+  body: "Work Sans"
+  code: "Fira Code"
+fonts:
+  display:
+    family: "Work Sans"
+    weights: [400, 500, 600, 700]
+    type: "sans-serif"
+    google_fonts: "https://fonts.google.com/specimen/Work+Sans"
+    characteristics:
+      - 中性现代
+      - 清晰简洁
+      - 多用途
+  body:
+    family: "Work Sans"
+    weights: [300, 400, 500]
+    type: "sans-serif"
+    google_fonts: "https://fonts.google.com/specimen/Work+Sans"
+  code:
+    family: "Fira Code"
+    weights: [400, 500]
+    type: "monospace"
+    google_fonts: "https://fonts.google.com/specimen/Fira+Code"
+scale:
+  h1: "40px / 1.2 / 600"
+  h2: "32px / 1.3 / 600"
+  h3: "24px / 1.4 / 500"
+  h4: "20px / 1.4 / 500"
+  body: "16px / 1.6 / 400"
+  small: "14px / 1.5 / 400"
+tips:
+  - 单一字体族保持极简
+  - 通过字重区分层级
+  - 适合内容为中心的设计
+  - 中性且不抢戏

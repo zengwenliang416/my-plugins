@@ -1,0 +1,29 @@
+name: Amazon Orange
+industry: E-commerce
+keywords: [energetic, reliable, commerce, global, 活力, 可靠, 全球]
+palette:
+  primary: "#ff9900"
+  secondary: "#146eb4"
+  accent: "#febd69"
+  background: "#ffffff"
+  surface: "#f3f3f3"
+  text: "#0f1111"
+  text-secondary: "#565959"
+  border: "#d5d9d9"
+  success: "#067d62"
+  error: "#c7511f"
+  warning: "#f0c14b"
+  info: "#146eb4"
+gradients:
+  - "linear-gradient(135deg, #ff9900 0%, #febd69 100%)"
+use_cases:
+  - 电商市场
+  - 在线零售
+  - 物流平台
+  - 全球购物
+参考: https://amazon.com
+tips:
+  - 橙色传递活力和可靠性
+  - 蓝色辅助色增加信任感
+  - 适合大型电商平台
+  - 强调转化率和购买行为

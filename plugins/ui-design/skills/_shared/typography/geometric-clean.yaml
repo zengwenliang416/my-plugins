@@ -1,0 +1,36 @@
+name: Geometric Clean
+keywords: [几何, 清爽, 现代, geometric]
+description: 几何清爽字体搭配，Geist Sans + Geist Mono
+heading_font:
+  family: "Geist Sans"
+  weights: [600, 700]
+  source: "https://vercel.com/font"
+  fallback: "system-ui, sans-serif"
+body_font:
+  family: "Geist Sans"
+  weights: [400, 500]
+  source: "https://vercel.com/font"
+  fallback: "system-ui, sans-serif"
+mono_font:
+  family: "Geist Mono"
+  weights: [400, 500]
+  source: "https://vercel.com/font"
+  fallback: "Consolas, monospace"
+typography_scale:
+  h1: "56px / 700"
+  h2: "40px / 600"
+  h3: "28px / 600"
+  h4: "20px / 600"
+  body: "16px / 400"
+  small: "14px / 400"
+  code: "14px / 400 mono"
+line_height:
+  heading: 1.1
+  body: 1.7
+适用场景: [开发者产品, 文档网站, 技术博客]
+参考案例: [Vercel, Next.js Docs]
+tailwind_config: |
+  fontFamily: {
+    sans: ['Geist Sans', 'system-ui', 'sans-serif'],
+    mono: ['Geist Mono', 'Consolas', 'monospace'],
+  }

@@ -1,0 +1,54 @@
+{
+  "variants": {
+    "A": {
+      "name": "现代简约",
+      "theme": {
+        "primaryColor": "#3B82F6",
+        "secondaryColor": "#64748B",
+        "accentColor": "#8B5CF6",
+        "backgroundColor": "#FFFFFF",
+        "surfaceColor": "#F8FAFC",
+        "textColor": "#0F172A",
+        "borderRadius": "8px",
+        "shadow": "0 1px 3px rgba(0,0,0,0.1)",
+        "fontFamily": "Inter, system-ui, sans-serif"
+      },
+      "characteristics": ["干净", "专业", "易读"]
+    },
+    "B": {
+      "name": "活泼鲜艳",
+      "theme": {
+        "primaryColor": "#EC4899",
+        "secondaryColor": "#06B6D4",
+        "accentColor": "#F59E0B",
+        "backgroundColor": "#FFFBEB",
+        "surfaceColor": "#FFFFFF",
+        "textColor": "#1F2937",
+        "borderRadius": "12px",
+        "shadow": "0 4px 6px rgba(0,0,0,0.1)",
+        "fontFamily": "Poppins, system-ui, sans-serif"
+      },
+      "characteristics": ["友好", "年轻", "活力"]
+    },
+    "C": {
+      "name": "深色专业",
+      "theme": {
+        "primaryColor": "#60A5FA",
+        "secondaryColor": "#A78BFA",
+        "accentColor": "#34D399",
+        "backgroundColor": "#0F172A",
+        "surfaceColor": "#1E293B",
+        "textColor": "#F8FAFC",
+        "borderRadius": "6px",
+        "shadow": "0 2px 4px rgba(0,0,0,0.3)",
+        "fontFamily": "JetBrains Mono, monospace"
+      },
+      "characteristics": ["科技感", "专业", "沉稳"]
+    }
+  },
+  "component_styles": {
+    "button": ["primary", "secondary", "ghost", "outline"],
+    "card": ["bordered", "elevated", "flat"],
+    "input": ["outlined", "filled", "underlined"]
+  }
+}

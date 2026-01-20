@@ -1,0 +1,25 @@
+name: Glassmorphism 2.0
+keywords: [glass, blur, translucent, modern, premium, 玻璃, 模糊, 半透明]
+适用场景: [系统 UI, 控制面板, 高端产品, Dashboard]
+参考案例: [macOS Sonoma, Raycast, Arc Browser, Apple Design]
+description: 现代玻璃拟态风格，通过背景模糊和半透明效果营造层次感
+css:
+  light: |
+    backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(255,255,255,0.7);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  dark: |
+    backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+tips:
+  - 避免过度模糊影响可读性
+  - 需要有质感的背景才能显效
+  - 建议用于卡片、模态框、侧边栏
+  - 确保文字对比度符合 WCAG 标准
+tailwind_example: |
+  className="backdrop-blur-xl bg-white/70 border border-white/20 rounded-2xl shadow-lg dark:bg-black/50 dark:border-white/10"

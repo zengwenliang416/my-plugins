@@ -1,0 +1,27 @@
+name: Vercel Dark
+industry: SaaS
+keywords: [专业, 现代, 科技, 极简, dark, tech]
+description: Vercel 官网配色方案，黑色主题+蓝色强调
+palette:
+  primary: "#000000"
+  secondary: "#0070F3"
+  accent: "#7928CA"
+  background: "#000000"
+  surface: "#111111"
+  text: "#FFFFFF"
+  text-secondary: "#888888"
+  border: "#333333"
+  success: "#0070F3"
+  error: "#E00"
+  warning: "#F5A623"
+gradients:
+  - "linear-gradient(to right, #7928CA, #FF0080)"
+  - "linear-gradient(to bottom, #000000, #111111)"
+适用场景: [开发者工具, SaaS Dashboard, 技术产品]
+参考: https://vercel.com
+tailwind_config: |
+  colors: {
+    primary: '#000000',
+    secondary: '#0070F3',
+    accent: '#7928CA',
+  }
