@@ -1,5 +1,0 @@
-{
-  "name": "refactor",
-  "description": "重构工作流：代码气味检测 → 重构建议 → 影响分析 → 安全执行",
-  "version": "1.0.0"
-}
