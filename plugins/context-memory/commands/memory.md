@@ -5,23 +5,8 @@ description: |
 arguments:
   - name: subcommand
     type: string
-    required: true
-    description: |
-      子命令:
-        load <task>         - 加载项目上下文
-        compact             - 压缩当前会话
-        code-map <feature>  - 生成代码地图
-        skill-index [path]  - 生成 SKILL 索引
-        skill-load [name]   - 加载技能文档
-        workflow <id|all>   - 工作流记忆
-        style <package>     - 样式记忆
-        docs [path]         - 文档规划
-        docs-full [path]    - 完整文档生成
-        docs-related [path] - 相关文档生成
-        update-full [path]  - 全量更新
-        update-related      - 增量更新
-        swagger [path]      - API 文档生成
-        tech-rules <stack>  - 技术规则生成
+    required: false
+    description: 子命令 (可选，不提供时交互式选择)
   - name: --tool
     type: string
     required: false
@@ -37,6 +22,50 @@ arguments:
 ---
 
 # Memory - 项目记忆管理
+
+## 🚨 交互式入口（无参数时）
+
+**如果用户未提供子命令，必须使用 AskUserQuestion 询问：**
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "请选择要执行的记忆管理操作：",
+    header: "操作类型",
+    options: [
+      { label: "load - 加载上下文", description: "加载项目上下文，支持任务描述" },
+      { label: "compact - 压缩会话", description: "压缩当前会话，保留关键信息" },
+      { label: "code-map - 代码地图", description: "生成代码结构和依赖关系地图" },
+      { label: "docs - 文档管理", description: "文档规划、生成和更新" }
+    ],
+    multiSelect: false
+  }]
+})
+```
+
+**如果用户选择 "docs - 文档管理"，继续询问：**
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "请选择文档操作类型：",
+    header: "文档操作",
+    options: [
+      { label: "docs - 文档规划", description: "分析并规划需要的文档" },
+      { label: "docs-full - 完整生成", description: "生成完整的项目文档" },
+      { label: "docs-related - 相关生成", description: "生成指定模块的相关文档" },
+      { label: "update-full - 全量更新", description: "更新所有文档" },
+      { label: "update-related - 增量更新", description: "仅更新变更相关的文档" },
+      { label: "swagger - API 文档", description: "生成 OpenAPI/Swagger 文档" }
+    ],
+    multiSelect: false
+  }]
+})
+```
+
+**如果操作需要参数（如 load、code-map），继续询问参数值。**
+
+---
 
 ## 命令路由
 
