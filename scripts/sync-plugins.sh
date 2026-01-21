@@ -30,6 +30,7 @@ sync_plugin() {
   mkdir -p "$dst"
   # 复制所有文件包括隐藏文件夹
   cp -r "${src}"/. "$dst/"
+
   echo -e "${GREEN}✅ ${plugin} synced${NC}"
 }
 
@@ -45,4 +46,9 @@ else
 fi
 
 echo ""
-echo -e "${GREEN}Done! Restart Claude Code to apply changes.${NC}"
+echo -e "${GREEN}Done!${NC}"
+echo ""
+echo "To install a new plugin, run in Claude Code:"
+echo "  /install-plugin ~/.claude/plugins/cache/ccg-workflows/<plugin>/1.0.0"
+echo ""
+echo "Or restart Claude Code to apply changes to existing plugins."
