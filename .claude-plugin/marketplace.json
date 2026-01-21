@@ -46,6 +46,18 @@
       "description": "深度思考工作流：复杂度评估 → 智能路由 → 多模型并行思考（Claude ultrathink + Codex + Gemini）→ 思考整合 → 结论生成",
       "source": "./plugins/thinking",
       "version": "1.0.0"
+    },
+    {
+      "name": "memory",
+      "description": "智能上下文管理：上下文加载 → 会话压缩 → 代码地图 → 技能索引 → 工作流记忆 → 风格记忆 → 文档管理",
+      "source": "./plugins/memory",
+      "version": "1.0.0"
+    },
+    {
+      "name": "refactor",
+      "description": "代码重构工作流：模式识别 → 重构方案 → 安全验证 → 自动应用",
+      "source": "./plugins/refactor",
+      "version": "1.0.0"
     }
   ]
 }
