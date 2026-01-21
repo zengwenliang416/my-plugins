@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Phase 4: report-synthesizer - Generate brief/detailed reports
   - Support SCAMPER and Six Thinking Hats methods
   - 7 skill modules: codex-cli, gemini-cli, exa, topic-researcher, idea-generator, idea-evaluator, report-synthesizer
-- Add memory plugin for intelligent context management (memory)
+- Add context-memory plugin for intelligent context management (context-memory)
   - context-loader: Context loading with priority management
   - session-compactor: Session compression and summarization
   - code-map-generator: Code map and dependency analysis

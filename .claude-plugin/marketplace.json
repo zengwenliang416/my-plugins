@@ -48,9 +48,9 @@
       "version": "1.0.0"
     },
     {
-      "name": "memory",
+      "name": "context-memory",
       "description": "智能上下文管理：上下文加载 → 会话压缩 → 代码地图 → 技能索引 → 工作流记忆 → 风格记忆 → 文档管理",
-      "source": "./plugins/memory",
+      "source": "./plugins/context-memory",
       "version": "1.0.0"
     },
     {
