@@ -1,0 +1,51 @@
+{
+  "openapi_version": "3.0.3",
+  "default_output": "openapi.yaml",
+  "formats": ["yaml", "json"],
+  "frameworks": {
+    "express": {
+      "patterns": [
+        "app.get",
+        "app.post",
+        "app.put",
+        "app.delete",
+        "router.get",
+        "router.post"
+      ],
+      "file_patterns": ["**/routes/**/*.{ts,js}", "**/controllers/**/*.{ts,js}"]
+    },
+    "koa": {
+      "patterns": ["router.get", "router.post", "router.put", "router.delete"],
+      "file_patterns": ["**/routes/**/*.{ts,js}", "**/controllers/**/*.{ts,js}"]
+    },
+    "fastify": {
+      "patterns": ["fastify.get", "fastify.post", "fastify.route"],
+      "file_patterns": ["**/routes/**/*.{ts,js}", "**/plugins/**/*.{ts,js}"]
+    },
+    "nestjs": {
+      "patterns": ["@Controller", "@Get", "@Post", "@Put", "@Delete"],
+      "file_patterns": ["**/*.controller.ts"]
+    },
+    "hono": {
+      "patterns": ["app.get", "app.post", "app.put", "app.delete", "hono.get"],
+      "file_patterns": ["**/routes/**/*.{ts,js}", "**/*.routes.{ts,js}"]
+    }
+  },
+  "type_mappings": {
+    "string": { "type": "string" },
+    "number": { "type": "number" },
+    "boolean": { "type": "boolean" },
+    "Date": { "type": "string", "format": "date-time" },
+    "Buffer": { "type": "string", "format": "binary" }
+  },
+  "format_hints": {
+    "email": { "type": "string", "format": "email" },
+    "uuid": { "type": "string", "format": "uuid" },
+    "url": { "type": "string", "format": "uri" },
+    "date": { "type": "string", "format": "date" },
+    "password": { "type": "string", "format": "password" }
+  },
+  "cache_dir": ".claude/memory/swagger",
+  "preserve_descriptions": true,
+  "generate_swagger_ui_config": true
+}

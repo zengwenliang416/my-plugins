@@ -1,0 +1,29 @@
+{
+  "loading_modes": {
+    "full": {
+      "description": "Load complete skill content",
+      "include_references": true,
+      "include_scripts": true,
+      "max_tokens": 10000
+    },
+    "summary": {
+      "description": "Load skill frontmatter only",
+      "include_references": false,
+      "include_scripts": false,
+      "max_tokens": 1000
+    },
+    "selective": {
+      "description": "Load specific sections",
+      "include_references": "on_demand",
+      "include_scripts": "on_demand",
+      "max_tokens": 5000
+    }
+  },
+  "sections": {
+    "frontmatter": { "priority": 1, "required": true },
+    "overview": { "priority": 2, "required": true },
+    "flow": { "priority": 3, "required": false },
+    "examples": { "priority": 4, "required": false },
+    "references": { "priority": 5, "required": false }
+  }
+}

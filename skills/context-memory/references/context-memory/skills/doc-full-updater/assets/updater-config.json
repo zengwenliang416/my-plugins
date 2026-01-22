@@ -1,0 +1,34 @@
+{
+  "change_detection": {
+    "hash_algorithm": "sha256",
+    "track_source_files": true,
+    "track_doc_files": true
+  },
+  "custom_content": {
+    "preserve": true,
+    "markers": {
+      "start": "<!-- CUSTOM -->",
+      "end": "<!-- END-CUSTOM -->"
+    },
+    "auto_generated_markers": {
+      "start": "<!-- AUTO-GENERATED -->",
+      "end": "<!-- END-AUTO-GENERATED -->"
+    }
+  },
+  "backup": {
+    "enabled": true,
+    "directory": ".claude/memory/docs/backups",
+    "keep_count": 5,
+    "create_manifest": true
+  },
+  "cross_references": {
+    "check_links": true,
+    "auto_fix": true,
+    "report_broken": true
+  },
+  "update_behavior": {
+    "force": false,
+    "skip_unchanged": true,
+    "merge_conflicts": "report"
+  }
+}
