@@ -5,6 +5,8 @@
 # 用途: 检测并拦截危险的 SQL 操作，防止生产数据误删
 # 触发: PreToolUse (Bash)
 # 优先级: P0 - 最高安全优先级
+# 新特性: 支持 updatedInput、additionalContext、permissionDecision (2.1.9+)
+# 版本: 2.1.14+
 # =============================================================================
 
 set -euo pipefail
@@ -21,8 +23,9 @@ log_error() { echo -e "${RED}[DB-GUARD]${NC} $1" >&2; }
 # 读取 stdin 输入
 input=$(cat)
 
-# 提取命令内容
+# 提取命令内容和 tool_use_id (2.0.43+)
 command=$(echo "$input" | jq -r '.tool_input.command // empty')
+tool_use_id=$(echo "$input" | jq -r '.tool_use_id // empty')
 
 if [[ -z "$command" ]]; then
     exit 0
@@ -50,7 +53,18 @@ for pattern in "${dangerous_patterns[@]}"; do
         log_error "   匹配模式: $pattern"
         log_warn "   建议: 请确认此操作，或使用更安全的条件"
 
-        echo "{\"decision\": \"block\", \"reason\": \"检测到危险 SQL 操作 ($pattern)，请确认后手动执行或添加更精确的 WHERE 条件。\"}"
+        # 使用新的 hookSpecificOutput 格式 (2.1.9+)
+        cat <<EOF
+{
+  "systemMessage": "⚠️ 检测到危险 SQL 操作，已阻止执行",
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "deny",
+    "permissionDecisionReason": "检测到危险 SQL 操作 ($pattern)，请确认后手动执行或添加更精确的 WHERE 条件。",
+    "additionalContext": "此命令包含可能导致数据丢失的 SQL 模式。如需执行，请手动在终端中运行。"
+  }
+}
+EOF
         exit 0
     fi
 done

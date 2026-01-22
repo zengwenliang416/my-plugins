@@ -1,5 +1,12 @@
 #!/bin/bash
-# Stop Hook: 检查任务是否真正完成 + 发送通知
+# =============================================================================
+# stop-check.sh - Stop Hook: 检查任务是否真正完成 + 发送通知
+# =============================================================================
+# 用途: 在 Claude 尝试结束时检查任务完成状态
+# 触发: Stop
+# 注意: Stop hook 使用顶层字段 (decision/reason)，不使用 hookSpecificOutput
+# 版本: 2.1.14+
+# =============================================================================
 
 set -euo pipefail
 
@@ -10,9 +17,17 @@ NC='\033[0m'
 log_info() { echo -e "${GREEN}[STOP-CHECK]${NC} $1" >&2; }
 log_warn() { echo -e "${YELLOW}[STOP-CHECK]${NC} $1" >&2; }
 
+# 读取 stdin 输入
+input=$(cat)
+
+# 提取信息
+session_id=$(echo "$input" | jq -r '.session_id // empty')
+cwd=$(echo "$input" | jq -r '.cwd // empty')
+stop_hook_active=$(echo "$input" | jq -r '.stop_hook_active // false')
+
 # 获取项目名
-PROJECT_NAME=$(basename "$(pwd)")
-PROJECT_PATH=$(pwd)
+PROJECT_NAME=$(basename "${cwd:-$(pwd)}")
+PROJECT_PATH="${cwd:-$(pwd)}"
 
 # 检查 todos.json
 check_todos() {
@@ -28,13 +43,26 @@ check_todos() {
 
     if [[ "$in_progress" -gt 0 ]]; then
         log_warn "发现 $in_progress 个进行中的任务"
-        echo '{"decision": "block", "reason": "仍有未完成的任务，请先完成所有任务再结束"}'
+        # Stop hook 使用顶层字段，不使用 hookSpecificOutput
+        cat <<EOF
+{
+  "decision": "block",
+  "reason": "仍有 $in_progress 个进行中的任务，请先完成所有任务再结束",
+  "systemMessage": "⚠️ 检测到未完成的任务"
+}
+EOF
         return 1
     fi
 
     if [[ "$pending" -gt 0 ]]; then
         log_warn "发现 $pending 个待处理的任务"
-        echo '{"decision": "block", "reason": "仍有未完成的任务，请先完成所有任务再结束"}'
+        cat <<EOF
+{
+  "decision": "block",
+  "reason": "仍有 $pending 个待处理的任务，请先完成所有任务再结束",
+  "systemMessage": "⚠️ 检测到待处理的任务"
+}
+EOF
         return 1
     fi
 
@@ -152,14 +180,23 @@ send_notifications() {
     esac
 }
 
+# =============================================================================
 # 主逻辑
+# =============================================================================
+
 main() {
     if ! check_todos; then
         exit 0  # 已输出 block 决策
     fi
 
     log_info "任务检查通过，允许结束"
-    echo '{"decision": "approve"}'
+
+    # Stop hook 使用顶层字段
+    cat <<EOF
+{
+  "decision": "approve"
+}
+EOF
 
     # 异步发送通知
     send_notifications
