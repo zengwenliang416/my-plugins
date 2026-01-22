@@ -1,15 +1,13 @@
 ---
 name: codex-cli
 description: |
-  【触发条件】memory 插件需要代码分析时
-  【核心产出】代码结构分析、逻辑提取、审计结果
+  【触发条件】gemini-cli 失败时的降级选项
+  【核心产出】CLAUDE.md 模块文档（作为 gemini 的备选）
   【专属用途】
-    - 代码地图生成的深度分析
-    - 项目结构扫描
-    - API 端点提取
-    - 代码流程追踪
-  【强制工具】Bash (codex CLI)
-  【不触发】前端 UI/CSS 分析（用 gemini-cli）
+    - CLAUDE.md 生成（降级）
+    - 后端代码分析优先
+  【强制工具】codeagent-wrapper codex
+  【不触发】gemini 可用时（优先使用 gemini）
 allowed-tools:
   - Bash
   - Write
@@ -18,143 +16,124 @@ arguments:
   - name: prompt
     type: string
     required: true
-    description: 分析任务描述
-  - name: context_files
+    description: 生成任务描述
+  - name: module_path
+    type: string
+    required: false
+    description: 目标模块路径 (CLAUDE.md 生成用)
+  - name: strategy
+    type: string
+    required: false
+    description: 生成策略 (single-layer|multi-layer)
+  - name: input_files
     type: array
     required: false
-    description: 需要分析的文件路径列表
+    description: 输入文件路径列表
   - name: output_format
     type: string
     default: "markdown"
-    description: 输出格式 (markdown|json|mermaid)
+    description: 输出格式 (markdown|json|yaml)
 ---
 
 # Memory Plugin - Codex CLI Skill
 
+## 触发条件
+
+此 Skill 仅在以下情况触发：
+
+1. **gemini-cli 失败**：非零退出码
+2. **gemini-cli 输出为空**：无有效内容
+3. **gemini 配额耗尽**：API 限制
+
 ## 执行流程
 
+### CLAUDE.md 生成流程（降级）
+
 ```
-1. 接收分析任务
+1. 接收模块路径和策略
+   - module_path: 目标目录
+   - strategy: single-layer | multi-layer
        │
        ▼
-2. 构建 Codex Prompt
-   - 加载专属模板
-   - 注入上下文文件
+2. 扫描目录结构
+   - 统计文件数量和类型
+   - 识别子目录
        │
        ▼
-3. 执行 Codex CLI
-   codex --approval-mode full-auto \
-         --full-stdout \
-         "$PROMPT"
+3. 构建 Prompt (与 gemini-cli 相同模板)
+   - single-layer: @*/CLAUDE.md @*.ts ...
+   - multi-layer: @**/*
        │
        ▼
-4. 处理输出
-   - 解析分析结果
-   - 格式化为目标格式
+4. 执行 codeagent-wrapper codex
+   cd ${module_path} && \
+   ~/.claude/bin/codeagent-wrapper codex \
+     --prompt "${prompt}" \
+     --workdir "."
        │
        ▼
-5. 返回结果
+5. 验证输出
+   - 检查 CLAUDE.md 是否生成
+   - 返回手动模式提示 (如失败)
 ```
 
-## 专属 Prompt 模板
+## 与 gemini-cli 的差异
 
-### 模块结构分析
+| 维度     | gemini-cli           | codex-cli            |
+| -------- | -------------------- | -------------------- |
+| 优先级   | 主要工具             | 降级选项             |
+| 擅长     | 文档生成、自然语言   | 后端逻辑、代码分析   |
+| 上下文   | 32k tokens           | 128k tokens          |
+| 速度     | 较快                 | 较慢                 |
+| 文档质量 | 更流畅               | 更技术化             |
 
-```markdown
-# Memory Plugin - Code Analysis
+## 执行命令
 
-## Task
+```bash
+# 单层策略
+cd ${module_path} && \
+~/.claude/bin/codeagent-wrapper codex \
+  --prompt "$(cat <<'PROMPT'
+Directory Structure Analysis:
+[structure info]
 
-分析以下代码的模块结构
+Read: @*/CLAUDE.md @*.ts @*.tsx
 
-## Context Files
+Generate single file: ./CLAUDE.md
 
-${context_files}
+Template Structure:
+- Purpose (1-2 sentences)
+- Structure (directory tree)
+- Components (exports, dependencies)
+- Integration points
+- Implementation notes
 
-## Analysis Focus
+Instructions:
+- Create exactly one CLAUDE.md file
+- Reference child CLAUDE.md files, do not duplicate
+- No placeholder text or TODOs
+PROMPT
+)"
 
-1. 入口点识别
-2. 模块依赖关系
-3. 导出接口清单
-4. 内部调用链
+# 多层策略
+cd ${module_path} && \
+~/.claude/bin/codeagent-wrapper codex \
+  --prompt "$(cat <<'PROMPT'
+Directory Structure Analysis:
+[structure info]
 
-## Output Format
+Read: @**/*
 
-${output_format}
-```
+Generate CLAUDE.md files:
+- Primary: ./CLAUDE.md (current directory)
+- Additional: CLAUDE.md in each subdirectory
 
-### 函数调用链追踪
-
-```markdown
-# Memory Plugin - Call Chain Analysis
-
-## Task
-
-追踪函数 ${function_name} 的完整调用链
-
-## Context Files
-
-${context_files}
-
-## Output Requirements
-
-- Mermaid 序列图格式
-- 包含参数传递
-- 标注异步调用
-```
-
-### API 端点提取
-
-```markdown
-# Memory Plugin - API Endpoint Extraction
-
-## Task
-
-扫描项目，提取所有 API 端点
-
-## Framework Detection
-
-自动检测: Express | NestJS | FastAPI | Spring | Go
-
-## Output Format
-
-| Method | Path | Handler | Parameters |
-| ------ | ---- | ------- | ---------- |
-```
-
-### 数据流分析
-
-```markdown
-# Memory Plugin - Data Flow Analysis
-
-## Task
-
-分析数据从 ${source} 到 ${target} 的流转路径
-
-## Context Files
-
-${context_files}
-
-## Analysis Depth
-
-- 变量追踪
-- 函数边界
-- 模块边界
-- 外部调用
-```
-
-## 降级策略
-
-```
-Codex CLI 不可用时:
-1. 检测错误类型
-   - 网络错误 → 重试 (3次, 指数退避)
-   - 配额错误 → 通知用户
-   - 服务错误 → 降级到本地分析
-
-2. 本地降级分析
-   - 使用 grep/glob 进行模式匹配
-   - 输出能力受限警告
+Instructions:
+- Work bottom-up: deepest directories first
+- Parent directories reference children
+- No placeholder text or TODOs
+PROMPT
+)"
 ```
 
 ## 输出格式规范
@@ -162,54 +141,62 @@ Codex CLI 不可用时:
 ### Markdown (默认)
 
 ```markdown
-# Analysis Result
+# Generated Document
 
-## Summary
+## Overview
 
-[概述]
+[概述内容]
 
 ## Details
 
-[详细分析]
+[详细内容]
 
-## Recommendations
+## References
 
-[建议]
+[相关引用]
 ```
 
-### JSON
+## 最终降级
 
-```json
-{
-  "summary": "...",
-  "modules": [...],
-  "dependencies": [...],
-  "exports": [...]
-}
+如果 codex-cli 也失败：
+
 ```
+Error: Both gemini-cli and codex-cli failed
+Suggestion: 请手动创建 ${module_path}/CLAUDE.md
 
-### Mermaid
+推荐结构:
+# ${module_name}
 
-```mermaid
-graph TD
-    A[Entry] --> B[Module]
-    B --> C[Function]
+## Purpose
+[描述模块功能]
+
+## Structure
+[目录结构]
+
+## Components
+[组件列表]
 ```
 
 ## 使用示例
 
 ```
-# 分析模块结构
-Skill("memory:codex-cli",
-  prompt="分析 src/services/ 的模块结构",
-  context_files=["src/services/"],
-  output_format="markdown"
+# 降级生成 CLAUDE.md (single-layer)
+Skill("context-memory:codex-cli",
+  module_path="src/auth",
+  strategy="single-layer"
 )
 
-# 追踪调用链
-Skill("memory:codex-cli",
-  prompt="追踪 handleRequest 函数的调用链",
-  context_files=["src/handlers/request.ts"],
-  output_format="mermaid"
+# 降级生成 CLAUDE.md (multi-layer)
+Skill("context-memory:codex-cli",
+  module_path="src/core/handlers",
+  strategy="multi-layer"
 )
 ```
+
+## 验证清单
+
+- [ ] gemini-cli 已确认失败
+- [ ] prompt 构建完整
+- [ ] codeagent-wrapper codex 调用成功
+- [ ] CLAUDE.md 已生成
+- [ ] 输出符合模板结构

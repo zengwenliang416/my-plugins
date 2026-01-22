@@ -36,7 +36,24 @@ AskUserQuestion({
       { label: "load - 加载上下文", description: "加载项目上下文，支持任务描述" },
       { label: "compact - 压缩会话", description: "压缩当前会话，保留关键信息" },
       { label: "code-map - 代码地图", description: "生成代码结构和依赖关系地图" },
-      { label: "docs - 文档管理", description: "文档规划、生成和更新" }
+      { label: "claude-update - CLAUDE.md 更新", description: "为模块生成/更新 CLAUDE.md 上下文文件" },
+      { label: "docs - 文档管理", description: "项目文档规划、生成和更新" }
+    ],
+    multiSelect: false
+  }]
+})
+```
+
+**如果用户选择 "claude-update - CLAUDE.md 更新"，继续询问：**
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "请选择 CLAUDE.md 更新方式：",
+    header: "更新方式",
+    options: [
+      { label: "claude-full - 全量更新", description: "更新所有模块的 CLAUDE.md (Layer 3→2→1)" },
+      { label: "claude-related - 增量更新", description: "仅更新 git 变更相关的模块" }
     ],
     multiSelect: false
   }]
@@ -54,8 +71,8 @@ AskUserQuestion({
       { label: "docs - 文档规划", description: "分析并规划需要的文档" },
       { label: "docs-full - 完整生成", description: "生成完整的项目文档" },
       { label: "docs-related - 相关生成", description: "生成指定模块的相关文档" },
-      { label: "update-full - 全量更新", description: "更新所有文档" },
-      { label: "update-related - 增量更新", description: "仅更新变更相关的文档" },
+      { label: "docs-update-full - 全量更新", description: "更新所有项目文档" },
+      { label: "docs-update-related - 增量更新", description: "仅更新变更相关的文档" },
       { label: "swagger - API 文档", description: "生成 OpenAPI/Swagger 文档" }
     ],
     multiSelect: false
@@ -93,14 +110,39 @@ workflow <id|all>      →  Skill("memory:workflow-memory", session="$id")
 style <package>        →  Skill("memory:style-memory", package="$package")
 ```
 
-### 文档管理
+### CLAUDE.md 更新（模块上下文）
 
 ```
-docs [path]          →  Skill("memory:doc-planner", path="$path")
-docs-full [path]     →  Skill("memory:doc-full-generator", path="$path")
-docs-related [path]  →  Skill("memory:doc-related-generator", path="$path")
-update-full [path]   →  Skill("memory:doc-full-updater", path="$path")
-update-related       →  Skill("memory:doc-incremental-updater")
+claude-full [path]   →  执行以下流程:
+                        1. Skill("context-memory:module-discovery", path="$path")
+                           → 输出 modules.json (按 Layer 分组)
+                        2. AskUserQuestion: 确认执行计划
+                        3. For layer in [3, 2, 1]:
+                             For module in layer:
+                               Skill("context-memory:claude-updater",
+                                     module_path=module.path,
+                                     strategy=module.strategy)
+                        4. 验证结果
+
+claude-related       →  执行以下流程:
+                        1. Skill("context-memory:change-detector")
+                           → 输出 changed-modules.json
+                        2. AskUserQuestion: 确认执行计划
+                        3. For module in changed_modules:
+                             Skill("context-memory:claude-updater",
+                                   module_path=module.path,
+                                   strategy=module.strategy)
+                        4. 验证结果
+```
+
+### 项目文档管理
+
+```
+docs [path]               →  Skill("memory:doc-planner", path="$path")
+docs-full [path]          →  Skill("memory:doc-full-generator", path="$path")
+docs-related [path]       →  Skill("memory:doc-related-generator", path="$path")
+docs-update-full [path]   →  Skill("memory:doc-full-updater", path="$path")
+docs-update-related       →  Skill("memory:doc-incremental-updater")
 ```
 
 ### API/规则
@@ -121,16 +163,19 @@ tech-rules <stack>   →  Skill("memory:tech-rules-generator", stack="$stack")
        ▼
 3. 路由到对应 Skill
    ┌───────────────────────────────────────┐
-   │ load       → context-loader           │
-   │ compact    → session-compactor        │
-   │ code-map   → code-map-generator       │
-   │ skill-*    → skill-indexer/loader     │
-   │ workflow   → workflow-memory          │
-   │ style      → style-memory             │
-   │ docs*      → doc-* generators         │
-   │ update-*   → doc-* updaters           │
-   │ swagger    → swagger-generator        │
-   │ tech-rules → tech-rules-generator     │
+   │ load         → context-loader         │
+   │ compact      → session-compactor      │
+   │ code-map     → code-map-generator     │
+   │ claude-full  → module-discovery       │
+   │                + claude-updater × N   │
+   │ claude-related → change-detector      │
+   │                  + claude-updater × N │
+   │ skill-*      → skill-indexer/loader   │
+   │ workflow     → workflow-memory        │
+   │ style        → style-memory           │
+   │ docs*        → doc-* generators       │
+   │ swagger      → swagger-generator      │
+   │ tech-rules   → tech-rules-generator   │
    └───────────────────────────────────────┘
        │
        ▼
@@ -185,6 +230,12 @@ tech-rules <stack>   →  Skill("memory:tech-rules-generator", stack="$stack")
 # 样式记忆
 /memory style "design-system"
 
+# 全量更新 CLAUDE.md (所有模块)
+/memory claude-full src/
+
+# 增量更新 CLAUDE.md (仅 git 变更)
+/memory claude-related
+
 # 文档规划
 /memory docs src/
 
@@ -226,11 +277,13 @@ tech-rules <stack>   →  Skill("memory:tech-rules-generator", stack="$stack")
 
 部分子命令会触发多模型并行执行：
 
-| 子命令     | 模型组合               |
-| ---------- | ---------------------- |
-| load       | codex-cli + gemini-cli |
-| code-map   | codex-cli              |
-| docs-full  | codex-cli + gemini-cli |
-| tech-rules | exa + codex-cli        |
+| 子命令         | 模型组合                     |
+| -------------- | ---------------------------- |
+| load           | codex-cli + gemini-cli       |
+| code-map       | codex-cli                    |
+| claude-full    | gemini-cli (降级: codex-cli) |
+| claude-related | gemini-cli (降级: codex-cli) |
+| docs-full      | codex-cli + gemini-cli       |
+| tech-rules     | exa + codex-cli              |
 
 详见各 Skill 的 SKILL.md 文档。

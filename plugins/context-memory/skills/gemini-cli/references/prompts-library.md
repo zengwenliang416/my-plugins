@@ -208,6 +208,115 @@ Token 类别:
 输出: Markdown
 ```
 
+## CLAUDE.md 文档生成
+
+### Single-Layer 策略 (depth 0-2)
+
+```
+Directory Structure Analysis:
+${structure_info}
+
+Read: @*/CLAUDE.md @*.ts @*.tsx @*.js @*.jsx @*.py @*.sh @*.md @*.json @*.yaml @*.yml
+
+Generate single file: ./CLAUDE.md
+
+Template Guidelines:
+
+# {Module Name}
+
+## Purpose
+[1-2 sentences describing what this module does and why it exists]
+
+## Structure
+[Directory tree or file listing with brief descriptions]
+
+## Components
+
+### {Component/File Name}
+- **Purpose**: [What it does]
+- **Exports**: [Key exports]
+- **Dependencies**: [Internal/external deps]
+
+## Dependencies
+
+### Internal
+- `../path/to/module` - [Purpose]
+
+### External
+- `package-name` - [Usage]
+
+## Integration
+[How this module connects with the rest of the system]
+
+## Implementation Notes
+[Key algorithms, patterns, or gotchas]
+
+Instructions:
+- Create exactly one CLAUDE.md file in the current directory
+- Reference child CLAUDE.md files, do not duplicate their content
+- Follow the template guidelines above for consistent structure
+- Use the structure analysis to understand the current directory context
+```
+
+### Multi-Layer 策略 (depth >= 3)
+
+```
+Directory Structure Analysis:
+${structure_info}
+
+Read: @**/*
+
+Generate CLAUDE.md files:
+- Primary: ./CLAUDE.md (current directory)
+- Additional: CLAUDE.md in each subdirectory containing files
+
+Template Guidelines:
+
+# {Module Name}
+
+## Purpose
+[1-2 sentences describing what this module does and why it exists]
+
+## Structure
+[Directory tree or file listing with brief descriptions]
+
+## Components
+
+### {Component/File Name}
+- **Purpose**: [What it does]
+- **Exports**: [Key exports]
+- **Dependencies**: [Internal/external deps]
+
+## Dependencies
+
+### Internal
+- `../path/to/module` - [Purpose]
+
+### External
+- `package-name` - [Usage]
+
+## Integration
+[How this module connects with the rest of the system]
+
+## Implementation Notes
+[Key algorithms, patterns, or gotchas]
+
+Instructions:
+- Work bottom-up: deepest directories first
+- Parent directories reference children
+- Each CLAUDE.md file must be in its respective directory
+- Follow the template guidelines above for consistent structure
+- Use the structure analysis to understand directory hierarchy
+```
+
+### CLAUDE.md 质量检查清单
+
+- [ ] Purpose 在前 2 句话内清晰
+- [ ] 所有公共导出已文档化
+- [ ] 依赖关系准确列出
+- [ ] 集成点已解释
+- [ ] 无占位符文本或 TODO
+
 ## 使用说明
 
 1. 选择合适的 prompt 模板

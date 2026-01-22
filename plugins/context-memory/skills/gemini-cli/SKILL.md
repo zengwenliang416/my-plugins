@@ -2,14 +2,15 @@
 name: gemini-cli
 description: |
   【触发条件】memory 插件需要文档生成时
-  【核心产出】文档内容、设计分析、自然语言摘要
+  【核心产出】CLAUDE.md 模块文档、设计分析、自然语言摘要
   【专属用途】
+    - CLAUDE.md 模块文档生成 (update-full/update-related)
     - SKILL.md 索引生成
-    - 文档内容生成
     - 设计 token 分析
     - 工作流摘要生成
-  【强制工具】Bash (gemini CLI)
+  【强制工具】codeagent-wrapper gemini
   【不触发】后端逻辑分析（用 codex-cli）
+  【降级】gemini 失败时切换到 codex-cli
 allowed-tools:
   - Bash
   - Write
@@ -19,6 +20,14 @@ arguments:
     type: string
     required: true
     description: 生成任务描述
+  - name: module_path
+    type: string
+    required: false
+    description: 目标模块路径 (CLAUDE.md 生成用)
+  - name: strategy
+    type: string
+    required: false
+    description: 生成策略 (single-layer|multi-layer)
   - name: input_files
     type: array
     required: false
@@ -33,6 +42,38 @@ arguments:
 
 ## 执行流程
 
+### CLAUDE.md 生成流程
+
+```
+1. 接收模块路径和策略
+   - module_path: 目标目录
+   - strategy: single-layer | multi-layer
+       │
+       ▼
+2. 扫描目录结构
+   - 统计文件数量和类型
+   - 识别子目录
+       │
+       ▼
+3. 构建 Prompt (基于策略)
+   - single-layer: @*/CLAUDE.md @*.ts ...
+   - multi-layer: @**/*
+       │
+       ▼
+4. 执行 codeagent-wrapper
+   cd ${module_path} && \
+   ~/.claude/bin/codeagent-wrapper gemini \
+     --prompt "${prompt}" \
+     --workdir "."
+       │
+       ▼
+5. 验证输出
+   - 检查 CLAUDE.md 是否生成
+   - 降级到 codex-cli (如失败)
+```
+
+### 通用文档生成流程
+
 ```
 1. 接收生成任务
        │
@@ -42,10 +83,9 @@ arguments:
    - 注入输入文件
        │
        ▼
-3. 执行 Gemini CLI
-   gemini -p "$PROMPT" \
-          --sandbox \
-          ${input_files}
+3. 执行 codeagent-wrapper gemini
+   ~/.claude/bin/codeagent-wrapper gemini \
+     --prompt "$PROMPT"
        │
        ▼
 4. 处理输出
@@ -57,6 +97,52 @@ arguments:
 ```
 
 ## 专属 Prompt 模板
+
+### CLAUDE.md 生成 (Single-Layer)
+
+```markdown
+Directory Structure Analysis:
+${structure_info}
+
+Read: @_/CLAUDE.md @_.ts @_.tsx @_.js @_.jsx @_.py @_.sh @_.md @_.json @_.yaml @\*.yml
+
+Generate single file: ./CLAUDE.md
+
+Template Structure:
+
+- Purpose (1-2 sentences)
+- Structure (directory tree)
+- Components (exports, dependencies)
+- Integration points
+- Implementation notes
+
+Instructions:
+
+- Create exactly one CLAUDE.md file
+- Reference child CLAUDE.md files, do not duplicate
+- No placeholder text or TODOs
+```
+
+### CLAUDE.md 生成 (Multi-Layer)
+
+```markdown
+Directory Structure Analysis:
+${structure_info}
+
+Read: @\*_/_
+
+Generate CLAUDE.md files:
+
+- Primary: ./CLAUDE.md (current directory)
+- Additional: CLAUDE.md in each subdirectory containing files
+
+Instructions:
+
+- Work bottom-up: deepest directories first
+- Parent directories reference children
+- Each CLAUDE.md in its respective directory
+- No placeholder text or TODOs
+```
 
 ### SKILL.md 索引生成
 
@@ -238,17 +324,46 @@ document:
 ## 使用示例
 
 ```
+# 生成单模块 CLAUDE.md (single-layer)
+Skill("context-memory:gemini-cli",
+  module_path="src/auth",
+  strategy="single-layer"
+)
+
+# 生成深层模块 CLAUDE.md (multi-layer)
+Skill("context-memory:gemini-cli",
+  module_path="src/core/handlers",
+  strategy="multi-layer"
+)
+
 # 生成 SKILL 索引
-Skill("memory:gemini-cli",
+Skill("context-memory:gemini-cli",
   prompt="生成技能索引",
   input_files=["plugins/memory/skills/"],
   output_format="markdown"
 )
 
 # 提取设计 tokens
-Skill("memory:gemini-cli",
+Skill("context-memory:gemini-cli",
   prompt="提取设计 tokens",
   input_files=["src/styles/theme.ts"],
   output_format="yaml"
 )
+```
+
+## CLI 命令示例
+
+```bash
+# 直接调用 codeagent-wrapper 生成 CLAUDE.md
+cd /path/to/module && \
+~/.claude/bin/codeagent-wrapper gemini \
+  --prompt "$(cat <<'EOF'
+Directory Structure Analysis:
+[structure info here]
+
+Read: @*/CLAUDE.md @*.ts @*.tsx
+
+Generate single file: ./CLAUDE.md
+EOF
+)"
 ```
