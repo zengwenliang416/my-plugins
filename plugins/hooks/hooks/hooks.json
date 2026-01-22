@@ -1,5 +1,5 @@
 {
-  "description": "通用钩子集合：意图评估、日志备份、代码质量、智能路由、安全防护、会话管理、环境感知、健康关怀、团队协作、情感支持、子代理管理、权限自动化、初始化维护",
+  "description": "通用钩子集合：意图评估、日志备份、代码质量、智能路由、安全防护、会话管理、环境感知、健康关怀、团队协作、情感支持、子代理管理、权限自动化、初始化维护、读取优化",
   "hooks": {
     "Setup": [
       {
@@ -78,6 +78,17 @@
       }
     ],
     "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/optimization/read-limit.sh",
+            "timeout": 5,
+            "description": "大文件读取限制：自动注入 limit 参数防止上下文溢出"
+          }
+        ]
+      },
       {
         "matcher": "Bash",
         "hooks": [
