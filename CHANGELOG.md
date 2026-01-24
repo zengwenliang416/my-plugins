@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add enhanced file reading strategy hints to read-limit hook (hooks)
 - Add install and list features to sync-plugins.sh script (scripts)
 - Add thinking plugin registration to marketplace (marketplace)
 - Add thinking plugin to sync script (scripts)
@@ -49,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Rewrite project documentation with updated installation guide and plugin list (root)
 - Rename plugin command files from run.md to descriptive names (plugins)
   - brainstorm.md, commit.md, memory.md, dev.md, plan.md, refactor.md, thinking.md, ui-design.md
 - Add REFACTOR-PLAN.md for context-memory plugin architecture (context-memory)
