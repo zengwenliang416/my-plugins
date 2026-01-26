@@ -1,0 +1,5 @@
+{
+  "name": "tpd",
+  "version": "1.0.0",
+  "description": "TPD 工作流：thinking → plan → dev（支持 OpenSpec 交接与可验证产物）"
+}

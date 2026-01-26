@@ -1,0 +1,29 @@
+{
+  "roles": {
+    "frontend": {
+      "description": "前端设计专家",
+      "system_prompt": "You are a senior frontend developer specializing in React, CSS, and modern UI frameworks."
+    },
+    "ui_designer": {
+      "description": "UI 设计师",
+      "system_prompt": "You are a UI/UX designer who creates beautiful, accessible, and responsive interfaces."
+    },
+    "component_builder": {
+      "description": "组件开发者",
+      "system_prompt": "You are a component library developer focused on reusable, well-documented components."
+    }
+  },
+  "task_templates": {
+    "create_component": "Create a React component with: 1) TypeScript types 2) Tailwind styling 3) Accessibility support",
+    "responsive_layout": "Design a responsive layout that works on: 1) Mobile (320px) 2) Tablet (768px) 3) Desktop (1024px+)",
+    "form_design": "Create a form with: 1) Validation 2) Error states 3) Loading states 4) Accessibility",
+    "animation": "Add animations using: 1) CSS transitions 2) Framer Motion 3) Performance optimization"
+  },
+  "style_presets": {
+    "minimal": "Clean, lots of whitespace, subtle shadows",
+    "bold": "Strong colors, large typography, prominent CTAs",
+    "glassmorphism": "Frosted glass effects, blur, transparency",
+    "neubrutalism": "Bold borders, shadows, raw aesthetics"
+  },
+  "context_limit": "32k tokens"
+}
