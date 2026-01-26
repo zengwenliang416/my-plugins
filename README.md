@@ -16,8 +16,7 @@ claude plugin marketplace add .
 
 ```bash
 claude plugin install commit@ccg-workflows
-claude plugin install dev@ccg-workflows
-claude plugin install plan@ccg-workflows
+claude plugin install tpd@ccg-workflows
 ```
 
 ## 开发者同步（可选）
@@ -37,7 +36,7 @@ claude plugin install plan@ccg-workflows
 ./scripts/sync-plugins.sh
 
 # 仅同步某个插件
-./scripts/sync-plugins.sh dev
+./scripts/sync-plugins.sh tpd
 ```
 
 ### 同步并安装
@@ -47,7 +46,7 @@ claude plugin install plan@ccg-workflows
 ./scripts/sync-plugins.sh --install
 
 # 安装单个插件
-./scripts/sync-plugins.sh dev --install
+./scripts/sync-plugins.sh tpd --install
 ```
 
 ## 插件列表
@@ -57,11 +56,9 @@ claude plugin install plan@ccg-workflows
 | 插件 | 说明 | 命令入口 |
 |------|------|----------|
 | commit | 规范提交工作流：收集 → 分析 → 生成消息 → 更新 Changelog → 执行 | `/commit` |
-| dev | 开发工作流：上下文 → 分析 → 原型 → 实施 → 审计 | `/dev` |
-| plan | 开发规划工作流：需求解析 → 上下文检索 → 架构分析 → 任务分解 → 风险评估 → 计划生成 | `/plan` |
+| tpd | TPD 工作流：thinking → plan → dev（含 OpenSpec 交接） | `/tpd:thinking` `/tpd:plan` `/tpd:dev` `/tpd:init` |
 | ui-design | UI/UX 设计工作流：需求分析 → 样式推荐 → 设计生成 → UX 检查 → 代码生成 → 质量验证 | `/ui-design` |
 | brainstorm | 头脑风暴工作流：研究 → 发散 → 评估 → 报告 | `/brainstorm` |
-| thinking | 深度思考工作流：复杂度评估 → 多模型并行 → 思考整合 → 结论生成 | `/thinking` |
 | context-memory | 智能上下文管理：上下文加载、会话压缩、代码地图、技能索引、文档管理 | `/memory` |
 | refactor | 代码重构工作流：气味检测 → 建议 → 影响分析 → 安全执行 | `/refactor` |
 | hooks | 通用钩子集合：意图评估、日志备份、质量检查、智能路由、安全防护、会话管理 | — |
@@ -69,13 +66,14 @@ claude plugin install plan@ccg-workflows
 ## 命令示例
 
 ```bash
-/plan "实现用户认证"
-/dev "实现用户认证" --task-type=fullstack
+/tpd:init
+/tpd:thinking "如何设计低成本的灰度发布方案"
+/tpd:plan
+/tpd:dev --proposal-id=add-user-auth --task-type=fullstack
 /commit --scope auth
 /refactor src/ --mode=analyze
 /ui-design "B2B 产品后台仪表盘" --tech-stack=react
 /brainstorm "提升新手引导转化率"
-/thinking "如何设计低成本的灰度发布方案" --depth=deep
 /memory docs
 ```
 
@@ -90,11 +88,7 @@ claude plugin install plan@ccg-workflows
 │   │   ├── .claude-plugin/
 │   │   ├── commands/
 │   │   └── skills/
-│   ├── dev/
-│   │   ├── .claude-plugin/
-│   │   ├── commands/
-│   │   └── skills/
-│   ├── plan/
+│   ├── tpd/
 │   │   ├── .claude-plugin/
 │   │   ├── commands/
 │   │   └── skills/
@@ -104,10 +98,6 @@ claude plugin install plan@ccg-workflows
 │   │   ├── hooks/
 │   │   └── skills/
 │   ├── brainstorm/
-│   │   ├── .claude-plugin/
-│   │   ├── commands/
-│   │   └── skills/
-│   ├── thinking/
 │   │   ├── .claude-plugin/
 │   │   ├── commands/
 │   │   └── skills/
