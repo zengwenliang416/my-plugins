@@ -178,7 +178,19 @@ for plugin_dir in "$PLUGINS_DIR"/*/; do
   plugin_name=$(basename "$plugin_dir")
   echo -e "\n${BLUE}=== Plugin: $plugin_name ===${NC}\n"
 
-  for skill_dir in "$plugin_dir/skills"/*/; do
+  skills_root="${plugin_dir}/skills"
+  if [ ! -d "$skills_root" ]; then
+    log_warning "$plugin_name: skills directory missing, skipping"
+    continue
+  fi
+
+  skill_dirs=( "$skills_root"/*/ )
+  if [ ${#skill_dirs[@]} -eq 0 ]; then
+    log_warning "$plugin_name: no skills found, skipping"
+    continue
+  fi
+
+  for skill_dir in "${skill_dirs[@]}"; do
     # Skip _shared directory
     [[ "$skill_dir" == *"_shared"* ]] && continue
 

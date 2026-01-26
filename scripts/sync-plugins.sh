@@ -77,6 +77,21 @@ sync_plugin() {
     return 1
   fi
 
+  local has_commands=false
+  local has_skills=false
+
+  if [ -d "$src/commands" ] && compgen -G "$src/commands/*.md" > /dev/null; then
+    has_commands=true
+  fi
+  if [ -d "$src/skills" ] && compgen -G "$src/skills/*/SKILL.md" > /dev/null; then
+    has_skills=true
+  fi
+
+  if [ "$has_commands" = false ] && [ "$has_skills" = false ]; then
+    echo "❌ Plugin has no commands or skills to sync: $plugin"
+    return 1
+  fi
+
   echo -e "${BLUE}Syncing ${plugin}...${NC}"
   rm -rf "$dst"
   mkdir -p "$dst"
