@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add unified TPD (Thinking→Plan→Dev) workflow plugin (tpd)
+  - Consolidates dev, plan, thinking plugins into single integrated workflow
+  - New skills: handoff-generator, context-explorer
+  - Migrated skills: codex-cli, gemini-cli, codex-thinker, gemini-thinker, requirement-parser, task-decomposer, risk-assessor, plan-synthesizer, audit-reviewer, code-implementer
+  - Supports OpenSpec specification for workflow handoff
 - Add enhanced file reading strategy hints to read-limit hook (hooks)
 - Add install and list features to sync-plugins.sh script (scripts)
 - Add thinking plugin registration to marketplace (marketplace)
@@ -50,6 +55,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Remove deprecated dev, plan, thinking plugins (migrated to tpd) (plugins)
+  - dev: 42 files removed
+  - plan: 59 files removed
+  - thinking: 25 files removed
+- Clean up obsolete hook scripts (hooks)
+- Update build scripts to support tpd plugin (scripts)
+- Update marketplace configuration for tpd plugin (root)
 - Rewrite project documentation with updated installation guide and plugin list (root)
 - Rename plugin command files from run.md to descriptive names (plugins)
   - brainstorm.md, commit.md, memory.md, dev.md, plan.md, refactor.md, thinking.md, ui-design.md
