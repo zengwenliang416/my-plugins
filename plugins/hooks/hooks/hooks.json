@@ -1,60 +1,6 @@
 {
-  "description": "通用钩子集合：意图评估、日志备份、代码质量、智能路由、安全防护、会话管理、环境感知、健康关怀、团队协作、情感支持、子代理管理、权限自动化、初始化维护、读取优化",
+  "description": "核心钩子集合：安全防护、读取优化、日志备份、代码格式化、权限自动化、通知",
   "hooks": {
-    "Setup": [
-      {
-        "matcher": "init",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/setup/project-init.sh",
-            "timeout": 30,
-            "description": "项目初始化：依赖安装、环境配置"
-          }
-        ]
-      },
-      {
-        "matcher": "maintenance",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/setup/project-maintenance.sh",
-            "timeout": 60,
-            "description": "项目维护：清理缓存、更新依赖"
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/session/env-profiler.sh",
-            "timeout": 5,
-            "description": "环境画像采集"
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/session/night-guardian.sh",
-            "timeout": 2,
-            "description": "夜间模式检测"
-          }
-        ]
-      },
-      {
-        "matcher": "resume",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/session/session-resume.sh",
-            "timeout": 5,
-            "description": "恢复会话上下文"
-          }
-        ]
-      }
-    ],
     "UserPromptSubmit": [
       {
         "matcher": "*",
@@ -63,11 +9,6 @@
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/security/privacy-firewall.sh",
             "timeout": 3
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/evaluation/emotion-resonance.sh",
-            "timeout": 2
           },
           {
             "type": "command",
@@ -84,8 +25,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/optimization/read-limit.sh",
-            "timeout": 5,
-            "description": "大文件读取限制：自动注入 limit 参数防止上下文溢出"
+            "timeout": 5
           }
         ]
       },
@@ -96,16 +36,6 @@
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/security/db-guard.sh",
             "timeout": 3
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/quality/team-standards.sh",
-            "timeout": 3
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/routing/env-degradation.sh",
-            "timeout": 2
           }
         ]
       },
@@ -125,7 +55,8 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/logging/auto-backup.sh",
-            "timeout": 10
+            "timeout": 10,
+            "async": true
           }
         ]
       },
@@ -135,7 +66,8 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/logging/mcp-logger.sh",
-            "timeout": 5
+            "timeout": 5,
+            "async": true
           }
         ]
       }
@@ -148,85 +80,6 @@
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/quality/auto-format.sh",
             "timeout": 30
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/session/invisible-orchestrator.sh",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/session/stop-check.sh",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/session/handover-assistant.sh",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "auto",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/evaluation/compact-evaluator.sh",
-            "timeout": 5,
-            "description": "自动压缩前评估"
-          }
-        ]
-      },
-      {
-        "matcher": "manual",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/evaluation/compact-evaluator.sh",
-            "timeout": 5,
-            "description": "手动压缩前评估"
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "matcher": "Explore|Plan",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/subagent/subagent-start.sh",
-            "timeout": 3,
-            "description": "子代理启动监控"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/subagent/subagent-stop.sh",
-            "timeout": 5,
-            "description": "子代理完成处理"
           }
         ]
       }
@@ -238,8 +91,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/permission/auto-approve.sh",
-            "timeout": 3,
-            "description": "自动批准安全命令"
+            "timeout": 3
           }
         ]
       },
@@ -249,8 +101,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/permission/file-permission.sh",
-            "timeout": 3,
-            "description": "文件权限智能判断"
+            "timeout": 3
           }
         ]
       }
@@ -263,7 +114,7 @@
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/notification/smart-notify.sh",
             "timeout": 5,
-            "description": "智能通知分发"
+            "async": true
           }
         ]
       }
