@@ -113,8 +113,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/notification/smart-notify.sh",
-            "timeout": 5,
-            "async": true
+            "timeout": 5
           }
         ]
       }
