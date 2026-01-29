@@ -52,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - swagger-generator: OpenAPI documentation generation
   - tech-rules-generator: Technical rules generation
   - Integrates codex-cli, gemini-cli, exa for multi-model collaboration
+- Add hooks detection support to sync-plugins.sh script (scripts)
 
 ### Changed
 
@@ -82,6 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix relative path handling in read-limit.sh hook (hooks)
 - Add emoji mapping table and format specification for batch commits (commit)
 - Add mandatory continuation instructions and next_phase return value to all skills (ui-design)
 - Update image-analyzer to use codeagent-wrapper `--file` parameter for multimodal input (ui-design)
