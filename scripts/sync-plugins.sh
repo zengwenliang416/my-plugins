@@ -79,6 +79,7 @@ sync_plugin() {
 
   local has_commands=false
   local has_skills=false
+  local has_hooks=false
 
   if [ -d "$src/commands" ] && compgen -G "$src/commands/*.md" > /dev/null; then
     has_commands=true
@@ -86,9 +87,12 @@ sync_plugin() {
   if [ -d "$src/skills" ] && compgen -G "$src/skills/*/SKILL.md" > /dev/null; then
     has_skills=true
   fi
+  if [ -f "$src/.claude-plugin/hooks.json" ] || [ -f "$src/hooks/hooks.json" ]; then
+    has_hooks=true
+  fi
 
-  if [ "$has_commands" = false ] && [ "$has_skills" = false ]; then
-    echo "❌ Plugin has no commands or skills to sync: $plugin"
+  if [ "$has_commands" = false ] && [ "$has_skills" = false ] && [ "$has_hooks" = false ]; then
+    echo "❌ Plugin has no commands, skills or hooks to sync: $plugin"
     return 1
   fi
 
