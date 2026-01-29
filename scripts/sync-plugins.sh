@@ -1,14 +1,27 @@
 #!/bin/bash
 # Sync and install plugins to Claude Code
-# Usage: ./scripts/sync-plugins.sh [plugin-name] [--install] [--list]
+# Usage: ./scripts/sync-plugins.sh [options] [plugin-name...]
+#
+# Options:
+#   -i, --install     Install plugins after syncing
+#   -l, --list        List all available plugins
+#   -s, --select      Interactive selection mode
+#   -d, --dry-run     Show what would be done without doing it
+#   -q, --quiet       Minimal output
+#   -h, --help        Show this help message
+#
 # Examples:
 #   ./scripts/sync-plugins.sh                    # sync all plugins
-#   ./scripts/sync-plugins.sh commit             # sync only commit plugin
-#   ./scripts/sync-plugins.sh --install          # sync all and install
-#   ./scripts/sync-plugins.sh commit --install   # sync commit and install
-#   ./scripts/sync-plugins.sh --list             # list all available plugins
+#   ./scripts/sync-plugins.sh commit tpd         # sync specific plugins
+#   ./scripts/sync-plugins.sh -i                 # sync all and install
+#   ./scripts/sync-plugins.sh -s                 # interactive selection
+#   ./scripts/sync-plugins.sh -d                 # dry-run mode
 
 set -e
+
+# ============================================================================
+# Configuration
+# ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -17,177 +30,525 @@ SOURCE_DIR="${PROJECT_ROOT}/plugins"
 MARKETPLACE_JSON="${PROJECT_ROOT}/.claude-plugin/marketplace.json"
 MARKETPLACE_NAME="ccg-workflows"
 
-# Colors
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[0;33m'
-CYAN='\033[0;36m'
-NC='\033[0m'
+# ============================================================================
+# Colors & Symbols
+# ============================================================================
+
+# Check if terminal supports colors
+if [[ -t 1 ]] && [[ "${TERM:-}" != "dumb" ]]; then
+  RED='\033[0;31m'
+  GREEN='\033[0;32m'
+  YELLOW='\033[0;33m'
+  BLUE='\033[0;34m'
+  MAGENTA='\033[0;35m'
+  CYAN='\033[0;36m'
+  WHITE='\033[1;37m'
+  DIM='\033[2m'
+  BOLD='\033[1m'
+  NC='\033[0m'
+else
+  RED='' GREEN='' YELLOW='' BLUE='' MAGENTA='' CYAN='' WHITE='' DIM='' BOLD='' NC=''
+fi
+
+# Symbols
+SYM_CHECK="✓"
+SYM_CROSS="✗"
+SYM_ARROW="→"
+SYM_DOT="•"
+SYM_SYNC="⟳"
+SYM_PKG="📦"
+SYM_CMD="📋"
+SYM_SKILL="⚡"
+SYM_HOOK="🪝"
+SYM_TIME="⏱"
+SYM_INFO="ℹ"
+
+# ============================================================================
+# Global State
+# ============================================================================
+
+DO_INSTALL=false
+DO_LIST=false
+DO_SELECT=false
+DO_DRY_RUN=false
+QUIET_MODE=false
+PLUGIN_NAMES=()
+SYNC_COUNT=0
+SKIP_COUNT=0
+FAIL_COUNT=0
+START_TIME=0
+
+# ============================================================================
+# Utility Functions
+# ============================================================================
+
+# Get terminal width
+get_term_width() {
+  if command -v tput &>/dev/null; then
+    tput cols 2>/dev/null || echo 80
+  else
+    echo 80
+  fi
+}
+
+# Print a horizontal line
+print_line() {
+  local char="${1:-─}"
+  local width=$(get_term_width)
+  printf '%*s\n' "$width" '' | tr ' ' "$char"
+}
+
+# Print centered text
+print_centered() {
+  local text="$1"
+  local width=$(get_term_width)
+  local text_len=${#text}
+  local padding=$(( (width - text_len) / 2 ))
+  printf "%*s%s\n" $padding '' "$text"
+}
+
+# Print header
+print_header() {
+  local title="$1"
+  echo ""
+  echo -e "${CYAN}${BOLD}╭$(printf '─%.0s' {1..50})╮${NC}"
+  echo -e "${CYAN}${BOLD}│${NC}$(printf ' %.0s' {1..10})${WHITE}${BOLD}$title${NC}$(printf ' %.0s' {1..10})${CYAN}${BOLD}│${NC}"
+  echo -e "${CYAN}${BOLD}╰$(printf '─%.0s' {1..50})╯${NC}"
+  echo ""
+}
+
+# Print section header
+print_section() {
+  local title="$1"
+  echo ""
+  echo -e "${BLUE}${BOLD}━━━ $title ━━━${NC}"
+  echo ""
+}
+
+# Print info message
+info() {
+  [[ "$QUIET_MODE" == true ]] && return
+  echo -e "${BLUE}${SYM_INFO}${NC} $1"
+}
+
+# Print success message
+success() {
+  echo -e "${GREEN}${SYM_CHECK}${NC} $1"
+}
+
+# Print warning message
+warn() {
+  echo -e "${YELLOW}${SYM_DOT}${NC} $1"
+}
+
+# Print error message
+error() {
+  echo -e "${RED}${SYM_CROSS}${NC} $1" >&2
+}
+
+# Print progress spinner
+spin() {
+  local pid=$1
+  local msg="$2"
+  local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
+  local i=0
+
+  while kill -0 "$pid" 2>/dev/null; do
+    local char="${spinstr:$i:1}"
+    printf "\r${CYAN}%s${NC} %s" "$char" "$msg"
+    i=$(( (i + 1) % ${#spinstr} ))
+    sleep 0.1
+  done
+  printf "\r"
+}
+
+# Progress bar
+progress_bar() {
+  local current=$1
+  local total=$2
+  local width=30
+  local percent=$((current * 100 / total))
+  local filled=$((current * width / total))
+  local empty=$((width - filled))
+
+  printf "\r  ${DIM}[${NC}"
+  printf "${GREEN}%*s${NC}" $filled '' | tr ' ' '█'
+  printf "${DIM}%*s${NC}" $empty '' | tr ' ' '░'
+  printf "${DIM}]${NC} ${WHITE}%3d%%${NC} " $percent
+}
+
+# Format duration
+format_duration() {
+  local seconds=$1
+  if ((seconds < 60)); then
+    printf "%ds" $seconds
+  else
+    printf "%dm %ds" $((seconds / 60)) $((seconds % 60))
+  fi
+}
+
+# ============================================================================
+# Plugin Functions
+# ============================================================================
 
 # Get plugins from marketplace.json
 get_plugins() {
-  if [ -f "$MARKETPLACE_JSON" ]; then
-    # Extract plugin names from plugins array (skip marketplace name)
-    grep -A1 '"plugins"' "$MARKETPLACE_JSON" | head -1 > /dev/null
-    # Use awk to extract names only from plugins array
-    awk '/"plugins":/,/]/' "$MARKETPLACE_JSON" | grep '"name"' | sed 's/.*"name": *"\([^"]*\)".*/\1/'
-  else
-    echo "❌ marketplace.json not found: $MARKETPLACE_JSON" >&2
+  if [[ ! -f "$MARKETPLACE_JSON" ]]; then
+    error "marketplace.json not found: $MARKETPLACE_JSON"
+    exit 1
+  fi
+  awk '/"plugins":/,/]/' "$MARKETPLACE_JSON" | grep '"name"' | sed 's/.*"name": *"\([^"]*\)".*/\1/'
+}
+
+# Get plugin description
+get_plugin_description() {
+  local plugin="$1"
+  awk -v name="$plugin" '
+    /"name":/ && $0 ~ "\"" name "\"" { found=1; next }
+    found && /"description":/ {
+      gsub(/.*"description": *"/, "")
+      gsub(/".*/, "")
+      print
+      exit
+    }
+  ' "$MARKETPLACE_JSON"
+}
+
+# Get plugin info (commands, skills, hooks count)
+get_plugin_info() {
+  local plugin="$1"
+  local src="${SOURCE_DIR}/${plugin}"
+  local cmd_count=0
+  local skill_count=0
+  local has_hooks="no"
+
+  if [[ -d "$src/commands" ]]; then
+    cmd_count=$(find "$src/commands" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+  fi
+
+  if [[ -d "$src/skills" ]]; then
+    skill_count=$(find "$src/skills" -maxdepth 2 -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
+  fi
+
+  if [[ -f "$src/.claude-plugin/hooks.json" ]] || [[ -f "$src/hooks/hooks.json" ]]; then
+    has_hooks="yes"
+  fi
+
+  echo "$cmd_count $skill_count $has_hooks"
+}
+
+# List all plugins with table format
+list_plugins() {
+  print_header "Available Plugins"
+
+  local plugins=()
+  while IFS= read -r plugin; do
+    plugins+=("$plugin")
+  done < <(get_plugins)
+
+  # Table header
+  printf "  ${BOLD}${WHITE}%-15s %-8s %-8s %-6s %s${NC}\n" "NAME" "CMDS" "SKILLS" "HOOKS" "DESCRIPTION"
+  echo -e "  ${DIM}$(printf '─%.0s' {1..70})${NC}"
+
+  for plugin in "${plugins[@]}"; do
+    local desc=$(get_plugin_description "$plugin")
+    local info=($(get_plugin_info "$plugin"))
+    local cmd_count=${info[0]:-0}
+    local skill_count=${info[1]:-0}
+    local has_hooks=${info[2]:-no}
+
+    # Truncate description if too long
+    if [[ ${#desc} -gt 35 ]]; then
+      desc="${desc:0:32}..."
+    fi
+
+    local hooks_icon="${DIM}─${NC}"
+    [[ "$has_hooks" == "yes" ]] && hooks_icon="${YELLOW}${SYM_HOOK}${NC}"
+
+    printf "  ${GREEN}%-15s${NC} ${CYAN}%4s${NC}    ${MAGENTA}%4s${NC}    %s   %s\n" \
+      "$plugin" "$cmd_count" "$skill_count" "$hooks_icon" "$desc"
+  done
+
+  echo ""
+  echo -e "  ${DIM}Total: ${WHITE}${#plugins[@]}${NC}${DIM} plugins${NC}"
+  echo ""
+}
+
+# Interactive plugin selection
+select_plugins() {
+  local plugins=()
+  while IFS= read -r plugin; do
+    plugins+=("$plugin")
+  done < <(get_plugins)
+
+  print_header "Select Plugins to Sync"
+
+  local selected=()
+  local i=1
+
+  echo -e "  ${DIM}Enter numbers separated by space, 'a' for all, 'q' to quit${NC}"
+  echo ""
+
+  for plugin in "${plugins[@]}"; do
+    local desc=$(get_plugin_description "$plugin")
+    [[ ${#desc} -gt 40 ]] && desc="${desc:0:37}..."
+    printf "  ${CYAN}%2d${NC}) ${GREEN}%-15s${NC} %s\n" $i "$plugin" "$desc"
+    i=$((i + 1))
+  done
+
+  echo ""
+  printf "  ${YELLOW}${SYM_ARROW}${NC} Selection: "
+  read -r selection
+
+  if [[ "$selection" == "q" ]]; then
+    echo ""
+    info "Operation cancelled"
+    exit 0
+  fi
+
+  if [[ "$selection" == "a" ]]; then
+    PLUGIN_NAMES=("${plugins[@]}")
+    return
+  fi
+
+  for num in $selection; do
+    if [[ "$num" =~ ^[0-9]+$ ]] && ((num >= 1 && num <= ${#plugins[@]})); then
+      PLUGIN_NAMES+=("${plugins[$((num-1))]}")
+    fi
+  done
+
+  if [[ ${#PLUGIN_NAMES[@]} -eq 0 ]]; then
+    error "No valid plugins selected"
     exit 1
   fi
 }
 
-# List all plugins with descriptions
-list_plugins() {
-  echo ""
-  echo -e "${CYAN}=== Available Plugins ===${NC}"
-  echo ""
-
-  # Use a simple approach to extract name and description pairs
-  local in_plugin=false
-  local name=""
-  local desc=""
-
-  while IFS= read -r line; do
-    if [[ "$line" =~ \"name\":\ *\"([^\"]+)\" ]]; then
-      name="${BASH_REMATCH[1]}"
-    fi
-    if [[ "$line" =~ \"description\":\ *\"([^\"]+)\" ]]; then
-      desc="${BASH_REMATCH[1]}"
-      if [ -n "$name" ] && [ "$name" != "ccg-workflows" ]; then
-        printf "  ${GREEN}%-15s${NC} %s\n" "$name" "$desc"
-      fi
-      name=""
-      desc=""
-    fi
-  done < "$MARKETPLACE_JSON"
-
-  echo ""
-  echo -e "Total: ${GREEN}$(get_plugins | wc -l | tr -d ' ')${NC} plugins"
-  echo ""
-}
-
+# Sync a single plugin
 sync_plugin() {
   local plugin="$1"
   local src="${SOURCE_DIR}/${plugin}"
   local dst="${CACHE_DIR}/${plugin}/1.0.0"
 
-  if [ ! -d "$src" ]; then
-    echo "❌ Plugin not found: $src"
+  if [[ ! -d "$src" ]]; then
+    error "Plugin not found: $plugin"
+    FAIL_COUNT=$((FAIL_COUNT + 1))
     return 1
   fi
 
-  local has_commands=false
-  local has_skills=false
-  local has_hooks=false
+  local info=($(get_plugin_info "$plugin"))
+  local cmd_count=${info[0]:-0}
+  local skill_count=${info[1]:-0}
+  local has_hooks=${info[2]:-no}
 
-  if [ -d "$src/commands" ] && compgen -G "$src/commands/*.md" > /dev/null; then
-    has_commands=true
-  fi
-  if [ -d "$src/skills" ] && compgen -G "$src/skills/*/SKILL.md" > /dev/null; then
-    has_skills=true
-  fi
-  if [ -f "$src/.claude-plugin/hooks.json" ] || [ -f "$src/hooks/hooks.json" ]; then
-    has_hooks=true
+  if [[ $cmd_count -eq 0 && $skill_count -eq 0 && "$has_hooks" == "no" ]]; then
+    warn "Skipped ${YELLOW}$plugin${NC} (no commands/skills/hooks)"
+    SKIP_COUNT=$((SKIP_COUNT + 1))
+    return 0
   fi
 
-  if [ "$has_commands" = false ] && [ "$has_skills" = false ] && [ "$has_hooks" = false ]; then
-    echo "❌ Plugin has no commands, skills or hooks to sync: $plugin"
-    return 1
+  if [[ "$DO_DRY_RUN" == true ]]; then
+    echo -e "  ${DIM}[dry-run]${NC} Would sync ${GREEN}$plugin${NC}"
+    echo -e "           ${SYM_ARROW} $src"
+    echo -e "           ${SYM_ARROW} $dst"
+    SYNC_COUNT=$((SYNC_COUNT + 1))
+    return 0
   fi
 
-  echo -e "${BLUE}Syncing ${plugin}...${NC}"
+  # Perform sync
   rm -rf "$dst"
   mkdir -p "$dst"
-  # 复制所有文件包括隐藏文件夹
   cp -r "${src}"/. "$dst/"
 
-  echo -e "${GREEN}✅ ${plugin} synced${NC}"
+  # Build info string
+  local info_str=""
+  [[ $cmd_count -gt 0 ]] && info_str+="${SYM_CMD}${cmd_count} "
+  [[ $skill_count -gt 0 ]] && info_str+="${SYM_SKILL}${skill_count} "
+  [[ "$has_hooks" == "yes" ]] && info_str+="${SYM_HOOK}"
+
+  success "Synced ${GREEN}$plugin${NC} ${DIM}($info_str)${NC}"
+  SYNC_COUNT=$((SYNC_COUNT + 1))
 }
 
+# Install plugins
 install_plugins() {
   local plugins=("$@")
 
-  echo ""
-  echo -e "${BLUE}=== Installing plugins ===${NC}"
+  print_section "Installing Plugins"
 
-  # Add marketplace if not already added
-  echo -e "${BLUE}Adding local marketplace...${NC}"
-  if claude plugin marketplace add "${PROJECT_ROOT}" 2>/dev/null; then
-    echo -e "${GREEN}✅ Marketplace added: ${MARKETPLACE_NAME}${NC}"
-  else
-    echo -e "${YELLOW}ℹ️  Marketplace already exists or updated${NC}"
+  if [[ "$DO_DRY_RUN" == true ]]; then
+    echo -e "  ${DIM}[dry-run]${NC} Would add marketplace: ${CYAN}$PROJECT_ROOT${NC}"
+    for plugin in "${plugins[@]}"; do
+      echo -e "  ${DIM}[dry-run]${NC} Would install: ${GREEN}${plugin}@${MARKETPLACE_NAME}${NC}"
+    done
+    return 0
   fi
 
-  # Install each plugin
+  # Add marketplace
+  info "Adding local marketplace..."
+  if claude plugin marketplace add "${PROJECT_ROOT}" 2>/dev/null; then
+    success "Marketplace added: ${CYAN}${MARKETPLACE_NAME}${NC}"
+  else
+    warn "Marketplace already exists"
+  fi
+
+  echo ""
+
+  # Install each plugin with progress
+  local total=${#plugins[@]}
+  local current=0
+
   for plugin in "${plugins[@]}"; do
-    echo -e "${BLUE}Installing ${plugin}...${NC}"
+    current=$((current + 1))
+    [[ "$QUIET_MODE" != true ]] && progress_bar $current $total
+
     if claude plugin install "${plugin}@${MARKETPLACE_NAME}" 2>/dev/null; then
-      echo -e "${GREEN}✅ ${plugin} installed${NC}"
+      printf "${GREEN}${SYM_CHECK}${NC} %s\n" "$plugin"
     else
-      echo -e "${YELLOW}ℹ️  ${plugin} already installed or updated${NC}"
+      printf "${YELLOW}${SYM_DOT}${NC} %s ${DIM}(already installed)${NC}\n" "$plugin"
     fi
   done
+
+  echo ""
 }
 
-# Parse arguments
-PLUGIN_NAME=""
-DO_INSTALL=false
-DO_LIST=false
+# Print summary
+print_summary() {
+  local end_time=$(date +%s)
+  local duration=$((end_time - START_TIME))
 
-for arg in "$@"; do
-  case $arg in
-    --install)
-      DO_INSTALL=true
-      ;;
-    --list|-l)
-      DO_LIST=true
-      ;;
-    *)
-      PLUGIN_NAME="$arg"
-      ;;
-  esac
-done
+  print_section "Summary"
 
-# Handle --list
-if [ "$DO_LIST" = true ]; then
-  list_plugins
-  exit 0
-fi
+  echo -e "  ${GREEN}${SYM_CHECK} Synced:${NC}  $SYNC_COUNT"
+  [[ $SKIP_COUNT -gt 0 ]] && echo -e "  ${YELLOW}${SYM_DOT} Skipped:${NC} $SKIP_COUNT"
+  [[ $FAIL_COUNT -gt 0 ]] && echo -e "  ${RED}${SYM_CROSS} Failed:${NC}  $FAIL_COUNT"
+  echo -e "  ${DIM}${SYM_TIME} Time:${NC}    $(format_duration $duration)"
+  echo ""
+}
 
-# Get all plugins from marketplace.json (macOS compatible)
-ALL_PLUGINS=()
-while IFS= read -r plugin; do
-  ALL_PLUGINS+=("$plugin")
-done < <(get_plugins)
+# Print help
+print_help() {
+  echo ""
+  echo -e "${BOLD}${WHITE}sync-plugins.sh${NC} - Sync and install Claude Code plugins"
+  echo ""
+  echo -e "${BOLD}USAGE:${NC}"
+  echo "  ./scripts/sync-plugins.sh [options] [plugin-name...]"
+  echo ""
+  echo -e "${BOLD}OPTIONS:${NC}"
+  echo -e "  ${GREEN}-i, --install${NC}    Install plugins after syncing"
+  echo -e "  ${GREEN}-l, --list${NC}       List all available plugins"
+  echo -e "  ${GREEN}-s, --select${NC}     Interactive selection mode"
+  echo -e "  ${GREEN}-d, --dry-run${NC}    Show what would be done without doing it"
+  echo -e "  ${GREEN}-q, --quiet${NC}      Minimal output"
+  echo -e "  ${GREEN}-h, --help${NC}       Show this help message"
+  echo ""
+  echo -e "${BOLD}EXAMPLES:${NC}"
+  echo "  ./scripts/sync-plugins.sh                # sync all plugins"
+  echo "  ./scripts/sync-plugins.sh commit tpd     # sync specific plugins"
+  echo "  ./scripts/sync-plugins.sh -i             # sync all and install"
+  echo "  ./scripts/sync-plugins.sh -s             # interactive selection"
+  echo "  ./scripts/sync-plugins.sh -s -i          # select and install"
+  echo "  ./scripts/sync-plugins.sh -d             # dry-run mode"
+  echo ""
+}
 
+# ============================================================================
 # Main
-if [ -n "$PLUGIN_NAME" ] && [ "$PLUGIN_NAME" != "--install" ]; then
-  # Sync specific plugin
-  sync_plugin "$PLUGIN_NAME"
-  PLUGINS_TO_INSTALL=("$PLUGIN_NAME")
-else
-  # Sync all plugins
-  for plugin in "${ALL_PLUGINS[@]}"; do
+# ============================================================================
+
+main() {
+  START_TIME=$(date +%s)
+
+  # Parse arguments
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -i|--install)
+        DO_INSTALL=true
+        shift
+        ;;
+      -l|--list)
+        DO_LIST=true
+        shift
+        ;;
+      -s|--select)
+        DO_SELECT=true
+        shift
+        ;;
+      -d|--dry-run)
+        DO_DRY_RUN=true
+        shift
+        ;;
+      -q|--quiet)
+        QUIET_MODE=true
+        shift
+        ;;
+      -h|--help)
+        print_help
+        exit 0
+        ;;
+      -*)
+        error "Unknown option: $1"
+        print_help
+        exit 1
+        ;;
+      *)
+        PLUGIN_NAMES+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  # Handle --list
+  if [[ "$DO_LIST" == true ]]; then
+    list_plugins
+    exit 0
+  fi
+
+  # Handle --select
+  if [[ "$DO_SELECT" == true ]]; then
+    select_plugins
+  fi
+
+  # Get all plugins if none specified
+  if [[ ${#PLUGIN_NAMES[@]} -eq 0 ]]; then
+    while IFS= read -r plugin; do
+      PLUGIN_NAMES+=("$plugin")
+    done < <(get_plugins)
+  fi
+
+  # Print header
+  [[ "$QUIET_MODE" != true ]] && print_header "Plugin Sync"
+
+  # Dry-run notice
+  if [[ "$DO_DRY_RUN" == true ]]; then
+    echo -e "  ${YELLOW}${BOLD}DRY-RUN MODE${NC} - No changes will be made"
+    echo ""
+  fi
+
+  # Sync plugins
+  print_section "Syncing Plugins"
+
+  for plugin in "${PLUGIN_NAMES[@]}"; do
     sync_plugin "$plugin"
   done
-  PLUGINS_TO_INSTALL=("${ALL_PLUGINS[@]}")
-fi
 
-# Install if requested
-if [ "$DO_INSTALL" = true ]; then
-  install_plugins "${PLUGINS_TO_INSTALL[@]}"
-fi
+  # Install if requested
+  if [[ "$DO_INSTALL" == true ]]; then
+    install_plugins "${PLUGIN_NAMES[@]}"
+  fi
 
-echo ""
-echo -e "${GREEN}Done!${NC}"
+  # Print summary
+  [[ "$QUIET_MODE" != true ]] && print_summary
 
-if [ "$DO_INSTALL" = false ]; then
-  echo ""
-  echo "To install plugins, run:"
-  echo "  ./scripts/sync-plugins.sh --install"
-  echo ""
-  echo "Or install manually:"
-  echo "  claude plugin marketplace add ${PROJECT_ROOT}"
-  echo "  claude plugin install <plugin>@${MARKETPLACE_NAME}"
-fi
+  # Hint
+  if [[ "$DO_INSTALL" == false && "$QUIET_MODE" != true ]]; then
+    echo -e "  ${DIM}To install plugins:${NC}"
+    echo -e "    ${CYAN}./scripts/sync-plugins.sh -i${NC}"
+    echo ""
+  fi
+
+  # Exit with error if any failed
+  [[ $FAIL_COUNT -gt 0 ]] && exit 1
+  exit 0
+}
+
+main "$@"
