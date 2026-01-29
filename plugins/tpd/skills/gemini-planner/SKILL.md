@@ -1,10 +1,10 @@
 ---
 name: gemini-planner
 description: |
-  【触发条件】plan 工作流中需要前端架构规划、组件设计、UI/UX 策略、设计系统分析时使用
-  【核心产出】输出前端规划文档（Conductor 格式），包含组件层级、状态管理、路由设计
-  【强制模式】只读模式，禁止生成实际代码
-  【不触发】后端 API/数据库规划（用 codex-planner）、简单任务
+  [Trigger] Use in plan workflow when frontend architecture planning, component design, UI/UX strategy, design system analysis is needed
+  [Output] Outputs frontend planning document (Conductor format) containing component hierarchy, state management, routing design
+  [Mode] Read-only mode, prohibited from generating actual code
+  [Skip] Backend API/database planning (use codex-planner), simple tasks
 allowed-tools:
   - Bash
   - Read
@@ -14,354 +14,354 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 规划运行目录路径
+    description: Planning run directory path
   - name: focus
     type: string
     required: false
-    description: 规划焦点（components|state|routing|design-system|responsive）
+    description: Planning focus (components|state|routing|design-system|responsive)
 ---
 
-# Gemini Planner - 多模型协作前端规划专家
+# Gemini Planner - Multi-Model Collaborative Frontend Planning Expert
 
 Frontend architecture planning via `codeagent-wrapper` in **plan mode**. Read-only analysis → Conductor format → Claude synthesis.
 
-## 核心理念
+## Core Philosophy
 
-基于 [Gemini CLI Conductor](https://developers.googleblog.com/conductor-introducing-context-driven-development-for-gemini-cli/) 方法论：
+Based on [Gemini CLI Conductor](https://developers.googleblog.com/conductor-introducing-context-driven-development-for-gemini-cli/) methodology:
 
-- **Context-Driven Development**: 上下文驱动的规划
-- **Formal Specs**: 正式规格文档，持久化在 Markdown 中
-- **Human in the Loop**: 人类开发者始终掌控决策
+- **Context-Driven Development**: Context-driven planning
+- **Formal Specs**: Formal specification documents, persisted in Markdown
+- **Human in the Loop**: Human developers always control decisions
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                                           | 触发条件        |
-| --------------------- | ---------------------------------------------- | --------------- |
-| `sequential-thinking` | 结构化前端架构规划，确保组件/状态/路由设计完整 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                                   | Trigger              |
+| --------------------- | ----------------------------------------- | -------------------- |
+| `sequential-thinking` | Structured frontend architecture planning | 🚨 Required per exec |
 
-### 预规划思考（sequential-thinking）
+### Pre-planning Thinking (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划分析策略**
+🚨 **Must first use sequential-thinking to plan analysis strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划前端架构分析。需要：1) 用户旅程分析 2) 设计系统检查 3) 组件架构设计 4) 状态管理规划 5) 路由设计",
+  thought: "Planning frontend architecture analysis. Need: 1) User journey analysis 2) Design system check 3) Component architecture design 4) State management planning 5) Routing design",
   thoughtNumber: 1,
   totalThoughts: 6,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **用户旅程分析**：交互流程、UI/UX 约束
-2. **设计系统检查**：现有组件、设计 Token、风格指南
-3. **组件架构设计**：Atomic Design 层级、组件交互图
-4. **状态管理规划**：Server State / Client State / URL State
-5. **路由设计**：路由层级、导航流程、代码分割
-6. **响应式策略**：断点、布局适配、无障碍
+1. **User Journey Analysis**: Interaction flow, UI/UX constraints
+2. **Design System Check**: Existing components, design tokens, style guide
+3. **Component Architecture Design**: Atomic Design hierarchy, component interaction diagram
+4. **State Management Planning**: Server State / Client State / URL State
+5. **Routing Design**: Route hierarchy, navigation flow, code splitting
+6. **Responsive Strategy**: Breakpoints, layout adaptation, accessibility
 
-## 执行命令
+## Execution Command
 
 ```bash
-# 规划模式调用（只读）
+# Planning mode call (read-only)
 ~/.claude/bin/codeagent-wrapper gemini \
   --workdir "$PROJECT_DIR" \
   --role planner \
   --prompt "$PLANNING_PROMPT"
 ```
 
-## 🚨🚨🚨 强制规划流程 🚨🚨🚨
+## 🚨🚨🚨 Mandatory Planning Flow 🚨🚨🚨
 
-### Step 1: 需求理解与用户旅程
+### Step 1: Requirement Understanding and User Journey
 
 ```bash
 ~/.claude/bin/codeagent-wrapper gemini \
   --role planner \
   --prompt "
-需求：$REQUIREMENT
+Requirement: $REQUIREMENT
 
-请作为高级前端架构师分析：
-1. 用户旅程和交互流程
-2. 核心页面和组件需求
-3. UI/UX 约束和期望
-4. 响应式和无障碍需求
+Please analyze as a senior frontend architect:
+1. User journey and interaction flow
+2. Core pages and component requirements
+3. UI/UX constraints and expectations
+4. Responsive and accessibility requirements
 
-输出格式：Conductor SPEC.md 第一章节
+Output format: Conductor SPEC.md Chapter 1
 "
 ```
 
-### Step 2: 设计系统分析
+### Step 2: Design System Analysis
 
 ```bash
 ~/.claude/bin/codeagent-wrapper gemini \
   --role analyzer \
   --prompt "
-分析现有设计系统和组件库：
-1. 可复用的现有组件
-2. 设计 Token（颜色、字体、间距）
-3. 组件库选型（如有）
-4. 风格一致性检查
+Analyze existing design system and component library:
+1. Reusable existing components
+2. Design tokens (colors, fonts, spacing)
+3. Component library selection (if any)
+4. Style consistency check
 
-输出：设计系统上下文摘要
+Output: Design system context summary
 " \
   --session "$SESSION_ID"
 ```
 
-### Step 3: 组件架构设计
+### Step 3: Component Architecture Design
 
 ```bash
 ~/.claude/bin/codeagent-wrapper gemini \
   --role architect \
   --prompt "
-基于分析结果，设计组件架构：
+Based on analysis results, design component architecture:
 
-## 组件层级（Atomic Design）
-### Atoms（原子组件）
-### Molecules（分子组件）
-### Organisms（有机体组件）
-### Templates（模板）
-### Pages（页面）
+## Component Hierarchy (Atomic Design)
+### Atoms
+### Molecules
+### Organisms
+### Templates
+### Pages
 
-## 组件交互图
-- 父子关系
-- 事件流向
-- 状态共享
+## Component Interaction Diagram
+- Parent-child relationships
+- Event flow
+- State sharing
 
-## 复用策略
-- 现有组件复用
-- 新建组件列表
-- 抽象层次建议
+## Reuse Strategy
+- Existing component reuse
+- New component list
+- Abstraction level recommendations
 " \
   --session "$SESSION_ID"
 ```
 
-### Step 4: 状态管理规划
+### Step 4: State Management Planning
 
 ```bash
 ~/.claude/bin/codeagent-wrapper gemini \
   --role architect \
   --prompt "
-设计状态管理方案：
+Design state management solution:
 
 ### Server State
-- 数据获取策略（React Query / SWR）
-- 缓存策略
-- 乐观更新
+- Data fetching strategy (React Query / SWR)
+- Caching strategy
+- Optimistic updates
 
 ### Client State
-- 全局状态（Context / Zustand / Redux）
-- 本地状态
-- URL 状态（筛选、分页）
+- Global state (Context / Zustand / Redux)
+- Local state
+- URL state (filters, pagination)
 
-### 状态流图
-- 数据源
-- 状态变更
-- 副作用处理
+### State Flow Diagram
+- Data sources
+- State changes
+- Side effect handling
 " \
   --session "$SESSION_ID"
 ```
 
-### Step 5: 路由与导航设计
+### Step 5: Routing and Navigation Design
 
 ```bash
 ~/.claude/bin/codeagent-wrapper gemini \
   --role architect \
   --prompt "
-设计路由和导航结构：
+Design routing and navigation structure:
 
-### 路由层级
-- 公共路由
-- 受保护路由
-- 嵌套布局
+### Route Hierarchy
+- Public routes
+- Protected routes
+- Nested layouts
 
-### 导航流程
-- 主导航
-- 面包屑
-- 深链接支持
+### Navigation Flow
+- Main navigation
+- Breadcrumbs
+- Deep link support
 
-### 代码分割
-- 路由级懒加载
-- 预加载策略
+### Code Splitting
+- Route-level lazy loading
+- Preloading strategy
 
-### 路由守卫
-- 认证检查
-- 权限验证
-- 重定向逻辑
+### Route Guards
+- Authentication checks
+- Permission verification
+- Redirect logic
 " \
   --session "$SESSION_ID"
 ```
 
-### Step 6: 响应式与无障碍策略
+### Step 6: Responsive and Accessibility Strategy
 
 ```bash
 ~/.claude/bin/codeagent-wrapper gemini \
   --role planner \
   --prompt "
-设计响应式和无障碍策略：
+Design responsive and accessibility strategy:
 
-### 响应式断点
-- 移动端 (<768px)
-- 平板 (768-1024px)
-- 桌面 (>1024px)
+### Responsive Breakpoints
+- Mobile (<768px)
+- Tablet (768-1024px)
+- Desktop (>1024px)
 
-### 布局适配
-- 弹性布局策略
-- 组件响应式行为
+### Layout Adaptation
+- Flex layout strategy
+- Component responsive behavior
 
-### 无障碍 (a11y)
-- WCAG 级别目标
-- 键盘导航
-- 屏幕阅读器支持
-- 颜色对比度
+### Accessibility (a11y)
+- WCAG level target
+- Keyboard navigation
+- Screen reader support
+- Color contrast
 
-### 性能预算
-- 首屏加载目标
-- 交互响应目标
+### Performance Budget
+- First load target
+- Interaction response target
 " \
   --session "$SESSION_ID"
 ```
 
-## 角色提示词
+## Role Prompts
 
-| 角色      | 用途              | 命令示例           |
-| --------- | ----------------- | ------------------ |
-| planner   | 需求分析、UX 规划 | `--role planner`   |
-| analyzer  | 设计系统分析      | `--role analyzer`  |
-| architect | 组件/状态架构设计 | `--role architect` |
-| designer  | UI 细节设计       | `--role designer`  |
-| reviewer  | 方案审查          | `--role reviewer`  |
+| Role      | Purpose                  | Command Example    |
+| --------- | ------------------------ | ------------------ |
+| planner   | Requirement analysis, UX | `--role planner`   |
+| analyzer  | Design system analysis   | `--role analyzer`  |
+| architect | Component/state design   | `--role architect` |
+| designer  | UI detail design         | `--role designer`  |
+| reviewer  | Solution review          | `--role reviewer`  |
 
-## Conductor SPEC.md 输出格式
+## Conductor SPEC.md Output Format
 
 ```markdown
-# [功能名称] 前端规划
+# [Feature Name] Frontend Planning
 
-## 元信息
+## Metadata
 
-- 提案 ID: ${proposal_id}
-- 创建时间: ${timestamp}
-- 规划者: Gemini + Claude
+- Proposal ID: ${proposal_id}
+- Created: ${timestamp}
+- Planners: Gemini + Claude
 
-## 1. 需求理解
+## 1. Requirement Understanding
 
-### 1.1 用户旅程
+### 1.1 User Journey
 
-### 1.2 交互流程
+### 1.2 Interaction Flow
 
-### 1.3 UI/UX 约束
+### 1.3 UI/UX Constraints
 
-## 2. 设计系统上下文
+## 2. Design System Context
 
-### 2.1 现有组件
+### 2.1 Existing Components
 
-### 2.2 设计 Token
+### 2.2 Design Tokens
 
-### 2.3 风格指南
+### 2.3 Style Guide
 
-## 3. 组件架构
+## 3. Component Architecture
 
-### 3.1 组件层级（Atomic Design）
+### 3.1 Component Hierarchy (Atomic Design)
 
-### 3.2 组件交互图
+### 3.2 Component Interaction Diagram
 
-### 3.3 复用策略
+### 3.3 Reuse Strategy
 
-## 4. 状态管理
+## 4. State Management
 
 ### 4.1 Server State
 
 ### 4.2 Client State
 
-### 4.3 状态流图
+### 4.3 State Flow Diagram
 
-## 5. 路由设计
+## 5. Routing Design
 
-### 5.1 路由层级
+### 5.1 Route Hierarchy
 
-### 5.2 导航流程
+### 5.2 Navigation Flow
 
-### 5.3 代码分割策略
+### 5.3 Code Splitting Strategy
 
-## 6. 响应式与无障碍
+## 6. Responsive and Accessibility
 
-### 6.1 断点策略
+### 6.1 Breakpoint Strategy
 
-### 6.2 布局适配
+### 6.2 Layout Adaptation
 
-### 6.3 无障碍清单
+### 6.3 Accessibility Checklist
 
-## 7. 实施路径
+## 7. Implementation Path
 
-### 7.1 组件开发顺序
+### 7.1 Component Development Order
 
-### 7.2 依赖关系
+### 7.2 Dependencies
 
-### 7.3 里程碑
+### 7.3 Milestones
 
-## 8. 验收标准
+## 8. Acceptance Criteria
 
-### 8.1 功能验收
+### 8.1 Functional Acceptance
 
-### 8.2 视觉验收
+### 8.2 Visual Acceptance
 
-### 8.3 性能验收
+### 8.3 Performance Acceptance
 ```
 
-## 上下文管理 (32k 限制)
+## Context Management (32k Limit)
 
-| 策略            | 方法                        |
-| --------------- | --------------------------- |
-| Atomic Design   | 一次一个组件层级            |
-| Interface First | 只传组件接口，不传实现      |
-| Multi-turn      | 组件 → 状态 → 路由 分步规划 |
-| Session Reuse   | 使用 `--session` 保持上下文 |
+| Strategy        | Method                                   |
+| --------------- | ---------------------------------------- |
+| Atomic Design   | One component layer at a time            |
+| Interface First | Pass only component interface, not impl  |
+| Multi-turn      | Component → State → Routing step-by-step |
+| Session Reuse   | Use `--session` to maintain context      |
 
-## 会话管理
+## Session Management
 
 ```bash
-# 保存 SESSION_ID 用于多步规划
+# Save SESSION_ID for multi-step planning
 result=$(~/.claude/bin/codeagent-wrapper gemini --role planner --prompt "...")
 SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 
-# 后续步骤继续会话
+# Continue session in subsequent steps
 ~/.claude/bin/codeagent-wrapper gemini --prompt "..." --session "$SESSION_ID"
 ```
 
-## 强制约束
+## Mandatory Constraints
 
-| 必须执行                 | 禁止事项            |
-| ------------------------ | ------------------- |
-| ✅ 使用 `--role planner` | ❌ 生成可执行代码   |
-| ✅ 输出 SPEC.md 格式     | ❌ 跳过设计系统分析 |
-| ✅ 考虑响应式和无障碍    | ❌ 只考虑桌面端     |
-| ✅ 组件层级清晰          | ❌ 扁平组件结构     |
-| ✅ 保存 SESSION_ID       | ❌ 丢失规划上下文   |
-| ✅ 遵守 32k 上下文限制   | ❌ 一次传入过多信息 |
+| Must Do                       | Prohibited                     |
+| ----------------------------- | ------------------------------ |
+| ✅ Use `--role planner`       | ❌ Generate executable code    |
+| ✅ Output SPEC.md format      | ❌ Skip design system analysis |
+| ✅ Consider responsive & a11y | ❌ Consider desktop only       |
+| ✅ Clear component hierarchy  | ❌ Flat component structure    |
+| ✅ Save SESSION_ID            | ❌ Lose planning context       |
+| ✅ Respect 32k context limit  | ❌ Pass too much info at once  |
 
-## 输出文件
+## Output Files
 
-执行完成后，将结果写入：
+After execution, write results to:
 
-- `${run_dir}/gemini-plan.md` - Gemini 规划输出
-- 内容将被 architecture-analyzer 整合到 `architecture.md`
+- `${run_dir}/gemini-plan.md` - Gemini planning output
+- Content will be integrated into `architecture.md` by architecture-analyzer
 
-## 与其他 Skills 的协作
+## Collaboration with Other Skills
 
 ```
-plan-context-retriever → codex-planner (后端) ─┐
-                                              ├→ architecture-analyzer → task-decomposer
-                       → gemini-planner (前端) ─┘
+plan-context-retriever → codex-planner (backend) ─┐
+                                                  ├→ architecture-analyzer → task-decomposer
+                       → gemini-planner (frontend) ─┘
 ```
 
-## 与 codex-planner 的分工
+## Division of Labor with codex-planner
 
-| 维度     | codex-planner        | gemini-planner       |
-| -------- | -------------------- | -------------------- |
-| 焦点     | 后端架构、API、数据  | 前端架构、组件、状态 |
-| 输出格式 | PLANS.md             | SPEC.md (Conductor)  |
-| 深度探索 | 代码库依赖、安全审查 | 设计系统、UX 流程    |
-| 典型场景 | 认证、数据库、性能   | UI 组件、表单、路由  |
+| Dimension | codex-planner             | gemini-planner         |
+| --------- | ------------------------- | ---------------------- |
+| Focus     | Backend architecture, API | Frontend architecture  |
+| Output    | PLANS.md                  | SPEC.md (Conductor)    |
+| Deep Dive | Codebase deps, security   | Design system, UX flow |
+| Scenarios | Auth, database, perf      | UI components, forms   |
 
 ---
 

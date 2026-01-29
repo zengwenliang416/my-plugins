@@ -1,9 +1,9 @@
 ---
 name: task-decomposer
 description: |
-  【触发条件】plan 工作流第四步：将架构方案分解为可执行任务
-  【核心产出】输出 ${run_dir}/tasks.md
-  【强制工具】Skill 调用 codex-cli 验证任务可行性
+  [Trigger] Plan workflow Step 4: Decompose architecture solution into executable tasks
+  [Output] Outputs ${run_dir}/tasks.md
+  [Mandatory Tool] Skill call codex-cli to verify task feasibility
 allowed-tools:
   - Read
   - Write
@@ -13,187 +13,187 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（由 orchestrator 传入）
+    description: Run directory path (passed by orchestrator)
 ---
 
-# Task Decomposer - 任务分解原子技能
+# Task Decomposer - Task Decomposition Atomic Skill
 
-## 职责边界
+## Responsibility Boundary
 
-- **输入**: `run_dir` + `${run_dir}/architecture.md`
-- **输出**: `${run_dir}/tasks.md`
-- **单一职责**: 只做任务分解，不做风险评估
+- **Input**: `run_dir` + `${run_dir}/architecture.md`
+- **Output**: `${run_dir}/tasks.md`
+- **Single Responsibility**: Only do task decomposition, no risk assessment
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                            | 触发条件        |
-| --------------------- | ------------------------------- | --------------- |
-| `sequential-thinking` | 结构化任务分解，确保 WBS 完整性 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                       | Trigger              |
+| --------------------- | ----------------------------- | -------------------- |
+| `sequential-thinking` | Structured task decomposition | 🚨 Required per exec |
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化分解规划（sequential-thinking）
+### Step 0: Structured Decomposition Planning (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划分解策略**
+🚨 **Must first use sequential-thinking to plan decomposition strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划任务分解策略。需要确定：1) WBS 层级结构 2) 任务粒度 3) 依赖关系 4) 关键路径 5) 并行机会",
+  thought: "Planning task decomposition strategy. Need to determine: 1) WBS hierarchy structure 2) Task granularity 3) Dependencies 4) Critical path 5) Parallelization opportunities",
   thoughtNumber: 1,
   totalThoughts: 6,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **架构组件识别**：从 architecture.md 提取所有组件
-2. **WBS 层级设计**：确定分解层级（推荐 3-5 层）
-3. **任务粒度验证**：确保每个任务 1-4 小时可完成
-4. **依赖图构建**：识别 FS/SS/FF 依赖类型
-5. **关键路径计算**：找出总浮动时间为 0 的任务链
-6. **并行机会发现**：识别可并行执行的任务组
+1. **Architecture Component Identification**: Extract all components from architecture.md
+2. **WBS Hierarchy Design**: Determine decomposition levels (recommended 3-5 levels)
+3. **Task Granularity Verification**: Ensure each task is completable in 1-4 hours
+4. **Dependency Graph Construction**: Identify FS/SS/FF dependency types
+5. **Critical Path Calculation**: Find task chains with zero total float
+6. **Parallelization Opportunity Discovery**: Identify task groups that can run in parallel
 
-### Step 1: 读取输入
+### Step 1: Read Input
 
 ```bash
 ARCHITECTURE=$(cat "${run_dir}/architecture.md")
 REQUIREMENTS=$(cat "${run_dir}/requirements.md")
 ```
 
-提取：
+Extract:
 
-- 架构组件列表
-- API 端点
-- 前端组件
-- 数据模型
-- 功能需求
+- Architecture component list
+- API endpoints
+- Frontend components
+- Data models
+- Functional requirements
 
-### Step 2: WBS 分解
+### Step 2: WBS Decomposition
 
-遵循 WBS 100% 规则进行分解：
+Follow WBS 100% rule for decomposition:
 
-| 规则         | 说明                     |
-| ------------ | ------------------------ |
-| 100% 规则    | WBS 必须涵盖项目全部工作 |
-| 可交付物导向 | 以交付物为主线           |
-| 层级约束     | 推荐 3~5 层              |
-| 任务粒度     | 可在 1-4 小时内完成      |
+| Rule                 | Description                     |
+| -------------------- | ------------------------------- |
+| 100% Rule            | WBS must cover all project work |
+| Deliverable-oriented | Deliverables as main thread     |
+| Level Constraints    | Recommended 3~5 levels          |
+| Task Granularity     | Completable in 1-4 hours        |
 
-### Step 3: 依赖分析
+### Step 3: Dependency Analysis
 
-构建任务依赖图（DAG）：
+Build task dependency graph (DAG):
 
-| 依赖类型              | 说明            | 示例              |
-| --------------------- | --------------- | ----------------- |
-| FS (Finish-to-Start)  | A 完成后 B 开始 | 模型 → API → 前端 |
-| SS (Start-to-Start)   | A/B 同时开始    | 前后端并行        |
-| FF (Finish-to-Finish) | A/B 同时结束    | 联调              |
+| Dependency Type       | Description           | Example                   |
+| --------------------- | --------------------- | ------------------------- |
+| FS (Finish-to-Start)  | B starts after A ends | Model → API → Frontend    |
+| SS (Start-to-Start)   | A/B start together    | Frontend-backend parallel |
+| FF (Finish-to-Finish) | A/B end together      | Integration testing       |
 
-### Step 4: 关键路径分析
+### Step 4: Critical Path Analysis
 
-识别关键路径（Critical Path）：
+Identify critical path:
 
-- 计算每个任务的最早开始/结束时间
-- 识别总浮动时间为 0 的任务链
-- 标记关键任务
+- Calculate earliest start/end time for each task
+- Identify task chains with zero total float
+- Mark critical tasks
 
-### Step 5: Contract-First 策略
+### Step 5: Contract-First Strategy
 
-对于 fullstack 任务，应用 Contract-First 策略：
+For fullstack tasks, apply Contract-First strategy:
 
-1. **定义 API 接口** (Swagger/TypeScript Types) - 作为契约
-2. **创建 Mock 数据** - 允许前端立即开始
-3. **并行开发**:
-   - 后端: 实现真实 API
-   - 前端: 使用 Mock 开发 UI
-4. **集成联调** - 切换 Mock → 真实 API
-5. **视觉回归测试** - Storybook / 截图测试
+1. **Define API Interface** (Swagger/TypeScript Types) - as contract
+2. **Create Mock Data** - allows frontend to start immediately
+3. **Parallel Development**:
+   - Backend: Implement real API
+   - Frontend: Develop UI using Mock
+4. **Integration Testing** - Switch Mock → real API
+5. **Visual Regression Testing** - Storybook / screenshot tests
 
-### Step 6: 调用外部模型验证
+### Step 6: Call External Model for Verification
 
-使用 Codex 验证任务可行性：
+Use Codex to verify task feasibility:
 
 ```
-Skill(skill="tpd:codex-cli", args="prompt=验证以下任务分解的可行性...")
+Skill(skill="tpd:codex-cli", args="prompt=Verify the feasibility of the following task decomposition...")
 ```
 
-### Step 7: 结构化输出
+### Step 7: Structured Output
 
-将分解结果写入 `${run_dir}/tasks.md`：
+Write decomposition results to `${run_dir}/tasks.md`:
 
 ```markdown
-# 任务分解
+# Task Decomposition
 
-## 元信息
+## Metadata
 
-- 分解时间: [timestamp]
-- 总任务数: [count]
-- 关键路径长度: [duration]
-- 并行度: [max parallel tasks]
+- Decomposition Time: [timestamp]
+- Total Tasks: [count]
+- Critical Path Length: [duration]
+- Parallelism: [max parallel tasks]
 
-## WBS 结构
+## WBS Structure
 ```
 
-项目根节点
-├── 1. 基础设施
-│ ├── 1.1 数据库设计
-│ │ ├── T-001: 创建数据库迁移脚本
-│ │ └── T-002: 实现 Prisma Schema
-│ └── 1.2 认证系统
-│ ├── T-003: 实现 JWT 工具
-│ └── T-004: 创建认证中间件
-├── 2. 后端开发
-│ ├── 2.1 API 端点
+Project Root
+├── 1. Infrastructure
+│ ├── 1.1 Database Design
+│ │ ├── T-001: Create database migration script
+│ │ └── T-002: Implement Prisma Schema
+│ └── 1.2 Authentication System
+│ ├── T-003: Implement JWT utils
+│ └── T-004: Create auth middleware
+├── 2. Backend Development
+│ ├── 2.1 API Endpoints
 │ │ ├── T-005: POST /api/auth/login
 │ │ └── T-006: POST /api/auth/register
-│ └── 2.2 业务逻辑
+│ └── 2.2 Business Logic
 │ ├── T-007: AuthService
 │ └── T-008: UserService
-└── 3. 前端开发
-├── 3.1 组件开发
-│ ├── T-009: LoginForm 组件
-│ └── T-010: RegisterForm 组件
-└── 3.2 页面集成
-└── T-011: 路由配置
+└── 3. Frontend Development
+├── 3.1 Component Development
+│ ├── T-009: LoginForm component
+│ └── T-010: RegisterForm component
+└── 3.2 Page Integration
+└── T-011: Route configuration
 
 ````
 
-## 执行阶段
+## Execution Phases
 
-### 阶段 1: 基础设施（无依赖）
+### Phase 1: Infrastructure (No Dependencies)
 
-| ID | 任务 | 类型 | 复杂度 | 预估 | DoD |
+| ID | Task | Type | Complexity | Est | DoD |
 |----|-----|-----|-------|-----|-----|
-| T-001 | 创建数据库迁移脚本 | backend | 2/5 | - | 迁移可执行 |
-| T-002 | 实现 Prisma Schema | backend | 2/5 | - | 类型生成成功 |
-| T-003 | 实现 JWT 工具 | backend | 3/5 | - | 单元测试通过 |
-| T-004 | 创建认证中间件 | backend | 3/5 | - | 集成测试通过 |
+| T-001 | Create database migration script | backend | 2/5 | - | Migration executable |
+| T-002 | Implement Prisma Schema | backend | 2/5 | - | Types generated successfully |
+| T-003 | Implement JWT utils | backend | 3/5 | - | Unit tests pass |
+| T-004 | Create auth middleware | backend | 3/5 | - | Integration tests pass |
 
-### 阶段 2: 后端 API（依赖阶段 1）
+### Phase 2: Backend API (Depends on Phase 1)
 
-| ID | 任务 | 类型 | 复杂度 | 依赖 | DoD |
+| ID | Task | Type | Complexity | Depends | DoD |
 |----|-----|-----|-------|-----|-----|
-| T-005 | POST /api/auth/login | backend | 3/5 | T-003, T-004 | API 测试通过 |
-| T-006 | POST /api/auth/register | backend | 3/5 | T-001, T-002 | API 测试通过 |
+| T-005 | POST /api/auth/login | backend | 3/5 | T-003, T-004 | API tests pass |
+| T-006 | POST /api/auth/register | backend | 3/5 | T-001, T-002 | API tests pass |
 
-### 阶段 3: 前端开发（可与阶段 2 并行）
+### Phase 3: Frontend Development (Can Parallel with Phase 2)
 
-| ID | 任务 | 类型 | 复杂度 | 依赖 | DoD |
+| ID | Task | Type | Complexity | Depends | DoD |
 |----|-----|-----|-------|-----|-----|
-| T-007 | API 接口类型定义 | frontend | 2/5 | 阶段 1 完成 | 类型正确 |
-| T-008 | Mock 数据创建 | frontend | 2/5 | T-007 | Mock 可用 |
-| T-009 | LoginForm 组件 | frontend | 3/5 | T-008 | Storybook 可用 |
-| T-010 | RegisterForm 组件 | frontend | 3/5 | T-008 | Storybook 可用 |
+| T-007 | API interface type definitions | frontend | 2/5 | Phase 1 complete | Types correct |
+| T-008 | Mock data creation | frontend | 2/5 | T-007 | Mock available |
+| T-009 | LoginForm component | frontend | 3/5 | T-008 | Storybook available |
+| T-010 | RegisterForm component | frontend | 3/5 | T-008 | Storybook available |
 
-### 阶段 4: 集成联调（依赖阶段 2, 3）
+### Phase 4: Integration Testing (Depends on Phase 2, 3)
 
-| ID | 任务 | 类型 | 复杂度 | 依赖 | DoD |
+| ID | Task | Type | Complexity | Depends | DoD |
 |----|-----|-----|-------|-----|-----|
-| T-011 | 前后端集成联调 | fullstack | 3/5 | T-005, T-006, T-009, T-010 | E2E 测试通过 |
-| T-012 | 路由配置 | frontend | 2/5 | T-011 | 导航正常 |
+| T-011 | Frontend-backend integration | fullstack | 3/5 | T-005, T-006, T-009, T-010 | E2E tests pass |
+| T-012 | Route configuration | frontend | 2/5 | T-011 | Navigation works |
 
-## 依赖关系图
+## Dependency Graph
 
 ```mermaid
 graph LR
@@ -211,90 +211,90 @@ graph LR
     T011 --> T012[T-012: Routes]
 ````
 
-## 关键路径
+## Critical Path
 
 ```
 T-001 → T-002 → T-006 → T-011 → T-012
 ```
 
-关键任务（不可延迟）: T-001, T-002, T-006, T-011, T-012
+Critical tasks (cannot be delayed): T-001, T-002, T-006, T-011, T-012
 
-## 并行执行建议
+## Parallel Execution Recommendations
 
-| 并行组 | 任务                | 说明           |
-| ------ | ------------------- | -------------- |
-| 组 1   | T-001, T-003, T-004 | 基础设施并行   |
-| 组 2   | T-005, T-006, T-007 | API + 类型并行 |
-| 组 3   | T-009, T-010        | 组件并行       |
+| Parallel Group | Tasks               | Description             |
+| -------------- | ------------------- | ----------------------- |
+| Group 1        | T-001, T-003, T-004 | Infrastructure parallel |
+| Group 2        | T-005, T-006, T-007 | API + Types parallel    |
+| Group 3        | T-009, T-010        | Components parallel     |
 
-## 里程碑
+## Milestones
 
-| 里程碑           | 完成条件           | 验收标准               |
-| ---------------- | ------------------ | ---------------------- |
-| M1: 基础设施就绪 | T-001 ~ T-004 完成 | 数据库可连接，认证可用 |
-| M2: API 可用     | T-005, T-006 完成  | Swagger 文档可访问     |
-| M3: 前端原型     | T-009, T-010 完成  | Storybook 可演示       |
-| M4: 功能完成     | 全部任务完成       | E2E 测试通过           |
+| Milestone                | Completion Criteria    | Acceptance Standard        |
+| ------------------------ | ---------------------- | -------------------------- |
+| M1: Infrastructure Ready | T-001 ~ T-004 complete | DB connectable, auth works |
+| M2: API Available        | T-005, T-006 complete  | Swagger docs accessible    |
+| M3: Frontend Prototype   | T-009, T-010 complete  | Storybook demo available   |
+| M4: Feature Complete     | All tasks complete     | E2E tests pass             |
 
-## 任务卡详情
+## Task Card Details
 
-### T-001: 创建数据库迁移脚本
+### T-001: Create database migration script
 
-| 字段   | 值                 |
-| ------ | ------------------ |
-| ID     | T-001              |
-| 名称   | 创建数据库迁移脚本 |
-| 类型   | backend            |
-| 复杂度 | 2/5                |
-| 依赖   | 无                 |
+| Field      | Value                            |
+| ---------- | -------------------------------- |
+| ID         | T-001                            |
+| Name       | Create database migration script |
+| Type       | backend                          |
+| Complexity | 2/5                              |
+| Depends    | None                             |
 
-**输入**:
+**Input**:
 
-- 数据模型设计
+- Data model design
 
-**输出**:
+**Output**:
 
 - prisma/migrations/xxx_init.sql
 
-**验收标准**:
+**Acceptance Criteria**:
 
-- [ ] 迁移脚本可执行
-- [ ] 表结构符合设计
+- [ ] Migration script executable
+- [ ] Table structure matches design
 
 ---
 
-下一步: 调用 risk-assessor 进行风险评估
+Next step: Call risk-assessor for risk assessment
 
 ```
 
-## 返回值
+## Return Value
 
-执行完成后，返回：
-
-```
-
-任务分解完成。
-输出文件: ${run_dir}/tasks.md
-总任务数: X 个
-执行阶段: Y 个
-关键路径: Z 个任务
-
-下一步: 使用 tpd:risk-assessor 进行风险评估
+After execution, return:
 
 ```
 
-## 质量门控
+Task decomposition complete.
+Output file: ${run_dir}/tasks.md
+Total tasks: X
+Execution phases: Y
+Critical path: Z tasks
 
-- ✅ 遵循 WBS 100% 规则
-- ✅ 每个任务有明确的 DoD
-- ✅ 依赖关系形成 DAG（无循环）
-- ✅ 识别了关键路径
-- ✅ 任务粒度合理（1-4 小时）
+Next step: Use tpd:risk-assessor for risk assessment
 
-## 约束
+```
 
-- 不做风险评估（交给 risk-assessor）
-- 不生成代码（交给 dev 阶段）
-- 任务必须可独立验证
-- 依赖图必须是有向无环图
+## Quality Gates
+
+- ✅ Followed WBS 100% rule
+- ✅ Each task has clear DoD
+- ✅ Dependencies form DAG (no cycles)
+- ✅ Identified critical path
+- ✅ Task granularity reasonable (1-4 hours)
+
+## Constraints
+
+- Do not do risk assessment (delegated to risk-assessor)
+- Do not generate code (delegated to dev phase)
+- Tasks must be independently verifiable
+- Dependency graph must be directed acyclic graph
 ```

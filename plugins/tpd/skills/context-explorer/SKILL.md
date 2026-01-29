@@ -1,11 +1,11 @@
 ---
 name: context-explorer
 description: |
-  【触发条件】thinking 工作流 Phase 3：按上下文边界探索代码库
-  【核心产出】输出 ${run_dir}/explore-<boundary>.json
-  【🚨强制工具🚨】必须使用 auggie-mcp 做语义检索
-  【不触发】仅要求纯主观分析
-  【先问什么】无需询问，自动执行
+  [Trigger] Thinking workflow Phase 3: Explore codebase by context boundary
+  [Output] Outputs ${run_dir}/explore-<boundary>.json
+  [🚨 Mandatory Tool 🚨] Must use auggie-mcp for semantic retrieval
+  [Skip] When only subjective analysis is required
+  [Ask First] No need to ask, automatically executes
 allowed-tools:
   - Read
   - Write
@@ -15,44 +15,45 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径
+    description: Run directory path
   - name: boundary
     type: string
     required: true
-    description: 上下文边界名称（kebab-case）
+    description: Context boundary name (kebab-case)
   - name: scope
     type: string
     required: false
-    description: 边界范围说明（可选）
+    description: Boundary scope description (optional)
 ---
 
-# Context Explorer - 上下文边界探索原子技能
+# Context Explorer - Context Boundary Exploration Atomic Skill
 
-## 职责边界
+## Responsibility Boundary
 
-在指定上下文边界内完成代码库探索，输出结构化约束集，不做方案设计或代码修改。
+Complete codebase exploration within specified context boundary, output structured constraint set, no solution design or code modification.
 
-- **输入**: `${run_dir}/input.md` + `boundary` + `scope(可选)`
-- **输出**: `${run_dir}/explore-${boundary}.json`
-- **核心能力**: 语义检索、约束提炼、风险与依赖识别
-- **写入范围**: 仅允许写入 `${run_dir}`（位于 OpenSpec 产物目录），禁止修改项目业务代码与其他 OpenSpec 规范
+- **Input**: `${run_dir}/input.md` + `boundary` + `scope (optional)`
+- **Output**: `${run_dir}/explore-${boundary}.json`
+- **Core Capability**: Semantic retrieval, constraint extraction, risk and dependency identification
+- **Write Scope**: Only allowed to write to `${run_dir}` (in OpenSpec artifacts directory), prohibited from modifying project business code and other OpenSpec specifications
 
 ---
 
-## 🚨 CRITICAL: 强制工具使用规则
+## 🚨 CRITICAL: Mandatory Tool Usage Rules
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  🔍 上下文探索                                                   │
-│     ✅ 必须使用: mcp__auggie-mcp__codebase-retrieval             │
-│     ✅ 必须使用: mcp__sequential-thinking__sequentialthinking    │
-│     ❌ 禁止行为: 仅凭直觉输出、跳过语义检索                      │
+│  🔍 Context Exploration                                          │
+│     ✅ Required: mcp__auggie-mcp__codebase-retrieval             │
+│     ✅ Required: mcp__sequential-thinking__sequentialthinking    │
+│     ❌ Prohibited: Output based on intuition only, skip         │
+│        semantic retrieval                                        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 输出模板（严格遵循）
+## Output Template (Strictly Follow)
 
 ```json
 {
@@ -69,51 +70,51 @@ arguments:
 
 ---
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化检索规划（sequential-thinking）
+### Step 0: Structured Retrieval Planning (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划检索策略**
+🚨 **Must first use sequential-thinking to plan retrieval strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划上下文探索策略。需要：1) 读取需求 2) 明确边界范围 3) 设计检索问题 4) 提炼约束与风险 5) 形成结构化 JSON 输出",
+  thought: "Planning context exploration strategy. Need: 1) Read requirements 2) Clarify boundary scope 3) Design retrieval queries 4) Extract constraints and risks 5) Form structured JSON output",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-### Step 1: 读取输入
+### Step 1: Read Input
 
 ```
 Read("${run_dir}/input.md")
 ```
 
-### Step 2: 语义检索（必须使用 auggie-mcp）
+### Step 2: Semantic Retrieval (Must use auggie-mcp)
 
 ```
 mcp__auggie-mcp__codebase-retrieval({
-  information_request: "在边界 <boundary> 内检索相关代码与结构。请返回：关键模块/文件、既有模式、约束、依赖、风险、潜在成功判据线索。"
+  information_request: "Retrieve relevant code and structures within boundary <boundary>. Please return: key modules/files, existing patterns, constraints, dependencies, risks, potential success criteria hints."
 })
 ```
 
-> 若提供 scope，请在检索问题中体现。
+> If scope is provided, reflect it in the retrieval query.
 
-### Step 3: 提炼约束与风险（sequential-thinking）
+### Step 3: Extract Constraints and Risks (sequential-thinking)
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "基于检索结果，整理 existing_structures / existing_conventions / constraints_discovered / dependencies / risks / open_questions / success_criteria_hints。",
+  thought: "Based on retrieval results, organize existing_structures / existing_conventions / constraints_discovered / dependencies / risks / open_questions / success_criteria_hints.",
   thoughtNumber: 2,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-### Step 4: 输出 JSON
+### Step 4: Output JSON
 
-**输出路径**：`${run_dir}/explore-${boundary}.json`
+**Output path**: `${run_dir}/explore-${boundary}.json`
 
 ```
 Write("${run_dir}/explore-${boundary}.json", <JSON>)
@@ -121,8 +122,8 @@ Write("${run_dir}/explore-${boundary}.json", <JSON>)
 
 ---
 
-## 质量门控
+## Quality Gates
 
-- [ ] 已调用 `mcp__auggie-mcp__codebase-retrieval`
-- [ ] 输出 JSON 严格符合模板
-- [ ] 未修改任何项目代码
+- [ ] Called `mcp__auggie-mcp__codebase-retrieval`
+- [ ] Output JSON strictly follows template
+- [ ] Did not modify any project code

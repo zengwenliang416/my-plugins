@@ -1,10 +1,10 @@
 ---
 name: requirement-parser
 description: |
-  【触发条件】plan 工作流第一步：解析用户需求，结构化输出
-  【核心产出】输出 ${run_dir}/requirements.md
-  【不触发】直接分析（用 architecture-analyzer）
-  【先问什么】需求模糊时，询问功能边界和约束条件
+  [Trigger] Plan workflow Step 1: Parse user requirements, structured output
+  [Output] Outputs ${run_dir}/requirements.md
+  [Skip] Direct analysis (use architecture-analyzer)
+  [Ask First] When requirements are vague, ask about functionality boundaries and constraints
 allowed-tools:
   - Read
   - Write
@@ -15,166 +15,166 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（由 orchestrator 传入）
+    description: Run directory path (passed by orchestrator)
 ---
 
-# Requirement Parser - 需求解析原子技能
+# Requirement Parser - Requirement Parsing Atomic Skill
 
-## 职责边界
+## Responsibility Boundary
 
-- **输入**: `run_dir` + `${run_dir}/input.md` 中的功能需求
-- **输出**: `${run_dir}/requirements.md`
-- **单一职责**: 只做需求解析和结构化，不做架构分析
+- **Input**: `run_dir` + feature requirement in `${run_dir}/input.md`
+- **Output**: `${run_dir}/requirements.md`
+- **Single Responsibility**: Only do requirement parsing and structuring, no architecture analysis
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                             | 触发条件           |
-| --------------------- | -------------------------------- | ------------------ |
-| `sequential-thinking` | 结构化需求分析，确保覆盖所有维度 | 🚨 每次执行必用    |
-| `auggie-mcp`          | 检索现有代码，理解技术约束       | 需求涉及现有系统时 |
+| MCP Tool              | Purpose                                        | Trigger                                   |
+| --------------------- | ---------------------------------------------- | ----------------------------------------- |
+| `sequential-thinking` | Structured requirement analysis                | 🚨 Required per exec                      |
+| `auggie-mcp`          | Retrieve existing code, understand constraints | When requirement involves existing system |
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化需求分析规划（sequential-thinking）
+### Step 0: Structured Requirement Analysis Planning (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划分析策略**
+🚨 **Must first use sequential-thinking to plan analysis strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "分析用户需求。需要识别：1) 功能需求 2) 非功能需求 3) UI/UX 需求 4) 约束条件 5) 任务类型",
+  thought: "Analyzing user requirements. Need to identify: 1) Functional requirements 2) Non-functional requirements 3) UI/UX requirements 4) Constraints 5) Task type",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **需求分类**：识别功能/非功能/UI/约束
-2. **边界定义**：确定功能边界和范围
-3. **优先级排序**：P1/P2/P3 划分
-4. **验收标准**：定义可验证的验收条件
-5. **歧义检测**：识别需要澄清的问题
+1. **Requirement Classification**: Identify functional/non-functional/UI/constraints
+2. **Boundary Definition**: Determine functionality boundaries and scope
+3. **Priority Sorting**: P1/P2/P3 classification
+4. **Acceptance Criteria**: Define verifiable acceptance conditions
+5. **Ambiguity Detection**: Identify questions needing clarification
 
-### Step 1: 读取输入
+### Step 1: Read Input
 
 ```bash
-# run_dir 由 orchestrator 传入
+# run_dir passed by orchestrator
 FEATURE=$(cat "${run_dir}/input.md")
 ```
 
-### Step 2: 需求分类
+### Step 2: Requirement Classification
 
-根据用户描述，识别需求类型：
+Based on user description, identify requirement types:
 
-| 需求类型          | 识别特征                   | 处理方式          |
-| ----------------- | -------------------------- | ----------------- |
-| 功能需求（FR）    | 动词开头：实现、添加、创建 | 提取用户故事      |
-| 非功能需求（NFR） | 性能、安全、可用性相关     | 归类到 NFR 清单   |
-| UI/UX 需求        | 界面、交互、样式相关       | 提取视觉/交互规格 |
-| 约束条件          | 技术栈、兼容性、时间限制   | 记录为约束        |
+| Requirement Type            | Identification Signals              | Handling Method                  |
+| --------------------------- | ----------------------------------- | -------------------------------- |
+| Functional Requirements     | Verb prefix: implement, add, create | Extract user stories             |
+| Non-Functional Requirements | Performance, security, availability | Categorize to NFR list           |
+| UI/UX Requirements          | Interface, interaction, style       | Extract visual/interaction specs |
+| Constraints                 | Tech stack, compatibility, time     | Record as constraints            |
 
-### Step 3: 歧义澄清
+### Step 3: Ambiguity Clarification
 
-如果需求存在以下问题，使用 AskUserQuestion 询问：
+If requirements have the following issues, use AskUserQuestion to ask:
 
-- 边界不清：功能边界在哪里？
-- 约束不明：有哪些技术或业务约束？
-- 优先级不明：哪些是必须实现的？
-- 验收标准不明：如何验证完成？
+- Unclear boundaries: Where are the functionality boundaries?
+- Unclear constraints: What technical or business constraints exist?
+- Unclear priorities: Which are must-haves?
+- Unclear acceptance: How to verify completion?
 
-### Step 4: 任务类型判断
+### Step 4: Task Type Determination
 
-根据需求内容判断任务类型：
+Determine task type based on requirement content:
 
-| 类型      | 判断依据             | 权重分配   |
-| --------- | -------------------- | ---------- |
-| frontend  | 仅涉及 UI/样式/交互  | 前端 100%  |
-| backend   | 仅涉及 API/数据/逻辑 | 后端 100%  |
-| fullstack | 同时涉及前后端       | 按需求分配 |
+| Type      | Criteria                            | Weight Allocation |
+| --------- | ----------------------------------- | ----------------- |
+| frontend  | Only involves UI/styles/interaction | Frontend 100%     |
+| backend   | Only involves API/data/logic        | Backend 100%      |
+| fullstack | Involves both frontend and backend  | Allocated by need |
 
-### Step 5: 结构化输出
+### Step 5: Structured Output
 
-将解析结果写入 `${run_dir}/requirements.md`：
+Write parsed results to `${run_dir}/requirements.md`:
 
 ```markdown
-# 需求规格
+# Requirement Specification
 
-## 元信息
+## Metadata
 
-- 解析时间: [timestamp]
-- 任务类型: [frontend|backend|fullstack]
-- 前端权重: [0-100]%
-- 后端权重: [0-100]%
+- Parse Time: [timestamp]
+- Task Type: [frontend|backend|fullstack]
+- Frontend Weight: [0-100]%
+- Backend Weight: [0-100]%
 
-## 需求概述
+## Requirement Overview
 
-[一句话描述核心需求]
+[One sentence describing the core requirement]
 
-## 功能需求
+## Functional Requirements
 
-| ID     | 需求描述 | 优先级   | 验收标准 |
-| ------ | -------- | -------- | -------- |
-| FR-001 |          | P1/P2/P3 |          |
-| FR-002 |          |          |          |
+| ID     | Requirement Description | Priority | Acceptance Criteria |
+| ------ | ----------------------- | -------- | ------------------- |
+| FR-001 |                         | P1/P2/P3 |                     |
+| FR-002 |                         |          |                     |
 
-## 非功能需求
+## Non-Functional Requirements
 
-| ID      | 类别 | 约束描述          |
-| ------- | ---- | ----------------- |
-| NFR-001 | 性能 | API 响应 < 200ms  |
-| NFR-002 | 安全 | OWASP Top 10 合规 |
+| ID      | Category    | Constraint Description |
+| ------- | ----------- | ---------------------- |
+| NFR-001 | Performance | API response < 200ms   |
+| NFR-002 | Security    | OWASP Top 10 compliant |
 
-## UI/UX 需求（如适用）
+## UI/UX Requirements (if applicable)
 
-| ID     | 组件/页面 | 交互描述 | 视觉规格 |
-| ------ | --------- | -------- | -------- |
-| UX-001 |           |          |          |
+| ID     | Component/Page | Interaction Description | Visual Spec |
+| ------ | -------------- | ----------------------- | ----------- |
+| UX-001 |                |                         |             |
 
-## 约束条件
+## Constraints
 
-- **技术约束**: [技术栈、版本要求]
-- **业务约束**: [时间、预算、合规]
-- **兼容约束**: [浏览器、设备、API 版本]
+- **Technical Constraints**: [Tech stack, version requirements]
+- **Business Constraints**: [Time, budget, compliance]
+- **Compatibility Constraints**: [Browser, device, API version]
 
-## 假设与依赖
+## Assumptions & Dependencies
 
-- 假设: [隐含的假设]
-- 依赖: [外部依赖]
+- Assumptions: [Implicit assumptions]
+- Dependencies: [External dependencies]
 
-## 待澄清事项
+## Items to Clarify
 
-- [ ] [需要进一步确认的问题]
+- [ ] [Questions needing further confirmation]
 
 ---
 
-下一步: 调用 plan-context-retriever 检索上下文
+Next step: Call plan-context-retriever to retrieve context
 ```
 
-## 返回值
+## Return Value
 
-执行完成后，返回：
+After execution, return:
 
 ```
-需求解析完成。
-输出文件: ${run_dir}/requirements.md
-任务类型: [type]
-功能需求: X 个
-非功能需求: Y 个
+Requirement parsing complete.
+Output file: ${run_dir}/requirements.md
+Task type: [type]
+Functional requirements: X
+Non-functional requirements: Y
 
-下一步: 使用 tpd:plan-context-retriever 检索上下文
+Next step: Use tpd:plan-context-retriever to retrieve context
 ```
 
-## 质量门控
+## Quality Gates
 
-- ✅ 提取了明确的功能需求
-- ✅ 识别了非功能需求
-- ✅ 判断了任务类型和权重
-- ✅ 记录了约束条件
-- ✅ 澄清了歧义（如有）
+- ✅ Extracted clear functional requirements
+- ✅ Identified non-functional requirements
+- ✅ Determined task type and weights
+- ✅ Recorded constraints
+- ✅ Clarified ambiguities (if any)
 
-## 约束
+## Constraints
 
-- 不做架构分析（交给 architecture-analyzer）
-- 不做代码检索（交给 plan-context-retriever）
-- 需求不清时必须询问，不能假设
+- Do not do architecture analysis (delegated to architecture-analyzer)
+- Do not do code retrieval (delegated to plan-context-retriever)
+- When requirements are unclear, must ask, do not assume

@@ -1,11 +1,11 @@
 ---
 name: code-implementer
 description: |
-  【触发条件】开发工作流第四步：基于原型重构并实施代码到项目中。
-  【核心产出】输出 ${run_dir}/changes.md + 实际代码变更。
-  【不触发】原型生成（用 prototype-generator）、审计审查（用 audit-reviewer）。
-  【先问什么】prototype-{model}.diff 缺失时，询问是否先执行原型生成
-  【强制工具】必须调用 codex-cli 或 gemini-cli Skill 重构原型，禁止 Claude 自行实施。
+  [Trigger] Dev workflow step 4: Refactor prototype and implement code into the project.
+  [Output] Outputs ${run_dir}/changes.md + actual code changes.
+  [Skip] Prototype generation (use prototype-generator), audit review (use audit-reviewer).
+  [Ask First] If prototype-{model}.diff is missing, ask whether to execute prototype generation first
+  [Mandatory Tool] Must invoke codex-cli or gemini-cli Skill to refactor prototype, Claude self-implementation is prohibited.
 allowed-tools:
   - Read
   - Write
@@ -17,285 +17,288 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（由 orchestrator 传入）
+    description: Run directory path (passed by orchestrator)
   - name: model
     type: string
     required: true
-    description: 实施模型（codex 或 gemini）
+    description: Implementation model (codex or gemini)
   - name: focus
     type: string
     required: false
-    description: 关注领域（backend,api,logic 或 frontend,ui,styles）
+    description: Focus area (backend,api,logic or frontend,ui,styles)
 ---
 
-# Code Implementer - 代码实施原子技能
+# Code Implementer - Code Implementation Atomic Skill
 
-## 🚨 CRITICAL: 必须调用 codex-cli 或 gemini-cli Skill
+## 🚨 CRITICAL: Must Invoke codex-cli or gemini-cli Skill
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  ❌ 禁止：Claude 自己实施代码（跳过外部模型）                     │
-│  ❌ 禁止：直接 Bash 调用 codeagent-wrapper                       │
-│  ✅ 必须：通过 Skill 工具调用 codex-cli 或 gemini-cli            │
+│  ❌ Prohibited: Claude implementing code itself (skipping       │
+│     external model)                                              │
+│  ❌ Prohibited: Directly calling codeagent-wrapper via Bash     │
+│  ✅ Required: Invoke codex-cli or gemini-cli via Skill tool     │
 │                                                                  │
-│  这是多模型协作的核心！Claude 不能替代 Codex/Gemini 实施！        │
+│  This is the core of multi-model collaboration!                  │
+│  Claude cannot replace Codex/Gemini implementation!              │
 │                                                                  │
-│  执行顺序（必须遵循）：                                          │
-│  1. 读取 prototype-{model}.diff                                 │
-│  2. Skill 调用 codex-cli 或 gemini-cli 重构原型                  │
-│  3. 验证并应用变更，写入 changes.md                              │
+│  Execution order (must follow):                                  │
+│  1. Read prototype-{model}.diff                                  │
+│  2. Skill invocation to codex-cli or gemini-cli to refactor     │
+│  3. Verify and apply changes, write to changes.md                │
 │                                                                  │
-│  如果跳过 Step 2，整个多模型协作失效！                           │
+│  If Step 2 is skipped, the entire multi-model collaboration     │
+│  fails!                                                          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## 职责边界
+## Responsibility Boundary
 
-- **输入**: `run_dir` + `model` + `focus`（包含 `${run_dir}/prototype-{model}.diff`）
-- **输出**: 实际代码变更 + `${run_dir}/changes-{model}.md`
-- **单一职责**: 只做代码重构和实施，不做分析或审计
-- **核心原则**: 外部模型重构原型，Claude 验证并应用
+- **Input**: `run_dir` + `model` + `focus` (contains `${run_dir}/prototype-{model}.diff`)
+- **Output**: Actual code changes + `${run_dir}/changes-{model}.md`
+- **Single Responsibility**: Only do code refactoring and implementation, no analysis or audit
+- **Core Principle**: External model refactors prototype, Claude verifies and applies
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                                 | 触发条件        |
-| --------------------- | ------------------------------------ | --------------- |
-| `sequential-thinking` | 结构化实施策略，确保重构质量和完整性 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                                        | Trigger     |
+| --------------------- | ---------------------------------------------- | ----------- |
+| `sequential-thinking` | Structured implementation strategy for quality | 🚨 Required |
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化实施规划（sequential-thinking）
+### Step 0: Structured Implementation Planning (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划实施策略**
+🚨 **Must first use sequential-thinking to plan implementation strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划代码实施策略。需要：1) 理解原型内容 2) LSP 影响范围分析 3) 重构优化点 4) 应用顺序规划 5) 验证策略",
+  thought: "Planning code implementation strategy. Need: 1) Understand prototype content 2) LSP impact analysis 3) Identify refactoring points 4) Plan application order 5) Define verification strategy",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **原型内容理解**：从 prototype-{model}.diff 提取变更内容
-2. **LSP 影响范围分析**：使用 LSP 确认每个符号的引用
-3. **重构优化点识别**：识别原型中需要重构的部分
-4. **应用顺序规划**：确定文件修改顺序，避免循环依赖
-5. **验证策略制定**：规划类型检查、语法检查、测试
+1. **Prototype Content Understanding**: Extract changes from prototype-{model}.diff
+2. **LSP Impact Analysis**: Use LSP to confirm references for each symbol
+3. **Refactoring Point Identification**: Identify parts of prototype needing refactoring
+4. **Application Order Planning**: Determine file modification order to avoid circular dependencies
+5. **Verification Strategy**: Plan type checking, syntax checking, tests
 
-### Step 1: 读取原型
+### Step 1: Read Prototype
 
 ```bash
-读取 ${run_dir}/prototype-{model}.diff
-解析: 涉及的文件、变更内容、新增/删除
+Read ${run_dir}/prototype-{model}.diff
+Parse: Files involved, change content, additions/deletions
 ```
 
-### Step 2: 使用 LSP 确认影响范围（🚨 强制执行）
+### Step 2: Use LSP to Confirm Impact Scope (🚨 Required)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  🚨🚨🚨 修改任何代码前必须先调用 LSP！🚨🚨🚨                       │
+│  🚨🚨🚨 Must call LSP before modifying any code! 🚨🚨🚨          │
 │                                                                  │
-│  每个要修改的符号/文件，必须执行：                               │
+│  For each symbol/file to modify, must execute:                   │
 │                                                                  │
-│  1. LSP.findReferences(symbol)  - 确认影响范围（谁在用它？）     │
-│  2. LSP.goToDefinition(symbol)  - 确认定义位置（它在哪定义？）   │
-│  3. LSP.incomingCalls(func)     - 谁调用了这个函数？            │
-│  4. LSP.outgoingCalls(func)     - 这个函数调用了谁？            │
+│  1. LSP.findReferences(symbol)  - Confirm impact (who uses it?) │
+│  2. LSP.goToDefinition(symbol)  - Confirm definition location   │
+│  3. LSP.incomingCalls(func)     - Who calls this function?      │
+│  4. LSP.outgoingCalls(func)     - What does this function call? │
 │                                                                  │
-│  跳过 LSP 直接修改代码 = 工作流失败！                           │
+│  Skipping LSP and directly modifying code = Workflow failure!    │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**立即执行 LSP 调用序列：**
+**Execute LSP call sequence immediately:**
 
 ```
-# 对 prototype.diff 中每个要修改的符号
+# For each symbol to modify in prototype.diff
 LSP(operation="findReferences", filePath="<file>", line=<line>, character=<char>)
 LSP(operation="goToDefinition", filePath="<file>", line=<line>, character=<char>)
 
-# 对函数/方法，额外调用
+# For functions/methods, additional calls
 LSP(operation="incomingCalls", filePath="<file>", line=<line>, character=<char>)
 LSP(operation="outgoingCalls", filePath="<file>", line=<line>, character=<char>)
 ```
 
-**验证**：changes.md 必须包含 LSP 影响范围分析
+**Verification**: changes.md must contain LSP impact analysis
 
-### Step 3: 调用外部模型重构原型（🚨 必须执行）
+### Step 3: Invoke External Model to Refactor Prototype (🚨 Required)
 
-**🚨🚨🚨 这是关键步骤！**
+**🚨🚨🚨 This is the critical step!**
 
-**❌ 禁止行为：**
+**❌ Prohibited Actions:**
 
-- ❌ 使用 Bash 工具调用 codeagent-wrapper
-- ❌ 自己实施代码
-- ❌ 使用 Write/Edit 工具直接写代码
+- ❌ Using Bash tool to call codeagent-wrapper
+- ❌ Implementing code yourself
+- ❌ Using Write/Edit tool to directly write code
 
-**✅ 唯一正确做法：使用 Skill 工具**
+**✅ Only Correct Approach: Use Skill tool**
 
-**对于 Codex 模型（后端实施），立即执行：**
-
-```
-Skill(skill="codex-cli", args="--role architect --prompt '重构并完善原型代码。原型文件路径: ${RUN_DIR}/prototype-codex.diff。请先读取该文件，然后重构。要求: 1.调整为项目代码风格 2.精简冗余 3.补充类型定义 4.增强错误处理 5.修复安全漏洞。OUTPUT FORMAT: Unified Diff Patch + 变更说明'")
-```
-
-**对于 Gemini 模型（前端实施），立即执行：**
+**For Codex model (backend implementation), execute immediately:**
 
 ```
-Skill(skill="gemini-cli", args="--role frontend --prompt '重构并完善原型代码。原型文件路径: ${RUN_DIR}/prototype-gemini.diff。请先读取该文件，然后重构。要求: 1.调整为项目代码风格 2.优化组件结构 3.完善样式 4.确保响应式 5.增强可访问性。OUTPUT FORMAT: Unified Diff Patch + 变更说明'")
+Skill(skill="codex-cli", args="--role architect --prompt 'Refactor and improve prototype code. Prototype file path: ${RUN_DIR}/prototype-codex.diff. Please read that file first, then refactor. Requirements: 1.Adjust to project code style 2.Remove redundancy 3.Add type definitions 4.Enhance error handling 5.Fix security vulnerabilities. OUTPUT FORMAT: Unified Diff Patch + change notes'")
 ```
 
-**⚠️ 如果你发现自己在用 Bash/Write/Edit 写代码，立即停止并改用 Skill 工具！**
+**For Gemini model (frontend implementation), execute immediately:**
 
-### Step 4: 验证重构结果
+```
+Skill(skill="gemini-cli", args="--role frontend --prompt 'Refactor and improve prototype code. Prototype file path: ${RUN_DIR}/prototype-gemini.diff. Please read that file first, then refactor. Requirements: 1.Adjust to project code style 2.Optimize component structure 3.Improve styling 4.Ensure responsiveness 5.Enhance accessibility. OUTPUT FORMAT: Unified Diff Patch + change notes'")
+```
 
-外部模型返回重构后的 diff，Claude 进行验证：
+**⚠️ If you find yourself using Bash/Write/Edit to write code, stop immediately and use Skill tool instead!**
 
-| 检查项        | 动作       |
-| ------------- | ---------- |
-| diff 格式有效 | 确保可应用 |
-| 代码语法正确  | 语法检查   |
-| 类型定义完整  | 类型检查   |
-| 无安全漏洞    | 安全扫描   |
-| 符合项目规范  | 风格检查   |
+### Step 4: Verify Refactoring Results
 
-### Step 5: 应用变更
+External model returns refactored diff, Claude verifies:
+
+| Check Item          | Action            |
+| ------------------- | ----------------- |
+| Diff format valid   | Ensure applicable |
+| Code syntax correct | Syntax check      |
+| Type definitions    | Type check        |
+| No vulnerabilities  | Security scan     |
+| Follows standards   | Style check       |
+
+### Step 5: Apply Changes
 
 ```bash
-for each 文件变更 in 重构后的 diff:
-    读取目标文件
-    使用 Edit 工具应用变更
-    验证变更正确性
+for each file_change in refactored_diff:
+    Read target file
+    Use Edit tool to apply changes
+    Verify change correctness
 ```
 
-### Step 6: 验证
+### Step 6: Verification
 
 ```bash
-# 类型检查（如适用）
+# Type check (if applicable)
 if [ -f "tsconfig.json" ]; then
     npx tsc --noEmit
 fi
 
-# 语法检查（如适用）
+# Syntax check (if applicable)
 if [ -f "package.json" ]; then
     npm run lint 2>/dev/null || true
 fi
 ```
 
-### Step 7: 输出变更清单
+### Step 7: Output Change List
 
-将实施结果写入 `${run_dir}/changes-{model}.md`：
+Write implementation results to `${run_dir}/changes-{model}.md`:
 
 ```markdown
-# 代码实施报告 ({model})
+# Code Implementation Report ({model})
 
-## 实施概述
+## Implementation Overview
 
-- 基于原型: prototype-{model}.diff
-- 实施模型: {codex|gemini}
-- 实施时间: [timestamp]
-- 关注领域: {focus}
+- Based on prototype: prototype-{model}.diff
+- Implementation model: {codex|gemini}
+- Implementation time: [timestamp]
+- Focus area: {focus}
 
-## 变更清单
+## Change List
 
-### 新增文件
+### New Files
 
-| 文件       | 说明       | 行数 |
-| ---------- | ---------- | ---- |
-| src/new.ts | 新功能实现 | 50   |
+| File       | Description      | Lines |
+| ---------- | ---------------- | ----- |
+| src/new.ts | New feature impl | 50    |
 
-### 修改文件
+### Modified Files
 
-| 文件             | 变更类型 | 说明           |
-| ---------------- | -------- | -------------- |
-| src/foo.ts:20-35 | 新增方法 | 添加 newMethod |
-| src/bar.ts:10    | 修改导入 | 引入新依赖     |
+| File             | Change Type | Description      |
+| ---------------- | ----------- | ---------------- |
+| src/foo.ts:20-35 | New method  | Added newMethod  |
+| src/bar.ts:10    | Import      | Imported new dep |
 
-### 删除文件
+### Deleted Files
 
-无
+None
 
-## 重构说明
+## Refactoring Notes
 
-| 原型内容     | 重构调整         | 原因         |
-| ------------ | ---------------- | ------------ |
-| 直接抛出异常 | 包装为自定义错误 | 统一错误处理 |
-| any 类型     | 具体类型定义     | 类型安全     |
+| Prototype Content | Refactoring Change   | Reason                 |
+| ----------------- | -------------------- | ---------------------- |
+| Direct throw      | Custom error wrapper | Unified error handling |
+| any type          | Concrete type def    | Type safety            |
 
-## 验证结果
+## Verification Results
 
-- [x] 类型检查通过
-- [x] 语法检查通过
-- [ ] 单元测试（待运行）
+- [x] Type check passed
+- [x] Syntax check passed
+- [ ] Unit tests (pending)
 
 ---
 
-下一步: 调用 audit-reviewer 进行审计
+Next step: Invoke audit-reviewer for audit
 ```
 
-## 并行执行（后台模式）
+## Parallel Execution (Background Mode)
 
-支持双模型并行实施，由编排器使用 Task 工具协调：
+Supports dual-model parallel implementation, coordinated by orchestrator using Task tool:
 
 ```
-# 编排器中的调用
+# Orchestrator invocation
 Task(skill="code-implementer", args="run_dir=${RUN_DIR} model=codex focus=backend,api,logic", run_in_background=true) &
 Task(skill="code-implementer", args="run_dir=${RUN_DIR} model=gemini focus=frontend,ui,styles", run_in_background=true) &
 wait
-# 合并变更清单
+# Merge change lists
 ```
 
-输出文件:
+Output files:
 
-- `${run_dir}/changes-codex.md` (后端变更)
-- `${run_dir}/changes-gemini.md` (前端变更)
-- `${run_dir}/changes.md` (合并后)
+- `${run_dir}/changes-codex.md` (backend changes)
+- `${run_dir}/changes-gemini.md` (frontend changes)
+- `${run_dir}/changes.md` (merged)
 
-## 返回值
+## Return Value
 
-执行完成后，返回：
+Upon completion, return:
 
 ```
-代码实施完成（{model}）。
-输出文件: ${run_dir}/changes-{model}.md
-变更文件: X 个
-新增行数: +Y
-删除行数: -Z
+Code implementation complete ({model}).
+Output file: ${run_dir}/changes-{model}.md
+Files changed: X
+Lines added: +Y
+Lines deleted: -Z
 
-✅ 类型检查: 通过
-✅ 语法检查: 通过
+✅ Type check: Passed
+✅ Syntax check: Passed
 
-下一步: 使用 audit-reviewer 进行审计
+Next step: Use audit-reviewer for audit
 ```
 
-## 质量门控
+## Quality Gates
 
-- ✅ 🚨 修改前调用了 LSP（findReferences + goToDefinition）至少 3 次
-- ✅ changes.md 包含 LSP 影响范围分析
-- ✅ 所有变更已应用
-- ✅ 类型检查通过
-- ✅ 无破坏性变更（除非明确要求）
-- ✅ 代码风格符合项目规范
+- ✅ 🚨 Called LSP (findReferences + goToDefinition) at least 3 times before modification
+- ✅ changes.md contains LSP impact analysis
+- ✅ All changes applied
+- ✅ Type check passed
+- ✅ No breaking changes (unless explicitly required)
+- ✅ Code style follows project standards
 
-## 约束
+## Constraints
 
-- 不做需求分析（交给 multi-model-analyzer）
-- 不做原型生成（交给 prototype-generator）
-- 不做审计（交给 audit-reviewer）
-- 修改前必须用 LSP 确认影响范围
-- 每个变更必须可追溯（记录在 changes.md）
+- No requirements analysis (handled by multi-model-analyzer)
+- No prototype generation (handled by prototype-generator)
+- No audit (handled by audit-reviewer)
+- Must use LSP to confirm impact scope before modification
+- Each change must be traceable (recorded in changes.md)
 
-## 🚨 强制工具验证
+## 🚨 Mandatory Tool Verification
 
-**执行此 Skill 后，必须满足以下条件：**
+**After executing this Skill, the following conditions must be met:**
 
-| 检查项              | 要求 | 验证方式                            |
-| ------------------- | ---- | ----------------------------------- |
-| Skill 调用          | 必须 | 检查 codex-cli 或 gemini-cli 被调用 |
-| 外部模型输出        | 必须 | changes-{model}.md 包含重构结果     |
-| Claude 自行实施     | 禁止 | 不能跳过 Skill 直接写代码           |
-| 直接 Bash codeagent | 禁止 | 必须通过 Skill 工具调用             |
+| Check Item            | Requirement | Verification Method                  |
+| --------------------- | ----------- | ------------------------------------ |
+| Skill invocation      | Required    | Check codex-cli or gemini-cli called |
+| External model output | Required    | changes-{model}.md contains result   |
+| Claude self-impl      | Prohibited  | Cannot skip Skill and write code     |
+| Direct Bash codeagent | Prohibited  | Must invoke via Skill tool           |
 
-**如果没有调用 codex-cli 或 gemini-cli Skill，此 Skill 执行失败！**
+**If codex-cli or gemini-cli Skill was not invoked, this Skill execution fails!**

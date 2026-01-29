@@ -1,11 +1,11 @@
 ---
 name: context-retriever
 description: |
-  【触发条件】开发工作流第一步：检索与功能需求相关的上下文。
-  【核心产出】输出 ${run_dir}/context.md，包含内部代码 + 外部文档。
-  【不触发】直接分析（用 multi-model-analyzer）、代码生成（用 prototype-generator）。
-  【先问什么】需求描述模糊时，询问具体需要检索什么上下文
-  【强制工具】内部代码用 auggie-mcp + LSP，外部文档用 exa skill。
+  [Trigger] Dev workflow step 1: Retrieve context related to feature requirements.
+  [Output] Outputs ${run_dir}/context.md containing internal code + external documentation.
+  [Skip] Direct analysis (use multi-model-analyzer), code generation (use prototype-generator).
+  [Ask First] If requirement description is vague, ask what context to retrieve specifically
+  [Mandatory Tool] Internal code uses auggie-mcp + LSP, external docs use exa skill.
 allowed-tools:
   - Write
   - Skill
@@ -16,154 +16,157 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（由 orchestrator 传入）
+    description: Run directory path (passed by orchestrator)
 ---
 
-# Context Retriever - 上下文检索原子技能
+# Context Retriever - Context Retrieval Atomic Skill
 
-## 🚨 CRITICAL: 强制工具使用规则
+## 🚨 CRITICAL: Mandatory Tool Usage Rules
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  📦 内部代码检索（现有代码库）                                    │
-│     ✅ 必须使用: auggie-mcp → LSP                                │
-│     ❌ 禁止使用: Read, Grep, Glob                                │
+│  📦 Internal Code Retrieval (existing codebase)                  │
+│     ✅ Required: auggie-mcp → LSP                                │
+│     ❌ Prohibited: Read, Grep, Glob                              │
 │                                                                  │
-│  🌐 外部文档检索（涉及新技术/新项目时 必须执行）                   │
-│     ✅ 必须使用: Skill("exa") 调用 exa skill                     │
-│     ❌ 禁止使用: 直接 WebSearch/WebFetch                          │
-│     ❌ 禁止使用: 直接 Bash 调用 exa 脚本                          │
+│  🌐 External Doc Retrieval (when new tech/new project - Required)│
+│     ✅ Required: Skill("exa") to invoke exa skill                │
+│     ❌ Prohibited: Direct WebSearch/WebFetch                     │
+│     ❌ Prohibited: Direct Bash call to exa script                │
 │                                                                  │
-│  ⚠️  新项目/空代码库 → 必须调用 exa skill 获取外部文档！          │
-│      不能因为"没有内部代码"就跳过外部文档检索！                   │
+│  ⚠️  New project/empty codebase → Must call exa skill for       │
+│      external docs!                                              │
+│      Cannot skip external doc retrieval just because "no         │
+│      internal code"!                                             │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                                 | 触发条件        |
-| --------------------- | ------------------------------------ | --------------- |
-| `sequential-thinking` | 结构化检索策略，确保覆盖所有相关代码 | 🚨 每次执行必用 |
-| `auggie-mcp`          | 语义检索（首选）                     | 🚨 必须首先使用 |
+| MCP Tool              | Purpose                                         | Trigger      |
+| --------------------- | ----------------------------------------------- | ------------ |
+| `sequential-thinking` | Structured retrieval strategy for full coverage | 🚨 Required  |
+| `auggie-mcp`          | Semantic retrieval (preferred)                  | 🚨 Use first |
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化检索规划（sequential-thinking）
+### Step 0: Structured Retrieval Planning (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划检索策略**
+🚨 **Must first use sequential-thinking to plan retrieval strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划上下文检索策略。需要：1) 分析需求关键词 2) 确定检索范围 3) 选择检索方法 4) 规划符号分析 5) 规划证据收集",
+  thought: "Planning context retrieval strategy. Need: 1) Analyze requirement keywords 2) Determine retrieval scope 3) Select retrieval method 4) Plan symbol analysis 5) Plan evidence collection",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **需求关键词提取**：从功能需求提取搜索关键词
-2. **检索范围确定**：内部代码 vs 外部文档
-3. **检索方法选择**：auggie-mcp → LSP → exa
-4. **符号分析规划**：需要深入分析的关键符号
-5. **证据收集策略**：如何组织和记录发现
+1. **Keyword Extraction**: Extract search keywords from feature requirements
+2. **Scope Determination**: Internal code vs external docs
+3. **Method Selection**: auggie-mcp → LSP → exa
+4. **Symbol Analysis Planning**: Key symbols requiring deep analysis
+5. **Evidence Collection Strategy**: How to organize and record findings
 
-### Step 1: 判断检索类型
+### Step 1: Determine Retrieval Type
 
-根据功能需求判断需要哪种检索：
+Determine retrieval type based on feature requirements:
 
-| 场景              | 检索类型    | 工具             |
-| ----------------- | ----------- | ---------------- |
-| 修改/扩展现有功能 | 内部代码    | auggie-mcp + LSP |
-| 使用新技术/框架   | 外部文档    | exa skill        |
-| 两者结合（常见）  | 内部 + 外部 | 全部工具         |
-| 新项目/空代码库   | 仅外部文档  | exa skill        |
+| Scenario                   | Retrieval Type | Tools            |
+| -------------------------- | -------------- | ---------------- |
+| Modify/extend existing     | Internal code  | auggie-mcp + LSP |
+| Use new tech/framework     | External docs  | exa skill        |
+| Both (common)              | Internal + Ext | All tools        |
+| New project/empty codebase | External only  | exa skill        |
 
-### Step 2A: 内部代码检索（有代码库时必须执行）
+### Step 2A: Internal Code Retrieval (Required when codebase exists)
 
-**2A.1 语义检索**
+**2A.1 Semantic Retrieval**
 
 ```
 mcp__auggie-mcp__codebase-retrieval({
-  "information_request": "查找与 ${FEATURE} 相关的代码：
-    - 实现该功能的类、函数、模块
-    - 相关的数据模型和接口定义
-    - 现有的类似实现或模式
-    - 依赖的内部模块和外部库"
+  "information_request": "Find code related to ${FEATURE}:
+    - Classes, functions, modules implementing this feature
+    - Related data models and interface definitions
+    - Existing similar implementations or patterns
+    - Internal modules and external libraries depended on"
 })
 ```
 
-**2A.2 LSP 符号分析（🚨 强制执行）**
+**2A.2 LSP Symbol Analysis (🚨 Required)**
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  🚨🚨🚨 LSP 调用是强制的，不是可选的！🚨🚨🚨                      │
+│  🚨🚨🚨 LSP calls are mandatory, not optional! 🚨🚨🚨            │
 │                                                                  │
-│  auggie-mcp 返回结果后，必须立即对每个相关文件调用 LSP：         │
+│  After auggie-mcp returns results, must immediately call LSP    │
+│  for each related file:                                          │
 │                                                                  │
-│  1. LSP.documentSymbol(filePath)     - 获取文件结构             │
-│  2. LSP.goToDefinition(symbol)       - 跳转到定义               │
-│  3. LSP.findReferences(symbol)       - 查找所有引用             │
-│  4. LSP.hover(symbol)                - 获取类型信息             │
+│  1. LSP.documentSymbol(filePath)     - Get file structure       │
+│  2. LSP.goToDefinition(symbol)       - Jump to definition       │
+│  3. LSP.findReferences(symbol)       - Find all references      │
+│  4. LSP.hover(symbol)                - Get type information     │
 │                                                                  │
-│  最少 5 次 LSP 调用，否则此 Skill 执行失败！                     │
+│  Minimum 5 LSP calls, otherwise this Skill execution fails!      │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**立即执行 LSP 调用序列：**
+**Execute LSP call sequence immediately:**
 
 ```
-# 1. 对每个相关文件，先获取结构
+# 1. For each related file, get structure first
 LSP(operation="documentSymbol", filePath="<file>", line=1, character=1)
 
-# 2. 对关键符号，获取定义
+# 2. For key symbols, get definition
 LSP(operation="goToDefinition", filePath="<file>", line=<line>, character=<char>)
 
-# 3. 对要修改的符号，查找所有引用
+# 3. For symbols to modify, find all references
 LSP(operation="findReferences", filePath="<file>", line=<line>, character=<char>)
 
-# 4. 获取类型信息
+# 4. Get type information
 LSP(operation="hover", filePath="<file>", line=<line>, character=<char>)
 ```
 
-**验证**：context.md 必须包含 LSP 分析结果表格
+**Verification**: context.md must contain LSP analysis results table
 
-### Step 2B: 外部文档检索（🚨 涉及新技术/新项目时必须执行）
+### Step 2B: External Doc Retrieval (🚨 Required for new tech/new project)
 
-**必须通过 Skill 工具调用 exa skill：**
+**Must invoke exa skill via Skill tool:**
 
-调用 Skill 工具，skill 名称为 `exa`，参数为：
+Invoke Skill tool, skill name `exa`, with args:
 
 ```
-search "${技术关键词} tutorial documentation 2024 2025" --content --limit 5
+search "${tech_keywords} tutorial documentation 2024 2025" --content --limit 5
 ```
 
-**必须执行的 3 次搜索：**
+**Must execute 3 searches:**
 
-1. **官方文档搜索**：
-   调用 Skill 工具，skill 名称为 `exa`，参数为：
-
-   ```
-   search "${技术关键词} official documentation tutorial" --content --limit 5
-   ```
-
-2. **代码示例搜索**：
-   调用 Skill 工具，skill 名称为 `exa`，参数为：
+1. **Official docs search**:
+   Invoke Skill tool, skill name `exa`, with args:
 
    ```
-   search "${技术关键词} example code implementation" --content --category github --limit 5
+   search "${tech_keywords} official documentation tutorial" --content --limit 5
    ```
 
-3. **最佳实践搜索**：
-   调用 Skill 工具，skill 名称为 `exa`，参数为：
+2. **Code examples search**:
+   Invoke Skill tool, skill name `exa`, with args:
+
    ```
-   search "${技术关键词} best practices production" --content --limit 3
+   search "${tech_keywords} example code implementation" --content --category github --limit 5
    ```
 
-**典型搜索示例（macOS 语音识别）：**
+3. **Best practices search**:
+   Invoke Skill tool, skill name `exa`, with args:
+   ```
+   search "${tech_keywords} best practices production" --content --limit 3
+   ```
+
+**Typical search example (macOS speech recognition):**
 
 ```
 Skill("exa", "search 'SFSpeechRecognizer macOS Swift tutorial 2024' --content --limit 5")
@@ -171,135 +174,135 @@ Skill("exa", "search 'Speech framework macOS example github' --content --categor
 Skill("exa", "search 'macOS speech recognition best practices' --content --limit 3")
 ```
 
-> **注意**：需要设置 `EXA_API_KEY` 环境变量
+> **Note**: Requires `EXA_API_KEY` environment variable
 
-**🚨 强制验证**：如果是新项目或涉及新技术，必须调用 exa skill 至少 2 次，否则此 Skill 执行失败！
+**🚨 Mandatory Verification**: For new project or new tech, must call exa skill at least 2 times, otherwise this Skill execution fails!
 
-### Step 3: 结构化输出
+### Step 3: Structured Output
 
-将检索结果写入 `${run_dir}/context.md`：
+Write retrieval results to `${run_dir}/context.md`:
 
 ```markdown
-# 上下文检索报告
+# Context Retrieval Report
 
-## 检索方法验证
+## Retrieval Method Verification
 
-### 内部代码检索
+### Internal Code Retrieval
 
-- [x] auggie-mcp 语义检索
-- [x] LSP.documentSymbol 分析
-- [x] LSP.goToDefinition 定位
-- [x] LSP.findReferences 引用
+- [x] auggie-mcp semantic retrieval
+- [x] LSP.documentSymbol analysis
+- [x] LSP.goToDefinition location
+- [x] LSP.findReferences references
 
-### 外部文档检索
+### External Doc Retrieval
 
-- [x] exa search 官方文档
-- [x] exa search 代码示例
-- [x] exa search 最佳实践
+- [x] exa search official docs
+- [x] exa search code examples
+- [x] exa search best practices
 
-## 需求概述
+## Requirements Overview
 
-[功能需求一句话描述]
+[One sentence feature requirement description]
 
-## 内部代码（来自 auggie-mcp + LSP）
+## Internal Code (from auggie-mcp + LSP)
 
-### 相关文件
+### Related Files
 
-| 文件路径 | 相关度 | 关键符号 | 说明     |
-| -------- | ------ | -------- | -------- |
-| src/...  | 高     | FooClass | 核心实现 |
+| File Path | Relevance | Key Symbols | Notes     |
+| --------- | --------- | ----------- | --------- |
+| src/...   | High      | FooClass    | Core impl |
 
-### 符号分析
+### Symbol Analysis
 
-| 符号名 | 位置            | 引用次数 | 说明   |
-| ------ | --------------- | -------- | ------ |
-| Foo    | src/foo.ts:10:1 | 15       | 核心类 |
+| Symbol | Location        | References | Notes      |
+| ------ | --------------- | ---------- | ---------- |
+| Foo    | src/foo.ts:10:1 | 15         | Core class |
 
-## 外部文档（来自 exa）
+## External Docs (from exa)
 
-### 官方文档
+### Official Documentation
 
-| 来源            | 标题               | URL         | 关键内容摘要     |
-| --------------- | ------------------ | ----------- | ---------------- |
-| Apple Developer | SFSpeechRecognizer | https://... | 语音识别核心 API |
+| Source          | Title              | URL         | Key Content Summary    |
+| --------------- | ------------------ | ----------- | ---------------------- |
+| Apple Developer | SFSpeechRecognizer | https://... | Speech recognition API |
 
-### 代码示例
+### Code Examples
 
-| 来源   | 标题        | URL         | 关键代码片段 |
-| ------ | ----------- | ----------- | ------------ |
-| GitHub | speech-demo | https://... | 完整实现示例 |
+| Source | Title       | URL         | Key Code Snippet |
+| ------ | ----------- | ----------- | ---------------- |
+| GitHub | speech-demo | https://... | Complete impl    |
 
-### 最佳实践
+### Best Practices
 
-- [实践1]: 描述 "来源: URL"
-- [实践2]: 描述 "来源: URL"
+- [Practice 1]: Description "Source: URL"
+- [Practice 2]: Description "Source: URL"
 
-## 架构模式
+## Architecture Patterns
 
-- 当前架构: [识别的架构模式]
-- 推荐模式: [来自外部文档的建议]
+- Current architecture: [Identified patterns]
+- Recommended patterns: [From external docs]
 
-## 依赖分析
+## Dependency Analysis
 
-| 依赖             | 类型     | 来源   | 用途     |
-| ---------------- | -------- | ------ | -------- |
-| Speech.framework | 系统框架 | Apple  | 语音识别 |
-| ./utils          | 内部模块 | 代码库 | 通用工具 |
+| Dependency       | Type     | Source   | Purpose            |
+| ---------------- | -------- | -------- | ------------------ |
+| Speech.framework | System   | Apple    | Speech recognition |
+| ./utils          | Internal | Codebase | Utilities          |
 
 ---
 
-检索时间: [timestamp]
-下一步: 调用 multi-model-analyzer 进行分析
+Retrieval time: [timestamp]
+Next step: Invoke multi-model-analyzer for analysis
 ```
 
 ---
 
-## 质量门控
+## Quality Gates
 
-### 工具使用验证
+### Tool Usage Verification
 
-**内部代码（有代码库时）：**
+**Internal code (when codebase exists):**
 
-- [ ] 调用了 `mcp__auggie-mcp__codebase-retrieval` 至少 1 次
-- [ ] 🚨 调用了 LSP 操作**至少 5 次**（documentSymbol + goToDefinition + findReferences + hover）
-- [ ] context.md 包含 LSP 分析结果表格
-- [ ] **没有**使用 Read/Grep/Glob 读取源代码
+- [ ] Called `mcp__auggie-mcp__codebase-retrieval` at least 1 time
+- [ ] 🚨 Called LSP operations **at least 5 times** (documentSymbol + goToDefinition + findReferences + hover)
+- [ ] context.md contains LSP analysis results table
+- [ ] Did **NOT** use Read/Grep/Glob to read source code
 
-**外部文档（涉及新技术或新项目时 - 🚨必须执行）：**
+**External docs (for new tech or new project - 🚨 Required):**
 
-- [ ] 通过 Skill 工具调用了 exa skill 至少 2 次
-- [ ] 获取了官方文档链接
-- [ ] 获取了代码示例
-- [ ] **没有**直接使用 Bash 调用 exa 脚本
-- [ ] **没有**跳过外部文档检索
+- [ ] Invoked exa skill via Skill tool at least 2 times
+- [ ] Retrieved official doc links
+- [ ] Retrieved code examples
+- [ ] Did **NOT** directly call exa script via Bash
+- [ ] Did **NOT** skip external doc retrieval
 
-### 产出质量验证
+### Output Quality Verification
 
-- [ ] 内部：识别了相关文件和符号
-- [ ] 外部：获取了最新文档和示例
-- [ ] 分析了依赖关系
-- [ ] 评估了技术可行性
+- [ ] Internal: Identified related files and symbols
+- [ ] External: Retrieved latest docs and examples
+- [ ] Analyzed dependency relationships
+- [ ] Evaluated technical feasibility
 
 ---
 
-## 约束
+## Constraints
 
-- 不做方案分析（交给 multi-model-analyzer）
-- 不生成代码（交给 prototype-generator）
-- **内部代码禁止跳过 auggie-mcp/LSP 直接读文件**
-- **外部文档必须用 Skill("exa") 调用，不要直接 Bash 或 WebSearch**
-- **新项目/空代码库时，必须调用 exa skill 获取外部文档**
+- No plan analysis (handled by multi-model-analyzer)
+- No code generation (handled by prototype-generator)
+- **Internal code: Prohibited skipping auggie-mcp/LSP and reading files directly**
+- **External docs: Must use Skill("exa") to invoke, no direct Bash or WebSearch**
+- **For new project/empty codebase: Must call exa skill for external docs**
 
-## 🚨 强制工具验证
+## 🚨 Mandatory Tool Verification
 
-**执行此 Skill 后，必须满足以下条件：**
+**After executing this Skill, the following conditions must be met:**
 
-| 检查项             | 要求                    | 验证方式                    |
-| ------------------ | ----------------------- | --------------------------- |
-| 内部检索           | auggie-mcp 至少 1 次    | 检查 MCP 调用记录           |
-| LSP 分析           | 至少 3 次操作           | 检查 LSP 调用记录           |
-| 外部文档（新项目） | Skill("exa") 至少 2 次  | 检查 Skill 调用记录         |
-| 直接 Bash exa      | 禁止                    | 不能直接调用 exa_exec.ts    |
-| 跳过外部检索       | 禁止（新项目/新技术时） | context.md 必须有外部文档段 |
+| Check Item               | Requirement                   | Verification Method              |
+| ------------------------ | ----------------------------- | -------------------------------- |
+| Internal retrieval       | auggie-mcp at least 1 time    | Check MCP call records           |
+| LSP analysis             | At least 3 operations         | Check LSP call records           |
+| External docs (new proj) | Skill("exa") at least 2 times | Check Skill call records         |
+| Direct Bash exa          | Prohibited                    | Cannot directly call exa_exec.ts |
+| Skip external retrieval  | Prohibited (new tech/proj)    | context.md must have ext docs    |
 
-**如果是新项目且没有调用 exa skill，此 Skill 执行失败！**
+**If it's a new project and exa skill was not invoked, this Skill execution fails!**

@@ -1,11 +1,11 @@
 ---
 name: gemini-thinker
 description: |
-  【触发条件】thinking 工作流 Phase 3：使用 Gemini Deep Think 进行深度推理
-  【核心产出】输出 ${run_dir}/gemini-thought.md，包含 Gemini 的推理过程和结论
-  【不触发】Light 模式（除非指定 --parallel）
-  【先问什么】无需询问，自动执行
-  【🚨 强制】必须使用 codeagent-wrapper gemini 命令
+  [Trigger] Thinking workflow Phase 3: Use Gemini Deep Think for deep reasoning
+  [Output] Outputs ${run_dir}/gemini-thought.md containing Gemini's reasoning process and conclusions
+  [Skip] Light mode (unless --parallel is specified)
+  [Ask First] No need to ask, automatically executes
+  [🚨 Mandatory] Must use codeagent-wrapper gemini command
 allowed-tools:
   - Read
   - Write
@@ -15,235 +15,235 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径
+    description: Run directory path
   - name: level
     type: string
     required: true
-    description: 思考深度 (medium/high)
+    description: Thinking depth (medium/high)
 ---
 
-# Gemini Thinker - Gemini 推理原子技能
+# Gemini Thinker - Gemini Reasoning Atomic Skill
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                         | 触发条件        |
-| --------------------- | ---------------------------- | --------------- |
-| `sequential-thinking` | 规划推理策略，结构化输出处理 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                                    | Trigger              |
+| --------------------- | ------------------------------------------ | -------------------- |
+| `sequential-thinking` | Plan reasoning strategy, structured output | 🚨 Required per exec |
 
-## 外部工具集成
+## External Tool Integration
 
-| 外部工具            | 用途                   | 触发条件              |
-| ------------------- | ---------------------- | --------------------- |
-| `codeagent-wrapper` | 调用 Gemini Deep Think | 🚨 核心执行，不可跳过 |
+| External Tool       | Purpose                | Trigger                     |
+| ------------------- | ---------------------- | --------------------------- |
+| `codeagent-wrapper` | Call Gemini Deep Think | 🚨 Core execution, required |
 
-## 职责边界
+## Responsibility Boundary
 
-- **输入**: 用户问题（从 `${run_dir}/input.md` 读取）
-- **输出**: `${run_dir}/gemini-thought.md`
-- **核心能力**: 创意视角、并行思考流、用户体验分析
-- **写入范围**: 仅允许写入 `${run_dir}`（位于 OpenSpec 产物目录），禁止修改项目业务代码与其他 OpenSpec 规范
+- **Input**: User question (read from `${run_dir}/input.md`)
+- **Output**: `${run_dir}/gemini-thought.md`
+- **Core Capability**: Creative perspectives, parallel thinking streams, user experience analysis
+- **Write Scope**: Only allowed to write to `${run_dir}` (in OpenSpec artifacts directory), prohibited from modifying project business code and other OpenSpec specifications
 
 ---
 
-## 🚨 CRITICAL: 强制工具使用规则
+## 🚨 CRITICAL: Mandatory Tool Usage Rules
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  🤖 Gemini Deep Think                                            │
-│     ✅ 必须使用: ~/.claude/bin/codeagent-wrapper gemini         │
-│     ✅ 必须使用: mcp__sequential-thinking__sequentialthinking   │
-│     ❌ 禁止行为: 自己模拟 Gemini 输出、跳过 Bash 命令           │
+│     ✅ Required: ~/.claude/bin/codeagent-wrapper gemini         │
+│     ✅ Required: mcp__sequential-thinking__sequentialthinking   │
+│     ❌ Prohibited: Simulating Gemini output, skipping Bash cmd  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Gemini Deep Think 模式说明
+## Gemini Deep Think Mode Description
 
-| Level  | 配置                   | 特性                 | Token 预算 |
-| ------ | ---------------------- | -------------------- | ---------- |
-| medium | thinking_level: medium | 平衡模式，适度深度   | ~16k       |
-| high   | thinking_level: high   | 最大深度，并行思考流 | ~32k       |
+| Level  | Config                 | Features                        | Token Budget |
+| ------ | ---------------------- | ------------------------------- | ------------ |
+| medium | thinking_level: medium | Balanced mode, moderate depth   | ~16k         |
+| high   | thinking_level: high   | Maximum depth, parallel streams | ~32k         |
 
-**Gemini 独特能力**：
+**Gemini Unique Capabilities**:
 
-- **并行思考流**: 同时生成多个想法并综合
-- **多视角分析**: 从不同角度审视问题
-- **创意生成**: 擅长非常规解决方案
+- **Parallel Thinking Streams**: Generate multiple ideas simultaneously and synthesize
+- **Multi-perspective Analysis**: Examine problems from different angles
+- **Creative Generation**: Excels at unconventional solutions
 
 ---
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化推理规划（sequential-thinking）
+### Step 0: Structured Reasoning Planning (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划推理策略**
+🚨 **Must first use sequential-thinking to plan reasoning strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划 Gemini 推理策略。需要：1) 读取问题 2) 构建 Gemini 提示词 3) 执行 codeagent-wrapper 4) 解析输出 5) 格式化保存",
+  thought: "Planning Gemini reasoning strategy. Need: 1) Read question 2) Build Gemini prompt 3) Execute codeagent-wrapper 4) Parse output 5) Format and save",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **问题读取**：获取原始问题内容
-2. **提示词构建**：根据 level 选择提示词模板
-3. **Gemini 执行**：调用 codeagent-wrapper gemini
-4. **输出解析**：提取并行思考流和综合结论
-5. **格式化保存**：写入 gemini-thought.md
+1. **Question Reading**: Get original question content
+2. **Prompt Building**: Select prompt template based on level
+3. **Gemini Execution**: Call codeagent-wrapper gemini
+4. **Output Parsing**: Extract parallel thinking streams and synthesized conclusions
+5. **Format and Save**: Write to gemini-thought.md
 
-### Step 1: 读取问题
+### Step 1: Read Question
 
 ```
 Read("${run_dir}/input.md")
 ```
 
-### Step 2: 调用 Gemini Deep Think
+### Step 2: Call Gemini Deep Think
 
-**Medium Level**：
-
-```bash
-~/.claude/bin/codeagent-wrapper gemini --prompt "
-你是一位富有创意的问题解决专家。请对以下问题进行多角度深度分析：
-
-问题：${QUESTION}
-
-只输出分析结论，禁止生成代码/补丁或修改任何项目文件。
-
-请从以下视角进行思考：
-
-## 视角 1：常规分析
-- 标准解决方案是什么？
-- 主流做法的优缺点
-
-## 视角 2：用户体验
-- 用户真正的需求是什么？
-- 如何优化体验？
-
-## 视角 3：创新思考
-- 有没有非常规的解决方案？
-- 可以借鉴其他领域的什么经验？
-
-请综合以上视角，给出你的分析和建议。
-"
-```
-
-**High Level（Deep Think 模式）**：
+**Medium Level**:
 
 ```bash
 ~/.claude/bin/codeagent-wrapper gemini --prompt "
-你是一位顶级创新顾问，拥有跨领域的深度知识。请使用并行思考方法对以下复杂问题进行全面分析：
+You are a creative problem-solving expert. Please perform multi-angle deep analysis on the following question:
 
-问题：${QUESTION}
+Question: ${QUESTION}
 
-只输出分析结论，禁止生成代码/补丁或修改任何项目文件。
+Only output analysis conclusions, do not generate code/patches or modify any project files.
 
-请启动并行思考流，同时从以下 5 个维度进行深度分析：
+Please think from the following perspectives:
 
-## 思考流 1：问题本质
-- 这个问题的本质是什么？
-- 表面需求和深层需求的区别
-- 问题的边界在哪里？
+## Perspective 1: Conventional Analysis
+- What is the standard solution?
+- Pros and cons of mainstream approaches
 
-## 思考流 2：现有方案审视
-- 业界常见做法
-- 这些做法的局限性
-- 为什么现有方案可能不够好
+## Perspective 2: User Experience
+- What does the user really need?
+- How to optimize the experience?
 
-## 思考流 3：创新可能性
-- 从其他行业借鉴的灵感
-- 反直觉的解决方案
-- 如果没有任何限制会怎么做
+## Perspective 3: Innovative Thinking
+- Are there unconventional solutions?
+- What experience can be borrowed from other fields?
 
-## 思考流 4：实践考量
-- 实施的可行性分析
-- 资源和时间约束
-- 风险与回报平衡
-
-## 思考流 5：长期影响
-- 对用户的长期价值
-- 可扩展性和可维护性
-- 未来演进路径
-
-请综合 5 个思考流的结果，识别共识点和分歧点，给出综合建议。
+Please synthesize the above perspectives and provide your analysis and recommendations.
 "
 ```
 
-### Step 3: 解析并保存结果
+**High Level (Deep Think Mode)**:
 
-**输出路径**：`${run_dir}/gemini-thought.md`
+```bash
+~/.claude/bin/codeagent-wrapper gemini --prompt "
+You are a top-tier innovation consultant with deep knowledge across domains. Please use parallel thinking to comprehensively analyze the following complex question:
 
-**文档模板**：
+Question: ${QUESTION}
+
+Only output analysis conclusions, do not generate code/patches or modify any project files.
+
+Please initiate parallel thinking streams, analyzing deeply from the following 5 dimensions simultaneously:
+
+## Thinking Stream 1: Problem Essence
+- What is the essence of this problem?
+- Difference between surface needs and deep needs
+- Where are the problem boundaries?
+
+## Thinking Stream 2: Existing Solution Review
+- Common industry practices
+- Limitations of these practices
+- Why existing solutions may not be good enough
+
+## Thinking Stream 3: Innovation Possibilities
+- Inspiration borrowed from other industries
+- Counter-intuitive solutions
+- What would you do without any constraints
+
+## Thinking Stream 4: Practical Considerations
+- Implementation feasibility analysis
+- Resource and time constraints
+- Risk and reward balance
+
+## Thinking Stream 5: Long-term Impact
+- Long-term value to users
+- Scalability and maintainability
+- Future evolution path
+
+Please synthesize results from 5 thinking streams, identify consensus and divergence points, and provide comprehensive recommendations.
+"
+```
+
+### Step 3: Parse and Save Results
+
+**Output Path**: `${run_dir}/gemini-thought.md`
+
+**Document Template**:
 
 ```markdown
 ---
-generated_at: { ISO 8601 时间戳 }
+generated_at: { ISO 8601 timestamp }
 model: gemini-cli
 level: { medium / high }
-session_id: { Gemini 会话 ID }
+session_id: { Gemini session ID }
 ---
 
-# Gemini 推理输出
+# Gemini Reasoning Output
 
-## 问题原文
+## Original Question
 
-{问题内容}
+{Question content}
 
-## 推理配置
+## Reasoning Configuration
 
-- **思考深度**: { medium / high }
-- **模型**: Gemini 2.5 Deep Think
-- **执行时间**: { 秒数 }s
-- **并行流数量**: { 3 / 5 }
+- **Thinking Depth**: { medium / high }
+- **Model**: Gemini 2.5 Deep Think
+- **Execution Time**: { seconds }s
+- **Parallel Stream Count**: { 3 / 5 }
 
-## 多视角分析
+## Multi-perspective Analysis
 
-### 视角/思考流 1: {名称}
+### Perspective/Thinking Stream 1: {Name}
 
-{分析内容}
+{Analysis content}
 
-### 视角/思考流 2: {名称}
+### Perspective/Thinking Stream 2: {Name}
 
-{分析内容}
+{Analysis content}
 
-### 视角/思考流 3: {名称}
+### Perspective/Thinking Stream 3: {Name}
 
-{分析内容}
+{Analysis content}
 
-{... 更多视角 ...}
+{... more perspectives ...}
 
-## 综合分析
+## Synthesized Analysis
 
-### 共识点
+### Consensus Points
 
-{各视角一致的结论}
+{Consistent conclusions across perspectives}
 
-### 分歧点
+### Divergence Points
 
-{各视角不同的观点及原因}
+{Different viewpoints across perspectives and reasons}
 
-### 创新亮点
+### Innovative Highlights
 
-{非常规的发现或建议}
+{Unconventional findings or recommendations}
 
-## 核心结论
+## Core Conclusions
 
-{Gemini 的核心结论}
+{Gemini's core conclusions}
 
-## 置信度评估
+## Confidence Assessment
 
-- **整体置信度**: { 高 / 中 / 低 }
-- **最高置信视角**: { 视角名称 }
-- **需要进一步探索**: { 列表 }
+- **Overall Confidence**: { High / Medium / Low }
+- **Highest Confidence Perspective**: { perspective name }
+- **Needs Further Exploration**: { list }
 
-## 原始输出
+## Raw Output
 ```
 
-{Gemini 原始返回内容}
+{Gemini raw return content}
 
 ```
 
@@ -251,47 +251,47 @@ session_id: { Gemini 会话 ID }
 
 ---
 
-## 错误处理
+## Error Handling
 
-### Gemini 调用失败
+### Gemini Call Failure
 
 ```bash
-# 重试一次
+# Retry once
 ~/.claude/bin/codeagent-wrapper gemini --prompt "..." --retry
 
-# 如果仍然失败，记录错误并继续
-echo "Gemini 调用失败: ${ERROR}" > "${run_dir}/gemini-thought.md"
+# If still fails, record error and continue
+echo "Gemini call failed: ${ERROR}" > "${run_dir}/gemini-thought.md"
 ```
 
-### 超时处理
+### Timeout Handling
 
 ```bash
-# 设置超时（high level 3 分钟，medium level 1.5 分钟）
+# Set timeout (high level 3 minutes, medium level 1.5 minutes)
 timeout ${TIMEOUT}s ~/.claude/bin/codeagent-wrapper gemini --prompt "..."
 ```
 
 ---
 
-## 质量门控
+## Quality Gates
 
-### 工具使用验证
+### Tool Usage Verification
 
-- [ ] 调用了 `mcp__sequential-thinking__sequentialthinking` 至少 1 次
-- [ ] 调用了 `codeagent-wrapper gemini` 命令
-- [ ] 产出 gemini-thought.md 文件
+- [ ] Called `mcp__sequential-thinking__sequentialthinking` at least 1 time
+- [ ] Called `codeagent-wrapper gemini` command
+- [ ] Produced gemini-thought.md file
 
-### 产出质量验证
+### Output Quality Verification
 
-- [ ] 包含多视角分析
-- [ ] 包含综合分析
-- [ ] 包含核心结论
-- [ ] 原始输出已保存
+- [ ] Contains multi-perspective analysis
+- [ ] Contains synthesized analysis
+- [ ] Contains core conclusions
+- [ ] Raw output saved
 
 ---
 
-## 返回值
+## Return Value
 
-成功时返回：
+On success, return:
 
 ```json
 {
@@ -301,28 +301,28 @@ timeout ${TIMEOUT}s ~/.claude/bin/codeagent-wrapper gemini --prompt "..."
   "execution_time": 38.5,
   "parallel_streams": 5,
   "confidence": "high",
-  "innovative_insights": ["洞察 1", "洞察 2"]
+  "innovative_insights": ["Insight 1", "Insight 2"]
 }
 ```
 
-失败时返回：
+On failure, return:
 
 ```json
 {
   "status": "error",
   "error_type": "api_error",
-  "message": "Gemini API 调用失败",
-  "fallback": "继续使用其他模型结果"
+  "message": "Gemini API call failed",
+  "fallback": "Continue using other model results"
 }
 ```
 
 ---
 
-## 约束
+## Constraints
 
-- 必须使用 codeagent-wrapper gemini 命令
-- 必须使用 sequential-thinking 规划执行策略
-- 必须保存原始输出
-- 超时后不阻塞工作流
-- 保留并行思考流的结构
-- high level 最大等待 3 分钟
+- Must use codeagent-wrapper gemini command
+- Must use sequential-thinking to plan execution strategy
+- Must save raw output
+- Do not block workflow after timeout
+- Preserve parallel thinking stream structure
+- High level maximum wait 3 minutes

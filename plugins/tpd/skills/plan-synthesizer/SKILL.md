@@ -1,9 +1,9 @@
 ---
 name: plan-synthesizer
 description: |
-  【触发条件】plan 工作流第六步：整合所有产物生成最终计划
-  【核心产出】输出 ${run_dir}/plan.md（包含 OpenSpec 约束与 PBT 属性）
-  【硬停止】必须等待用户批准
+  [Trigger] Plan workflow Step 6: Integrate all artifacts to generate final plan
+  [Output] Outputs ${run_dir}/plan.md (contains OpenSpec constraints and PBT properties)
+  [Hard Stop] Must wait for user approval
 allowed-tools:
   - Read
   - Write
@@ -12,51 +12,51 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（由 orchestrator 传入）
+    description: Run directory path (passed by orchestrator)
 ---
 
-# Plan Synthesizer - 计划整合原子技能
+# Plan Synthesizer - Plan Integration Atomic Skill
 
-## 职责边界
+## Responsibility Boundary
 
-- **输入**: `run_dir` + 所有前置产物（含 OpenSpec 提案与约束）
-- **输出**: `${run_dir}/plan.md`
-- **单一职责**: 只做计划整合，不做新的分析
+- **Input**: `run_dir` + all prerequisite artifacts (including OpenSpec proposal and constraints)
+- **Output**: `${run_dir}/plan.md`
+- **Single Responsibility**: Only do plan integration, no new analysis
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                         | 触发条件        |
-| --------------------- | ---------------------------- | --------------- |
-| `sequential-thinking` | 结构化计划整合，确保信息完整 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                     | Trigger              |
+| --------------------- | --------------------------- | -------------------- |
+| `sequential-thinking` | Structured plan integration | 🚨 Required per exec |
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化整合规划（sequential-thinking）
+### Step 0: Structured Integration Planning (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划整合策略**
+🚨 **Must first use sequential-thinking to plan integration strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划计划整合策略。需要：1) 读取所有产物 2) 提取关键摘要 3) 验证一致性 4) 生成执行摘要 5) 构建路线图",
+  thought: "Planning plan integration strategy. Need: 1) Read all artifacts 2) Extract key summaries 3) Verify consistency 4) Generate executive summary 5) Build roadmap",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **产物完整性验证**：确认所有前置文件存在
-2. **关键信息提取**：从每个产物提取核心内容
-3. **一致性检查**：验证需求/架构/任务/风险之间的一致性
-4. **摘要生成**：生成简洁的执行摘要
-5. **路线图构建**：整合里程碑和关键路径
+1. **Artifact Completeness Verification**: Confirm all prerequisite files exist
+2. **Key Information Extraction**: Extract core content from each artifact
+3. **Consistency Check**: Verify consistency between requirements/architecture/tasks/risks
+4. **Summary Generation**: Generate concise executive summary
+5. **Roadmap Construction**: Integrate milestones and critical path
 
-### Step 1: 读取所有产物
+### Step 1: Read All Artifacts
 
 ```bash
 INPUT=$(cat "${run_dir}/input.md")
-REQUIREMENTS=$(cat "${run_dir}/requirements.md")  # 如缺失，用 proposal.md 替代
+REQUIREMENTS=$(cat "${run_dir}/requirements.md")  # If missing, use proposal.md instead
 PROPOSAL=$(cat "${run_dir}/proposal.md")
 CONSTRAINTS=$(cat "${run_dir}/constraints.md")
 PBT=$(cat "${run_dir}/pbt.md")
@@ -67,303 +67,303 @@ RISKS=$(cat "${run_dir}/risks.md")
 AMBIGUITIES=$(cat "${run_dir}/ambiguities.md")
 ```
 
-### Step 2: 提取摘要
+### Step 2: Extract Summaries
 
-从每个产物中提取关键信息：
+Extract key information from each artifact:
 
-| 产物            | 提取内容                     |
-| --------------- | ---------------------------- |
-| proposal.md     | 提案摘要、目标与非目标       |
-| constraints.md  | 约束与明确决策               |
-| pbt.md          | 不变式与反例策略             |
-| requirements.md | 核心需求、任务类型、验收标准 |
-| context.md      | 关键文件、技术栈、依赖       |
-| architecture.md | 架构决策、API 设计、组件结构 |
-| tasks.md        | 任务数量、关键路径、里程碑   |
-| risks.md        | 高风险、必要缓解措施         |
+| Artifact        | Extracted Content                                       |
+| --------------- | ------------------------------------------------------- |
+| proposal.md     | Proposal summary, goals and non-goals                   |
+| constraints.md  | Constraints and explicit decisions                      |
+| pbt.md          | Invariants and falsification strategies                 |
+| requirements.md | Core requirements, task type, acceptance criteria       |
+| context.md      | Key files, tech stack, dependencies                     |
+| architecture.md | Architecture decisions, API design, component structure |
+| tasks.md        | Task count, critical path, milestones                   |
+| risks.md        | High risks, required mitigations                        |
 
-### Step 3: 提取提案 ID
+### Step 3: Extract Proposal ID
 
 ```bash
 PROPOSAL_ID=$(jq -r '.proposal_id // empty' "${run_dir}/state.json")
 ```
 
-### Step 4: 计算预估
+### Step 4: Calculate Estimates
 
-汇总任务复杂度：
+Summarize task complexity:
 
-| 复杂度 | 基准 | 任务数 | 小计 |
-| ------ | ---- | ------ | ---- |
-| 1/5    | -    | X      | -    |
-| 2/5    | -    | Y      | -    |
-| 3/5    | -    | Z      | -    |
-| 4/5    | -    | W      | -    |
-| 5/5    | -    | V      | -    |
+| Complexity | Baseline | Task Count | Subtotal |
+| ---------- | -------- | ---------- | -------- |
+| 1/5        | -        | X          | -        |
+| 2/5        | -        | Y          | -        |
+| 3/5        | -        | Z          | -        |
+| 4/5        | -        | W          | -        |
+| 5/5        | -        | V          | -        |
 
-### Step 5: 评估风险等级
+### Step 5: Assess Risk Level
 
-| 条件           | 整体风险等级 |
-| -------------- | ------------ |
-| 有 HIGH 风险   | 高           |
-| 有 MEDIUM 风险 | 中           |
-| 仅 LOW 风险    | 低           |
+| Condition        | Overall Risk Level |
+| ---------------- | ------------------ |
+| Has HIGH risks   | High               |
+| Has MEDIUM risks | Medium             |
+| Only LOW risks   | Low                |
 
-### Step 6: 结构化输出
+### Step 6: Structured Output
 
-将整合结果写入 `${run_dir}/plan.md`：
+Write integration results to `${run_dir}/plan.md`:
 
 ```markdown
-# 开发实施计划
+# Development Implementation Plan
 
-## 元信息
+## Metadata
 
-| 属性     | 值                             |
-| -------- | ------------------------------ |
-| 提案 ID  | [PROPOSAL_ID]                   |
-| 生成时间 | [timestamp]                    |
-| 任务类型 | [frontend\|backend\|fullstack] |
-| 总任务数 | [count]                        |
-| 风险等级 | [低\|中\|高]                   |
-
----
-
-## 执行摘要
-
-### 需求概述
-
-[从 requirements.md 提取的一段话描述]
-
-### 技术方案
-
-[从 architecture.md 提取的一段话描述]
-
-### 关键风险
-
-| 风险    | 等级   | 缓解措施 |
-| ------- | ------ | -------- |
-| [风险1] | HIGH   | [措施]   |
-| [风险2] | MEDIUM | [措施]   |
+| Property     | Value                          |
+| ------------ | ------------------------------ |
+| Proposal ID  | [PROPOSAL_ID]                  |
+| Generated At | [timestamp]                    |
+| Task Type    | [frontend\|backend\|fullstack] |
+| Total Tasks  | [count]                        |
+| Risk Level   | [Low\|Medium\|High]            |
 
 ---
 
-## 需求规格
+## Executive Summary
 
-### 功能需求
+### Requirement Overview
 
-| ID     | 需求描述 | 优先级 |
-| ------ | -------- | ------ |
-| FR-001 | [描述]   | P1     |
-| FR-002 | [描述]   | P2     |
+[One paragraph description extracted from requirements.md]
 
-### 非功能需求
+### Technical Solution
 
-| ID      | 类别 | 约束描述          |
-| ------- | ---- | ----------------- |
-| NFR-001 | 性能 | API 响应 < 200ms  |
-| NFR-002 | 安全 | OWASP Top 10 合规 |
+[One paragraph description extracted from architecture.md]
 
-### 验收标准
+### Key Risks
 
-- [ ] [标准1]
-- [ ] [标准2]
-- [ ] [标准3]
+| Risk    | Level  | Mitigation |
+| ------- | ------ | ---------- |
+| [Risk1] | HIGH   | [Measure]  |
+| [Risk2] | MEDIUM | [Measure]  |
 
 ---
 
-## OpenSpec 约束与判据
+## Requirement Specification
 
-### 约束
+### Functional Requirements
 
-- **硬约束**: [来自 constraints.md]
-- **软约束**: [来自 constraints.md]
+| ID     | Requirement Description | Priority |
+| ------ | ----------------------- | -------- |
+| FR-001 | [Description]           | P1       |
+| FR-002 | [Description]           | P2       |
 
-### 非目标
+### Non-Functional Requirements
 
-- [来自 proposal.md / constraints.md]
+| ID      | Category    | Constraint Description |
+| ------- | ----------- | ---------------------- |
+| NFR-001 | Performance | API response < 200ms   |
+| NFR-002 | Security    | OWASP Top 10 compliant |
 
-### 成功判据
+### Acceptance Criteria
 
-- [来自 proposal.md / synthesis]
+- [ ] [Criterion1]
+- [ ] [Criterion2]
+- [ ] [Criterion3]
 
-### PBT 属性
+---
+
+## OpenSpec Constraints and Criteria
+
+### Constraints
+
+- **Hard Constraints**: [from constraints.md]
+- **Soft Constraints**: [from constraints.md]
+
+### Non-Goals
+
+- [from proposal.md / constraints.md]
+
+### Success Criteria
+
+- [from proposal.md / synthesis]
+
+### PBT Properties
 
 - [INVARIANT] ... → [FALSIFICATION] ...
 
 ---
 
-## 架构设计
+## Architecture Design
 
-### 系统架构图
+### System Architecture Diagram
 ```
 
-[ASCII 架构图或 Mermaid]
+[ASCII architecture diagram or Mermaid]
 
 ````
 
-### 关键组件
+### Key Components
 
-| 组件 | 类型 | 职责 |
+| Component | Type | Responsibility |
 |-----|-----|-----|
-| AuthService | 后端服务 | 认证逻辑 |
-| LoginForm | 前端组件 | 登录界面 |
+| AuthService | Backend Service | Authentication logic |
+| LoginForm | Frontend Component | Login interface |
 
-### 架构决策
+### Architecture Decisions
 
-| 决策 | 选择 | 理由 |
+| Decision | Choice | Rationale |
 |-----|-----|-----|
-| 认证方案 | JWT + OAuth2 | 行业标准 |
-| 状态管理 | Zustand | 轻量级 |
+| Authentication | JWT + OAuth2 | Industry standard |
+| State Management | Zustand | Lightweight |
 
 ---
 
-## 实施路线图
+## Implementation Roadmap
 
-### 阶段划分
+### Phase Division
 
 ```mermaid
 gantt
-    title 实施路线图
+    title Implementation Roadmap
     dateFormat  YYYY-MM-DD
-    section 阶段1
-    基础设施       :a1, 2026-01-19, 1d
-    section 阶段2
-    后端 API       :a2, after a1, 1d
-    section 阶段3
-    前端开发       :a3, after a1, 2d
-    section 阶段4
-    集成联调       :a4, after a2 a3, 1d
+    section Phase1
+    Infrastructure       :a1, 2026-01-19, 1d
+    section Phase2
+    Backend API       :a2, after a1, 1d
+    section Phase3
+    Frontend Dev       :a3, after a1, 2d
+    section Phase4
+    Integration       :a4, after a2 a3, 1d
 ````
 
-### 关键路径
+### Critical Path
 
 ```
 T-001 → T-002 → T-006 → T-011 → T-012
 ```
 
-### 里程碑
+### Milestones
 
-| 里程碑           | 完成条件      | 验收标准         |
-| ---------------- | ------------- | ---------------- |
-| M1: 基础设施就绪 | T-001 ~ T-004 | 数据库可连接     |
-| M2: API 可用     | T-005, T-006  | Swagger 可访问   |
-| M3: 前端原型     | T-009, T-010  | Storybook 可演示 |
-| M4: 功能完成     | 全部任务      | E2E 测试通过     |
+| Milestone                | Completion Criteria | Acceptance Standard      |
+| ------------------------ | ------------------- | ------------------------ |
+| M1: Infrastructure Ready | T-001 ~ T-004       | DB connectable           |
+| M2: API Available        | T-005, T-006        | Swagger accessible       |
+| M3: Frontend Prototype   | T-009, T-010        | Storybook demo available |
+| M4: Feature Complete     | All tasks           | E2E tests pass           |
 
-### 任务清单
+### Task List
 
-| 阶段 | ID    | 任务               | 类型    | 复杂度 | 依赖  |
-| ---- | ----- | ------------------ | ------- | ------ | ----- |
-| 1    | T-001 | 创建数据库迁移     | backend | 2/5    | -     |
-| 1    | T-002 | 实现 Prisma Schema | backend | 2/5    | T-001 |
-| ...  | ...   | ...                | ...     | ...    | ...   |
-
----
-
-## 风险与缓解
-
-### 风险登记表
-
-| ID    | 风险       | 等级   | 缓解措施  | 状态   |
-| ----- | ---------- | ------ | --------- | ------ |
-| R-001 | 数据库迁移 | MEDIUM | 备份+回滚 | 待处理 |
-| R-002 | JWT 泄露   | MEDIUM | 密钥轮换  | 待处理 |
-
-### 必须处理（阻塞发布）
-
-1. **R-001: 准备数据库迁移回滚方案**
-   - 责任人: DBA
-   - 验证: 回滚测试通过
-
-2. **R-002: 实现 JWT secret 轮换机制**
-   - 责任人: 后端开发
-   - 验证: 密钥轮换测试
+| Phase | ID    | Task                    | Type    | Complexity | Depends |
+| ----- | ----- | ----------------------- | ------- | ---------- | ------- |
+| 1     | T-001 | Create DB migration     | backend | 2/5        | -       |
+| 1     | T-002 | Implement Prisma Schema | backend | 2/5        | T-001   |
+| ...   | ...   | ...                     | ...     | ...        | ...     |
 
 ---
 
-## 验证计划
+## Risks and Mitigation
 
-### 测试策略
+### Risk Register
 
-| 测试类型 | 工具       | 覆盖目标     |
-| -------- | ---------- | ------------ |
-| 单元测试 | Jest       | 核心逻辑 80% |
-| 集成测试 | Supertest  | API 100%     |
-| E2E 测试 | Playwright | 关键流程     |
+| ID    | Risk         | Level  | Mitigation      | Status  |
+| ----- | ------------ | ------ | --------------- | ------- |
+| R-001 | DB Migration | MEDIUM | Backup+Rollback | Pending |
+| R-002 | JWT Leak     | MEDIUM | Key rotation    | Pending |
 
-### 质量门禁
+### Must Handle (Blocks Release)
 
-- [ ] 单元测试通过
-- [ ] 集成测试通过
-- [ ] E2E 测试通过
-- [ ] 代码审查通过
-- [ ] 安全扫描无高危
-- [ ] 性能测试达标
+1. **R-001: Prepare database migration rollback plan**
+   - Owner: DBA
+   - Verification: Rollback test pass
+
+2. **R-002: Implement JWT secret rotation mechanism**
+   - Owner: Backend Dev
+   - Verification: Key rotation test
 
 ---
 
-## 后续操作
+## Verification Plan
 
-### 批准此计划
+### Testing Strategy
 
-确认以上计划后，执行开发：
+| Test Type         | Tool       | Coverage Target |
+| ----------------- | ---------- | --------------- |
+| Unit Tests        | Jest       | Core logic 80%  |
+| Integration Tests | Supertest  | API 100%        |
+| E2E Tests         | Playwright | Key flows       |
+
+### Quality Gates
+
+- [ ] Unit tests pass
+- [ ] Integration tests pass
+- [ ] E2E tests pass
+- [ ] Code review pass
+- [ ] Security scan no high severity
+- [ ] Performance test pass
+
+---
+
+## Next Steps
+
+### Approve This Plan
+
+After confirming the above plan, execute development:
 
 ```bash
 /tpd:dev --proposal-id=${PROPOSAL_ID}
 ```
 
-### 产物清单
+### Artifact List
 
 ```
   ${run_dir}/
-├── input.md           # 原始输入
-├── proposal.md        # OpenSpec 提案
-├── constraints.md     # 约束与决策
-├── pbt.md             # PBT 属性
-├── requirements.md    # 需求规格
-├── context.md         # 代码上下文
-├── architecture.md    # 架构设计
-├── tasks.md           # 任务分解
-├── risks.md           # 风险评估
-└── plan.md            # 本计划文档
+├── input.md           # Original input
+├── proposal.md        # OpenSpec proposal
+├── constraints.md     # Constraints and decisions
+├── pbt.md             # PBT properties
+├── requirements.md    # Requirement specification
+├── context.md         # Code context
+├── architecture.md    # Architecture design
+├── tasks.md           # Task decomposition
+├── risks.md           # Risk assessment
+└── plan.md            # This plan document
 ```
 
 ---
 
-**提案 ID**: `${PROPOSAL_ID}`
-**生成时间**: [timestamp]
-**状态**: 待批准
+**Proposal ID**: `${PROPOSAL_ID}`
+**Generated At**: [timestamp]
+**Status**: Pending Approval
 
 ```
 
-## 返回值
+## Return Value
 
-执行完成后，返回：
-
-```
-
-计划整合完成。
-输出文件: ${run_dir}/plan.md
-任务数: X 个
-风险等级: [低|中|高]
-
-⏸️ 等待用户批准...
-
-批准后执行: /tpd:dev --proposal-id=${PROPOSAL_ID}
+After execution, return:
 
 ```
 
-## 质量门控
+Plan integration complete.
+Output file: ${run_dir}/plan.md
+Task count: X
+Risk level: [Low|Medium|High]
 
-- ✅ 整合了所有前置产物（含 OpenSpec 约束/PBT）
-- ✅ 生成了执行摘要
-- ✅ 包含了实施路线图
-- ✅ 列出了验收标准
-- ✅ 提供了后续操作指引
+⏸️ Waiting for user approval...
 
-## 约束
+After approval execute: /tpd:dev --proposal-id=${PROPOSAL_ID}
 
-- 不做新的分析，只整合已有产物
-- 必须等待用户批准
-- 计划文档必须可独立阅读
-- 必须包含后续操作指引
+```
+
+## Quality Gates
+
+- ✅ Integrated all prerequisite artifacts (including OpenSpec constraints/PBT)
+- ✅ Generated executive summary
+- ✅ Included implementation roadmap
+- ✅ Listed acceptance criteria
+- ✅ Provided next steps guidance
+
+## Constraints
+
+- Do not do new analysis, only integrate existing artifacts
+- Must wait for user approval
+- Plan document must be readable standalone
+- Must include next steps guidance
 ```

@@ -1,11 +1,11 @@
 ---
 name: plan-context-retriever
 description: |
-  【触发条件】plan 工作流第二步：检索与需求相关的代码上下文
-  【核心产出】输出 ${run_dir}/context.md
-  【🚨强制工具🚨】auggie-mcp 必须首选！LSP 符号分析！exa 外部检索（新项目）
-  【禁止】跳过 auggie-mcp 直接用 Grep/Glob
-  【不触发】直接分析（用 architecture-analyzer）
+  [Trigger] Plan workflow Step 2: Retrieve code context related to requirements
+  [Output] Outputs ${run_dir}/context.md
+  [🚨 Mandatory Tool 🚨] auggie-mcp must be first choice! LSP symbol analysis! exa for external retrieval (new projects)
+  [Prohibited] Skipping auggie-mcp and using Grep/Glob directly
+  [Skip] Direct analysis (use architecture-analyzer)
 allowed-tools:
   - Read
   - Write
@@ -19,137 +19,137 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（由 orchestrator 传入）
+    description: Run directory path (passed by orchestrator)
 ---
 
-# Plan Context Retriever - 上下文检索原子技能
+# Plan Context Retriever - Context Retrieval Atomic Skill
 
-## 职责边界
+## Responsibility Boundary
 
-- **输入**: `run_dir` + `${run_dir}/requirements.md`
-- **输出**: `${run_dir}/context.md`
-- **单一职责**: 只做上下文检索，不做架构分析
+- **Input**: `run_dir` + `${run_dir}/requirements.md`
+- **Output**: `${run_dir}/context.md`
+- **Single Responsibility**: Only do context retrieval, no architecture analysis
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                                 | 触发条件           |
-| --------------------- | ------------------------------------ | ------------------ |
-| `sequential-thinking` | 结构化检索策略，确保覆盖所有相关代码 | 🚨 每次执行必用    |
-| `auggie-mcp`          | 语义检索（首选）                     | 🚨 必须首先使用    |
-| `LSP`                 | 符号级精准操作                       | 对检索结果深入分析 |
+| MCP Tool              | Purpose                           | Trigger                            |
+| --------------------- | --------------------------------- | ---------------------------------- |
+| `sequential-thinking` | Structured retrieval strategy     | 🚨 Required per exec               |
+| `auggie-mcp`          | Semantic retrieval (first choice) | 🚨 Must use first                  |
+| `LSP`                 | Symbol-level precise operations   | Deep analysis of retrieval results |
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化检索规划（sequential-thinking）
+### Step 0: Structured Retrieval Planning (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划检索策略**
+🚨 **Must first use sequential-thinking to plan retrieval strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划上下文检索策略。需要：1) 分析需求关键词 2) 确定检索范围 3) 选择检索方法 4) 规划证据收集",
+  thought: "Planning context retrieval strategy. Need: 1) Analyze requirement keywords 2) Determine retrieval scope 3) Select retrieval methods 4) Plan evidence collection",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **需求关键词提取**：从 requirements.md 提取搜索关键词
-2. **检索范围确定**：内部代码 vs 外部文档
-3. **检索方法选择**：auggie-mcp → LSP → Grep/Glob
-4. **符号分析规划**：需要深入分析的关键符号
-5. **证据收集策略**：如何组织和记录发现
+1. **Requirement Keyword Extraction**: Extract search keywords from requirements.md
+2. **Retrieval Scope Determination**: Internal code vs external documentation
+3. **Retrieval Method Selection**: auggie-mcp → LSP → Grep/Glob
+4. **Symbol Analysis Planning**: Key symbols needing deep analysis
+5. **Evidence Collection Strategy**: How to organize and record findings
 
-### Step 1: 读取需求
+### Step 1: Read Requirements
 
 ```bash
 REQUIREMENTS=$(cat "${run_dir}/requirements.md")
 ```
 
-从需求文件中提取：
+Extract from requirements file:
 
-- 功能需求列表
-- 技术约束
-- 任务类型
+- Functional requirements list
+- Technical constraints
+- Task type
 
-### Step 2: 判断项目状态
+### Step 2: Determine Project Status
 
-检查是否为新项目：
+Check if this is a new project:
 
 ```bash
-# 检查代码库是否有实质内容
+# Check if codebase has substantial content
 FILE_COUNT=$(find . -type f -name "*.ts" -o -name "*.js" -o -name "*.py" | wc -l)
 ```
 
-| 状态     | 判断条件       | 检索策略                 |
-| -------- | -------------- | ------------------------ |
-| 新项目   | 代码文件 < 10  | 使用 exa 外部检索        |
-| 现有项目 | 代码文件 >= 10 | 使用 auggie-mcp 内部检索 |
+| Status           | Criteria         | Retrieval Strategy                    |
+| ---------------- | ---------------- | ------------------------------------- |
+| New project      | Code files < 10  | Use exa for external retrieval        |
+| Existing project | Code files >= 10 | Use auggie-mcp for internal retrieval |
 
-### Step 3: 内部代码检索（现有项目）
+### Step 3: Internal Code Retrieval (Existing Project)
 
-## 🚨🚨🚨 强制工具优先级 🚨🚨🚨
+## 🚨🚨🚨 Mandatory Tool Priority 🚨🚨🚨
 
-**代码检索必须按以下顺序，不得跳过：**
+**Code retrieval must follow this order, no skipping:**
 
-| 优先级 | 工具                                  | 用途             | 强制性             |
-| ------ | ------------------------------------- | ---------------- | ------------------ |
-| 1      | `mcp__auggie-mcp__codebase-retrieval` | 语义检索（首选） | **必须首先使用**   |
-| 2      | `LSP`                                 | 符号级精准操作   | 对检索结果深入分析 |
-| 3      | `Grep/Glob`                           | 降级选择         | 仅当 auggie 不可用 |
+| Priority | Tool                                  | Purpose                    | Mandatory                    |
+| -------- | ------------------------------------- | -------------------------- | ---------------------------- |
+| 1        | `mcp__auggie-mcp__codebase-retrieval` | Semantic retrieval (first) | **Must use first**           |
+| 2        | `LSP`                                 | Symbol-level operations    | Deep analysis of results     |
+| 3        | `Grep/Glob`                           | Fallback option            | Only when auggie unavailable |
 
-**禁止行为**：
+**Prohibited Actions**:
 
-- ❌ 跳过 auggie-mcp 直接用 Grep/Glob
-- ❌ 不调用 LSP 就完成检索
-- ❌ 只用 Read 手动翻看文件
+- ❌ Skipping auggie-mcp and using Grep/Glob directly
+- ❌ Completing retrieval without calling LSP
+- ❌ Only using Read to manually browse files
 
-**强制调用 `mcp__auggie-mcp__codebase-retrieval`**：
+**Mandatory call to `mcp__auggie-mcp__codebase-retrieval`**:
 
 ```
 mcp__auggie-mcp__codebase-retrieval({
-  information_request: "查找与 <功能需求> 相关的代码：
-    - 相关的类、函数、模块
-    - 数据模型和接口定义
-    - 现有的类似实现
-    - 依赖的外部库
-    - 配置文件和环境变量"
+  information_request: "Find code related to <functional requirement>:
+    - Related classes, functions, modules
+    - Data models and interface definitions
+    - Existing similar implementations
+    - External library dependencies
+    - Configuration files and environment variables"
 })
 ```
 
-**验证检索完成**：必须获得至少 3 个相关代码片段，否则扩大搜索范围。
+**Verify retrieval complete**: Must obtain at least 3 relevant code snippets, otherwise expand search scope.
 
-### Step 4: LSP 符号级分析
+### Step 4: LSP Symbol-Level Analysis
 
-对语义检索结果中的关键符号，使用 LSP 深入分析：
+For key symbols in semantic retrieval results, use LSP for deep analysis:
 
-| 场景         | LSP 操作                          | 产出         |
-| ------------ | --------------------------------- | ------------ |
-| 理解文件结构 | `documentSymbol`                  | 文件符号列表 |
-| 查看符号定义 | `goToDefinition`                  | 定义位置     |
-| 找出所有引用 | `findReferences`                  | 引用列表     |
-| 理解调用关系 | `incomingCalls` / `outgoingCalls` | 调用图       |
-| 接口实现定位 | `goToImplementation`              | 实现列表     |
+| Scenario                      | LSP Operation                     | Output              |
+| ----------------------------- | --------------------------------- | ------------------- |
+| Understand file structure     | `documentSymbol`                  | File symbol list    |
+| View symbol definition        | `goToDefinition`                  | Definition location |
+| Find all references           | `findReferences`                  | Reference list      |
+| Understand call relationships | `incomingCalls` / `outgoingCalls` | Call graph          |
+| Interface implementation      | `goToImplementation`              | Implementation list |
 
-### Step 5: 外部文档检索（新项目或需要最佳实践）
+### Step 5: External Documentation Retrieval (New Project or Best Practices Needed)
 
-调用 exa skill 获取外部资源：
+Call exa skill to get external resources:
 
 ```
-Skill(skill="tpd:exa", args="query=<技术栈> best practices implementation")
+Skill(skill="tpd:exa", args="query=<tech stack> best practices implementation")
 ```
 
-检索内容：
+Retrieval content:
 
-- 官方文档
-- 最佳实践指南
-- 示例代码库
-- 常见问题解决方案
+- Official documentation
+- Best practice guides
+- Example codebases
+- Common problem solutions
 
-### Step 6: 证据收集
+### Step 6: Evidence Collection
 
-收集所有发现的证据：
+Collect all discovered evidence:
 
 ```json
 {
@@ -158,63 +158,63 @@ Skill(skill="tpd:exa", args="query=<技术栈> best practices implementation")
       "file": "src/auth/login.ts",
       "line": 42,
       "symbol": "authenticateUser",
-      "relevance": "高",
-      "reason": "现有认证实现"
+      "relevance": "High",
+      "reason": "Existing authentication implementation"
     }
   ],
   "external_evidence": [
     {
       "source": "https://docs.example.com/auth",
       "title": "Authentication Best Practices",
-      "relevance": "中",
-      "reason": "行业标准参考"
+      "relevance": "Medium",
+      "reason": "Industry standard reference"
     }
   ]
 }
 ```
 
-### Step 7: 结构化输出
+### Step 7: Structured Output
 
-将检索结果写入 `${run_dir}/context.md`：
+Write retrieval results to `${run_dir}/context.md`:
 
 ```markdown
-# 上下文检索报告
+# Context Retrieval Report
 
-## 元信息
+## Metadata
 
-- 检索时间: [timestamp]
-- 项目状态: [新项目|现有项目]
-- 检索范围: [内部|外部|混合]
+- Retrieval Time: [timestamp]
+- Project Status: [New project|Existing project]
+- Retrieval Scope: [Internal|External|Mixed]
 
-## 需求概述
+## Requirement Overview
 
-[从 requirements.md 提取的核心需求]
+[Core requirement extracted from requirements.md]
 
-## 内部代码上下文
+## Internal Code Context
 
-### 相关文件
+### Related Files
 
-| 文件路径               | 相关度 | 关键符号         | 说明         |
-| ---------------------- | ------ | ---------------- | ------------ |
-| src/auth/login.ts      | 高     | authenticateUser | 核心认证逻辑 |
-| src/models/user.ts     | 高     | UserModel        | 用户数据模型 |
-| src/middleware/auth.ts | 中     | authMiddleware   | 认证中间件   |
+| File Path              | Relevance | Key Symbols      | Description     |
+| ---------------------- | --------- | ---------------- | --------------- |
+| src/auth/login.ts      | High      | authenticateUser | Core auth logic |
+| src/models/user.ts     | High      | UserModel        | User data model |
+| src/middleware/auth.ts | Medium    | authMiddleware   | Auth middleware |
 
-### 架构模式
+### Architecture Patterns
 
-- **当前架构**: [识别的架构模式]
-- **数据流向**: [数据如何流动]
-- **关键接口**: [需要实现/扩展的接口]
+- **Current Architecture**: [Identified architecture pattern]
+- **Data Flow**: [How data flows]
+- **Key Interfaces**: [Interfaces to implement/extend]
 
-### 依赖分析
+### Dependency Analysis
 
-| 依赖           | 类型     | 版本   | 用途     |
-| -------------- | -------- | ------ | -------- |
-| express        | 外部库   | 4.18.2 | Web 框架 |
-| jsonwebtoken   | 外部库   | 9.0.0  | JWT 处理 |
-| ./utils/crypto | 内部模块 | -      | 加密工具 |
+| Dependency     | Type            | Version | Purpose       |
+| -------------- | --------------- | ------- | ------------- |
+| express        | External lib    | 4.18.2  | Web framework |
+| jsonwebtoken   | External lib    | 9.0.0   | JWT handling  |
+| ./utils/crypto | Internal module | -       | Crypto utils  |
 
-### 调用关系图
+### Call Relationship Diagram
 ```
 
 authenticateUser()
@@ -225,65 +225,65 @@ authenticateUser()
 
 ```
 
-## 外部文档上下文
+## External Documentation Context
 
-### 参考资料
+### Reference Materials
 
-| 来源 | 标题 | 相关度 | 要点 |
+| Source | Title | Relevance | Key Points |
 |-----|-----|-------|-----|
-| [URL] | [标题] | 高/中/低 | [关键信息] |
+| [URL] | [Title] | High/Medium/Low | [Key information] |
 
-### 最佳实践
+### Best Practices
 
-- [从外部文档提取的最佳实践]
+- [Best practices extracted from external documentation]
 
-### 技术选型建议（新项目）
+### Technology Selection Recommendations (New Project)
 
-| 领域 | 推荐方案 | 理由 |
+| Domain | Recommended Solution | Reason |
 |-----|---------|-----|
-| 认证 | JWT + OAuth2 | 行业标准 |
-| 数据库 | PostgreSQL | 复杂查询支持 |
+| Authentication | JWT + OAuth2 | Industry standard |
+| Database | PostgreSQL | Complex query support |
 
-## 潜在影响
+## Potential Impact
 
-- **可能影响的模块**: [列表]
-- **需要修改的文件**: [列表]
-- **测试覆盖情况**: [现有测试]
+- **Potentially Affected Modules**: [List]
+- **Files Requiring Modification**: [List]
+- **Test Coverage Status**: [Existing tests]
 
-## 证据链
+## Evidence Chain
 
-[完整的证据 JSON]
+[Complete evidence JSON]
 
 ---
 
-下一步: 调用 architecture-analyzer 进行架构分析
+Next step: Call architecture-analyzer for architecture analysis
 ```
 
-## 返回值
+## Return Value
 
-执行完成后，返回：
+After execution, return:
 
 ```
-上下文检索完成。
-输出文件: ${run_dir}/context.md
-项目状态: [新项目|现有项目]
-相关文件: X 个
-外部参考: Y 个
+Context retrieval complete.
+Output file: ${run_dir}/context.md
+Project status: [New project|Existing project]
+Related files: X
+External references: Y
 
-下一步: 使用 tpd:architecture-analyzer 进行架构分析
+Next step: Use tpd:architecture-analyzer for architecture analysis
 ```
 
-## 质量门控
+## Quality Gates
 
-- ✅ 识别了相关代码文件
-- ✅ 提取了关键符号和接口
-- ✅ 分析了依赖关系
-- ✅ 评估了潜在影响范围
-- ✅ 收集了证据链
+- ✅ Identified related code files
+- ✅ Extracted key symbols and interfaces
+- ✅ Analyzed dependencies
+- ✅ Assessed potential impact scope
+- ✅ Collected evidence chain
 
-## 约束
+## Constraints
 
-- 不做架构分析（交给 architecture-analyzer）
-- 不生成代码（交给后续阶段）
-- 检索范围可广，但产出必须聚焦
-- 必须使用 LSP 进行符号级精准分析
+- Do not do architecture analysis (delegated to architecture-analyzer)
+- Do not generate code (delegated to subsequent phases)
+- Retrieval scope can be broad, but output must be focused
+- Must use LSP for symbol-level precise analysis

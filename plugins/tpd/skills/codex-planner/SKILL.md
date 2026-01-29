@@ -1,10 +1,10 @@
 ---
 name: codex-planner
 description: |
-  【触发条件】plan 工作流中需要后端架构规划、API 设计、数据模型、安全策略分析时使用
-  【核心产出】输出架构规划文档（PLANS.md 格式），包含技术方案、风险分析、实施路径
-  【强制模式】只读沙箱 + 规划模式，禁止生成实际代码
-  【不触发】前端 UI/组件规划（用 gemini-planner）、简单任务
+  [Trigger] Use in plan workflow when backend architecture planning, API design, data model, security strategy analysis is needed
+  [Output] Outputs architecture planning document (PLANS.md format) containing technical solution, risk analysis, implementation path
+  [Mode] Read-only sandbox + planning mode, prohibited from generating actual code
+  [Skip] Frontend UI/component planning (use gemini-planner), simple tasks
 allowed-tools:
   - Bash
   - Read
@@ -14,56 +14,56 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 规划运行目录路径
+    description: Planning run directory path
   - name: focus
     type: string
     required: false
-    description: 规划焦点（architecture|api|data|security|performance）
+    description: Planning focus (architecture|api|data|security|performance)
 ---
 
-# Codex Planner - 多模型协作后端规划专家
+# Codex Planner - Multi-Model Collaborative Backend Planning Expert
 
 Backend architecture planning via `codeagent-wrapper` in **plan mode**. Read-only analysis → PLANS.md format → Claude synthesis.
 
-## 核心理念
+## Core Philosophy
 
-基于 [OpenAI Codex PLANS.md](https://cookbook.openai.com/articles/codex_exec_plans) 方法论：
+Based on [OpenAI Codex PLANS.md](https://cookbook.openai.com/articles/codex_exec_plans) methodology:
 
-- **Living Documents**: 计划是"活文档"，可验证、可迭代
-- **Deep Exploration**: 深度探索代码库、依赖关系、外部资源
-- **Long-horizon Thinking**: 支持复杂任务的长期规划（7+ 小时）
+- **Living Documents**: Plans are "living documents", verifiable and iterable
+- **Deep Exploration**: Deep exploration of codebase, dependencies, external resources
+- **Long-horizon Thinking**: Supports long-term planning for complex tasks (7+ hours)
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                             | 触发条件        |
-| --------------------- | -------------------------------- | --------------- |
-| `sequential-thinking` | 结构化后端架构规划，确保方案完整 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                                  | Trigger              |
+| --------------------- | ---------------------------------------- | -------------------- |
+| `sequential-thinking` | Structured backend architecture planning | 🚨 Required per exec |
 
-### 预规划思考（sequential-thinking）
+### Pre-planning Thinking (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划分析策略**
+🚨 **Must first use sequential-thinking to plan analysis strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划后端架构分析。需要：1) 理解需求范围 2) 探索代码库 3) 设计架构方案 4) 制定技术规格 5) 规划实施路径",
+  thought: "Planning backend architecture analysis. Need: 1) Understand requirement scope 2) Explore codebase 3) Design architecture solution 4) Define technical specs 5) Plan implementation path",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **需求理解**：核心功能边界、技术约束、待澄清问题
-2. **代码库探索**：相关模块、现有模式、依赖分析
-3. **架构方案设计**：多方案对比、推荐方案、决策理由
-4. **技术规格定义**：API 设计、数据模型、安全策略
-5. **实施路径规划**：阶段划分、任务分解、关键路径
+1. **Requirement Understanding**: Core functionality boundaries, technical constraints, questions to clarify
+2. **Codebase Exploration**: Related modules, existing patterns, dependency analysis
+3. **Architecture Solution Design**: Multi-solution comparison, recommended solution, decision rationale
+4. **Technical Spec Definition**: API design, data model, security strategy
+5. **Implementation Path Planning**: Phase division, task decomposition, critical path
 
-## 执行命令
+## Execution Command
 
 ```bash
-# 规划模式调用（强制只读）
+# Planning mode call (forced read-only)
 ~/.claude/bin/codeagent-wrapper codex \
   --workdir "$PROJECT_DIR" \
   --role planner \
@@ -71,246 +71,246 @@ mcp__sequential-thinking__sequentialthinking({
   --sandbox read-only
 ```
 
-## 🚨🚨🚨 强制规划流程 🚨🚨🚨
+## 🚨🚨🚨 Mandatory Planning Flow 🚨🚨🚨
 
-### Step 1: 需求理解与范围界定
+### Step 1: Requirement Understanding and Scope Definition
 
 ```bash
 ~/.claude/bin/codeagent-wrapper codex \
   --role planner \
   --prompt "
-需求：$REQUIREMENT
+Requirement: $REQUIREMENT
 
-请作为高级架构师分析：
-1. 核心功能边界
-2. 技术约束和依赖
-3. 潜在风险点
-4. 需要澄清的问题
+Please analyze as a senior architect:
+1. Core functionality boundaries
+2. Technical constraints and dependencies
+3. Potential risk points
+4. Questions needing clarification
 
-输出格式：PLANS.md 第一章节
+Output format: PLANS.md Chapter 1
 " \
   --sandbox read-only
 ```
 
-### Step 2: 代码库探索
+### Step 2: Codebase Exploration
 
 ```bash
 ~/.claude/bin/codeagent-wrapper codex \
   --role analyzer \
   --prompt "
-基于需求，探索代码库：
-1. 相关模块和文件
-2. 现有架构模式
-3. 数据流向
-4. 集成点
+Based on requirement, explore codebase:
+1. Related modules and files
+2. Existing architecture patterns
+3. Data flow
+4. Integration points
 
-使用工具：grep, find, ast-grep
-输出：代码库上下文摘要
+Tools to use: grep, find, ast-grep
+Output: Codebase context summary
 " \
   --sandbox read-only \
   --session "$SESSION_ID"
 ```
 
-### Step 3: 架构方案设计
+### Step 3: Architecture Solution Design
 
 ```bash
 ~/.claude/bin/codeagent-wrapper codex \
   --role architect \
   --prompt "
-基于探索结果，设计架构方案：
+Based on exploration results, design architecture solution:
 
-## 方案 A: [名称]
-- 优点：
-- 缺点：
-- 风险：
-- 工作量：
+## Solution A: [Name]
+- Pros:
+- Cons:
+- Risks:
+- Effort:
 
-## 方案 B: [名称]
-- 优点：
-- 缺点：
-- 风险：
-- 工作量：
+## Solution B: [Name]
+- Pros:
+- Cons:
+- Risks:
+- Effort:
 
-## 推荐方案
-- 选择：
-- 理由：
+## Recommended Solution
+- Choice:
+- Rationale:
 " \
   --sandbox read-only \
   --session "$SESSION_ID"
 ```
 
-### Step 4: 详细技术规格
+### Step 4: Detailed Technical Specs
 
 ```bash
 ~/.claude/bin/codeagent-wrapper codex \
   --role architect \
   --prompt "
-为推荐方案生成详细技术规格：
+Generate detailed technical specs for recommended solution:
 
-### API 设计
-- 端点定义
-- 请求/响应格式
-- 错误处理
+### API Design
+- Endpoint definitions
+- Request/Response formats
+- Error handling
 
-### 数据模型
-- 实体关系
-- 迁移策略
+### Data Model
+- Entity relationships
+- Migration strategy
 
-### 安全策略
-- 认证/授权
-- 输入验证
-- 敏感数据处理
+### Security Strategy
+- Authentication/Authorization
+- Input validation
+- Sensitive data handling
 
-### 性能考量
-- 缓存策略
-- 数据库优化
-- 并发处理
+### Performance Considerations
+- Caching strategy
+- Database optimization
+- Concurrency handling
 " \
   --sandbox read-only \
   --session "$SESSION_ID"
 ```
 
-### Step 5: 实施路径规划
+### Step 5: Implementation Path Planning
 
 ```bash
 ~/.claude/bin/codeagent-wrapper codex \
   --role planner \
   --prompt "
-生成分阶段实施计划：
+Generate phased implementation plan:
 
-### 阶段 1: 基础设施
-- 任务列表
-- 依赖关系
-- 验收标准
+### Phase 1: Infrastructure
+- Task list
+- Dependencies
+- Acceptance criteria
 
-### 阶段 2: 核心功能
-- 任务列表
-- 依赖关系
-- 验收标准
+### Phase 2: Core Functionality
+- Task list
+- Dependencies
+- Acceptance criteria
 
-### 阶段 3: 集成测试
-- 任务列表
-- 依赖关系
-- 验收标准
+### Phase 3: Integration Testing
+- Task list
+- Dependencies
+- Acceptance criteria
 
-### 关键路径
-- 阻塞项识别
-- 并行机会
+### Critical Path
+- Blocker identification
+- Parallelization opportunities
 " \
   --sandbox read-only \
   --session "$SESSION_ID"
 ```
 
-## 角色提示词
+## Role Prompts
 
-| 角色      | 用途               | 命令示例           |
-| --------- | ------------------ | ------------------ |
-| planner   | 需求分析、路径规划 | `--role planner`   |
-| analyzer  | 代码库探索         | `--role analyzer`  |
-| architect | 架构设计           | `--role architect` |
-| security  | 安全分析           | `--role security`  |
-| reviewer  | 方案审查           | `--role reviewer`  |
+| Role      | Purpose                    | Command Example    |
+| --------- | -------------------------- | ------------------ |
+| planner   | Requirement analysis, path | `--role planner`   |
+| analyzer  | Codebase exploration       | `--role analyzer`  |
+| architect | Architecture design        | `--role architect` |
+| security  | Security analysis          | `--role security`  |
+| reviewer  | Solution review            | `--role reviewer`  |
 
-## PLANS.md 输出格式
+## PLANS.md Output Format
 
 ```markdown
-# [功能名称] 技术规划
+# [Feature Name] Technical Planning
 
-## 元信息
+## Metadata
 
-- 提案 ID: ${proposal_id}
-- 创建时间: ${timestamp}
-- 规划者: Codex + Claude
+- Proposal ID: ${proposal_id}
+- Created: ${timestamp}
+- Planners: Codex + Claude
 
-## 1. 需求理解
+## 1. Requirement Understanding
 
-### 1.1 功能边界
+### 1.1 Functionality Boundaries
 
-### 1.2 技术约束
+### 1.2 Technical Constraints
 
-### 1.3 待澄清问题
+### 1.3 Questions to Clarify
 
-## 2. 代码库上下文
+## 2. Codebase Context
 
-### 2.1 相关模块
+### 2.1 Related Modules
 
-### 2.2 现有模式
+### 2.2 Existing Patterns
 
-### 2.3 依赖分析
+### 2.3 Dependency Analysis
 
-## 3. 架构方案
+## 3. Architecture Solution
 
-### 3.1 方案对比
+### 3.1 Solution Comparison
 
-### 3.2 推荐方案
+### 3.2 Recommended Solution
 
-### 3.3 决策理由
+### 3.3 Decision Rationale
 
-## 4. 技术规格
+## 4. Technical Specs
 
-### 4.1 API 设计
+### 4.1 API Design
 
-### 4.2 数据模型
+### 4.2 Data Model
 
-### 4.3 安全策略
+### 4.3 Security Strategy
 
-### 4.4 性能考量
+### 4.4 Performance Considerations
 
-## 5. 实施路径
+## 5. Implementation Path
 
-### 5.1 阶段划分
+### 5.1 Phase Division
 
-### 5.2 任务分解
+### 5.2 Task Decomposition
 
-### 5.3 关键路径
+### 5.3 Critical Path
 
-## 6. 风险与缓解
+## 6. Risks & Mitigation
 
-### 6.1 技术风险
+### 6.1 Technical Risks
 
-### 6.2 缓解策略
+### 6.2 Mitigation Strategies
 
-## 7. 验收标准
+## 7. Acceptance Criteria
 
-### 7.1 功能验收
+### 7.1 Functional Acceptance
 
-### 7.2 质量验收
+### 7.2 Quality Acceptance
 ```
 
-## 会话管理
+## Session Management
 
 ```bash
-# 保存 SESSION_ID 用于多步规划
+# Save SESSION_ID for multi-step planning
 result=$(~/.claude/bin/codeagent-wrapper codex --role planner --prompt "..." --sandbox read-only)
 SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 
-# 后续步骤继续会话
+# Continue session in subsequent steps
 ~/.claude/bin/codeagent-wrapper codex --prompt "..." --session "$SESSION_ID"
 ```
 
-## 强制约束
+## Mandatory Constraints
 
-| 必须执行                      | 禁止事项                  |
-| ----------------------------- | ------------------------- |
-| ✅ 使用 `--sandbox read-only` | ❌ 生成可执行代码         |
-| ✅ 使用 `--role planner`      | ❌ 跳过代码库探索         |
-| ✅ 输出 PLANS.md 格式         | ❌ 直接给出实施方案不分析 |
-| ✅ 多方案对比                 | ❌ 盲从单一方案           |
-| ✅ 保存 SESSION_ID            | ❌ 丢失规划上下文         |
+| Must Do                      | Prohibited                        |
+| ---------------------------- | --------------------------------- |
+| ✅ Use `--sandbox read-only` | ❌ Generate executable code       |
+| ✅ Use `--role planner`      | ❌ Skip codebase exploration      |
+| ✅ Output PLANS.md format    | ❌ Give solution without analysis |
+| ✅ Multi-solution comparison | ❌ Blindly follow single solution |
+| ✅ Save SESSION_ID           | ❌ Lose planning context          |
 
-## 输出文件
+## Output Files
 
-执行完成后，将结果写入：
+After execution, write results to:
 
-- `${run_dir}/codex-plan.md` - Codex 规划输出
-- 内容将被 architecture-analyzer 整合到 `architecture.md`
+- `${run_dir}/codex-plan.md` - Codex planning output
+- Content will be integrated into `architecture.md` by architecture-analyzer
 
-## 与其他 Skills 的协作
+## Collaboration with Other Skills
 
 ```
-plan-context-retriever → codex-planner (后端) ─┐
-                                              ├→ architecture-analyzer → task-decomposer
-                       → gemini-planner (前端) ─┘
+plan-context-retriever → codex-planner (backend) ─┐
+                                                  ├→ architecture-analyzer → task-decomposer
+                       → gemini-planner (frontend) ─┘
 ```
 
 ---

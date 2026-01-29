@@ -1,5 +1,5 @@
 ---
-description: "OpenSpec 开发工作流：OpenSpec 选择 → 最小阶段 → 原型生成 → 重构实施 → 审计验证 → 任务归档"
+description: "OpenSpec Development Workflow: OpenSpec selection → Minimal phase → Prototype generation → Refactor implementation → Audit verification → Task archival"
 argument-hint: "[feature-description] [--proposal-id=<proposal_id>] [--task-type=frontend|backend|fullstack]"
 allowed-tools:
   - Skill
@@ -10,184 +10,184 @@ allowed-tools:
   - Bash
 ---
 
-# /tpd:dev - OpenSpec 开发工作流命令
+# /tpd:dev - OpenSpec Development Workflow Command
 
-## 概述
+## Overview
 
-dev 阶段严格对齐 OpenSpec Implementation：**只实现 tasks.md 中“最小可验证阶段”**，并强制多模型原型 → 重构 → 审计流程。外部模型输出仅作为参考，禁止直接落盘。
+The dev phase strictly aligns with OpenSpec Implementation: **only implement the "minimal verifiable phase" in tasks.md**, and enforce multi-model prototype → refactor → audit flow. External model output is for reference only, direct commit is forbidden.
 
-**支持无参数调用**：直接执行 `/tpd:dev` 时，会自动读取 OpenSpec Active Change 并让用户确认提案。
-
----
-
-## 🚨🚨🚨 强制执行规则 🚨🚨🚨
-
-- ✅ 必须先 `openspec view` 并确认 `proposal_id`
-- ✅ 必须先 `/openspec:apply <proposal_id>`
-- ✅ 只实现 tasks.md 中最小可验证阶段（禁止一次做完全部）
-- ✅ 外部模型只产出 Unified Diff Patch，禁止直接应用
-- ✅ 应用前必须做 Side-effect Review
-- ✅ 完成后更新 tasks.md 勾选状态
-- ✅ 全部任务完成后执行 `/openspec:archive`
-
-**禁止行为：**
-
-- ❌ 未确认 proposal_id 就开始实施
-- ❌ 直接按外部模型 diff 落盘
-- ❌ 跳过 Side-effect Review
-- ❌ 一次性完成全部 tasks
+**Supports no-argument invocation**: When executing `/tpd:dev` directly, it will automatically read OpenSpec Active Change and let user confirm the proposal.
 
 ---
 
-## Phase 0: OpenSpec 状态检查
+## 🚨🚨🚨 Mandatory Execution Rules 🚨🚨🚨
 
-1. 执行（与官方流程一致的 OpenSpec Dashboard 探测）：
+- ✅ Must first `openspec view` and confirm `proposal_id`
+- ✅ Must first `/openspec:apply <proposal_id>`
+- ✅ Only implement minimal verifiable phase in tasks.md (forbidden to complete all at once)
+- ✅ External models only produce Unified Diff Patch, direct application forbidden
+- ✅ Must do Side-effect Review before applying
+- ✅ Update tasks.md checkbox status after completion
+- ✅ Execute `/openspec:archive` after all tasks complete
+
+**Forbidden Actions:**
+
+- ❌ Starting implementation without confirming proposal_id
+- ❌ Directly applying external model diff
+- ❌ Skipping Side-effect Review
+- ❌ Completing all tasks at once
+
+---
+
+## Phase 0: OpenSpec Status Check
+
+1. Execute (OpenSpec Dashboard detection consistent with official workflow):
 
 ```bash
 openspec view 2>/dev/null || openspec list 2>/dev/null || ls -la openspec 2>/dev/null || echo "OpenSpec not initialized"
 ```
 
-2. proposal_id 解析优先级：
-   - `--proposal-id` 参数
-   - 若 `openspec view` 仅有 1 个 Active Change → 自动选择
-   - 否则用户从 `openspec view` 输出中选择
+2. proposal_id parsing priority:
+   - `--proposal-id` argument
+   - If `openspec view` has only 1 Active Change → auto-select
+   - Otherwise user selects from `openspec view` output
 
-3. 未初始化 OpenSpec → 提示执行 `/tpd:init` 后再继续
+3. Not initialized OpenSpec → prompt to execute `/tpd:init` before continuing
 
 ---
 
-## Phase 1: 初始化
+## Phase 1: Initialization
 
-1. 解析参数：
-   - TASK_TYPE: fullstack (默认) | frontend | backend
-   - FEATURE: 可选；若缺省则从 plan/proposal 提取
-   - PROPOSAL_ID: 必须确认（--proposal-id 或从 OpenSpec Active Change 选择）
+1. Parse arguments:
+   - TASK_TYPE: fullstack (default) | frontend | backend
+   - FEATURE: Optional; if omitted, extract from plan/proposal
+   - PROPOSAL_ID: Must be confirmed (--proposal-id or select from OpenSpec Active Change)
 
-2. 生成运行目录路径（固定路径，位于 OpenSpec 之下）：
+2. Generate run directory path (fixed path, under OpenSpec):
    - DEV_DIR: `openspec/changes/${PROPOSAL_ID}/artifacts/dev`
 
 ```bash
 mkdir -p "${DEV_DIR}"
 ```
 
-3. 若未提供 FEATURE：从 proposal.md / tasks.md 生成输入摘要
+3. If FEATURE not provided: generate input summary from proposal.md / tasks.md
 
 ---
 
-## Phase 2: 应用 OpenSpec
+## Phase 2: Apply OpenSpec
 
-执行：
+Execute:
 
 ```
 /openspec:apply ${PROPOSAL_ID}
 ```
 
-并定位任务文件：
+And locate task file:
 
 ```
-TASKS_FILE=\"openspec/changes/${PROPOSAL_ID}/tasks.md\"
+TASKS_FILE="openspec/changes/${PROPOSAL_ID}/tasks.md"
 ```
 
-将 tasks.md 复制到 `${DEV_DIR}/tasks.md` 作为本阶段工作清单（**源文件仍在 openspec/**）。
+Copy tasks.md to `${DEV_DIR}/tasks.md` as this phase's work list (**source file remains in openspec/**).
 
 ---
 
-## Phase 3: 最小可验证阶段选择（必须）
+## Phase 3: Minimal Verifiable Phase Selection (Required)
 
-1. 读取 `${DEV_DIR}/tasks.md`
-2. 选择**最小可验证阶段**（1~3 个任务，能形成闭环验证）
-3. 写入 `${DEV_DIR}/tasks-scope.md`
+1. Read `${DEV_DIR}/tasks.md`
+2. Select **minimal verifiable phase** (1~3 tasks, able to form closed-loop verification)
+3. Write to `${DEV_DIR}/tasks-scope.md`
 
-**⏸️ 硬停止**：AskUserQuestion 展示本次任务范围，确认后继续
-
----
-
-## Phase 4: 上下文检索
-
-**如当前运行目录已提供 context.md，可跳过；否则必须执行：**
-
-```
-Skill(skill=\"tpd:context-retriever\", args=\"run_dir=${DEV_DIR}\")
-```
-
-**验证**：确认 `${DEV_DIR}/context.md` 已生成
+**⏸️ Hard Stop**: AskUserQuestion to display this task scope, continue after confirmation
 
 ---
 
-## Phase 5: 任务分析（多模型并行）
+## Phase 4: Context Retrieval
 
-根据 task_type 并行调用：
+**If current run directory already provides context.md, can skip; otherwise must execute:**
 
 ```
-Skill(skill=\"tpd:multi-model-analyzer\", args=\"run_dir=${DEV_DIR} model=codex\")
-Skill(skill=\"tpd:multi-model-analyzer\", args=\"run_dir=${DEV_DIR} model=gemini\")
+Skill(skill="tpd:context-retriever", args="run_dir=${DEV_DIR}")
 ```
 
-**验证**：`analysis-codex.md` / `analysis-gemini.md`
-
-**⏸️ 硬停止**：展示分析摘要，确认方案后继续
+**Verify**: Confirm `${DEV_DIR}/context.md` is generated
 
 ---
 
-## Phase 6: 原型生成（多模型并行）
+## Phase 5: Task Analysis (Multi-Model Parallel)
+
+Call in parallel based on task_type:
 
 ```
-Skill(skill=\"tpd:prototype-generator\", args=\"run_dir=${DEV_DIR} model=codex focus=backend,api,logic\")
-Skill(skill=\"tpd:prototype-generator\", args=\"run_dir=${DEV_DIR} model=gemini focus=frontend,ui,styles\")
+Skill(skill="tpd:multi-model-analyzer", args="run_dir=${DEV_DIR} model=codex")
+Skill(skill="tpd:multi-model-analyzer", args="run_dir=${DEV_DIR} model=gemini")
 ```
 
-**验证**：`prototype-codex.diff` / `prototype-gemini.diff`
+**Verify**: `analysis-codex.md` / `analysis-gemini.md`
+
+**⏸️ Hard Stop**: Display analysis summary, continue after confirming approach
 
 ---
 
-## Phase 7: 重构实施（多模型并行）
+## Phase 6: Prototype Generation (Multi-Model Parallel)
 
 ```
-Skill(skill=\"tpd:code-implementer\", args=\"run_dir=${DEV_DIR} model=codex focus=backend,api,logic\")
-Skill(skill=\"tpd:code-implementer\", args=\"run_dir=${DEV_DIR} model=gemini focus=frontend,ui,styles\")
+Skill(skill="tpd:prototype-generator", args="run_dir=${DEV_DIR} model=codex focus=backend,api,logic")
+Skill(skill="tpd:prototype-generator", args="run_dir=${DEV_DIR} model=gemini focus=frontend,ui,styles")
 ```
 
-**验证**：`changes-codex.md` / `changes-gemini.md` / `changes.md`
+**Verify**: `prototype-codex.diff` / `prototype-gemini.diff`
 
 ---
 
-## Phase 8: Side-effect Review（必须）
-
-检查所有变更是否严格限于 `tasks-scope.md`，禁止波及无关模块：
-
-- 是否新增/修改了未授权文件？
-- 是否引入了未批准依赖？
-- 是否破坏既有接口契约？
-
-如发现问题，必须回到 Phase 7 进行修正。
-
----
-
-## Phase 9: 多模型审计验证
+## Phase 7: Refactor Implementation (Multi-Model Parallel)
 
 ```
-Skill(skill=\"tpd:audit-reviewer\", args=\"run_dir=${DEV_DIR} model=codex focus=security,performance\")
-Skill(skill=\"tpd:audit-reviewer\", args=\"run_dir=${DEV_DIR} model=gemini focus=ux,accessibility\")
+Skill(skill="tpd:code-implementer", args="run_dir=${DEV_DIR} model=codex focus=backend,api,logic")
+Skill(skill="tpd:code-implementer", args="run_dir=${DEV_DIR} model=gemini focus=frontend,ui,styles")
 ```
 
-**验证**：`audit-codex.md` / `audit-gemini.md`
-
-**⏸️ 硬停止**：如有 Critical 问题必须修复
+**Verify**: `changes-codex.md` / `changes-gemini.md` / `changes.md`
 
 ---
 
-## Phase 10: 任务勾选与阶段收尾
+## Phase 8: Side-effect Review (Required)
 
-1. 将本阶段完成的任务在 `openspec/changes/${PROPOSAL_ID}/tasks.md` 标记为 `- [x]`
-2. 将同步后的 tasks.md 拷贝回 `${DEV_DIR}/tasks.md`
+Check if all changes are strictly limited to `tasks-scope.md`, forbidden to affect unrelated modules:
 
-**⏸️ 硬停止**：询问是否进入下一阶段（如需继续，重复 Phase 3~10）
+- Were unauthorized files added/modified?
+- Were unapproved dependencies introduced?
+- Were existing interface contracts broken?
+
+If issues found, must return to Phase 7 for correction.
 
 ---
 
-## Phase 11: OpenSpec 归档
+## Phase 9: Multi-Model Audit Verification
 
-当 tasks.md 全部完成后：
+```
+Skill(skill="tpd:audit-reviewer", args="run_dir=${DEV_DIR} model=codex focus=security,performance")
+Skill(skill="tpd:audit-reviewer", args="run_dir=${DEV_DIR} model=gemini focus=ux,accessibility")
+```
+
+**Verify**: `audit-codex.md` / `audit-gemini.md`
+
+**⏸️ Hard Stop**: Must fix if Critical issues exist
+
+---
+
+## Phase 10: Task Checkbox and Phase Wrap-up
+
+1. Mark completed tasks in `openspec/changes/${PROPOSAL_ID}/tasks.md` as `- [x]`
+2. Copy synced tasks.md back to `${DEV_DIR}/tasks.md`
+
+**⏸️ Hard Stop**: Ask whether to proceed to next phase (if continuing, repeat Phase 3~10)
+
+---
+
+## Phase 11: OpenSpec Archive
+
+When all tasks in tasks.md are complete:
 
 ```
 /openspec:archive
@@ -195,14 +195,14 @@ Skill(skill=\"tpd:audit-reviewer\", args=\"run_dir=${DEV_DIR} model=gemini focus
 
 ---
 
-## Phase 12: 交付
+## Phase 12: Delivery
 
 ```
-🎉 开发阶段完成！
+🎉 Development Phase Complete!
 
-📋 提案: ${PROPOSAL_ID}
-🔀 类型: ${TASK_TYPE}
-📁 产物:
+📋 Proposal: ${PROPOSAL_ID}
+🔀 Type: ${TASK_TYPE}
+📁 Artifacts:
   ${DEV_DIR}/
   ├── input.md
   ├── context.md

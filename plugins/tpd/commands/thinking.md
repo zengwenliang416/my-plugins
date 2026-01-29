@@ -1,6 +1,6 @@
 ---
-description: "深度思考工作流：复杂度评估 → 上下文边界探索 → 约束整合 → 结论生成 → 交接摘要。支持 auto/light/deep/ultra。"
-argument-hint: "[--depth=auto|light|deep|ultra] [--parallel] [--verbose] <问题描述>"
+description: "Deep Thinking Workflow: Complexity assessment → Context boundary exploration → Constraint integration → Conclusion generation → Handoff summary. Supports auto/light/deep/ultra."
+argument-hint: "[--depth=auto|light|deep|ultra] [--parallel] [--verbose] <problem description>"
 allowed-tools:
   - Skill
   - AskUserQuestion
@@ -12,130 +12,130 @@ allowed-tools:
   - mcp__auggie-mcp__codebase-retrieval
 ---
 
-# /tpd:thinking - 深度思考工作流命令
+# /tpd:thinking - Deep Thinking Workflow Command
 
-## 概述
+## Overview
 
-整合 Claude Code ultrathink、Codex-CLI reasoning 和 Gemini Deep Think 三种思考模式，提供多层次、多视角的深度分析能力。
+Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - three thinking modes providing multi-level, multi-perspective deep analysis capabilities.
 
-**核心特性**：
+**Core Features**:
 
-- **智能路由**：根据问题复杂度自动选择思考深度
-- **多边界并行**：按上下文边界并行探索，形成约束集合
-- **多模型补充**：Codex/Gemini 提供约束与风险补充视角
-- **思考可视化**：完整展示推理链和思考过程
-- **结论整合**：综合多模型输出，生成高质量结论
-
----
-
-## 核心哲学（对齐 GudaSpec Research）
-
-- **产物是约束集**：输出“约束集合 + 可验证成功判据”，不是信息堆砌
-- **收敛方向**：约束用于“排除方向”，让后续 plan 能零决策执行
-- **不做架构决策**：只暴露约束、风险与待确认问题
-- **OpenSpec 规则**：thinking 阶段**直接写入 `openspec/` 规范**，不修改项目代码
-
-## Guardrails（必须遵守）
-
-- **禁止按角色拆分子代理**（例如“架构师/安全专家”）
-- **必须按上下文边界拆分**（模块/目录/域）
-- **必须使用 `mcp__auggie-mcp__codebase-retrieval`** 做语义检索
-- **子代理输出必须统一 JSON 模板**（见 Phase 3）
-- **禁止修改项目代码**（允许写入 `openspec/` 规范文件）
+- **Smart Routing**: Automatically selects thinking depth based on problem complexity
+- **Multi-Boundary Parallel**: Parallel exploration by context boundaries, forming constraint sets
+- **Multi-Model Supplementation**: Codex/Gemini provide supplementary perspectives on constraints and risks
+- **Thinking Visualization**: Complete display of reasoning chains and thinking processes
+- **Conclusion Integration**: Synthesizes multi-model outputs to generate high-quality conclusions
 
 ---
 
-## 🚨🚨🚨 强制执行规则（不可跳过）
+## Core Philosophy (Aligned with GudaSpec Research)
 
-**你必须按照下面的 Phase 顺序，使用 Skill 工具调用对应的 skill。**
+- **Output is Constraint Set**: Output "constraint set + verifiable success criteria", not information piles
+- **Convergence Direction**: Constraints are for "excluding directions", enabling zero-decision execution in subsequent plan
+- **No Architecture Decisions**: Only expose constraints, risks, and questions to be confirmed
+- **OpenSpec Rules**: thinking phase **writes directly to `openspec/` specification**, does not modify project code
 
-**禁止行为（违反则工作流失败）：**
+## Guardrails (Must Follow)
 
-- ❌ 跳过 Skill 调用，自己直接分析
-- ❌ 省略任何 Phase
-- ❌ 未按上下文边界进行探索（deep/ultra 必须并行）
-- ❌ 不使用 sequential-thinking 进行结构化推理
-- ❌ 修改项目业务代码（允许写入 `openspec/` 规范文件）
+- **Forbidden to split sub-agents by role** (e.g., "architect/security expert")
+- **Must split by context boundary** (module/directory/domain)
+- **Must use `mcp__auggie-mcp__codebase-retrieval`** for semantic retrieval
+- **Sub-agent output must follow unified JSON template** (see Phase 3)
+- **Forbidden to modify project code** (allowed to write to `openspec/` specification files)
 
-**每个 Phase 你必须：**
+---
 
-1. 调用指定的 Skill（使用 Skill 工具）
-2. 等待 Skill 执行完成
-3. **验证输出文件存在**
-4. 再进入下一个 Phase
+## 🚨🚨🚨 Mandatory Execution Rules (Cannot Skip)
 
-### 执行模型
+**You must follow the Phase order below, using the Skill tool to call the corresponding skill.**
+
+**Forbidden Actions (Workflow fails if violated):**
+
+- ❌ Skip Skill calls and analyze directly
+- ❌ Omit any Phase
+- ❌ Not exploring by context boundaries (deep/ultra must be parallel)
+- ❌ Not using sequential-thinking for structured reasoning
+- ❌ Modifying project business code (allowed to write to `openspec/` specification files)
+
+**For each Phase you must:**
+
+1. Call the specified Skill (using the Skill tool)
+2. Wait for Skill execution to complete
+3. **Verify output file exists**
+4. Then proceed to the next Phase
+
+### Execution Model
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  自动执行（无需询问）    │  硬停止（必须询问）                  │
+│  Auto Execute (No asking)     │  Hard Stop (Must ask)           │
 ├─────────────────────────────────────────────────────────────────┤
-│  Phase 1 → Phase 2      │  ⏸️ Phase 2: 深度确认（可选）        │
-│  Phase 3 → Phase 4      │  ⏸️ Phase 4: 约束澄清（如有疑问）     │
-│  Phase 4 → Phase 5      │  ⏸️ Phase 5: 结论确认（ultra 模式）  │
-│  Phase 5 → Phase 6      │                                      │
+│  Phase 1 → Phase 2            │  ⏸️ Phase 2: Depth confirm (opt) │
+│  Phase 3 → Phase 4            │  ⏸️ Phase 4: Constraint clarify  │
+│  Phase 4 → Phase 5            │  ⏸️ Phase 5: Conclusion confirm  │
+│  Phase 5 → Phase 6            │     (ultra mode)                │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### 阶段流程
+### Phase Flow
 
 ```
-Phase 1: 初始化        → 创建 THINKING_DIR，解析参数
-Phase 2: 复杂度评估    → Skill("complexity-analyzer")
-                       → 如未指定 --depth，自动路由或询问用户
-Phase 3: 上下文探索    → 语义检索 + 边界拆分 + 子代理并行探索 + 多模型约束分析
-Phase 4: 约束整合      → Skill("thought-synthesizer")
-                       → 汇总约束/风险/依赖/成功判据
-Phase 5: 结论生成      → Skill("conclusion-generator")
-                       → 生成推理链和最终结论
-Phase 6: 交付          → 输出思考报告
+Phase 1: Initialization   → Create THINKING_DIR, parse arguments
+Phase 2: Complexity       → Skill("complexity-analyzer")
+                          → If --depth not specified, auto-route or ask user
+Phase 3: Context Explore  → Semantic retrieval + boundary split + parallel sub-agent exploration + multi-model constraint analysis
+Phase 4: Constraint Integ → Skill("thought-synthesizer")
+                          → Aggregate constraints/risks/dependencies/success criteria
+Phase 5: Conclusion Gen   → Skill("conclusion-generator")
+                          → Generate reasoning chain and final conclusion
+Phase 6: Delivery         → Output thinking report
 ```
 
-> 如需完整推理链或原始输出，请使用 `--verbose` 或直接查看 run_dir 内文件。
+> For complete reasoning chains or raw outputs, use `--verbose` or directly view files in run_dir.
 
 ---
 
-## Phase 1: 初始化
+## Phase 1: Initialization
 
-### 参数解析
+### Argument Parsing
 
-| 选项            | 说明                         | 默认值 |
-| --------------- | ---------------------------- | ------ |
-| `--depth=value` | 思考深度 (auto/light/deep/ultra) | auto |
-| `--parallel`    | 强制多模型并行（即使 light） | false  |
-| `--verbose`     | 详细输出思考过程             | false  |
+| Option          | Description                             | Default |
+| --------------- | --------------------------------------- | ------- |
+| `--depth=value` | Thinking depth (auto/light/deep/ultra)  | auto    |
+| `--parallel`    | Force multi-model parallel (even light) | false   |
+| `--verbose`     | Verbose output of thinking process      | false   |
 
-### 解析逻辑
+### Parsing Logic
 
 ```bash
-# 初始化选项
+# Initialize options
 DEPTH="auto"
 PARALLEL=false
 VERBOSE=false
 
-# 解析各选项
+# Parse each option
 [[ "$ARGUMENTS" =~ --depth=([^ ]+) ]] && DEPTH="${BASH_REMATCH[1]}"
 [[ "$ARGUMENTS" =~ --parallel ]] && PARALLEL=true
 [[ "$ARGUMENTS" =~ --verbose ]] && VERBOSE=true
 
-# 提取问题描述
+# Extract problem description
 QUESTION=$(echo "$ARGUMENTS" | sed -E 's/--[a-zA-Z-]+(=[^ ]+)?//g' | xargs)
 ```
 
-### OpenSpec 状态检查（必须）
+### OpenSpec Status Check (Required)
 
-在 thinking 阶段也必须绑定 OpenSpec：
+OpenSpec must also be bound in the thinking phase:
 
 ```bash
 openspec view 2>/dev/null || openspec list 2>/dev/null || ls -la openspec 2>/dev/null || echo "OpenSpec not initialized"
 ```
 
-若未初始化 OpenSpec：
+If OpenSpec not initialized:
 
-- 提示用户先执行 `/tpd:init`
-- 完成后再继续 Phase 2
+- Prompt user to first execute `/tpd:init`
+- Continue Phase 2 after completion
 
-### 生成 proposal_id（仅用于产物路径，不作为流程串联）
+### Generate proposal_id (Only for artifact path, not for workflow chaining)
 
 ```bash
 RAW_SLUG=$(echo "$QUESTION" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | sed -E 's/^-+|-+$//g')
@@ -148,7 +148,7 @@ else
 fi
 ```
 
-### 运行目录创建（固定路径，位于 OpenSpec 之下）
+### Run Directory Creation (Fixed path, under OpenSpec)
 
 ```bash
 THINKING_ID=$(date -u +%Y%m%dT%H%M%SZ)
@@ -156,9 +156,10 @@ THINKING_DIR="openspec/changes/${PROPOSAL_ID}/artifacts/thinking"
 mkdir -p "$THINKING_DIR"
 
 ```
-**说明**：THINKING_ID 仅写入 state.json 作为记录，不参与路径与流程串联
 
-### 创建状态文件
+**Note**: THINKING_ID is only written to state.json as a record, does not participate in path or workflow chaining
+
+### Create State File
 
 ```bash
 cat > "${THINKING_DIR}/state.json" << EOF
@@ -187,107 +188,107 @@ EOF
 echo "$QUESTION" > "${THINKING_DIR}/input.md"
 ```
 
-**🚨 完成后立即执行 Phase 2！**
+**🚨 Execute Phase 2 immediately after completion!**
 
 ---
 
-## Phase 2: 复杂度评估
+## Phase 2: Complexity Assessment
 
-### 🚨🚨🚨 强制执行 🚨🚨🚨
+### 🚨🚨🚨 Mandatory Execution 🚨🚨🚨
 
-**立即调用 Skill：**
+**Call Skill immediately:**
 
 ```
 Skill(skill="tpd:complexity-analyzer", args="run_dir=${THINKING_DIR}")
 ```
 
-**Skill 执行内容**：
+**Skill Execution Content**:
 
-1. 使用 `mcp__sequential-thinking__sequentialthinking` 分析问题
-2. 评估复杂度维度：
-   - 问题长度和结构
-   - 领域深度
-   - 推理步骤数
-   - 歧义程度
-3. 输出复杂度评分和建议深度
+1. Use `mcp__sequential-thinking__sequentialthinking` to analyze the problem
+2. Assess complexity dimensions:
+   - Problem length and structure
+   - Domain depth
+   - Number of reasoning steps
+   - Degree of ambiguity
+3. Output complexity score and recommended depth
 
-**验证**：确认 `${THINKING_DIR}/complexity-analysis.md` 已生成
+**Verify**: Confirm `${THINKING_DIR}/complexity-analysis.md` is generated
 
-### 深度路由规则（仅当 `DEPTH=auto` 时生效）
+### Depth Routing Rules (Only effective when `DEPTH=auto`)
 
-| 复杂度评分 | 建议深度 | 触发条件                             |
-| ---------- | -------- | ------------------------------------ |
-| 1-3        | light    | 简单问答、事实查询、单步骤任务       |
-| 4-6        | deep     | 需要推理、对比分析、中等复杂度设计   |
-| 7-10       | ultra    | 复杂架构、多步骤推理、需要多领域知识 |
+| Complexity Score | Recommended Depth | Trigger Condition                                                           |
+| ---------------- | ----------------- | --------------------------------------------------------------------------- |
+| 1-3              | light             | Simple Q&A, fact queries, single-step tasks                                 |
+| 4-6              | deep              | Requires reasoning, comparative analysis, medium complexity design          |
+| 7-10             | ultra             | Complex architecture, multi-step reasoning, requires multi-domain knowledge |
 
-### 关键词触发（覆盖自动路由）
+### Keyword Triggers (Override auto-routing)
 
-| 用户输入关键词                       | 强制深度 |
-| ------------------------------------ | -------- |
-| "想一想"、"think"、"简单分析"        | light    |
-| "仔细想"、"think hard"、"深入分析"   | deep     |
-| "深度分析"、"ultrathink"、"全面分析" | ultra    |
+| User Input Keywords                                 | Forced Depth |
+| --------------------------------------------------- | ------------ |
+| "think about it", "think", "simple analysis"        | light        |
+| "think carefully", "think hard", "deep analysis"    | deep         |
+| "deep dive", "ultrathink", "comprehensive analysis" | ultra        |
 
-### ⏸️ 可选硬停止
+### ⏸️ Optional Hard Stop
 
-**如果 `--depth=auto` 且复杂度评分在 4-6 之间**，使用 AskUserQuestion：
+**If `--depth=auto` and complexity score is between 4-6**, use AskUserQuestion:
 
 ```
-问题: 建议使用 Deep 思考模式，是否确认？
-选项:
-  - Deep 思考（推荐）- 多模型并行，30-60秒
-  - Light 思考 - 快速响应，5-15秒
-  - Ultra 思考 - 最深度分析，60-180秒
+Question: Recommend using Deep thinking mode, confirm?
+Options:
+  - Deep Thinking (Recommended) - Multi-model parallel, 30-60 seconds
+  - Light Thinking - Fast response, 5-15 seconds
+  - Ultra Thinking - Deepest analysis, 60-180 seconds
 ```
 
-**🚨 确认后立即执行 Phase 3！**
+**🚨 Execute Phase 3 immediately after confirmation!**
 
 ---
 
-## Phase 3: 上下文边界探索 + 多模型分析（对齐 Research）
+## Phase 3: Context Boundary Exploration + Multi-Model Analysis (Aligned with Research)
 
-### 🚨🚨🚨 强制执行 - 核心阶段 🚨🚨🚨
+### 🚨🚨🚨 Mandatory Execution - Core Phase 🚨🚨🚨
 
-**目标**：按上下文边界探索代码库，输出**约束集合**，并用多模型补充约束/风险/成功判据。
+**Goal**: Explore codebase by context boundaries, output **constraint sets**, and use multi-model to supplement constraints/risks/success criteria.
 
-### Step 3.1 初步评估（必须使用 auggie）
+### Step 3.1 Initial Assessment (Must use auggie)
 
 ```
 mcp__auggie-mcp__codebase-retrieval({
-  information_request: "快速识别本项目的主要模块/目录边界、核心领域与配置范围，用于拆分上下文边界探索。"
+  information_request: "Quickly identify the main module/directory boundaries, core domains, and configuration scopes of this project for splitting context boundary exploration."
 })
 ```
 
-### Step 3.2 定义上下文边界（禁止按角色拆分）
+### Step 3.2 Define Context Boundaries (Forbidden to split by role)
 
-**边界示例（仅示例，必须结合代码库）：**
+**Boundary examples (examples only, must be based on codebase):**
 
-- user-domain（用户相关模型/服务/UI）
-- auth-session（鉴权/会话/中间件）
-- config-infra（配置/部署/构建脚本）
+- user-domain (user-related models/services/UI)
+- auth-session (authentication/session/middleware)
+- config-infra (configuration/deployment/build scripts)
 
-**将边界列表写入**：`${THINKING_DIR}/boundaries.json`
+**Write boundary list to**: `${THINKING_DIR}/boundaries.json`
 
-示例结构：
+Example structure:
 
 ```json
 {
   "boundaries": [
-    { "id": "user-domain", "scope": "用户相关模型/服务/UI" },
-    { "id": "auth-session", "scope": "鉴权/会话/中间件" }
+    { "id": "user-domain", "scope": "user-related models/services/UI" },
+    { "id": "auth-session", "scope": "authentication/session/middleware" }
   ]
 }
 ```
 
-**决策原则**：
+**Decision Principles**:
 
-- 若代码跨多个子目录/模块 → **必须并行**拆分边界
-- 若规模很小/单目录 → 可仅保留 1 个核心边界
+- If code spans multiple subdirectories/modules → **must parallel** split boundaries
+- If scale is small/single directory → can keep only 1 core boundary
 
-### Step 3.3 子代理并行探索（统一 JSON 模板）
+### Step 3.3 Sub-agent Parallel Exploration (Unified JSON Template)
 
-**统一输出模板（必须一致）**：
+**Unified Output Template (must be consistent)**:
 
 ```json
 {
@@ -302,202 +303,202 @@ mcp__auggie-mcp__codebase-retrieval({
 }
 ```
 
-#### Light 模式（单边界）
+#### Light Mode (Single Boundary)
 
 ```
 Skill(skill="tpd:context-explorer", args="run_dir=${THINKING_DIR} boundary=<boundaries[0].id>")
 ```
 
-#### Deep/Ultra 模式（多边界并行）
+#### Deep/Ultra Mode (Multi-Boundary Parallel)
 
-> 以下仅示例，实际边界必须以 `boundaries.json` 为准。
+> The following are examples only, actual boundaries must be based on `boundaries.json`.
 
 ```
 Task(
   subagent_type="general-purpose",
   description="Explore boundary: user-domain",
-  prompt="Skill(skill=\\\"tpd:context-explorer\\\", args=\\\"run_dir=${THINKING_DIR} boundary=user-domain scope=用户相关模型/服务/UI\\\")",
+  prompt="Skill(skill=\"tpd:context-explorer\", args=\"run_dir=${THINKING_DIR} boundary=user-domain scope=user-related models/services/UI\")",
   run_in_background=true
 )
 
 Task(
   subagent_type="general-purpose",
   description="Explore boundary: auth-session",
-  prompt="Skill(skill=\\\"tpd:context-explorer\\\", args=\\\"run_dir=${THINKING_DIR} boundary=auth-session scope=鉴权/会话/中间件\\\")",
+  prompt="Skill(skill=\"tpd:context-explorer\", args=\"run_dir=${THINKING_DIR} boundary=auth-session scope=authentication/session/middleware\")",
   run_in_background=true
 )
 
 Task(
-  subagent_type=\"general-purpose\",
-  description=\"Explore boundary: config-infra\",
-  prompt=\"Skill(skill=\\\"tpd:context-explorer\\\", args=\\\"run_dir=${THINKING_DIR} boundary=config-infra scope=配置/部署/构建脚本\\\")\",
+  subagent_type="general-purpose",
+  description="Explore boundary: config-infra",
+  prompt="Skill(skill=\"tpd:context-explorer\", args=\"run_dir=${THINKING_DIR} boundary=config-infra scope=configuration/deployment/build scripts\")",
   run_in_background=true
 )
 ```
 
-### Step 3.4 多模型约束分析（Deep/Ultra 必须执行）
+### Step 3.4 Multi-Model Constraint Analysis (Deep/Ultra Must Execute)
 
-**原则**：仅做约束/风险/成功判据分析，**禁止生成代码或修改项目**。
+**Principle**: Only do constraint/risk/success criteria analysis, **forbidden to generate code or modify project**.
 
 ```
 Task(
   subagent_type="general-purpose",
   description="Codex constraints analysis",
-  prompt="Skill(skill=\\\"tpd:codex-thinker\\\", args=\\\"run_dir=${THINKING_DIR} level=low\\\")",
+  prompt="Skill(skill=\"tpd:codex-thinker\", args=\"run_dir=${THINKING_DIR} level=low\")",
   run_in_background=true
 )
 
 Task(
   subagent_type="general-purpose",
   description="Gemini constraints analysis",
-  prompt="Skill(skill=\\\"tpd:gemini-thinker\\\", args=\\\"run_dir=${THINKING_DIR} level=medium\\\")",
+  prompt="Skill(skill=\"tpd:gemini-thinker\", args=\"run_dir=${THINKING_DIR} level=medium\")",
   run_in_background=true
 )
 ```
 
-Light 模式可跳过；如需多模型补充，使用 `--parallel` 强制执行。
+Light mode can skip; if multi-model supplementation needed, use `--parallel` to force execution.
 
-### 验证检查清单
+### Verification Checklist
 
-**Phase 3 完成后，验证：**
+**After Phase 3 completion, verify:**
 
-- [ ] `${THINKING_DIR}/boundaries.json` 已生成
-- [ ] `${THINKING_DIR}/explore-*.json` 至少 1 个
-- [ ] Deep/Ultra：`${THINKING_DIR}/codex-thought.md` 与 `${THINKING_DIR}/gemini-thought.md` 已生成
-- [ ] 输出 JSON 符合模板
+- [ ] `${THINKING_DIR}/boundaries.json` is generated
+- [ ] `${THINKING_DIR}/explore-*.json` at least 1 exists
+- [ ] Deep/Ultra: `${THINKING_DIR}/codex-thought.md` and `${THINKING_DIR}/gemini-thought.md` are generated
+- [ ] Output JSON conforms to template
 
-**🚨 验证通过后立即执行 Phase 4！**
+**🚨 Execute Phase 4 immediately after verification passes!**
 
 ---
 
-## Phase 4: 约束整合
+## Phase 4: Constraint Integration
 
-### 🚨🚨🚨 强制执行 🚨🚨🚨
+### 🚨🚨🚨 Mandatory Execution 🚨🚨🚨
 
-**立即调用 Skill：**
+**Call Skill immediately:**
 
 ```
 Skill(skill="tpd:thought-synthesizer", args="run_dir=${THINKING_DIR} depth=${DEPTH}")
 ```
 
-**Skill 执行内容**：
+**Skill Execution Content**:
 
-1. 读取 `${THINKING_DIR}/explore-*.json`（核心输入）
-2. 如存在 \*-thought.md，可作为补充视角
-3. 使用 sequential-thinking 进行结构化整合：
-   - 汇总硬/软约束
-   - 归纳开放问题与歧义点
-   - 汇总依赖与风险
-   - 形成可验证成功判据线索
-4. 生成整合报告（synthesis.md）
+1. Read `${THINKING_DIR}/explore-*.json` (core input)
+2. If \*-thought.md exists, can use as supplementary perspective
+3. Use sequential-thinking for structured integration:
+   - Aggregate hard/soft constraints
+   - Summarize open questions and ambiguity points
+   - Aggregate dependencies and risks
+   - Form verifiable success criteria hints
+4. Generate integration report (synthesis.md)
 
-**验证**：确认 `${THINKING_DIR}/synthesis.md` 已生成
+**Verify**: Confirm `${THINKING_DIR}/synthesis.md` is generated
 
-**⏸️ 约束澄清硬停止**：
+**⏸️ Constraint Clarification Hard Stop**:
 
-- 若 synthesis.md 中存在 open_questions，必须使用 AskUserQuestion 进行澄清
-- 将用户回答写入 `${THINKING_DIR}/clarifications.md`
+- If synthesis.md contains open_questions, must use AskUserQuestion for clarification
+- Write user answers to `${THINKING_DIR}/clarifications.md`
 
-**🚨 确认后执行 Phase 5！**
+**🚨 Execute Phase 5 after confirmation!**
 
 ---
 
-## Phase 5: 结论生成
+## Phase 5: Conclusion Generation
 
-### 🚨🚨🚨 强制执行 🚨🚨🚨
+### 🚨🚨🚨 Mandatory Execution 🚨🚨🚨
 
-**立即调用 Skill：**
+**Call Skill immediately:**
 
 ```
 Skill(skill="tpd:conclusion-generator", args="run_dir=${THINKING_DIR}")
 ```
 
-**Skill 执行内容**：
+**Skill Execution Content**:
 
-1. 基于整合结果生成最终结论
-2. 构建完整推理链
-3. 标注置信度
-4. 列出关键假设和限制
+1. Generate final conclusion based on integration results
+2. Build complete reasoning chain
+3. Mark confidence level
+4. List key assumptions and limitations
 
-**验证**：确认 `${THINKING_DIR}/conclusion.md` 已生成
+**Verify**: Confirm `${THINKING_DIR}/conclusion.md` is generated
 
-### ⏸️ Ultra 模式硬停止
+### ⏸️ Ultra Mode Hard Stop
 
-**如果是 Ultra 模式**，展示结论摘要并询问：
+**If Ultra mode**, display conclusion summary and ask:
 
 ```
-问题: 深度分析完成，是否需要进一步探索某个方向？
-选项:
-  - 接受当前结论
-  - 深入分析分歧点
-  - 探索替代方案
+Question: Deep analysis complete, need to further explore any direction?
+Options:
+  - Accept current conclusion
+  - Deep dive into divergence points
+  - Explore alternative solutions
 ```
 
-**🚨 确认后执行 Phase 6！**
+**🚨 Execute Phase 6 after confirmation!**
 
 ---
 
-## Phase 6: 交接与交付
+## Phase 6: Handoff and Delivery
 
-### 🚨🚨🚨 强制执行 🚨🚨🚨
+### 🚨🚨🚨 Mandatory Execution 🚨🚨🚨
 
-**立即调用 Skill：**
+**Call Skill immediately:**
 
 ```
 Skill(skill="tpd:handoff-generator", args="run_dir=${THINKING_DIR}")
 ```
 
-**验证**：确认 `${THINKING_DIR}/handoff.md` 与 `${THINKING_DIR}/handoff.json` 已生成
+**Verify**: Confirm `${THINKING_DIR}/handoff.md` and `${THINKING_DIR}/handoff.json` are generated
 
 ---
 
-### 输出完成摘要（默认简洁，避免占用上下文）
+### Output Completion Summary (Default concise, avoid context overhead)
 
 ```
-🧠 深度思考完成！
+🧠 Deep Thinking Complete!
 
-📋 问题: ${QUESTION}
-📋 提案: ${PROPOSAL_ID}
-🔬 思考深度: ${DEPTH}
-⏱️ 耗时: ${ELAPSED_TIME}
+📋 Question: ${QUESTION}
+📋 Proposal: ${PROPOSAL_ID}
+🔬 Thinking Depth: ${DEPTH}
+⏱️ Duration: ${ELAPSED_TIME}
 
-📊 思考指标:
-- 模型参与: ${MODEL_COUNT} 个
-- 推理步骤: ${REASONING_STEPS} 步
-- 置信度: ${CONFIDENCE}%
+📊 Thinking Metrics:
+- Models Participated: ${MODEL_COUNT}
+- Reasoning Steps: ${REASONING_STEPS}
+- Confidence: ${CONFIDENCE}%
 
-🎯 核心结论:
+🎯 Core Conclusion:
 ${CONCLUSION_SUMMARY}
 
-📦 交接摘要:
-- 约束: 见 ${THINKING_DIR}/handoff.md
-- 非目标: 见 ${THINKING_DIR}/handoff.md
-- 成功判据: 见 ${THINKING_DIR}/handoff.md
-- 验收标准: 见 ${THINKING_DIR}/handoff.md
+📦 Handoff Summary:
+- Constraints: See ${THINKING_DIR}/handoff.md
+- Non-Goals: See ${THINKING_DIR}/handoff.md
+- Success Criteria: See ${THINKING_DIR}/handoff.md
+- Acceptance Standards: See ${THINKING_DIR}/handoff.md
 
-➡️ 下一阶段建议:
+➡️ Next Phase Suggestions:
 1) /tpd:plan
-2) OpenSpec 路径与 proposal_id 见 ${THINKING_DIR}/handoff.json（已写入 openspec/）
-3) 计划完成后进入 /tpd:dev 或 /refactor
+2) OpenSpec path and proposal_id in ${THINKING_DIR}/handoff.json (written to openspec/)
+3) After plan completion, proceed to /tpd:dev or /refactor
 
-💡 控制上下文建议: 完成 thinking 后可使用 `/clear` 开启新会话再进入 plan。
+💡 Context Control Tip: After completing thinking, you can use `/clear` to start a new session before entering plan.
 
-📁 产物:
+📁 Artifacts:
   ${THINKING_DIR}/
-  ├── input.md                # 原始问题
-  ├── complexity-analysis.md  # 复杂度评估
-  ├── boundaries.json         # 边界列表
-  ├── explore-*.json           # 边界探索输出（多份）
-  ├── synthesis.md            # 约束整合
-  ├── clarifications.md       # 用户澄清（若有）
-  ├── codex-thought.md        # Codex 约束补充（deep/ultra）
-  ├── gemini-thought.md       # Gemini 约束补充（deep/ultra）
-  ├── conclusion.md           # 最终结论
-  ├── handoff.md              # 交接摘要
-  └── handoff.json            # 交接结构化数据
+  ├── input.md                # Original question
+  ├── complexity-analysis.md  # Complexity assessment
+  ├── boundaries.json         # Boundary list
+  ├── explore-*.json          # Boundary exploration output (multiple)
+  ├── synthesis.md            # Constraint integration
+  ├── clarifications.md       # User clarifications (if any)
+  ├── codex-thought.md        # Codex constraint supplement (deep/ultra)
+  ├── gemini-thought.md       # Gemini constraint supplement (deep/ultra)
+  ├── conclusion.md           # Final conclusion
+  ├── handoff.md              # Handoff summary
+  └── handoff.json            # Handoff structured data
 ```
 
-OpenSpec 规范会写入：
+OpenSpec specification will be written to:
 
 ```
 openspec/changes/${PROPOSAL_ID}/
@@ -505,69 +506,69 @@ openspec/changes/${PROPOSAL_ID}/
 
 ---
 
-## 思考深度对比
+## Thinking Depth Comparison
 
-| 特性         | Light           | Deep               | Ultra                  |
-| ------------ | --------------- | ------------------ | ---------------------- |
-| 边界数量     | 1               | 2-3                | 3-5                    |
-| 并行子代理   | 无/少量         | 中等并行           | 高并行                 |
-| 预期耗时     | 5-15s           | 30-60s             | 60-180s                |
-| 适用场景     | 简单需求/小改动 | 中等复杂度需求     | 复杂架构/多模块需求     |
+| Feature              | Light                      | Deep                    | Ultra                                   |
+| -------------------- | -------------------------- | ----------------------- | --------------------------------------- |
+| Boundary Count       | 1                          | 2-3                     | 3-5                                     |
+| Parallel Subagents   | None/Few                   | Medium parallel         | High parallel                           |
+| Expected Duration    | 5-15s                      | 30-60s                  | 60-180s                                 |
+| Applicable Scenarios | Simple needs/small changes | Medium complexity needs | Complex architecture/multi-module needs |
 
 ---
 
-## 运行目录结构
+## Run Directory Structure
 
 ```
 openspec/changes/<proposal_id>/artifacts/thinking/
-├── state.json               # 工作流状态
-├── input.md                 # 原始问题
-├── complexity-analysis.md   # Phase 2 产出
-├── claude-thought.md        # Phase 3 产出
-├── codex-thought.md         # Phase 3 产出（deep/ultra）
-├── gemini-thought.md        # Phase 3 产出（deep/ultra）
-├── synthesis.md             # Phase 4 产出
-├── conclusion.md            # Phase 5 产出
-├── handoff.md               # Phase 6 产出
-└── handoff.json             # Phase 6 产出
+├── state.json               # Workflow state
+├── input.md                 # Original question
+├── complexity-analysis.md   # Phase 2 output
+├── claude-thought.md        # Phase 3 output
+├── codex-thought.md         # Phase 3 output (deep/ultra)
+├── gemini-thought.md        # Phase 3 output (deep/ultra)
+├── synthesis.md             # Phase 4 output
+├── conclusion.md            # Phase 5 output
+├── handoff.md               # Phase 6 output
+└── handoff.json             # Phase 6 output
 ```
 
 ---
 
-## 错误处理
+## Error Handling
 
-### 模型调用失败
-
-```
-⚠️ ${MODEL} 思考失败
-
-错误: ${ERROR_MESSAGE}
-
-处理:
-- 使用其他模型结果继续
-- 在 synthesis.md 中标注缺失视角
-```
-
-### 思考超时
+### Model Call Failure
 
 ```
-⚠️ 思考超时
+⚠️ ${MODEL} Thinking Failed
 
-已完成模型: ${COMPLETED_MODELS}
-超时模型: ${TIMEOUT_MODELS}
+Error: ${ERROR_MESSAGE}
 
-建议:
-1. 降低思考深度
-2. 简化问题
-3. 分步骤思考
+Handling:
+- Continue with other model results
+- Mark missing perspective in synthesis.md
+```
+
+### Thinking Timeout
+
+```
+⚠️ Thinking Timeout
+
+Completed Models: ${COMPLETED_MODELS}
+Timeout Models: ${TIMEOUT_MODELS}
+
+Suggestions:
+1. Lower thinking depth
+2. Simplify the question
+3. Think step by step
 ```
 
 ---
 
-## 约束
+## Constraints
 
-- 不跳过复杂度评估（Phase 2）
-- Deep/Ultra 模式必须多模型并行
-- 每个 Phase 必须调用对应的 Skill
-- 使用 sequential-thinking 进行结构化推理
-- 最终结论必须标注置信度
+- Do not skip complexity assessment (Phase 2)
+- Deep/Ultra mode must use multi-model parallel
+- Each Phase must call the corresponding Skill
+- Use sequential-thinking for structured reasoning
+- Final conclusion must mark confidence level

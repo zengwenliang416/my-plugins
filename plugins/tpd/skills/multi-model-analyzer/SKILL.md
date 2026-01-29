@@ -1,11 +1,11 @@
 ---
 name: multi-model-analyzer
 description: |
-  【触发条件】开发工作流第二步：多模型并行分析需求，生成实施方案。
-  【核心产出】输出 ${run_dir}/analysis-{model}.md，包含实施方案。
-  【不触发】上下文检索（用 context-retriever）、原型生成（用 prototype-generator）。
-  【先问什么】context.md 缺失时，询问是否先执行上下文检索
-  【强制工具】必须调用 codex-cli 或 gemini-cli Skill，禁止 Claude 自行分析。
+  [Trigger] Dev workflow step 2: Multi-model parallel analysis of requirements to generate implementation plan.
+  [Output] Outputs ${run_dir}/analysis-{model}.md containing implementation plan.
+  [Skip] Context retrieval (use context-retriever), prototype generation (use prototype-generator).
+  [Ask First] If context.md is missing, ask whether to execute context retrieval first
+  [Mandatory Tool] Must invoke codex-cli or gemini-cli Skill, Claude self-analysis is prohibited.
 allowed-tools:
   - Read
   - Write
@@ -15,211 +15,214 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（由 orchestrator 传入）
+    description: Run directory path (passed by orchestrator)
   - name: model
     type: string
     required: true
-    description: 模型类型（codex 或 gemini）
+    description: Model type (codex or gemini)
 ---
 
-# Multi-Model Analyzer - 多模型分析原子技能
+# Multi-Model Analyzer - Multi-Model Analysis Atomic Skill
 
-## 🚨 CRITICAL: 必须调用 codex-cli 或 gemini-cli Skill
+## 🚨 CRITICAL: Must Invoke codex-cli or gemini-cli Skill
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  ❌ 禁止：Claude 自己做分析（跳过外部模型）                       │
-│  ❌ 禁止：直接 Bash 调用 codeagent-wrapper                       │
-│  ✅ 必须：通过 Skill 工具调用 codex-cli 或 gemini-cli            │
+│  ❌ Prohibited: Claude doing analysis itself (skipping external │
+│     model)                                                       │
+│  ❌ Prohibited: Directly calling codeagent-wrapper via Bash     │
+│  ✅ Required: Invoke codex-cli or gemini-cli via Skill tool     │
 │                                                                  │
-│  这是多模型协作的核心！Claude 不能替代 Codex/Gemini 分析！        │
+│  This is the core of multi-model collaboration!                  │
+│  Claude cannot replace Codex/Gemini analysis!                    │
 │                                                                  │
-│  执行顺序（必须遵循）：                                          │
-│  1. 读取 context.md                                             │
-│  2. Skill 调用 codex-cli 或 gemini-cli                          │
-│  3. 将外部模型输出写入 analysis-{model}.md                       │
+│  Execution order (must follow):                                  │
+│  1. Read context.md                                              │
+│  2. Skill invocation to codex-cli or gemini-cli                  │
+│  3. Write external model output to analysis-{model}.md           │
 │                                                                  │
-│  如果跳过 Step 2，整个多模型协作失效！                           │
+│  If Step 2 is skipped, the entire multi-model collaboration     │
+│  fails!                                                          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## 职责边界
+## Responsibility Boundary
 
-- **输入**: `run_dir` + `model` 类型
-- **输出**: `${run_dir}/analysis-{codex|gemini}.md`
-- **单一职责**: 只做方案分析，不生成代码
+- **Input**: `run_dir` + `model` type
+- **Output**: `${run_dir}/analysis-{codex|gemini}.md`
+- **Single Responsibility**: Only do plan analysis, no code generation
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                               | 触发条件        |
-| --------------------- | ---------------------------------- | --------------- |
-| `sequential-thinking` | 结构化分析策略，确保方案完整一致性 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                                         | Trigger     |
+| --------------------- | ----------------------------------------------- | ----------- |
+| `sequential-thinking` | Structured analysis strategy for plan coherence | 🚨 Required |
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化分析规划（sequential-thinking）
+### Step 0: Structured Analysis Planning (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划分析策略**
+🚨 **Must first use sequential-thinking to plan analysis strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划多模型分析策略。需要：1) 理解上下文 2) 确定分析视角 3) 构建分析提示 4) 评估技术选型 5) 识别风险点",
+  thought: "Planning multi-model analysis strategy. Need: 1) Understand context 2) Determine analysis perspective 3) Build analysis prompt 4) Evaluate tech choices 5) Identify risk points",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **上下文理解**：从 context.md 提取需求核心和约束
-2. **分析视角确定**：根据 model 参数确定后端/前端视角
-3. **分析提示构建**：针对性构建提示词
-4. **技术选型评估**：评估现有架构和推荐方案
-5. **风险点识别**：识别潜在技术风险和依赖冲突
+1. **Context Understanding**: Extract core requirements and constraints from context.md
+2. **Analysis Perspective**: Determine backend/frontend perspective based on model parameter
+3. **Prompt Construction**: Build targeted prompts
+4. **Tech Selection Evaluation**: Evaluate existing architecture and recommended solutions
+5. **Risk Identification**: Identify potential technical risks and dependency conflicts
 
-### Step 1: 读取上下文
+### Step 1: Read Context
 
 ```bash
-# 读取上下文
-读取 ${run_dir}/context.md
-提取: 需求概述、相关文件、架构模式、依赖分析
+# Read context
+Read ${run_dir}/context.md
+Extract: Requirements overview, related files, architecture patterns, dependency analysis
 ```
 
-### Step 2: 构建分析提示
+### Step 2: Build Analysis Prompt
 
-根据模型类型构建专注领域：
+Build focus areas based on model type:
 
-| 模型   | 分析视角  | 关注点                                 |
-| ------ | --------- | -------------------------------------- |
-| Codex  | 后端/逻辑 | API 设计、数据模型、业务逻辑、错误处理 |
-| Gemini | 前端/UI   | 组件结构、状态管理、用户交互、样式方案 |
+| Model  | Analysis Perspective | Focus Areas                                     |
+| ------ | -------------------- | ----------------------------------------------- |
+| Codex  | Backend/Logic        | API design, data models, business logic, errors |
+| Gemini | Frontend/UI          | Component structure, state mgmt, UX, styling    |
 
-### Step 3: 调用外部模型 Skill（🚨 必须执行）
+### Step 3: Invoke External Model Skill (🚨 Required)
 
-**🚨🚨🚨 这是关键步骤！**
+**🚨🚨🚨 This is the critical step!**
 
-**❌ 禁止行为：**
+**❌ Prohibited Actions:**
 
-- ❌ 使用 Bash 工具调用 codeagent-wrapper
-- ❌ 自己分析需求
+- ❌ Using Bash tool to call codeagent-wrapper
+- ❌ Analyzing requirements yourself
 
-**✅ 唯一正确做法：使用 Skill 工具**
+**✅ Only Correct Approach: Use Skill tool**
 
-**对于 Codex 模型（model=codex），立即执行：**
-
-```
-Skill(skill="codex-cli", args="--role analyzer --prompt '分析需求并生成实施方案。上下文文件路径: ${RUN_DIR}/context.md。请先读取该文件，然后输出: 1.实施方案概述 2.技术选型建议 3.关键实现步骤 4.潜在风险点 5.与现有代码的集成方式。OUTPUT FORMAT: Markdown'")
-```
-
-**对于 Gemini 模型（model=gemini），立即执行：**
+**For Codex model (model=codex), execute immediately:**
 
 ```
-Skill(skill="gemini-cli", args="--role analyzer --prompt '分析前端需求并生成UI实施方案。上下文文件路径: ${RUN_DIR}/context.md。请先读取该文件，然后输出: 1.UI组件结构 2.状态管理方案 3.样式和响应式策略 4.用户交互流程 5.可访问性考虑。OUTPUT FORMAT: Markdown'")
+Skill(skill="codex-cli", args="--role analyzer --prompt 'Analyze requirements and generate implementation plan. Context file path: ${RUN_DIR}/context.md. Please read that file first, then output: 1.Implementation overview 2.Tech selection recommendations 3.Key implementation steps 4.Potential risk points 5.Integration approach with existing code. OUTPUT FORMAT: Markdown'")
 ```
 
-**⚠️ 如果你发现自己在用 Bash 调用 codeagent-wrapper，立即停止并改用 Skill 工具！**
+**For Gemini model (model=gemini), execute immediately:**
 
-### Step 4: 结构化输出
+```
+Skill(skill="gemini-cli", args="--role analyzer --prompt 'Analyze frontend requirements and generate UI implementation plan. Context file path: ${RUN_DIR}/context.md. Please read that file first, then output: 1.UI component structure 2.State management plan 3.Styling and responsive strategy 4.User interaction flow 5.Accessibility considerations. OUTPUT FORMAT: Markdown'")
+```
 
-将分析结果写入 `${run_dir}/analysis-{model}.md`：
+**⚠️ If you find yourself using Bash to call codeagent-wrapper, stop immediately and use Skill tool instead!**
+
+### Step 4: Structured Output
+
+Write analysis results to `${run_dir}/analysis-{model}.md`:
 
 ```markdown
-# {Codex|Gemini} 分析报告
+# {Codex|Gemini} Analysis Report
 
-## 模型信息
+## Model Information
 
-- 模型: {codex|gemini}
-- 视角: {后端/逻辑|前端/UI}
-- 分析时间: [timestamp]
+- Model: {codex|gemini}
+- Perspective: {Backend/Logic|Frontend/UI}
+- Analysis Time: [timestamp]
 
-## 实施方案
+## Implementation Plan
 
-### 概述
+### Overview
 
-[一段话描述整体方案]
+[One paragraph describing overall approach]
 
-### 技术选型
+### Tech Selection
 
-| 领域   | 选型 | 理由 |
-| ------ | ---- | ---- |
-| 数据层 | ...  | ...  |
-| 逻辑层 | ...  | ...  |
-| 接口层 | ...  | ...  |
+| Area        | Choice | Rationale |
+| ----------- | ------ | --------- |
+| Data Layer  | ...    | ...       |
+| Logic Layer | ...    | ...       |
+| API Layer   | ...    | ...       |
 
-### 实现步骤
+### Implementation Steps
 
-1. **步骤1**: [描述]
-   - 涉及文件: [文件列表]
-   - 关键代码: [伪代码或接口]
+1. **Step 1**: [Description]
+   - Files involved: [File list]
+   - Key code: [Pseudocode or interface]
 
-2. **步骤2**: [描述]
+2. **Step 2**: [Description]
    ...
 
-### 风险评估
+### Risk Assessment
 
-| 风险 | 等级     | 缓解措施 |
-| ---- | -------- | -------- |
-| ...  | 高/中/低 | ...      |
+| Risk | Level        | Mitigation |
+| ---- | ------------ | ---------- |
+| ...  | High/Med/Low | ...        |
 
-### 集成方案
+### Integration Plan
 
-- 与现有模块 X 的集成: [描述]
-- API 契约: [接口定义]
+- Integration with existing module X: [Description]
+- API contracts: [Interface definition]
 
 ---
 
-基于上下文: context.md
-下一步: 综合分析后调用 prototype-generator
+Based on context: context.md
+Next step: Invoke prototype-generator after synthesizing analysis
 ```
 
-## 并行执行（后台模式）
+## Parallel Execution (Background Mode)
 
-支持多模型并行分析，由编排器使用 Task 工具协调：
+Supports multi-model parallel analysis, coordinated by orchestrator using Task tool:
 
 ```
-# 编排器中的调用
+# Orchestrator invocation
 Task(skill="multi-model-analyzer", args="run_dir=${RUN_DIR} model=codex", run_in_background=true) &
 Task(skill="multi-model-analyzer", args="run_dir=${RUN_DIR} model=gemini", run_in_background=true) &
 wait
 ```
 
-## 返回值
+## Return Value
 
-执行完成后，返回：
+Upon completion, return:
 
 ```
-{模型} 分析完成。
-输出文件: ${run_dir}/analysis-{model}.md
-方案概述: [一句话]
-风险等级: [高/中/低]
+{Model} analysis complete.
+Output file: ${run_dir}/analysis-{model}.md
+Plan overview: [One sentence]
+Risk level: [High/Medium/Low]
 
-下一步: 等待所有分析完成后综合评估
+Next step: Wait for all analyses to complete for synthesis
 ```
 
-## 质量门控
+## Quality Gates
 
-- ✅ 方案与上下文匹配
-- ✅ 步骤可执行（有具体文件和接口）
-- ✅ 风险已识别并有缓解措施
-- ✅ 集成方案明确
+- ✅ Plan matches context
+- ✅ Steps are executable (specific files and interfaces)
+- ✅ Risks identified with mitigation measures
+- ✅ Integration plan is clear
 
-## 约束
+## Constraints
 
-- 不做上下文检索（交给 context-retriever）
-- 不生成实际代码（交给 prototype-generator）
-- 分析必须基于 context.md 的实际情况
-- 外部模型输出视为参考，需 Claude 最终审核
+- No context retrieval (handled by context-retriever)
+- No actual code generation (handled by prototype-generator)
+- Analysis must be based on actual context.md content
+- External model output is for reference, requires Claude final review
 
-## 🚨 强制工具验证
+## 🚨 Mandatory Tool Verification
 
-**执行此 Skill 后，必须满足以下条件：**
+**After executing this Skill, the following conditions must be met:**
 
-| 检查项              | 要求 | 验证方式                            |
-| ------------------- | ---- | ----------------------------------- |
-| Skill 调用          | 必须 | 检查 codex-cli 或 gemini-cli 被调用 |
-| 外部模型输出        | 必须 | analysis-{model}.md 包含模型响应    |
-| Claude 自行分析     | 禁止 | 不能跳过 Skill 直接写结果           |
-| 直接 Bash codeagent | 禁止 | 必须通过 Skill 工具调用             |
+| Check Item            | Requirement | Verification Method                   |
+| --------------------- | ----------- | ------------------------------------- |
+| Skill invocation      | Required    | Check codex-cli or gemini-cli called  |
+| External model output | Required    | analysis-{model}.md contains response |
+| Claude self-analysis  | Prohibited  | Cannot skip Skill and write directly  |
+| Direct Bash codeagent | Prohibited  | Must invoke via Skill tool            |
 
-**如果没有调用 codex-cli 或 gemini-cli Skill，此 Skill 执行失败！**
+**If codex-cli or gemini-cli Skill was not invoked, this Skill execution fails!**

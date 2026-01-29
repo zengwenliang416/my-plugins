@@ -1,11 +1,11 @@
 ---
 name: complexity-analyzer
 description: |
-  【触发条件】thinking 工作流 Phase 2：评估问题复杂度，决定思考深度
-  【核心产出】输出 ${run_dir}/complexity-analysis.md，包含复杂度评分和建议深度
-  【不触发】用户已明确指定 --depth 参数
-  【先问什么】无需询问，自动分析
-  【🚨 强制】必须使用 sequential-thinking MCP 进行结构化分析
+  [Trigger] Thinking workflow Phase 2: Evaluate problem complexity to determine thinking depth
+  [Output] Outputs ${run_dir}/complexity-analysis.md containing complexity score and recommended depth
+  [Skip] When user has explicitly specified --depth parameter
+  [Ask First] No need to ask, automatically analyzes
+  [🚨 Mandatory] Must use sequential-thinking MCP for structured analysis
 allowed-tools:
   - Read
   - Write
@@ -14,228 +14,229 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（由 command 传入）
+    description: Run directory path (passed by command)
 ---
 
-# Complexity Analyzer - 复杂度评估原子技能
+# Complexity Analyzer - Complexity Evaluation Atomic Skill
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                         | 触发条件        |
-| --------------------- | ---------------------------- | --------------- |
-| `sequential-thinking` | 结构化复杂度评估，多维度分析 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                                     | Trigger     |
+| --------------------- | ------------------------------------------- | ----------- |
+| `sequential-thinking` | Structured complexity evaluation, multi-dim | 🚨 Required |
 
-## 职责边界
+## Responsibility Boundary
 
-- **输入**: 用户问题（从 `${run_dir}/input.md` 读取）
-- **输出**: `${run_dir}/complexity-analysis.md`
-- **核心能力**: 多维度复杂度评估、深度路由建议
+- **Input**: User question (read from `${run_dir}/input.md`)
+- **Output**: `${run_dir}/complexity-analysis.md`
+- **Core Capability**: Multi-dimensional complexity evaluation, depth routing
 
 ---
 
-## 🚨 CRITICAL: 强制工具使用规则
+## 🚨 CRITICAL: Mandatory Tool Usage Rules
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  📋 复杂度分析                                                   │
-│     ✅ 必须使用: mcp__sequential-thinking__sequentialthinking   │
-│     ❌ 禁止行为: 直接给出评分、跳过结构化分析                    │
+│  📋 Complexity Analysis                                          │
+│     ✅ Required: mcp__sequential-thinking__sequentialthinking   │
+│     ❌ Prohibited: Giving scores directly, skipping structured  │
+│        analysis                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化评估规划（sequential-thinking）
+### Step 0: Structured Evaluation Planning (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划评估策略**
+🚨 **Must first use sequential-thinking to plan evaluation strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划复杂度评估策略。需要：1) 读取问题 2) 分析结构复杂度 3) 评估领域深度 4) 估算推理步骤 5) 检测歧义程度 6) 综合评分",
+  thought: "Planning complexity evaluation strategy. Need: 1) Read question 2) Analyze structural complexity 3) Evaluate domain depth 4) Estimate reasoning steps 5) Detect ambiguity level 6) Synthesize score",
   thoughtNumber: 1,
   totalThoughts: 6,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **问题读取**：获取原始问题内容
-2. **结构分析**：问题长度、嵌套子问题、句式复杂度
-3. **领域识别**：问题类型、涉及领域、知识深度
-4. **推理评估**：所需推理步骤、是否需要假设验证
-5. **歧义检测**：理解方式、隐含假设、澄清需求
-6. **综合评分**：加权计算、深度建议
+1. **Question Reading**: Get original question content
+2. **Structure Analysis**: Question length, nested sub-questions, sentence complexity
+3. **Domain Identification**: Question type, domains involved, knowledge depth
+4. **Reasoning Evaluation**: Required reasoning steps, need for hypothesis verification
+5. **Ambiguity Detection**: Multiple interpretations, implicit assumptions, clarification needs
+6. **Score Synthesis**: Weighted calculation, depth recommendation
 
-### Step 1: 读取问题
+### Step 1: Read Question
 
 ```
 Read("${run_dir}/input.md")
 ```
 
-### Step 2: 结构化复杂度分析
+### Step 2: Structured Complexity Analysis
 
-**使用 sequential-thinking 进行 5 步分析**：
+**Use sequential-thinking for 5-step analysis**:
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "第 1 步：分析问题长度和结构。问题内容：'${QUESTION}'。评估：问题长度（字数）、是否有嵌套子问题、句式复杂度。",
+  thought: "Step 1: Analyze question length and structure. Question content: '${QUESTION}'. Evaluate: question length (word count), nested sub-questions, sentence complexity.",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 
 mcp__sequential-thinking__sequentialthinking({
-  thought: "第 2 步：识别问题类型和领域深度。判断：是事实查询、推理分析、设计决策还是综合问题？涉及哪些领域知识？",
+  thought: "Step 2: Identify question type and domain depth. Determine: factual query, reasoning analysis, design decision, or composite problem? What domains are involved?",
   thoughtNumber: 2,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 
 mcp__sequential-thinking__sequentialthinking({
-  thought: "第 3 步：评估推理步骤数。这个问题需要多少步骤才能完整回答？是否需要中间推理？是否需要假设验证？",
+  thought: "Step 3: Evaluate reasoning step count. How many steps needed for complete answer? Intermediate reasoning required? Hypothesis verification needed?",
   thoughtNumber: 3,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 
 mcp__sequential-thinking__sequentialthinking({
-  thought: "第 4 步：检测歧义程度。问题是否有多种理解方式？是否需要澄清前提？是否存在隐含假设？",
+  thought: "Step 4: Detect ambiguity level. Multiple interpretations possible? Need to clarify premises? Implicit assumptions exist?",
   thoughtNumber: 4,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 
 mcp__sequential-thinking__sequentialthinking({
-  thought: "第 5 步：综合评分和建议。基于以上分析，给出 1-10 的复杂度评分，并建议思考深度（light/deep/ultra）。",
+  thought: "Step 5: Synthesize score and recommendation. Based on above analysis, give 1-10 complexity score and recommend thinking depth (light/deep/ultra).",
   thoughtNumber: 5,
   totalThoughts: 5,
   nextThoughtNeeded: false
 })
 ```
 
-### Step 3: 生成评估报告
+### Step 3: Generate Evaluation Report
 
-**输出路径**：`${run_dir}/complexity-analysis.md`
+**Output path**: `${run_dir}/complexity-analysis.md`
 
-**文档模板**：
+**Document template**:
 
 ```markdown
 ---
-generated_at: { ISO 8601 时间戳 }
+generated_at: { ISO 8601 timestamp }
 analyzer_version: "1.0"
 ---
 
-# 复杂度评估报告
+# Complexity Evaluation Report
 
-## 问题原文
+## Original Question
 
-{问题内容}
+{Question content}
 
-## 评估维度
+## Evaluation Dimensions
 
-### 1. 结构复杂度
+### 1. Structural Complexity
 
-- **问题长度**: {字数} 字
-- **子问题数量**: {数量}
-- **结构评分**: {1-10}
+- **Question length**: {word count} words
+- **Sub-question count**: {count}
+- **Structure score**: {1-10}
 
-### 2. 领域深度
+### 2. Domain Depth
 
-- **问题类型**: {事实查询 / 推理分析 / 设计决策 / 综合问题}
-- **涉及领域**: {领域列表}
-- **领域评分**: {1-10}
+- **Question type**: {Factual query / Reasoning analysis / Design decision / Composite}
+- **Domains involved**: {Domain list}
+- **Domain score**: {1-10}
 
-### 3. 推理复杂度
+### 3. Reasoning Complexity
 
-- **预估步骤**: {步骤数}
-- **需要假设验证**: {是/否}
-- **推理评分**: {1-10}
+- **Estimated steps**: {step count}
+- **Requires hypothesis verification**: {Yes/No}
+- **Reasoning score**: {1-10}
 
-### 4. 歧义程度
+### 4. Ambiguity Level
 
-- **理解方式**: {单一 / 多种}
-- **隐含假设**: {列表}
-- **歧义评分**: {1-10}
+- **Interpretations**: {Single / Multiple}
+- **Implicit assumptions**: {List}
+- **Ambiguity score**: {1-10}
 
-## 综合评估
+## Overall Evaluation
 
-| 维度     | 评分 | 权重 | 加权分   |
-| -------- | ---- | ---- | -------- |
-| 结构     | {分} | 0.2  | {加权}   |
-| 领域     | {分} | 0.3  | {加权}   |
-| 推理     | {分} | 0.3  | {加权}   |
-| 歧义     | {分} | 0.2  | {加权}   |
-| **总分** |      |      | **{总}** |
+| Dimension | Score | Weight | Weighted Score |
+| --------- | ----- | ------ | -------------- |
+| Structure | {n}   | 0.2    | {weighted}     |
+| Domain    | {n}   | 0.3    | {weighted}     |
+| Reasoning | {n}   | 0.3    | {weighted}     |
+| Ambiguity | {n}   | 0.2    | {weighted}     |
+| **Total** |       |        | **{total}**    |
 
-## 建议
+## Recommendations
 
-- **复杂度等级**: {低 / 中 / 高}
-- **建议深度**: {light / deep / ultra}
-- **建议原因**: {简短说明}
+- **Complexity level**: {Low / Medium / High}
+- **Recommended depth**: {light / deep / ultra}
+- **Rationale**: {Brief explanation}
 
-## 关键词检测
+## Keyword Detection
 
-| 检测项       | 结果    | 触发深度 |
-| ------------ | ------- | -------- |
-| "ultrathink" | {是/否} | ultra    |
-| "深度分析"   | {是/否} | ultra    |
-| "仔细想"     | {是/否} | deep     |
-| "think hard" | {是/否} | deep     |
-| "简单"       | {是/否} | light    |
+| Detection Item  | Result   | Triggers Depth |
+| --------------- | -------- | -------------- |
+| "ultrathink"    | {Yes/No} | ultra          |
+| "deep analysis" | {Yes/No} | ultra          |
+| "think hard"    | {Yes/No} | deep           |
+| "think deeply"  | {Yes/No} | deep           |
+| "simple"        | {Yes/No} | light          |
 ```
 
 ---
 
-## 评分规则
+## Scoring Rules
 
-### 复杂度评分标准
+### Complexity Score Standards
 
-| 评分范围 | 等级 | 建议深度 | 典型场景                     |
-| -------- | ---- | -------- | ---------------------------- |
-| 1-3      | 低   | light    | 简单问答、事实查询、定义解释 |
-| 4-6      | 中   | deep     | 对比分析、方案选择、中等设计 |
-| 7-10     | 高   | ultra    | 架构设计、多步推理、复杂决策 |
+| Score Range | Level  | Recommended Depth | Typical Scenarios                     |
+| ----------- | ------ | ----------------- | ------------------------------------- |
+| 1-3         | Low    | light             | Simple Q&A, fact queries, definitions |
+| 4-6         | Medium | deep              | Comparisons, option selection, design |
+| 7-10        | High   | ultra             | Architecture, multi-step, complex dec |
 
-### 关键词优先级
+### Keyword Priority
 
-关键词检测 > 复杂度评分 > 默认建议
+Keyword detection > Complexity score > Default recommendation
 
 ```
-if 包含 "ultrathink" 或 "深度分析":
+if contains "ultrathink" or "deep analysis":
     return "ultra"
-elif 包含 "think hard" 或 "仔细想":
+elif contains "think hard" or "think deeply":
     return "deep"
-elif 包含 "简单" 或 "快速":
+elif contains "simple" or "quick":
     return "light"
 else:
-    return 根据复杂度评分决定
+    return based on complexity score
 ```
 
 ---
 
-## 质量门控
+## Quality Gates
 
-### 工具使用验证
+### Tool Usage Verification
 
-- [ ] 调用了 `mcp__sequential-thinking__sequentialthinking` 至少 5 次
-- [ ] 每个评估维度都有明确分数
-- [ ] 产出 complexity-analysis.md 文件
+- [ ] Called `mcp__sequential-thinking__sequentialthinking` at least 5 times
+- [ ] Each evaluation dimension has explicit score
+- [ ] Produced complexity-analysis.md file
 
-### 产出质量验证
+### Output Quality Verification
 
-- [ ] 四个维度评分完整
-- [ ] 综合评分计算正确
-- [ ] 深度建议与评分匹配
-- [ ] 关键词检测结果记录
+- [ ] All four dimension scores complete
+- [ ] Overall score calculated correctly
+- [ ] Depth recommendation matches score
+- [ ] Keyword detection results recorded
 
 ---
 
-## 返回值
+## Return Value
 
-成功时返回：
+On success, return:
 
 ```json
 {
@@ -260,9 +261,9 @@ else:
 
 ---
 
-## 约束
+## Constraints
 
-- 必须使用 sequential-thinking 进行结构化分析
-- 必须输出完整的 complexity-analysis.md
-- 关键词检测优先于评分
-- 评分必须是 1-10 的整数或一位小数
+- Must use sequential-thinking for structured analysis
+- Must output complete complexity-analysis.md
+- Keyword detection takes priority over scoring
+- Score must be integer or one decimal between 1-10

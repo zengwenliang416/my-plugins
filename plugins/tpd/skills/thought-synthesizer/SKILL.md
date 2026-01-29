@@ -1,11 +1,11 @@
 ---
 name: thought-synthesizer
 description: |
-  【触发条件】thinking 工作流 Phase 4：整合上下文探索与约束集
-  【核心产出】输出 ${run_dir}/synthesis.md，包含约束/风险/依赖/成功判据与未决问题
-  【不触发】无探索产物时（可降级为轻量总结）
-  【先问什么】无需询问，自动执行
-  【🚨 强制】必须使用 sequential-thinking MCP 进行结构化整合
+  [Trigger] Thinking workflow Phase 4: Synthesize context exploration and constraint set
+  [Output] Outputs ${run_dir}/synthesis.md containing constraints/risks/dependencies/success criteria and open questions
+  [Skip] When no exploration artifacts (can downgrade to light summary)
+  [Ask First] No need to ask, automatically executes
+  [🚨 Mandatory] Must use sequential-thinking MCP for structured synthesis
 allowed-tools:
   - Read
   - Write
@@ -14,261 +14,262 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径
+    description: Run directory path
   - name: depth
     type: string
     required: true
-    description: 思考深度 (light/deep/ultra)
+    description: Thinking depth (light/deep/ultra)
 ---
 
-# Thought Synthesizer - 思考整合原子技能
+# Thought Synthesizer - Thought Synthesis Atomic Skill
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                          | 触发条件        |
-| --------------------- | ----------------------------- | --------------- |
-| `sequential-thinking` | 结构化多源整合，约束/风险分析 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                                       | Trigger     |
+| --------------------- | --------------------------------------------- | ----------- |
+| `sequential-thinking` | Structured multi-source synthesis, constraint | 🚨 Required |
 
-## 职责边界
+## Responsibility Boundary
 
-整合来自多个上下文边界的探索结果，形成统一的约束集合。
+Synthesize exploration results from multiple context boundaries to form unified constraint set.
 
-- **输入**: `${run_dir}/explore-*.json`（核心）与可选 \*-thought.md
-- **输出**: `${run_dir}/synthesis.md`
-- **核心能力**: 约束整合、风险/依赖归纳、成功判据提炼
+- **Input**: `${run_dir}/explore-*.json` (core) and optional \*-thought.md
+- **Output**: `${run_dir}/synthesis.md`
+- **Core Capability**: Constraint synthesis, risk/dependency aggregation, success criteria extraction
 
 ---
 
-## 🚨 CRITICAL: 强制工具使用规则
+## 🚨 CRITICAL: Mandatory Tool Usage Rules
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  🔄 思考整合                                                     │
-│     ✅ 必须使用: mcp__sequential-thinking__sequentialthinking   │
-│     ❌ 禁止行为: 简单拼接各边界输出、跳过结构化整合              │
+│  🔄 Thought Synthesis                                            │
+│     ✅ Required: mcp__sequential-thinking__sequentialthinking   │
+│     ❌ Prohibited: Simple concatenation of boundary outputs,    │
+│        skip structured synthesis                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化整合规划（sequential-thinking）
+### Step 0: Structured Synthesis Planning (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划整合策略**
+🚨 **Must first use sequential-thinking to plan synthesis strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划约束整合策略。需要：1) 读取探索 JSON 2) 汇总硬/软约束 3) 提取多模型补充约束 4) 合并依赖与风险 5) 汇总成功判据线索 6) 识别开放问题 7) 生成结构化 synthesis.md",
+  thought: "Planning constraint synthesis strategy. Need: 1) Read explore JSONs 2) Aggregate hard/soft constraints 3) Extract multi-model supplemental constraints 4) Merge dependencies and risks 5) Aggregate success criteria hints 6) Identify open questions 7) Generate structured synthesis.md",
   thoughtNumber: 1,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **读取探索**：读取 boundaries.json 与各 explore-*.json
-2. **硬/软约束**：区分强制与偏好约束
-3. **依赖/风险**：合并重复项并去重
-4. **成功判据**：聚合可验证行为线索
-5. **开放问题**：汇总需用户澄清的疑问
-6. **整合输出**：生成结构化 synthesis.md
+1. **Read Exploration**: Read boundaries.json and each explore-\*.json
+2. **Hard/Soft Constraints**: Distinguish mandatory vs preference constraints
+3. **Dependencies/Risks**: Merge and deduplicate
+4. **Success Criteria**: Aggregate verifiable behavior hints
+5. **Open Questions**: Collect questions needing user clarification
+6. **Synthesis Output**: Generate structured synthesis.md
 
-### Step 1: 读取所有思考输出
+### Step 1: Read All Thought Outputs
 
 ```
-# 读取边界列表（如存在）
+# Read boundary list (if exists)
 Read("${run_dir}/boundaries.json")
 
-# 读取各边界探索结果
+# Read each boundary exploration result
 Read("${run_dir}/explore-<boundary>.json")
 
-# 可选读取补充思考输出（若存在）
+# Optionally read supplemental thought outputs (if exist)
 Read("${run_dir}/claude-thought.md")
 Read("${run_dir}/codex-thought.md")
 Read("${run_dir}/gemini-thought.md")
 ```
 
-### Step 2: 结构化整合分析
+### Step 2: Structured Synthesis Analysis
 
-**使用 sequential-thinking 进行 6 步整合**：
+**Use sequential-thinking for 6-step synthesis**:
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "第 1 步：合并所有 explore-*.json 的 constraints_discovered，区分硬/软约束。",
+  thought: "Step 1: Merge all constraints_discovered from explore-*.json, distinguish hard/soft constraints.",
   thoughtNumber: 2,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
 mcp__sequential-thinking__sequentialthinking({
-  thought: "第 2 步：从 codex-thought.md / gemini-thought.md 中提取补充约束与风险（若存在），标注来源。",
+  thought: "Step 2: Extract supplemental constraints and risks from codex-thought.md / gemini-thought.md (if exist), annotate source.",
   thoughtNumber: 3,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
 mcp__sequential-thinking__sequentialthinking({
-  thought: "第 3 步：合并 dependencies 与 risks，去重并标注来源。",
+  thought: "Step 3: Merge dependencies and risks, deduplicate and annotate source.",
   thoughtNumber: 4,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
 mcp__sequential-thinking__sequentialthinking({
-  thought: "第 4 步：汇总 success_criteria_hints，整理为可验证判据。",
+  thought: "Step 4: Aggregate success_criteria_hints, organize into verifiable criteria.",
   thoughtNumber: 5,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
 mcp__sequential-thinking__sequentialthinking({
-  thought: "第 5 步：汇总 open_questions，按优先级排序。",
+  thought: "Step 5: Aggregate open_questions, sort by priority.",
   thoughtNumber: 6,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
 mcp__sequential-thinking__sequentialthinking({
-  thought: "第 6 步：生成综合整合输出，形成可交接的约束集合摘要。",
+  thought: "Step 6: Generate comprehensive synthesis output, form handoff-ready constraint set summary.",
   thoughtNumber: 7,
   totalThoughts: 7,
   nextThoughtNeeded: false
 })
 ```
 
-### Step 3: 生成整合报告
+### Step 3: Generate Synthesis Report
 
-**输出路径**：`${run_dir}/synthesis.md`
+**Output path**: `${run_dir}/synthesis.md`
 
-**文档模板**：
+**Document template**:
 
 ```markdown
 ---
-generated_at: { ISO 8601 时间戳 }
+generated_at: { ISO 8601 timestamp }
 synthesizer_version: "1.0"
 boundaries_integrated: ["user-domain", "auth-session"]
 models_used: ["codex", "gemini"]
 depth: { light / deep / ultra }
 ---
 
-# 约束整合报告
+# Constraint Synthesis Report
 
-## 整合概述
+## Synthesis Overview
 
-- **参与边界**: { 边界列表 }
-- **思考深度**: { depth }
-- **整合方法**: 结构化约束整合
+- **Participating Boundaries**: { boundary list }
+- **Thinking Depth**: { depth }
+- **Synthesis Method**: Structured constraint synthesis
 
-## 约束集合
+## Constraint Set
 
-### 硬约束
+### Hard Constraints
 
-- {硬约束 1}
-- {硬约束 2}
+- {Hard constraint 1}
+- {Hard constraint 2}
 
-### 软约束
+### Soft Constraints
 
-- {软约束 1}
-- {软约束 2}
+- {Soft constraint 1}
+- {Soft constraint 2}
 
-## 依赖与风险
+## Dependencies & Risks
 
-### 依赖
+### Dependencies
 
-- {依赖 1}
-- {依赖 2}
+- {Dependency 1}
+- {Dependency 2}
 
-### 风险
+### Risks
 
-- {风险 1}
-- {风险 2}
+- {Risk 1}
+- {Risk 2}
 
-## 成功判据（线索）
+## Success Criteria (Hints)
 
-- {可观察成功线索 1}
-- {可观察成功线索 2}
+- {Observable success hint 1}
+- {Observable success hint 2}
 
-## 待确认问题
+## Open Questions
 
-- {问题 1}
-- {问题 2}
+- {Question 1}
+- {Question 2}
 
-## 多模型补充（可选）
+## Multi-Model Supplements (Optional)
 
-- **Codex 补充**: {来自 codex-thought.md 的约束/风险/判据}
-- **Gemini 补充**: {来自 gemini-thought.md 的约束/风险/判据}
+- **Codex Supplement**: {constraints/risks/criteria from codex-thought.md}
+- **Gemini Supplement**: {constraints/risks/criteria from gemini-thought.md}
 
-## 边界贡献
+## Boundary Contributions
 
-| 边界 | 主要发现 | 关键约束 |
-| ---- | -------- | -------- |
-| {boundary-1} | {发现} | {约束} |
-| {boundary-2} | {发现} | {约束} |
+| Boundary     | Key Findings | Key Constraints |
+| ------------ | ------------ | --------------- |
+| {boundary-1} | {findings}   | {constraints}   |
+| {boundary-2} | {findings}   | {constraints}   |
 ```
 
 ---
 
-## Light 模式处理
+## Light Mode Handling
 
-当只有单边界输出时：
+When only single boundary output exists:
 
 ```markdown
 ---
-generated_at: { ISO 8601 时间戳 }
+generated_at: { ISO 8601 timestamp }
 synthesizer_version: "1.0"
 boundaries_integrated: ["core"]
 models_used: []
 depth: light
 ---
 
-# 约束整合报告（Light 模式）
+# Constraint Synthesis Report (Light Mode)
 
-## 整合概述
+## Synthesis Overview
 
-- **参与边界**: core
-- **思考深度**: light
-- **说明**: 单边界模式
+- **Participating Boundaries**: core
+- **Thinking Depth**: light
+- **Note**: Single boundary mode
 
-## 边界探索结果
+## Boundary Exploration Results
 
-{直接引用 explore-core.json 的核心内容}
+{Direct reference to core content from explore-core.json}
 
-## 结论
+## Conclusion
 
-{核心约束与成功判据摘要}
+{Core constraints and success criteria summary}
 
-## 置信度
+## Confidence
 
-- **整体置信度**: { 高 / 中 / 低 }
-- **说明**: 单边界分析，复杂问题建议拆分更多上下文边界
+- **Overall Confidence**: { High / Medium / Low }
+- **Note**: Single boundary analysis, complex problems recommend splitting into more context boundaries
 ```
 
 ---
 
-## 质量门控
+## Quality Gates
 
-### 工具使用验证
+### Tool Usage Verification
 
-- [ ] 调用了 `mcp__sequential-thinking__sequentialthinking` 至少 7 次
-- [ ] 读取了所有可用的 explore-*.json 文件
-- [ ] 如存在 codex/gemini thought 文件，已提取补充约束
-- [ ] 产出 synthesis.md 文件
+- [ ] Called `mcp__sequential-thinking__sequentialthinking` at least 7 times
+- [ ] Read all available explore-\*.json files
+- [ ] If codex/gemini thought files exist, extracted supplemental constraints
+- [ ] Produced synthesis.md file
 
-### 产出质量验证
+### Output Quality Verification
 
-- [ ] 各边界约束与风险提取完整
-- [ ] 约束分为硬/软两类
-- [ ] 依赖与风险去重完成
-- [ ] 成功判据线索可验证
-- [ ] 开放问题已排序
+- [ ] Constraints and risks from each boundary extracted completely
+- [ ] Constraints categorized into hard/soft
+- [ ] Dependencies and risks deduplicated
+- [ ] Success criteria hints are verifiable
+- [ ] Open questions sorted
 
 ---
 
-## 返回值
+## Return Value
 
-成功时返回：
+On success, return:
 
 ```json
 {
@@ -278,7 +279,7 @@ depth: light
   "constraints_count": 12,
   "open_questions_count": 3,
   "overall_confidence": "medium",
-  "key_synthesis": "约束集合摘要",
+  "key_synthesis": "Constraint set summary",
   "next_phase": {
     "phase": 5,
     "name": "conclusion-generator"
@@ -288,10 +289,10 @@ depth: light
 
 ---
 
-## 约束
+## Constraints
 
-- 必须使用 sequential-thinking 进行结构化整合
-- 不简单拼接，要真正分析和综合
-- 明确标注硬/软约束与开放问题
-- 依赖与风险需去重并标注来源
-- 保留不确定性，不强行统一
+- Must use sequential-thinking for structured synthesis
+- No simple concatenation, must truly analyze and synthesize
+- Clearly annotate hard/soft constraints and open questions
+- Dependencies and risks need deduplication with source annotation
+- Preserve uncertainty, don't force unification

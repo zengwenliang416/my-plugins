@@ -1,122 +1,122 @@
 ---
 name: gemini-cli
 description: |
-  【触发条件】当需要 UI 组件设计、CSS 样式、响应式布局、视觉原型时使用。
-  【核心产出】输出 React/HTML/CSS 代码，上下文限制 32k tokens
-  【不触发】后端逻辑、数据库操作、API 实现、复杂业务逻辑（改用 codex-cli）
-  【先问什么】无需询问，根据任务类型自动判断是否适合使用 Gemini
+  [Trigger] Use when UI component design, CSS styling, responsive layout, or visual prototyping is needed.
+  [Output] Outputs React/HTML/CSS code, context limit 32k tokens
+  [Skip] Backend logic, database operations, API implementation, complex business logic (use codex-cli)
+  [Ask First] No need to ask, automatically determines if Gemini is appropriate based on task type
 allowed-tools:
   - Bash
   - Read
   - Task
 ---
 
-# Gemini CLI - 多模型协作前端专家
+# Gemini CLI - Multi-Model Collaboration Frontend Expert
 
-Frontend design assistant via `codeagent-wrapper`. **UI/CSS/响应式布局** → React/HTML 原型 → Claude review & apply. Context limit: **32k tokens**.
+Frontend design assistant via `codeagent-wrapper`. **UI/CSS/Responsive Layout** → React/HTML prototypes → Claude review & apply. Context limit: **32k tokens**.
 
-## 执行命令
+## Execution Command
 
 ```bash
-# 标准调用
+# Standard invocation
 ~/.claude/bin/codeagent-wrapper gemini \
   --workdir /path/to/project \
   --role frontend \
   --prompt "Your task"
 
-# 后台并行执行
+# Background parallel execution
 ~/.claude/bin/codeagent-wrapper gemini --prompt "$PROMPT" &
 ```
 
-## 强制协作流程
+## Mandatory Collaboration Process
 
-### Step 1: 设计分析
+### Step 1: Design Analysis
 
 ```bash
 ~/.claude/bin/codeagent-wrapper gemini \
   --role analyzer \
-  --prompt "需求：[UI需求]\n请分析：组件结构、样式方案、响应式策略。"
+  --prompt "Requirement: [UI requirement]\nPlease analyze: component structure, styling approach, responsive strategy."
 ```
 
-- 获取 Gemini 的设计建议
-- 确认技术栈和风格方向
+- Get Gemini's design suggestions
+- Confirm tech stack and style direction
 
-### Step 2: 原型生成
+### Step 2: Prototype Generation
 
 ```bash
 ~/.claude/bin/codeagent-wrapper gemini \
   --role frontend \
-  --prompt "任务：[组件任务]\n技术栈：[React/Vue/HTML]\n风格：[Tailwind/CSS]\n输出组件代码。" \
+  --prompt "Task: [component task]\nTech stack: [React/Vue/HTML]\nStyle: [Tailwind/CSS]\nOutput component code." \
   --session "$SESSION_ID"
 ```
 
-- ⚠️ **原型仅供参考**
-- 必须经 Claude 审查重构
+- ⚠️ **Prototype is for reference only**
+- Must be reviewed and refactored by Claude
 
-### Step 3: Claude 重构
+### Step 3: Claude Refactoring
 
-1. 审查原型的设计意图
-2. 优化命名和结构
-3. 确保符合项目规范
-4. 添加必要的类型和注释
+1. Review design intent of prototype
+2. Optimize naming and structure
+3. Ensure compliance with project standards
+4. Add necessary types and comments
 
-### Step 4: 审查确认
+### Step 4: Review Confirmation
 
 ```bash
 ~/.claude/bin/codeagent-wrapper gemini \
   --role reviewer \
-  --prompt "我已完成：[组件摘要]\n请审查：可访问性/响应式/样式一致性" \
+  --prompt "I have completed: [component summary]\nPlease review: accessibility/responsiveness/style consistency" \
   --session "$SESSION_ID"
 ```
 
-## 角色提示词
+## Role Prompts
 
-| 角色      | 用途         | 命令示例           |
-| --------- | ------------ | ------------------ |
-| frontend  | UI/组件开发  | `--role frontend`  |
-| analyzer  | 前端架构分析 | `--role analyzer`  |
-| debugger  | 前端问题调试 | `--role debugger`  |
-| reviewer  | 前端代码审查 | `--role reviewer`  |
-| optimizer | 前端性能优化 | `--role optimizer` |
-| tester    | 组件测试生成 | `--role tester`    |
+| Role      | Purpose                   | Command Example    |
+| --------- | ------------------------- | ------------------ |
+| frontend  | UI/component development  | `--role frontend`  |
+| analyzer  | Frontend architecture     | `--role analyzer`  |
+| debugger  | Frontend debugging        | `--role debugger`  |
+| reviewer  | Frontend code review      | `--role reviewer`  |
+| optimizer | Frontend optimization     | `--role optimizer` |
+| tester    | Component test generation | `--role tester`    |
 
-## 上下文管理 (32k 限制)
+## Context Management (32k Limit)
 
-| 策略            | 方法                        |
-| --------------- | --------------------------- |
-| Atomic Design   | 一次一个组件                |
-| Interface First | 只传接口，不传完整实现      |
-| Multi-turn      | 布局 → 样式 → 交互 分步进行 |
-| Session Reuse   | 使用 `--session` 保持上下文 |
+| Strategy        | Method                              |
+| --------------- | ----------------------------------- |
+| Atomic Design   | One component at a time             |
+| Interface First | Pass only interfaces, not full impl |
+| Multi-turn      | Layout → Styles → Interactions      |
+| Session Reuse   | Use `--session` to maintain context |
 
-## 会话管理
+## Session Management
 
 ```bash
-# 第一次调用 - 获取 SESSION_ID
+# First call - get SESSION_ID
 result=$(~/.claude/bin/codeagent-wrapper gemini --prompt "..." )
 SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 
-# 后续调用 - 继续会话
+# Subsequent calls - continue session
 ~/.claude/bin/codeagent-wrapper gemini --prompt "..." --session "$SESSION_ID"
 ```
 
-## 并行执行（后台模式）
+## Parallel Execution (Background Mode)
 
 ```bash
-# 使用 Task tool 的 run_in_background=true
-# 禁止擅自终止后台任务
+# Use Task tool's run_in_background=true
+# Do not terminate background tasks arbitrarily
 ```
 
-## 强制约束
+## Mandatory Constraints
 
-| 必须执行                  | 禁止事项              |
-| ------------------------- | --------------------- |
-| ✅ 保存 SESSION_ID        | ❌ 直接使用原型不审查 |
-| ✅ 原型必须经 Claude 重构 | ❌ 超过 32k 上下文    |
-| ✅ 后台执行用 Task tool   | ❌ 擅自终止后台任务   |
-| ✅ 指定明确的风格方向     | ❌ 使用泛泛的 AI 审美 |
+| Must Do                          | Prohibited                      |
+| -------------------------------- | ------------------------------- |
+| ✅ Save SESSION_ID               | ❌ Use prototype without review |
+| ✅ Prototype must be refactored  | ❌ Exceed 32k context           |
+| ✅ Use Task tool for background  | ❌ Terminate background tasks   |
+| ✅ Specify clear style direction | ❌ Use generic AI aesthetics    |
 
-## 输出格式
+## Output Format
 
 ```json
 {

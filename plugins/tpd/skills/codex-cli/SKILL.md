@@ -1,118 +1,118 @@
 ---
 name: codex-cli
 description: |
-  【触发条件】当需要后端逻辑分析、跨文件修改、调试错误、安全/性能审查，或需要第二意见时使用。
-  【核心产出】只读沙箱分析代码 → 输出 unified diff patch → Claude 审查重构后应用
-  【不触发】前端 UI/CSS（改用 gemini-cli）、简单单文件修复、不需要读取代码库的问题
-  【先问什么】无需询问，根据任务类型自动判断是否适合使用 Codex
+  [Trigger] Use when backend logic analysis, cross-file modifications, debugging, security/performance review, or a second opinion is needed.
+  [Output] Read-only sandbox code analysis → outputs unified diff patch → Claude reviews and refactors before applying
+  [Skip] Frontend UI/CSS (use gemini-cli), simple single-file fixes, questions not requiring codebase reading
+  [Ask First] No need to ask, automatically determines if Codex is appropriate based on task type
 allowed-tools:
   - Bash
   - Read
   - Task
 ---
 
-# Codex CLI - 多模型协作后端专家
+# Codex CLI - Multi-Model Collaboration Backend Expert
 
 Backend coding assistant via `codeagent-wrapper`. **Read-only sandbox** → unified diff patches → Claude review & apply.
 
-## 执行命令
+## Execution Command
 
 ```bash
-# 标准调用
+# Standard invocation
 ~/.claude/bin/codeagent-wrapper codex \
   --workdir /path/to/project \
   --role analyzer \
   --prompt "Your task" \
   --sandbox read-only
 
-# 后台并行执行
+# Background parallel execution
 ~/.claude/bin/codeagent-wrapper codex --prompt "$PROMPT" --sandbox read-only &
 ```
 
-## 强制 4 步协作流程
+## Mandatory 4-Step Collaboration Process
 
-### Step 1: 需求分析协同
+### Step 1: Requirements Analysis Collaboration
 
 ```bash
 ~/.claude/bin/codeagent-wrapper codex \
   --role analyzer \
-  --prompt "用户需求：[需求]\n我的初步分析：[思路]\n请完善需求分析，识别风险，提供实施计划。" \
+  --prompt "User requirement: [requirement]\nMy initial analysis: [approach]\nPlease refine the requirements analysis, identify risks, and provide an implementation plan." \
   --sandbox read-only
 ```
 
-- 对比 Codex 分析与你的思路
-- 识别差异和盲区
+- Compare Codex analysis with your approach
+- Identify differences and blind spots
 
-### Step 2: 代码原型索取（强制只读）
+### Step 2: Code Prototype Request (Mandatory Read-Only)
 
 ```bash
 ~/.claude/bin/codeagent-wrapper codex \
   --role architect \
-  --prompt "任务：[编码任务]\n要求：仅分析设计，输出 unified diff patch，说明设计理由。" \
+  --prompt "Task: [coding task]\nRequirements: Only analyze and design, output unified diff patch, explain design rationale." \
   --sandbox read-only \
   --session "$SESSION_ID"
 ```
 
-- ⚠️ **严禁直接使用原型**
-- 原型仅供逻辑参考，必须重写
+- ⚠️ **Never use prototype directly**
+- Prototype is for logic reference only, must be rewritten
 
-### Step 3: 批判性重写（Claude 执行）
+### Step 3: Critical Rewrite (Claude Executes)
 
-1. 理解原型核心逻辑和设计意图
-2. 识别改进点（命名/结构/错误处理）
-3. 按项目规范重写代码
-4. 确保符合 SOLID/DRY/KISS
+1. Understand core logic and design intent of prototype
+2. Identify improvement points (naming/structure/error handling)
+3. Rewrite code according to project standards
+4. Ensure compliance with SOLID/DRY/KISS
 
-### Step 4: 代码审查确认
+### Step 4: Code Review Confirmation
 
 ```bash
 ~/.claude/bin/codeagent-wrapper codex \
   --role reviewer \
-  --prompt "我已完成修改：[摘要]\n原始需求：[需求]\n请审查：质量/完成度/潜在bug/改进建议" \
+  --prompt "I have completed modifications: [summary]\nOriginal requirement: [requirement]\nPlease review: quality/completeness/potential bugs/improvement suggestions" \
   --sandbox read-only \
   --session "$SESSION_ID"
 ```
 
-## 角色提示词
+## Role Prompts
 
-| 角色      | 用途             | 命令示例           |
-| --------- | ---------------- | ------------------ |
-| analyzer  | 代码/需求分析    | `--role analyzer`  |
-| architect | API/后端架构设计 | `--role architect` |
-| debugger  | 问题调试         | `--role debugger`  |
-| reviewer  | 代码审查         | `--role reviewer`  |
-| optimizer | 性能优化         | `--role optimizer` |
-| tester    | 测试生成         | `--role tester`    |
+| Role      | Purpose                    | Command Example    |
+| --------- | -------------------------- | ------------------ |
+| analyzer  | Code/requirements analysis | `--role analyzer`  |
+| architect | API/backend architecture   | `--role architect` |
+| debugger  | Problem debugging          | `--role debugger`  |
+| reviewer  | Code review                | `--role reviewer`  |
+| optimizer | Performance optimization   | `--role optimizer` |
+| tester    | Test generation            | `--role tester`    |
 
-## 会话管理
+## Session Management
 
 ```bash
-# 第一次调用 - 获取 SESSION_ID
+# First call - get SESSION_ID
 result=$(~/.claude/bin/codeagent-wrapper codex --prompt "..." --sandbox read-only)
 SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 
-# 后续调用 - 继续会话
+# Subsequent calls - continue session
 ~/.claude/bin/codeagent-wrapper codex --prompt "..." --session "$SESSION_ID"
 ```
 
-## 并行执行（后台模式）
+## Parallel Execution (Background Mode)
 
 ```bash
-# 使用 Task tool 的 run_in_background=true
-# 禁止擅自终止后台任务
+# Use Task tool's run_in_background=true
+# Do not terminate background tasks arbitrarily
 ```
 
-## 强制约束
+## Mandatory Constraints
 
-| 必须执行                      | 禁止事项                    |
-| ----------------------------- | --------------------------- |
-| ✅ 使用 `--sandbox read-only` | ❌ 直接使用原型不重写       |
-| ✅ 保存 SESSION_ID            | ❌ 跳过审查步骤             |
-| ✅ 原型必须经 Claude 重构     | ❌ 使用 `--yolo` 或写入沙箱 |
-| ✅ 后台执行用 Task tool       | ❌ 擅自终止后台任务         |
-| ✅ 质疑 Codex 的建议          | ❌ 盲从 Codex 输出          |
+| Must Do                         | Prohibited                             |
+| ------------------------------- | -------------------------------------- |
+| ✅ Use `--sandbox read-only`    | ❌ Use prototype without rewriting     |
+| ✅ Save SESSION_ID              | ❌ Skip review step                    |
+| ✅ Prototype must be refactored | ❌ Use `--yolo` or write sandbox       |
+| ✅ Use Task tool for background | ❌ Terminate background tasks randomly |
+| ✅ Question Codex suggestions   | ❌ Blindly follow Codex output         |
 
-## 输出格式
+## Output Format
 
 ```json
 {

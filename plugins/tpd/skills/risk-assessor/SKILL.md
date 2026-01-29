@@ -1,9 +1,9 @@
 ---
 name: risk-assessor
 description: |
-  【触发条件】plan 工作流第五步：评估技术风险和实施障碍
-  【核心产出】输出 ${run_dir}/risks.md
-  【强制工具】codex-cli（安全/性能审查）
+  [Trigger] Plan workflow Step 5: Assess technical risks and implementation obstacles
+  [Output] Outputs ${run_dir}/risks.md
+  [Mandatory Tool] codex-cli (security/performance review)
 allowed-tools:
   - Read
   - Write
@@ -13,48 +13,48 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（由 orchestrator 传入）
+    description: Run directory path (passed by orchestrator)
 ---
 
-# Risk Assessor - 风险评估原子技能
+# Risk Assessor - Risk Assessment Atomic Skill
 
-## 职责边界
+## Responsibility Boundary
 
-- **输入**: `run_dir` + `${run_dir}/architecture.md` + `${run_dir}/tasks.md`
-- **输出**: `${run_dir}/risks.md`
-- **单一职责**: 只做风险评估，不做计划整合
+- **Input**: `run_dir` + `${run_dir}/architecture.md` + `${run_dir}/tasks.md`
+- **Output**: `${run_dir}/risks.md`
+- **Single Responsibility**: Only do risk assessment, no plan integration
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                                | 触发条件        |
-| --------------------- | ----------------------------------- | --------------- |
-| `sequential-thinking` | 结构化风险分析，确保 OWASP 评估完整 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                                         | Trigger              |
+| --------------------- | ----------------------------------------------- | -------------------- |
+| `sequential-thinking` | Structured risk analysis, ensure OWASP complete | 🚨 Required per exec |
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化风险分析规划（sequential-thinking）
+### Step 0: Structured Risk Analysis Planning (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划分析策略**
+🚨 **Must first use sequential-thinking to plan analysis strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划风险评估策略。需要：1) 识别风险类别 2) 应用 OWASP 评分 3) 计算 Likelihood 4) 计算 Impact 5) 制定缓解策略",
+  thought: "Planning risk assessment strategy. Need: 1) Identify risk categories 2) Apply OWASP scoring 3) Calculate Likelihood 4) Calculate Impact 5) Develop mitigation strategies",
   thoughtNumber: 1,
   totalThoughts: 6,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **风险类别扫描**：技术/安全/性能/集成/资源
-2. **威胁代理分析**：技能/动机/机会/规模
-3. **漏洞因素评估**：易发现性/易利用性/认知程度/检测能力
-4. **技术影响计算**：保密性/完整性/可用性/可审计性
-5. **业务影响评估**：财务/声誉/合规/隐私
-6. **缓解策略匹配**：避免/转移/减轻/接受
+1. **Risk Category Scanning**: Technical/Security/Performance/Integration/Resource
+2. **Threat Agent Analysis**: Skill/Motivation/Opportunity/Size
+3. **Vulnerability Factor Assessment**: Discoverability/Exploitability/Awareness/Detection
+4. **Technical Impact Calculation**: Confidentiality/Integrity/Availability/Accountability
+5. **Business Impact Assessment**: Financial/Reputation/Compliance/Privacy
+6. **Mitigation Strategy Matching**: Avoid/Transfer/Mitigate/Accept
 
-### Step 1: 读取输入
+### Step 1: Read Input
 
 ```bash
 ARCHITECTURE=$(cat "${run_dir}/architecture.md")
@@ -62,248 +62,248 @@ TASKS=$(cat "${run_dir}/tasks.md")
 REQUIREMENTS=$(cat "${run_dir}/requirements.md")
 ```
 
-提取：
+Extract:
 
-- 架构决策
-- 技术选型
-- 任务依赖
-- 非功能需求
+- Architecture decisions
+- Technology choices
+- Task dependencies
+- Non-functional requirements
 
-### Step 2: 风险识别
+### Step 2: Risk Identification
 
-识别以下类别的风险：
+Identify risks in the following categories:
 
-| 风险类别 | 识别来源           | 示例           |
-| -------- | ------------------ | -------------- |
-| 技术风险 | 架构决策、技术选型 | 新框架学习曲线 |
-| 安全风险 | 认证、数据处理     | SQL 注入、XSS  |
-| 性能风险 | 数据量、并发       | 数据库瓶颈     |
-| 集成风险 | 第三方依赖、API    | 外部服务不稳定 |
-| 资源风险 | 技能、时间         | 缺乏领域专家   |
+| Risk Category    | Identification Source                | Example                      |
+| ---------------- | ------------------------------------ | ---------------------------- |
+| Technical Risk   | Architecture decisions, tech choices | New framework learning curve |
+| Security Risk    | Authentication, data handling        | SQL injection, XSS           |
+| Performance Risk | Data volume, concurrency             | Database bottleneck          |
+| Integration Risk | Third-party deps, APIs               | External service instability |
+| Resource Risk    | Skills, time                         | Lack of domain expert        |
 
-### Step 3: 调用外部模型进行安全审查
+### Step 3: Call External Model for Security Review
 
-使用 Codex 进行安全风险分析：
+Use Codex for security risk analysis:
 
 ```
-Skill(skill="tpd:codex-cli", args="prompt=对以下架构进行安全风险分析...")
+Skill(skill="tpd:codex-cli", args="prompt=Perform security risk analysis on the following architecture...")
 ```
 
-### Step 4: OWASP 风险评分
+### Step 4: OWASP Risk Scoring
 
-应用 OWASP 风险评分方法论：
+Apply OWASP risk scoring methodology:
 
-#### 公式
+#### Formula
 
 ```
 Risk = Likelihood × Impact
 ```
 
-#### Likelihood 因素
+#### Likelihood Factors
 
-| 因素类别 | 因素     | 评分范围 |
-| -------- | -------- | -------- |
-| 威胁代理 | 技能等级 | 0-9      |
-| 威胁代理 | 动机     | 0-9      |
-| 威胁代理 | 机会     | 0-9      |
-| 威胁代理 | 规模     | 0-9      |
-| 漏洞     | 易发现性 | 0-9      |
-| 漏洞     | 易利用性 | 0-9      |
-| 漏洞     | 认知程度 | 0-9      |
-| 漏洞     | 入侵检测 | 0-9      |
+| Factor Category | Factor          | Score Range |
+| --------------- | --------------- | ----------- |
+| Threat Agent    | Skill Level     | 0-9         |
+| Threat Agent    | Motivation      | 0-9         |
+| Threat Agent    | Opportunity     | 0-9         |
+| Threat Agent    | Size            | 0-9         |
+| Vulnerability   | Discoverability | 0-9         |
+| Vulnerability   | Exploitability  | 0-9         |
+| Vulnerability   | Awareness       | 0-9         |
+| Vulnerability   | Detection       | 0-9         |
 
-Likelihood = (因素总和) / 8
+Likelihood = (Factor Total) / 8
 
-#### Impact 因素
+#### Impact Factors
 
-| 因素类别 | 因素     | 评分范围 |
-| -------- | -------- | -------- |
-| 技术影响 | 保密性   | 0-9      |
-| 技术影响 | 完整性   | 0-9      |
-| 技术影响 | 可用性   | 0-9      |
-| 技术影响 | 可审计性 | 0-9      |
-| 业务影响 | 财务     | 0-9      |
-| 业务影响 | 声誉     | 0-9      |
-| 业务影响 | 合规     | 0-9      |
-| 业务影响 | 隐私     | 0-9      |
+| Factor Category  | Factor          | Score Range |
+| ---------------- | --------------- | ----------- |
+| Technical Impact | Confidentiality | 0-9         |
+| Technical Impact | Integrity       | 0-9         |
+| Technical Impact | Availability    | 0-9         |
+| Technical Impact | Accountability  | 0-9         |
+| Business Impact  | Financial       | 0-9         |
+| Business Impact  | Reputation      | 0-9         |
+| Business Impact  | Compliance      | 0-9         |
+| Business Impact  | Privacy         | 0-9         |
 
-Impact = max(技术影响平均, 业务影响平均)
+Impact = max(Technical Impact Average, Business Impact Average)
 
-#### 风险等级
+#### Risk Levels
 
-| 分数 | 等级   |
-| ---- | ------ |
-| 0-3  | LOW    |
-| 3-6  | MEDIUM |
-| 6-9  | HIGH   |
+| Score | Level  |
+| ----- | ------ |
+| 0-3   | LOW    |
+| 3-6   | MEDIUM |
+| 6-9   | HIGH   |
 
-### Step 5: 缓解策略
+### Step 5: Mitigation Strategies
 
-为每个中高风险制定缓解策略：
+Develop mitigation strategies for medium and high risks:
 
-| 策略类型 | 描述               | 示例               |
-| -------- | ------------------ | ------------------ |
-| 避免     | 消除风险来源       | 放弃不稳定的依赖   |
-| 转移     | 将风险转移给第三方 | 使用托管服务       |
-| 减轻     | 降低影响或可能性   | 添加输入验证       |
-| 接受     | 接受风险           | 风险可接受且成本低 |
+| Strategy Type | Description                  | Example                      |
+| ------------- | ---------------------------- | ---------------------------- |
+| Avoid         | Eliminate risk source        | Abandon unstable dependency  |
+| Transfer      | Transfer risk to third party | Use managed service          |
+| Mitigate      | Reduce impact or likelihood  | Add input validation         |
+| Accept        | Accept the risk              | Risk acceptable and low cost |
 
-### Step 6: 结构化输出
+### Step 6: Structured Output
 
-将评估结果写入 `${run_dir}/risks.md`：
+Write assessment results to `${run_dir}/risks.md`:
 
 ```markdown
-# 风险评估
+# Risk Assessment
 
-## 元信息
+## Metadata
 
-- 评估时间: [timestamp]
-- 总风险数: [count]
-- 高风险数: [count]
-- 中风险数: [count]
+- Assessment Time: [timestamp]
+- Total Risks: [count]
+- High Risks: [count]
+- Medium Risks: [count]
 
-## 风险摘要
+## Risk Summary
 
-| 等级   | 数量 | 需立即处理 |
-| ------ | ---- | ---------- |
-| HIGH   | X    | ✅ 是      |
-| MEDIUM | Y    | ⚠️ 建议    |
-| LOW    | Z    | 可接受     |
+| Level  | Count | Requires Immediate Action |
+| ------ | ----- | ------------------------- |
+| HIGH   | X     | ✅ Yes                    |
+| MEDIUM | Y     | ⚠️ Recommended            |
+| LOW    | Z     | Acceptable                |
 
-## 高优先级风险
+## High Priority Risks
 
-### R-001: 数据库迁移影响现有数据
+### R-001: Database migration affects existing data
 
-| 属性       | 值                                     |
-| ---------- | -------------------------------------- |
-| ID         | R-001                                  |
-| 类别       | 技术风险                               |
-| 场景       | 数据库 schema 变更可能导致现有数据丢失 |
-| 受影响资产 | User 表数据                            |
+| Property        | Value                                      |
+| --------------- | ------------------------------------------ |
+| ID              | R-001                                      |
+| Category        | Technical Risk                             |
+| Scenario        | Database schema change may cause data loss |
+| Affected Assets | User table data                            |
 
-#### OWASP 评分
+#### OWASP Scoring
 
-| 因素                | 分数    | 说明               |
-| ------------------- | ------- | ------------------ |
-| **Likelihood 因素** |         |                    |
-| 技能等级            | 3       | 需要 DBA 知识      |
-| 动机                | 5       | 开发进度压力       |
-| 机会                | 7       | 迁移是必经环节     |
-| 规模                | 5       | 内部开发团队       |
-| 易发现性            | 8       | 迁移会立即暴露     |
-| 易利用性            | 6       | 脚本编写不当即触发 |
-| 认知程度            | 7       | 常见问题           |
-| 入侵检测            | 4       | 可通过测试发现     |
-| **Likelihood**      | **5.6** | MEDIUM             |
-| **Impact 因素**     |         |                    |
-| 保密性              | 2       | 不涉及泄露         |
-| 完整性              | 9       | 数据可能丢失       |
-| 可用性              | 7       | 服务可能中断       |
-| 可审计性            | 3       | 可追踪             |
-| 财务                | 5       | 需要恢复成本       |
-| 声誉                | 6       | 用户信任受损       |
-| 合规                | 4       | 可能违反 SLA       |
-| 隐私                | 3       | 不涉及隐私泄露     |
-| **Impact**          | **5.9** | MEDIUM             |
-| **Risk Score**      | **5.8** | MEDIUM (接近 HIGH) |
+| Factor                 | Score   | Description                   |
+| ---------------------- | ------- | ----------------------------- |
+| **Likelihood Factors** |         |                               |
+| Skill Level            | 3       | Requires DBA knowledge        |
+| Motivation             | 5       | Development pressure          |
+| Opportunity            | 7       | Migration is required         |
+| Size                   | 5       | Internal dev team             |
+| Discoverability        | 8       | Migration reveals immediately |
+| Exploitability         | 6       | Bad script triggers it        |
+| Awareness              | 7       | Common issue                  |
+| Detection              | 4       | Discoverable via testing      |
+| **Likelihood**         | **5.6** | MEDIUM                        |
+| **Impact Factors**     |         |                               |
+| Confidentiality        | 2       | No leak involved              |
+| Integrity              | 9       | Data may be lost              |
+| Availability           | 7       | Service may be interrupted    |
+| Accountability         | 3       | Traceable                     |
+| Financial              | 5       | Recovery costs needed         |
+| Reputation             | 6       | User trust damaged            |
+| Compliance             | 4       | May violate SLA               |
+| Privacy                | 3       | No privacy leak               |
+| **Impact**             | **5.9** | MEDIUM                        |
+| **Risk Score**         | **5.8** | MEDIUM (near HIGH)            |
 
-#### 缓解策略
+#### Mitigation Strategy
 
-| 策略 | 措施                    | 责任人   | 验证方式     |
-| ---- | ----------------------- | -------- | ------------ |
-| 减轻 | 在 staging 环境先行验证 | DBA      | 迁移测试通过 |
-| 减轻 | 准备回滚脚本            | 后端开发 | 回滚可执行   |
-| 减轻 | 数据备份后再迁移        | DevOps   | 备份确认     |
+| Strategy | Measure                      | Owner   | Verification        |
+| -------- | ---------------------------- | ------- | ------------------- |
+| Mitigate | Validate in staging first    | DBA     | Migration test pass |
+| Mitigate | Prepare rollback script      | Backend | Rollback executable |
+| Mitigate | Backup data before migration | DevOps  | Backup confirmed    |
 
-#### 剩余风险
+#### Residual Risk
 
-采取缓解措施后：
+After mitigation measures:
 
-- 新 Likelihood: 3.5 (LOW-MEDIUM)
-- 剩余 Risk Score: 3.5 × 5.9 = 2.1 (LOW)
-
----
-
-### R-002: JWT Secret 泄露
-
-[类似格式...]
-
-## 中优先级风险
-
-### R-003: 第三方 OAuth 服务不稳定
-
-[风险详情...]
-
-## 低优先级风险
-
-### R-004: UI 渲染性能
-
-[风险详情...]
-
-## 风险矩阵
-
-|            | 低影响 | 中影响 | 高影响 |
-| ---------- | ------ | ------ | ------ |
-| **高可能** |        | R-003  |        |
-| **中可能** |        | R-001  | R-002  |
-| **低可能** | R-004  |        |        |
-
-## 风险登记表
-
-| ID    | 风险       | 类别 | Likelihood | Impact | Score | 等级   | 控制措施  | 状态   |
-| ----- | ---------- | ---- | ---------- | ------ | ----- | ------ | --------- | ------ |
-| R-001 | 数据库迁移 | 技术 | 5.6        | 5.9    | 5.8   | MEDIUM | 备份+回滚 | 待处理 |
-| R-002 | JWT 泄露   | 安全 | 3.5        | 8.0    | 5.6   | MEDIUM | 密钥轮换  | 待处理 |
-
-## 安全审查结果（Codex）
-
-[Codex 安全分析输出]
-
-## 建议行动
-
-### 必须处理（阻塞发布）
-
-1. R-001: 准备数据库迁移回滚方案
-2. R-002: 实现 JWT secret 轮换机制
-
-### 建议处理（发布前）
-
-3. R-003: 添加 OAuth 服务熔断机制
-
-### 可延后处理
-
-4. R-004: 优化渲染性能
+- New Likelihood: 3.5 (LOW-MEDIUM)
+- Residual Risk Score: 3.5 × 5.9 = 2.1 (LOW)
 
 ---
 
-下一步: 调用 plan-synthesizer 整合计划
+### R-002: JWT Secret Leak
+
+[Similar format...]
+
+## Medium Priority Risks
+
+### R-003: Third-party OAuth Service Instability
+
+[Risk details...]
+
+## Low Priority Risks
+
+### R-004: UI Rendering Performance
+
+[Risk details...]
+
+## Risk Matrix
+
+|                       | Low Impact | Medium Impact | High Impact |
+| --------------------- | ---------- | ------------- | ----------- |
+| **High Likelihood**   |            | R-003         |             |
+| **Medium Likelihood** |            | R-001         | R-002       |
+| **Low Likelihood**    | R-004      |               |             |
+
+## Risk Register
+
+| ID    | Risk         | Category  | Likelihood | Impact | Score | Level  | Control         | Status  |
+| ----- | ------------ | --------- | ---------- | ------ | ----- | ------ | --------------- | ------- |
+| R-001 | DB Migration | Technical | 5.6        | 5.9    | 5.8   | MEDIUM | Backup+Rollback | Pending |
+| R-002 | JWT Leak     | Security  | 3.5        | 8.0    | 5.6   | MEDIUM | Key rotation    | Pending |
+
+## Security Review Results (Codex)
+
+[Codex security analysis output]
+
+## Recommended Actions
+
+### Must Handle (Blocks Release)
+
+1. R-001: Prepare database migration rollback plan
+2. R-002: Implement JWT secret rotation mechanism
+
+### Should Handle (Before Release)
+
+3. R-003: Add OAuth service circuit breaker
+
+### Can Defer
+
+4. R-004: Optimize rendering performance
+
+---
+
+Next step: Call plan-synthesizer to integrate plan
 ```
 
-## 返回值
+## Return Value
 
-执行完成后，返回：
+After execution, return:
 
 ```
-风险评估完成。
-输出文件: ${run_dir}/risks.md
-总风险数: X 个
-高风险: Y 个
-中风险: Z 个
+Risk assessment complete.
+Output file: ${run_dir}/risks.md
+Total risks: X
+High risks: Y
+Medium risks: Z
 
-下一步: 使用 tpd:plan-synthesizer 整合计划
+Next step: Use tpd:plan-synthesizer to integrate plan
 ```
 
-## 质量门控
+## Quality Gates
 
-- ✅ 调用了外部模型进行安全审查
-- ✅ 应用了 OWASP 风险评分
-- ✅ 每个风险有缓解策略
-- ✅ 生成了风险矩阵
-- ✅ 标记了阻塞发布的风险
+- ✅ Called external model for security review
+- ✅ Applied OWASP risk scoring
+- ✅ Each risk has mitigation strategy
+- ✅ Generated risk matrix
+- ✅ Marked release-blocking risks
 
-## 约束
+## Constraints
 
-- 必须调用 codex-cli 进行安全审查
-- 不做计划整合（交给 plan-synthesizer）
-- 高风险必须有缓解策略
-- 评分必须有依据，不能随意打分
+- Must call codex-cli for security review
+- Do not do plan integration (delegated to plan-synthesizer)
+- High risks must have mitigation strategies
+- Scoring must have basis, no arbitrary scoring

@@ -1,11 +1,11 @@
 ---
 name: audit-reviewer
 description: |
-  【触发条件】开发工作流第五步：审计代码变更，确保质量和安全。
-  【核心产出】输出 ${run_dir}/audit-{model}.md，包含审计结果和修复建议。
-  【不触发】代码实施（用 code-implementer）、原型生成（用 prototype-generator）。
-  【先问什么】changes.md 缺失时，询问需要审计的文件范围
-  【强制工具】必须调用 codex-cli 或 gemini-cli Skill，禁止 Claude 自行审计。
+  [Trigger] Dev workflow step 5: Audit code changes to ensure quality and security.
+  [Output] Outputs ${run_dir}/audit-{model}.md containing audit results and fix recommendations.
+  [Skip] Code implementation (use code-implementer), prototype generation (use prototype-generator).
+  [Ask First] If changes.md is missing, ask about the file scope to audit
+  [Mandatory Tool] Must invoke codex-cli or gemini-cli Skill, Claude self-audit is prohibited.
 allowed-tools:
   - Read
   - Write
@@ -15,230 +15,232 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（由 orchestrator 传入）
+    description: Run directory path (passed by orchestrator)
   - name: model
     type: string
     required: true
-    description: 审计模型（codex 或 gemini）
+    description: Audit model (codex or gemini)
   - name: focus
     type: string
     required: false
-    description: 审计重点（security,performance 或 ux,accessibility）
+    description: Audit focus (security,performance or ux,accessibility)
 ---
 
-# Audit Reviewer - 审计审查原子技能
+# Audit Reviewer - Audit Review Atomic Skill
 
-## 🚨 CRITICAL: 必须调用 codex-cli 或 gemini-cli Skill
+## 🚨 CRITICAL: Must Invoke codex-cli or gemini-cli Skill
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  ❌ 禁止：Claude 自己做审计（跳过外部模型）                       │
-│  ❌ 禁止：直接 Bash 调用 codeagent-wrapper                       │
-│  ✅ 必须：通过 Skill 工具调用 codex-cli 或 gemini-cli            │
+│  ❌ Prohibited: Claude doing audit itself (skipping external    │
+│     model)                                                       │
+│  ❌ Prohibited: Directly calling codeagent-wrapper via Bash     │
+│  ✅ Required: Invoke codex-cli or gemini-cli via Skill tool     │
 │                                                                  │
-│  这是多模型协作的核心！Claude 不能替代 Codex/Gemini 审计！        │
+│  This is the core of multi-model collaboration!                  │
+│  Claude cannot replace Codex/Gemini audit!                       │
 │                                                                  │
-│  执行顺序（必须遵循）：                                          │
-│  1. 读取 changes.md                                             │
-│  2. Skill 调用 codex-cli 或 gemini-cli                          │
-│  3. 将外部模型输出写入 audit-{model}.md                          │
+│  Execution order (must follow):                                  │
+│  1. Read changes.md                                              │
+│  2. Skill invocation to codex-cli or gemini-cli                  │
+│  3. Write external model output to audit-{model}.md              │
 │                                                                  │
-│  如果跳过 Step 2，整个多模型审计失效！                           │
+│  If Step 2 is skipped, the entire multi-model audit fails!       │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## 职责边界
+## Responsibility Boundary
 
-- **输入**: `run_dir` + `model` 类型 + `focus`
-- **输出**: `${run_dir}/audit-{codex|gemini}.md`
-- **单一职责**: 只做审计审查，不做代码修改
+- **Input**: `run_dir` + `model` type + `focus`
+- **Output**: `${run_dir}/audit-{codex|gemini}.md`
+- **Single Responsibility**: Only do audit review, no code modifications
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                             | 触发条件        |
-| --------------------- | -------------------------------- | --------------- |
-| `sequential-thinking` | 结构化审计策略，确保覆盖所有维度 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                                           | Trigger     |
+| --------------------- | ------------------------------------------------- | ----------- |
+| `sequential-thinking` | Structured audit strategy covering all dimensions | 🚨 Required |
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化审计规划（sequential-thinking）
+### Step 0: Structured Audit Planning (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划审计策略**
+🚨 **Must first use sequential-thinking to plan audit strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划代码审计策略。需要：1) 理解变更范围 2) 确定审计视角 3) 识别关键路径 4) 检查安全/性能 5) 评估可维护性",
+  thought: "Planning code audit strategy. Need: 1) Understand change scope 2) Determine audit perspective 3) Identify critical paths 4) Check security/performance 5) Evaluate maintainability",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **变更范围理解**：从 changes.md 提取变更文件和代码
-2. **审计视角确定**：根据 model 参数确定安全/UX 视角
-3. **关键路径识别**：识别高风险代码路径
-4. **安全/性能检查**：检查 OWASP Top 10 和性能问题
-5. **可维护性评估**：评估代码质量和可维护性
+1. **Change Scope Understanding**: Extract changed files and code from changes.md
+2. **Audit Perspective**: Determine security/UX perspective based on model parameter
+3. **Critical Path Identification**: Identify high-risk code paths
+4. **Security/Performance Check**: Check OWASP Top 10 and performance issues
+5. **Maintainability Assessment**: Evaluate code quality and maintainability
 
-### Step 1: 读取变更清单
+### Step 1: Read Change List
 
 ```bash
-读取 ${run_dir}/changes.md
-提取: 变更文件列表、新增/修改/删除的代码
+Read ${run_dir}/changes.md
+Extract: Changed file list, added/modified/deleted code
 ```
 
-### Step 2: 确定审计视角
+### Step 2: Determine Audit Perspective
 
-根据模型类型确定审计重点：
+Determine audit focus based on model type:
 
-| 模型   | Skill      | 审计视角  | 关注点                                     |
-| ------ | ---------- | --------- | ------------------------------------------ |
-| Codex  | codex-cli  | 后端/安全 | 安全漏洞、性能问题、错误处理、边界条件     |
-| Gemini | gemini-cli | 前端/UX   | 可访问性、响应式设计、用户体验、设计一致性 |
+| Model  | Skill      | Audit Perspective | Focus Areas                                       |
+| ------ | ---------- | ----------------- | ------------------------------------------------- |
+| Codex  | codex-cli  | Backend/Security  | Vulnerabilities, performance, errors, edge cases  |
+| Gemini | gemini-cli | Frontend/UX       | Accessibility, responsive, UX, design consistency |
 
-### Step 3: 调用外部模型 Skill（🚨 必须执行）
+### Step 3: Invoke External Model Skill (🚨 Required)
 
-**🚨🚨🚨 这是关键步骤！**
+**🚨🚨🚨 This is the critical step!**
 
-**❌ 禁止行为：**
+**❌ Prohibited Actions:**
 
-- ❌ 使用 Bash 工具调用 codeagent-wrapper
-- ❌ 自己做审计分析
-- ❌ 跳过 Skill 直接写审计报告
+- ❌ Using Bash tool to call codeagent-wrapper
+- ❌ Doing audit analysis yourself
+- ❌ Skipping Skill and writing audit report directly
 
-**✅ 唯一正确做法：使用 Skill 工具**
+**✅ Only Correct Approach: Use Skill tool**
 
-**对于 Codex 模型（安全/性能审计），立即执行：**
-
-```
-Skill(skill="codex-cli", args="--role reviewer --prompt '审查代码变更。变更清单路径: ${RUN_DIR}/changes.md。请先读取该文件，然后审查代码。审查重点: 安全漏洞(SQL注入/XSS/CSRF)、性能问题(N+1/内存泄漏)、错误处理、边界条件。输出: 1.问题清单(Critical>Major>Minor) 2.修复建议 3.评分(1-5) 4.建议(APPROVE/REQUEST_CHANGES/COMMENT)'")
-```
-
-**对于 Gemini 模型（UX/可访问性审计），立即执行：**
+**For Codex model (security/performance audit), execute immediately:**
 
 ```
-Skill(skill="gemini-cli", args="--role reviewer --prompt '审查前端代码变更。变更清单路径: ${RUN_DIR}/changes.md。请先读取该文件，然后审查代码。审查重点: 可访问性(ARIA/键盘导航)、响应式设计、用户体验、设计一致性。输出: 1.问题清单(Critical>Major>Minor) 2.修复建议 3.评分(1-5) 4.建议(APPROVE/REQUEST_CHANGES/COMMENT)'")
+Skill(skill="codex-cli", args="--role reviewer --prompt 'Review code changes. Change list path: ${RUN_DIR}/changes.md. Please read that file first, then review code. Review focus: Security vulnerabilities (SQL injection/XSS/CSRF), performance issues (N+1/memory leaks), error handling, edge cases. Output: 1.Issue list (Critical>Major>Minor) 2.Fix recommendations 3.Score (1-5) 4.Recommendation (APPROVE/REQUEST_CHANGES/COMMENT)'")
 ```
 
-**⚠️ 如果你发现自己在做审计分析而不是调用 Skill，立即停止并改用 Skill 工具！**
+**For Gemini model (UX/accessibility audit), execute immediately:**
 
-### Step 4: 结构化输出
+```
+Skill(skill="gemini-cli", args="--role reviewer --prompt 'Review frontend code changes. Change list path: ${RUN_DIR}/changes.md. Please read that file first, then review code. Review focus: Accessibility (ARIA/keyboard navigation), responsive design, user experience, design consistency. Output: 1.Issue list (Critical>Major>Minor) 2.Fix recommendations 3.Score (1-5) 4.Recommendation (APPROVE/REQUEST_CHANGES/COMMENT)'")
+```
 
-将审计结果写入 `${run_dir}/audit-{model}.md`：
+**⚠️ If you find yourself doing audit analysis instead of invoking Skill, stop immediately and use Skill tool instead!**
+
+### Step 4: Structured Output
+
+Write audit results to `${run_dir}/audit-{model}.md`:
 
 ```markdown
-# {Codex|Gemini} 审计报告
+# {Codex|Gemini} Audit Report
 
-## 审计信息
+## Audit Information
 
-- 模型: {codex|gemini}
-- 视角: {后端/安全|前端/UX}
-- 审计时间: [timestamp]
+- Model: {codex|gemini}
+- Perspective: {Backend/Security|Frontend/UX}
+- Audit Time: [timestamp]
 
-## 审计结果
+## Audit Results
 
-### 整体评分
+### Overall Score
 
-| 维度            | 评分    | 说明 |
-| --------------- | ------- | ---- |
-| 安全性/可访问性 | X/5     | ...  |
-| 性能/响应式     | X/5     | ...  |
-| 代码质量        | X/5     | ...  |
-| 可维护性        | X/5     | ...  |
-| **总分**        | **X/5** | ...  |
+| Dimension              | Score   | Notes |
+| ---------------------- | ------- | ----- |
+| Security/Accessibility | X/5     | ...   |
+| Performance/Responsive | X/5     | ...   |
+| Code Quality           | X/5     | ...   |
+| Maintainability        | X/5     | ...   |
+| **Total**              | **X/5** | ...   |
 
-### 问题清单
+### Issue List
 
-#### Critical（必须修复）
+#### Critical (Must Fix)
 
-| #   | 文件:行号     | 问题描述     | 修复建议       |
-| --- | ------------- | ------------ | -------------- |
-| 1   | src/foo.ts:25 | SQL 注入风险 | 使用参数化查询 |
+| #   | File:Line     | Issue Description  | Fix Recommendation      |
+| --- | ------------- | ------------------ | ----------------------- |
+| 1   | src/foo.ts:25 | SQL injection risk | Use parameterized query |
 
-#### Major（建议修复）
+#### Major (Should Fix)
 
-| #   | 文件:行号     | 问题描述   | 修复建议       |
-| --- | ------------- | ---------- | -------------- |
-| 2   | src/bar.ts:10 | 未处理异常 | 添加 try-catch |
+| #   | File:Line     | Issue Description   | Fix Recommendation |
+| --- | ------------- | ------------------- | ------------------ |
+| 2   | src/bar.ts:10 | Unhandled exception | Add try-catch      |
 
-#### Minor（可选修复）
+#### Minor (Optional Fix)
 
-| #   | 文件:行号      | 问题描述   | 修复建议           |
-| --- | -------------- | ---------- | ------------------ |
-| 3   | src/utils.ts:5 | 命名不清晰 | 改为更具描述性名称 |
+| #   | File:Line      | Issue Description | Fix Recommendation        |
+| --- | -------------- | ----------------- | ------------------------- |
+| 3   | src/utils.ts:5 | Unclear naming    | Use more descriptive name |
 
-### 亮点
+### Highlights
 
-- [值得肯定的实现]
-- [良好的代码实践]
+- [Commendable implementation]
+- [Good code practices]
 
-## 结论
+## Conclusion
 
-- **建议**: ✅ APPROVE / 🔄 REQUEST_CHANGES / 💬 COMMENT
-- **理由**: [一句话说明]
+- **Recommendation**: ✅ APPROVE / 🔄 REQUEST_CHANGES / 💬 COMMENT
+- **Rationale**: [One sentence explanation]
 
 ---
 
-基于变更: changes.md
-下一步: 综合审计结果决定是否交付
+Based on changes: changes.md
+Next step: Synthesize audit results to determine delivery readiness
 ```
 
-## 并行执行（后台模式）
+## Parallel Execution (Background Mode)
 
-支持双模型并行审计，由编排器使用 Task 工具协调：
+Supports dual-model parallel audit, coordinated by orchestrator using Task tool:
 
 ```
-# 编排器中的调用
+# Orchestrator invocation
 Task(skill="audit-reviewer", args="run_dir=${RUN_DIR} model=codex focus=security,performance", run_in_background=true) &
 Task(skill="audit-reviewer", args="run_dir=${RUN_DIR} model=gemini focus=ux,accessibility", run_in_background=true) &
 wait
-# 综合两份审计报告
+# Synthesize both audit reports
 ```
 
-## 返回值
+## Return Value
 
-执行完成后，返回：
+Upon completion, return:
 
 ```
-{模型} 审计完成。
-输出文件: ${run_dir}/audit-{model}.md
+{Model} audit complete.
+Output file: ${run_dir}/audit-{model}.md
 
-📊 审计结果:
-- Critical: X 个
-- Major: Y 个
-- Minor: Z 个
-- 总分: A/5
+📊 Audit Results:
+- Critical: X
+- Major: Y
+- Minor: Z
+- Total Score: A/5
 
-建议: {APPROVE|REQUEST_CHANGES|COMMENT}
+Recommendation: {APPROVE|REQUEST_CHANGES|COMMENT}
 
-下一步: 等待所有审计完成后综合评估
+Next step: Wait for all audits to complete for synthesis
 ```
 
-## 质量门控
+## Quality Gates
 
-- ✅ 审计覆盖所有变更文件
-- ✅ Critical 问题必须修复才能通过
-- ✅ 总分 ≥ 3/5 才能通过
-- ✅ 两个模型的审计意见综合考虑
+- ✅ Audit covers all changed files
+- ✅ Critical issues must be fixed to pass
+- ✅ Total score ≥ 3/5 to pass
+- ✅ Both model audit opinions are considered
 
-## 约束
+## Constraints
 
-- 不做代码修改（交给 code-implementer）
-- 不生成原型（交给 prototype-generator）
-- 审计意见仅供参考，最终决策由用户做出
-- 外部模型的审计需要 Claude 综合评估
+- No code modifications (handled by code-implementer)
+- No prototype generation (handled by prototype-generator)
+- Audit opinions are for reference, final decision by user
+- External model audit requires Claude synthesis evaluation
 
-## 🚨 强制工具验证
+## 🚨 Mandatory Tool Verification
 
-**执行此 Skill 后，必须满足以下条件：**
+**After executing this Skill, the following conditions must be met:**
 
-| 检查项              | 要求 | 验证方式                            |
-| ------------------- | ---- | ----------------------------------- |
-| Skill 调用          | 必须 | 检查 codex-cli 或 gemini-cli 被调用 |
-| 外部模型输出        | 必须 | audit-{model}.md 包含模型响应       |
-| Claude 自行审计     | 禁止 | 不能跳过 Skill 直接写结果           |
-| 直接 Bash codeagent | 禁止 | 必须通过 Skill 工具调用             |
+| Check Item            | Requirement | Verification Method                  |
+| --------------------- | ----------- | ------------------------------------ |
+| Skill invocation      | Required    | Check codex-cli or gemini-cli called |
+| External model output | Required    | audit-{model}.md contains response   |
+| Claude self-audit     | Prohibited  | Cannot skip Skill and write directly |
+| Direct Bash codeagent | Prohibited  | Must invoke via Skill tool           |
 
-**如果没有调用 codex-cli 或 gemini-cli Skill，此 Skill 执行失败！**
+**If codex-cli or gemini-cli Skill was not invoked, this Skill execution fails!**

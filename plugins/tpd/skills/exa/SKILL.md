@@ -1,10 +1,10 @@
 ---
 name: exa
 description: |
-  【触发条件】当需要查找最新技术文档、代码示例、API 用法、或搜索特定领域信息时使用。
-  【核心产出】AI 原生搜索引擎，语义检索 → 返回结构化结果（标题/URL/内容/引用）
-  【不触发】本地代码搜索（用 grep/glob）、通用知识问答、数学计算
-  【先问什么】无需询问，根据搜索需求自动执行
+  [Trigger] Use when searching for latest technical documentation, code examples, API usage, or domain-specific information.
+  [Output] AI-native search engine, semantic retrieval → returns structured results (title/URL/content/citations)
+  [Skip] Local code search (use grep/glob), general knowledge Q&A, math calculations
+  [Ask First] No need to ask, automatically executes based on search requirements
 allowed-tools:
   - Bash
   - Read
@@ -17,14 +17,14 @@ AI-native search engine for finding documentation, code examples, and web conten
 ## Quick Start
 
 ```bash
-# 使用插件相对路径
+# Use plugin relative path
 EXA_SCRIPT="${CLAUDE_PLUGIN_ROOT}/skills/exa/scripts/exa_exec.ts"
 npx tsx "$EXA_SCRIPT" search "React 19 useActionState hook examples" --content --limit 5
 ```
 
-## 执行方式
+## Execution Method
 
-当被其他 Skill 通过 `Skill("exa", "search ...")` 调用时，执行：
+When invoked by other Skills via `Skill("exa", "search ...")`, execute:
 
 ```bash
 EXA_SCRIPT="${CLAUDE_PLUGIN_ROOT}/skills/exa/scripts/exa_exec.ts"

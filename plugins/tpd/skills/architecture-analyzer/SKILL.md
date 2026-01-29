@@ -1,10 +1,10 @@
 ---
 name: architecture-analyzer
 description: |
-  【触发条件】plan 工作流第四步：整合多模型规划结果，生成统一架构文档
-  【核心产出】输出 ${run_dir}/architecture.md（整合后端 + 前端规划）
-  【强制前置】必须先执行 codex-planner 和/或 gemini-planner
-  【并行支持】✅ 读取 codex-plan.md（后端）+ gemini-plan.md（前端）
+  [Trigger] Plan workflow Step 4: Integrate multi-model planning results, generate unified architecture document
+  [Output] Outputs ${run_dir}/architecture.md (integrating backend + frontend planning)
+  [Prerequisite] Must execute codex-planner and/or gemini-planner first
+  [Parallel Support] ✅ Read codex-plan.md (backend) + gemini-plan.md (frontend)
 allowed-tools:
   - Read
   - Write
@@ -14,99 +14,99 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（由 orchestrator 传入）
+    description: Run directory path (passed by orchestrator)
   - name: task_type
     type: string
     required: false
-    description: 任务类型（fullstack|frontend|backend），默认 fullstack
+    description: Task type (fullstack|frontend|backend), default fullstack
 ---
 
-# Architecture Analyzer - 架构整合原子技能
+# Architecture Analyzer - Architecture Integration Atomic Skill
 
-## 职责边界
+## Responsibility Boundary
 
-- **输入**:
+- **Input**:
   - `${run_dir}/requirements.md`
   - `${run_dir}/context.md`
-  - `${run_dir}/codex-plan.md`（后端规划，来自 codex-planner）
-  - `${run_dir}/gemini-plan.md`（前端规划，来自 gemini-planner）
-- **输出**: `${run_dir}/architecture.md`（整合后的统一架构文档）
-- **单一职责**: 只做架构整合，不做原始分析
+  - `${run_dir}/codex-plan.md` (backend planning, from codex-planner)
+  - `${run_dir}/gemini-plan.md` (frontend planning, from gemini-planner)
+- **Output**: `${run_dir}/architecture.md` (integrated unified architecture document)
+- **Single Responsibility**: Only do architecture integration, no original analysis
 
-## 🚨🚨🚨 强制规则 🚨🚨🚨
+## 🚨🚨🚨 Mandatory Rules 🚨🚨🚨
 
-**本 Skill 负责整合，原始分析由 planner skills 完成！**
+**This Skill handles integration, original analysis is done by planner skills!**
 
-- ✅ 正确流程：先调用 codex-planner/gemini-planner → 再调用 architecture-analyzer
-- ❌ 禁止：跳过 planner skills 直接分析
-- ❌ 禁止：Claude 自己写架构分析替代 planner 输出
+- ✅ Correct flow: Call codex-planner/gemini-planner first → then call architecture-analyzer
+- ❌ Prohibited: Skip planner skills and analyze directly
+- ❌ Prohibited: Claude writing architecture analysis instead of planner output
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                             | 触发条件        |
-| --------------------- | -------------------------------- | --------------- |
-| `sequential-thinking` | 结构化架构整合，确保前后端一致性 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                             | Trigger              |
+| --------------------- | ----------------------------------- | -------------------- |
+| `sequential-thinking` | Structured architecture integration | 🚨 Required per exec |
 
-## 协作流程
+## Collaboration Flow
 
 ```
-plan-context-retriever → codex-planner (后端) ─┐
-                                              ├→ architecture-analyzer → task-decomposer
-                       → gemini-planner (前端) ─┘
+plan-context-retriever → codex-planner (backend) ─┐
+                                                  ├→ architecture-analyzer → task-decomposer
+                       → gemini-planner (frontend) ─┘
 ```
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化整合规划（sequential-thinking）
+### Step 0: Structured Integration Planning (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划整合策略**
+🚨 **Must first use sequential-thinking to plan integration strategy**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划架构整合策略。需要：1) 验证 planner 输出 2) 提取后端架构 3) 提取前端架构 4) 识别交叉点 5) 消除冲突",
+  thought: "Planning architecture integration strategy. Need: 1) Verify planner outputs 2) Extract backend architecture 3) Extract frontend architecture 4) Identify cross-cutting concerns 5) Resolve conflicts",
   thoughtNumber: 1,
   totalThoughts: 6,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking Steps**:
 
-1. **前置验证**：确认 codex-plan.md 和/或 gemini-plan.md 存在
-2. **后端架构提取**：API 设计、数据模型、安全策略、性能考量
-3. **前端架构提取**：组件架构、状态管理、路由设计、响应式策略
-4. **交叉点识别**：API 契约、认证流程、数据格式、错误处理
-5. **冲突消除**：如有分歧，记录为 ADR
-6. **统一输出**：生成 arc42 格式的 architecture.md
+1. **Prerequisite Verification**: Confirm codex-plan.md and/or gemini-plan.md exist
+2. **Backend Architecture Extraction**: API design, data model, security strategy, performance considerations
+3. **Frontend Architecture Extraction**: Component architecture, state management, routing design, responsive strategy
+4. **Cross-cutting Concerns Identification**: API contracts, authentication flow, data formats, error handling
+5. **Conflict Resolution**: If there are divergences, record as ADR
+6. **Unified Output**: Generate architecture.md in arc42 format
 
-### Step 1: 验证前置条件
+### Step 1: Verify Prerequisites
 
-检查 planner 输出文件是否存在：
+Check if planner output files exist:
 
 ```bash
-# 根据 task_type 检查必要文件
+# Check required files based on task_type
 if [[ "$TASK_TYPE" == "fullstack" || "$TASK_TYPE" == "backend" ]]; then
   if [[ ! -f "${run_dir}/codex-plan.md" ]]; then
-    echo "错误：缺少 codex-plan.md，请先执行 tpd:codex-planner"
+    echo "Error: Missing codex-plan.md, please execute tpd:codex-planner first"
     exit 1
   fi
 fi
 
 if [[ "$TASK_TYPE" == "fullstack" || "$TASK_TYPE" == "frontend" ]]; then
   if [[ ! -f "${run_dir}/gemini-plan.md" ]]; then
-    echo "错误：缺少 gemini-plan.md，请先执行 tpd:gemini-planner"
+    echo "Error: Missing gemini-plan.md, please execute tpd:gemini-planner first"
     exit 1
   fi
 fi
 ```
 
-### Step 2: 读取所有输入
+### Step 2: Read All Inputs
 
 ```bash
 REQUIREMENTS=$(cat "${run_dir}/requirements.md")
 CONTEXT=$(cat "${run_dir}/context.md")
 
-# 根据 task_type 读取 planner 输出
+# Read planner outputs based on task_type
 if [[ -f "${run_dir}/codex-plan.md" ]]; then
   CODEX_PLAN=$(cat "${run_dir}/codex-plan.md")
 fi
@@ -116,93 +116,93 @@ if [[ -f "${run_dir}/gemini-plan.md" ]]; then
 fi
 ```
 
-### Step 3: 整合模式
+### Step 3: Integration Modes
 
-| 任务类型  | 整合模式     | 输入来源                       |
-| --------- | ------------ | ------------------------------ |
-| fullstack | 双规划整合   | codex-plan.md + gemini-plan.md |
-| backend   | 后端规划为主 | codex-plan.md                  |
-| frontend  | 前端规划为主 | gemini-plan.md                 |
+| Task Type | Integration Mode      | Input Source                   |
+| --------- | --------------------- | ------------------------------ |
+| fullstack | Dual plan integration | codex-plan.md + gemini-plan.md |
+| backend   | Backend plan primary  | codex-plan.md                  |
+| frontend  | Frontend plan primary | gemini-plan.md                 |
 
-### Step 4: 整合分析结果
+### Step 4: Integrate Analysis Results
 
-Claude 负责将两个 planner 的输出整合为统一架构文档：
+Claude is responsible for integrating two planner outputs into unified architecture document:
 
-1. **提取后端架构**（从 codex-plan.md）
-   - API 设计
-   - 数据模型
-   - 安全策略
-   - 性能考量
-   - 实施路径
+1. **Extract Backend Architecture** (from codex-plan.md)
+   - API Design
+   - Data Model
+   - Security Strategy
+   - Performance Considerations
+   - Implementation Path
 
-2. **提取前端架构**（从 gemini-plan.md）
-   - 组件架构（Atomic Design）
-   - 状态管理
-   - 路由设计
-   - 响应式策略
-   - 无障碍清单
+2. **Extract Frontend Architecture** (from gemini-plan.md)
+   - Component Architecture (Atomic Design)
+   - State Management
+   - Routing Design
+   - Responsive Strategy
+   - Accessibility Checklist
 
-3. **识别交叉点**
-   - API 契约（前后端共享）
-   - 认证流程（Token 传递）
-   - 数据格式（DTO 定义）
-   - 错误处理（错误码映射）
+3. **Identify Cross-cutting Concerns**
+   - API Contracts (shared between frontend and backend)
+   - Authentication Flow (Token passing)
+   - Data Formats (DTO definitions)
+   - Error Handling (Error code mapping)
 
-4. **消除冲突**
-   - 如果两个 planner 有不同建议，记录为 ADR
+4. **Resolve Conflicts**
+   - If two planners have different recommendations, record as ADR
 
-### Step 5: 架构决策记录
+### Step 5: Architecture Decision Records
 
-对于关键决策，生成 ADR（Architecture Decision Record）：
+For key decisions, generate ADR (Architecture Decision Record):
 
 ```markdown
-### ADR-001: 认证方案选择
+### ADR-001: Authentication Solution Selection
 
-**状态**: 已决定
+**Status**: Decided
 
-**上下文**: 需要实现用户认证功能
+**Context**: Need to implement user authentication feature
 
-**决策**: 使用 JWT + OAuth2
+**Decision**: Use JWT + OAuth2
 
-**理由**:
+**Rationale**:
 
-- 行业标准方案
-- 支持无状态认证
-- 易于集成第三方登录
+- Industry standard solution
+- Supports stateless authentication
+- Easy integration with third-party login
 
-**后果**:
+**Consequences**:
 
-- 需要实现 token 刷新机制
-- 需要安全存储 secret
+- Need to implement token refresh mechanism
+- Need to securely store secret
 ```
 
-### Step 6: 结构化输出
+### Step 6: Structured Output
 
-将分析结果写入 `${run_dir}/architecture.md`：
+Write analysis results to `${run_dir}/architecture.md`:
 
 ````markdown
-# 架构设计
+# Architecture Design
 
-## 元信息
+## Metadata
 
-- 分析时间: [timestamp]
-- 分析模型: [codex|gemini|both]
-- 任务类型: [frontend|backend|fullstack]
+- Analysis Time: [timestamp]
+- Analysis Model: [codex|gemini|both]
+- Task Type: [frontend|backend|fullstack]
 
-## 架构概述
+## Architecture Overview
 
-[一段话描述整体架构方案]
+[One paragraph describing overall architecture solution]
 
-## 后端架构（Codex 分析）
+## Backend Architecture (Codex Analysis)
 
-### API 设计
+### API Design
 
-| 端点               | 方法 | 描述     | 请求体                  | 响应          |
-| ------------------ | ---- | -------- | ----------------------- | ------------- |
-| /api/auth/login    | POST | 用户登录 | {email, password}       | {token, user} |
-| /api/auth/register | POST | 用户注册 | {email, password, name} | {user}        |
+| Endpoint           | Method | Description   | Request Body            | Response      |
+| ------------------ | ------ | ------------- | ----------------------- | ------------- |
+| /api/auth/login    | POST   | User login    | {email, password}       | {token, user} |
+| /api/auth/register | POST   | User register | {email, password, name} | {user}        |
 
-### 数据模型
+### Data Model
 
 ```typescript
 interface User {
@@ -216,30 +216,30 @@ interface User {
 ```
 ````
 
-### 业务逻辑层
+### Business Logic Layer
 
 ```
 src/
 ├── services/
-│   ├── auth.service.ts      # 认证服务
-│   ├── user.service.ts      # 用户服务
-│   └── token.service.ts     # Token 管理
+│   ├── auth.service.ts      # Auth service
+│   ├── user.service.ts      # User service
+│   └── token.service.ts     # Token management
 ├── controllers/
-│   └── auth.controller.ts   # 认证控制器
+│   └── auth.controller.ts   # Auth controller
 └── middleware/
-    └── auth.middleware.ts   # 认证中间件
+    └── auth.middleware.ts   # Auth middleware
 ```
 
-### 安全策略
+### Security Strategy
 
-- JWT 验证中间件
-- 密码 bcrypt 哈希
+- JWT verification middleware
+- Password bcrypt hashing
 - Rate limiting (100 req/min)
-- 输入验证 (Zod schema)
+- Input validation (Zod schema)
 
-## 前端架构（Gemini 分析）
+## Frontend Architecture (Gemini Analysis)
 
-### 组件结构
+### Component Structure
 
 ```
 src/
@@ -261,125 +261,125 @@ src/
     └── AuthContext.tsx
 ```
 
-### 状态管理
+### State Management
 
-| 状态类型       | 方案        | 用途           |
-| -------------- | ----------- | -------------- |
-| 服务器状态     | React Query | API 数据缓存   |
-| 全局客户端状态 | Zustand     | 用户会话       |
-| UI 状态        | useState    | 表单、加载状态 |
+| State Type          | Solution    | Purpose          |
+| ------------------- | ----------- | ---------------- |
+| Server State        | React Query | API data caching |
+| Global Client State | Zustand     | User session     |
+| UI State            | useState    | Form, loading    |
 
-### 路由设计
+### Routing Design
 
 ```
-/                    → 重定向到 /login 或 /dashboard
+/                    → Redirect to /login or /dashboard
 /login              → LoginPage
 /register           → RegisterPage
-/dashboard          → DashboardPage (需认证)
+/dashboard          → DashboardPage (requires auth)
 ```
 
-### 样式方案
+### Styling Solution
 
 - CSS-in-JS: Tailwind CSS
-- 设计系统: 自定义主题变量
-- 响应式断点: sm(640px), md(768px), lg(1024px)
+- Design System: Custom theme variables
+- Responsive breakpoints: sm(640px), md(768px), lg(1024px)
 
-## 横切关注点
+## Cross-cutting Concerns
 
-### 错误处理
+### Error Handling
 
-- 统一错误格式
-- 错误边界组件
-- 用户友好错误消息
+- Unified error format
+- Error boundary component
+- User-friendly error messages
 
-### 日志与监控
+### Logging & Monitoring
 
-- 结构化日志 (Winston)
-- 请求追踪 (correlation ID)
+- Structured logging (Winston)
+- Request tracing (correlation ID)
 
-### 测试策略
+### Testing Strategy
 
-- 单元测试: Jest
-- 集成测试: Supertest
-- E2E 测试: Playwright
+- Unit tests: Jest
+- Integration tests: Supertest
+- E2E tests: Playwright
 
-## 架构决策记录
+## Architecture Decision Records
 
-### ADR-001: [决策标题]
+### ADR-001: [Decision Title]
 
-[ADR 内容]
+[ADR content]
 
-## 质量属性
+## Quality Attributes
 
-| 属性   | 目标         | 验证方式 |
-| ------ | ------------ | -------- |
-| 性能   | API < 200ms  | 负载测试 |
-| 可用性 | 99.9%        | 健康检查 |
-| 安全性 | OWASP Top 10 | 安全扫描 |
+| Attribute    | Target       | Verification Method |
+| ------------ | ------------ | ------------------- |
+| Performance  | API < 200ms  | Load testing        |
+| Availability | 99.9%        | Health checks       |
+| Security     | OWASP Top 10 | Security scanning   |
 
 ---
 
-下一步: 调用 task-decomposer 进行任务分解
+Next step: Call task-decomposer for task decomposition
 
 ```
 
-## 返回值
+## Return Value
 
-执行完成后，返回：
-
-```
-
-架构分析完成。
-输出文件: ${run_dir}/architecture.md
-分析模型: [codex|gemini|both]
-API 端点: X 个
-组件数量: Y 个
-架构决策: Z 个
-
-下一步: 使用 tpd:task-decomposer 进行任务分解
+After execution, return:
 
 ```
 
-## 质量门控
+Architecture analysis complete.
+Output file: ${run_dir}/architecture.md
+Analysis model: [codex|gemini|both]
+API endpoints: X
+Component count: Y
+Architecture decisions: Z
 
-- ✅ 验证了 planner 输出文件存在
-- ✅ 覆盖了 arc42 关键章节
-- ✅ 整合了前后端架构
-- ✅ 记录了架构决策（ADR）
-- ✅ 定义了质量属性目标
-- ✅ 识别了前后端交叉点
+Next step: Use tpd:task-decomposer for task decomposition
 
-## 约束
+```
 
-| 必须执行                        | 禁止事项                    |
-| ------------------------------- | --------------------------- |
-| ✅ 验证 planner 输出文件存在    | ❌ 跳过 planner 直接分析    |
-| ✅ 整合两个 planner 的输出      | ❌ 只取一个 planner 的结果  |
-| ✅ 记录冲突和决策               | ❌ 忽略前后端冲突           |
-| ✅ 输出统一的 architecture.md   | ❌ 产出多个分散的文件       |
-| ✅ 识别 API 契约和交叉关注点    | ❌ 前后端完全独立不关联     |
+## Quality Gates
 
-## 与 Planner Skills 的关系
+- ✅ Verified planner output files exist
+- ✅ Covered key arc42 chapters
+- ✅ Integrated frontend and backend architecture
+- ✅ Recorded architecture decisions (ADR)
+- ✅ Defined quality attribute targets
+- ✅ Identified frontend-backend cross-cutting concerns
+
+## Constraints
+
+| Must Do                                  | Prohibited                          |
+| ---------------------------------------- | ----------------------------------- |
+| ✅ Verify planner output files exist     | ❌ Skip planners and analyze directly |
+| ✅ Integrate outputs from both planners  | ❌ Only take one planner's result   |
+| ✅ Record conflicts and decisions        | ❌ Ignore frontend-backend conflicts |
+| ✅ Output unified architecture.md        | ❌ Output multiple scattered files  |
+| ✅ Identify API contracts and cross-cutting | ❌ Frontend-backend completely independent |
+
+## Relationship with Planner Skills
 
 ```
 
 ┌─────────────────────────────────────────────────────────────┐
-│ plan 工作流 │
+│ plan workflow │
 ├─────────────────────────────────────────────────────────────┤
 │ Phase 3a: codex-planner │
-│ 输入: requirements.md, context.md │
-│ 输出: codex-plan.md (PLANS.md 格式) │
-│ 内容: 后端架构、API、数据模型、安全策略 │
+│ Input: requirements.md, context.md │
+│ Output: codex-plan.md (PLANS.md format) │
+│ Content: Backend architecture, API, data model, security │
 ├─────────────────────────────────────────────────────────────┤
-│ Phase 3b: gemini-planner (并行) │
-│ 输入: requirements.md, context.md │
-│ 输出: gemini-plan.md (SPEC.md 格式) │
-│ 内容: 前端架构、组件、状态、路由、响应式 │
+│ Phase 3b: gemini-planner (parallel) │
+│ Input: requirements.md, context.md │
+│ Output: gemini-plan.md (SPEC.md format) │
+│ Content: Frontend architecture, components, state, routing │
 ├─────────────────────────────────────────────────────────────┤
 │ Phase 4: architecture-analyzer │
-│ 输入: codex-plan.md + gemini-plan.md │
-│ 输出: architecture.md (统一格式) │
-│ 职责: 整合、去重、消除冲突、识别交叉点 │
+│ Input: codex-plan.md + gemini-plan.md │
+│ Output: architecture.md (unified format) │
+│ Responsibility: Integrate, dedupe, resolve conflicts, identify cross-cutting │
 └─────────────────────────────────────────────────────────────┘
 
 ```
