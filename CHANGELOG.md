@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add interactive selection mode (-s) and dry-run mode (-d) to sync-plugins.sh (scripts)
 - Add unified TPD (Thinking→Plan→Dev) workflow plugin (tpd)
   - Consolidates dev, plan, thinking plugins into single integrated workflow
   - New skills: handoff-generator, context-explorer
@@ -56,6 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Translate all TPD commands and skills documentation to English (tpd)
 - Remove deprecated dev, plan, thinking plugins (migrated to tpd) (plugins)
   - dev: 42 files removed
   - plan: 59 files removed
@@ -83,6 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Remove async property from notification hook configuration (hooks)
 - Fix relative path handling in read-limit.sh hook (hooks)
 - Add emoji mapping table and format specification for batch commits (commit)
 - Add mandatory continuation instructions and next_phase return value to all skills (ui-design)
