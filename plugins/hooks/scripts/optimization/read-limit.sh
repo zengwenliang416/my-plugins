@@ -57,8 +57,27 @@ file_path=$(echo "$input" | jq -r '.tool_input.file_path // empty')
 existing_offset=$(echo "$input" | jq -r '.tool_input.offset // empty')
 existing_limit=$(echo "$input" | jq -r '.tool_input.limit // empty')
 
-# 文件路径为空或不存在，跳过
-if [[ -z "$file_path" ]] || [[ ! -f "$file_path" ]]; then
+# 文件路径为空，跳过
+if [[ -z "$file_path" ]]; then
+    exit 0
+fi
+
+# 处理相对路径：转换为绝对路径
+if [[ "$file_path" != /* ]]; then
+    # 尝试从 PWD 解析
+    if [[ -f "$PWD/$file_path" ]]; then
+        file_path="$PWD/$file_path"
+    # 尝试从 HOME 解析
+    elif [[ -f "$HOME/$file_path" ]]; then
+        file_path="$HOME/$file_path"
+    # 尝试从 workspace 解析
+    elif [[ -f "$HOME/workspace/$file_path" ]]; then
+        file_path="$HOME/workspace/$file_path"
+    fi
+fi
+
+# 文件不存在，跳过
+if [[ ! -f "$file_path" ]]; then
     exit 0
 fi
 
