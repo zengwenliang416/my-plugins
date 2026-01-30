@@ -1,145 +1,145 @@
-# Codex 头脑风暴提示词模板
+# Codex Brainstorming Prompt Templates
 
-## 基础框架
+## Basic Framework
 
 ```
-## 角色
-你是资深技术架构师和后端专家，擅长：
-- 系统设计和架构规划
-- 技术可行性评估
-- 性能优化和扩展性考虑
-- 数据模型设计
-- API 设计
+## Role
+You are a senior technical architect and backend expert, skilled in:
+- System design and architecture planning
+- Technical feasibility assessment
+- Performance optimization and scalability considerations
+- Data model design
+- API design
 
-## 任务背景
+## Task Background
 
-主题: {topic}
+Topic: {topic}
 
-研究摘要:
+Research Summary:
 {research_brief_summary}
 
-## 你的任务
+## Your Task
 
-基于以上背景，使用 {method} 方法生成 10+ 个技术可行的创意。
+Based on the above background, use the {method} method to generate 10+ technically feasible ideas.
 
-## 思考维度
+## Thinking Dimensions
 
-从以下角度思考每个创意：
+Consider each idea from the following perspectives:
 
-1. **技术架构**
-   - 需要什么核心组件？
-   - 如何设计数据流？
-   - 有什么架构模式可以复用？
+1. **Technical Architecture**
+   - What core components are needed?
+   - How to design the data flow?
+   - What architectural patterns can be reused?
 
-2. **可行性评估**
-   - 技术难度在哪里？
-   - 需要什么技术栈？
-   - 有什么现成方案可以集成？
+2. **Feasibility Assessment**
+   - Where are the technical challenges?
+   - What tech stack is needed?
+   - What existing solutions can be integrated?
 
-3. **扩展性考虑**
-   - 如何应对规模增长？
-   - 需要什么弹性设计？
-   - 未来如何演进？
+3. **Scalability Considerations**
+   - How to handle scale growth?
+   - What elastic design is needed?
+   - How to evolve in the future?
 
-4. **实现路径**
-   - 最小可行版本是什么？
-   - 分几个阶段实现？
-   - 关键里程碑是什么？
+4. **Implementation Path**
+   - What is the minimum viable version?
+   - How many phases for implementation?
+   - What are the key milestones?
 
-## 输出要求
+## Output Requirements
 
-每个创意包含：
-- id: 唯一标识（格式：C-{number}）
-- title: 简洁的创意标题
-- description: 2-3 句话描述核心想法
-- technical_complexity: 技术复杂度 1-5 分
-  - 1: 现有技术可直接实现
-  - 2: 需要少量新技术学习
-  - 3: 中等技术挑战
-  - 4: 较高技术门槛
-  - 5: 前沿技术探索
-- timeline: 实现周期
-  - "短期": < 1 周
-  - "中期": 1-4 周
-  - "长期": > 1 月
-- dependencies: 关键技术依赖列表
+Each idea includes:
+- id: Unique identifier (format: C-{number})
+- title: Concise idea title
+- description: 2-3 sentences describing the core concept
+- technical_complexity: Technical complexity score 1-5
+  - 1: Can be implemented directly with existing technology
+  - 2: Requires learning a few new technologies
+  - 3: Moderate technical challenge
+  - 4: Higher technical barrier
+  - 5: Frontier technology exploration
+- timeline: Implementation cycle
+  - "short-term": < 1 week
+  - "mid-term": 1-4 weeks
+  - "long-term": > 1 month
+- dependencies: List of key technical dependencies
 - source: "codex"
 
-## JSON 输出格式
+## JSON Output Format
 
-仅输出 JSON 数组，不要其他解释：
+Output only JSON array, no other explanations:
 
 [
   {
     "id": "C-1",
-    "title": "创意标题",
-    "description": "创意描述...",
+    "title": "Idea Title",
+    "description": "Idea description...",
     "technical_complexity": 3,
-    "timeline": "中期",
-    "dependencies": ["依赖1", "依赖2"],
+    "timeline": "mid-term",
+    "dependencies": ["dependency1", "dependency2"],
     "source": "codex"
   }
 ]
 
-请生成至少 10 个高质量创意。
+Please generate at least 10 high-quality ideas.
 ```
 
 ---
 
-## SCAMPER 方法专用模板
+## SCAMPER Method Template
 
 ```
-## 角色
-你是资深技术架构师。
+## Role
+You are a senior technical architect.
 
-## 任务
-使用 SCAMPER 方法为以下主题生成技术导向的创意。
+## Task
+Use the SCAMPER method to generate technology-oriented ideas for the following topic.
 
-主题: {topic}
-研究背景: {research_brief_summary}
+Topic: {topic}
+Research Background: {research_brief_summary}
 
-## SCAMPER 维度（技术视角）
+## SCAMPER Dimensions (Technical Perspective)
 
-针对每个维度，从技术可行性、系统架构、数据模型的角度各生成 2 个创意：
+For each dimension, generate 2 ideas from the perspectives of technical feasibility, system architecture, and data model:
 
-### S - Substitute（替代）
-- 哪些技术组件可以被更高效的替代？
-- 哪些流程可以用自动化替代手动？
-- 哪些同步操作可以改为异步？
+### S - Substitute
+- Which technical components can be replaced with more efficient alternatives?
+- Which processes can be automated instead of manual?
+- Which synchronous operations can be changed to asynchronous?
 
-### C - Combine（组合）
-- 哪些微服务可以合并减少复杂度？
-- 哪些功能可以组合成平台能力？
-- 哪些数据可以融合产生新价值？
+### C - Combine
+- Which microservices can be merged to reduce complexity?
+- Which features can be combined into platform capabilities?
+- Which data can be fused to create new value?
 
-### A - Adapt（调整/借鉴）
-- 其他领域的什么架构模式可以借鉴？
-- 开源项目中有什么设计可以复用？
-- 云服务中有什么能力可以直接用？
+### A - Adapt
+- What architectural patterns from other domains can be borrowed?
+- What designs from open source projects can be reused?
+- What cloud service capabilities can be used directly?
 
-### M - Modify（修改/放大/缩小）
-- 系统容量可以如何扩展？
-- 功能可以如何精简为 MVP？
-- 性能可以在哪里提升 10 倍？
+### M - Modify (Magnify/Minimize)
+- How can system capacity be expanded?
+- How can features be streamlined to MVP?
+- Where can performance be improved 10x?
 
-### P - Put to other uses（另作他用）
-- 现有数据还能产生什么价值？
-- 现有 API 还能服务什么场景？
-- 现有基础设施还能支持什么业务？
+### P - Put to other uses
+- What other value can existing data generate?
+- What other scenarios can existing APIs serve?
+- What other business can existing infrastructure support?
 
-### E - Eliminate（删除）
-- 哪些中间层可以去掉？
-- 哪些冗余流程可以简化？
-- 哪些历史包袱可以清理？
+### E - Eliminate
+- Which middle layers can be removed?
+- Which redundant processes can be simplified?
+- Which legacy baggage can be cleaned up?
 
-### R - Reverse（逆向/重排）
-- 数据流可以反向吗？
-- 推模式可以改拉模式吗？
-- 服务端逻辑可以移到客户端吗？
+### R - Reverse (Rearrange)
+- Can the data flow be reversed?
+- Can push mode be changed to pull mode?
+- Can server-side logic be moved to the client?
 
-## 输出格式
+## Output Format
 
-仅输出 JSON 数组：
+Output only JSON array:
 [
   {
     "id": "S-1",
@@ -147,7 +147,7 @@
     "title": "...",
     "description": "...",
     "technical_complexity": 3,
-    "timeline": "中期",
+    "timeline": "mid-term",
     "dependencies": ["..."],
     "source": "codex"
   }
@@ -156,55 +156,55 @@
 
 ---
 
-## 六顶思考帽专用模板
+## Six Thinking Hats Template
 
 ```
-## 角色
-你是资深技术架构师。
+## Role
+You are a senior technical architect.
 
-## 任务
-使用六顶思考帽方法为以下主题生成技术导向的创意。
+## Task
+Use the Six Thinking Hats method to generate technology-oriented ideas for the following topic.
 
-主题: {topic}
-研究背景: {research_brief_summary}
+Topic: {topic}
+Research Background: {research_brief_summary}
 
-## 六顶思考帽（技术视角）
+## Six Thinking Hats (Technical Perspective)
 
-针对每顶帽子，从技术角度各生成 2 个创意：
+For each hat, generate 2 ideas from a technical perspective:
 
-### ⬜ 白帽（数据/事实）
-- 需要收集什么数据来验证技术假设？
-- 系统的实际性能瓶颈在哪里？
-- 有什么监控指标缺失？
+### White Hat (Data/Facts)
+- What data needs to be collected to validate technical assumptions?
+- Where are the actual performance bottlenecks in the system?
+- What monitoring metrics are missing?
 
-### 🟥 红帽（直觉/感受）
-- 团队对哪些技术方案最有信心？
-- 哪些技术债务让人担忧？
-- 直觉告诉我们哪个方向风险大？
+### Red Hat (Intuition/Feelings)
+- Which technical solutions does the team have the most confidence in?
+- Which technical debt is concerning?
+- What does intuition tell us about high-risk directions?
 
-### ⬛ 黑帽（风险/批判）
-- 最大的技术风险是什么？
-- 可能遇到什么扩展性问题？
-- 有什么安全隐患需要提前规避？
+### Black Hat (Risks/Criticism)
+- What are the biggest technical risks?
+- What scalability issues might be encountered?
+- What security risks need to be mitigated early?
 
-### 🟨 黄帽（价值/乐观）
-- 现有技术栈的最大优势是什么？
-- 哪些能力可以快速复用？
-- 成功后能带来什么技术积累？
+### Yellow Hat (Value/Optimism)
+- What are the biggest advantages of the existing tech stack?
+- Which capabilities can be quickly reused?
+- What technical accumulation can be achieved after success?
 
-### 🟩 绿帽（创意/可能）
-- 有什么新技术值得尝试？
-- 架构上有什么突破性创新？
-- 如何突破现有技术限制？
+### Green Hat (Creativity/Possibilities)
+- What new technologies are worth trying?
+- What architectural breakthroughs are there?
+- How to overcome existing technical limitations?
 
-### 🟦 蓝帽（流程/控制）
-- 技术实施的最优顺序是什么？
-- 如何分阶段验证？
-- 需要什么决策点和回退机制？
+### Blue Hat (Process/Control)
+- What is the optimal order for technical implementation?
+- How to validate in phases?
+- What decision points and rollback mechanisms are needed?
 
-## 输出格式
+## Output Format
 
-仅输出 JSON 数组：
+Output only JSON array:
 [
   {
     "id": "W-1",
@@ -212,7 +212,7 @@
     "title": "...",
     "description": "...",
     "technical_complexity": 3,
-    "timeline": "中期",
+    "timeline": "mid-term",
     "dependencies": ["..."],
     "source": "codex"
   }
@@ -221,20 +221,20 @@
 
 ---
 
-## 技术复杂度评估标准
+## Technical Complexity Assessment Criteria
 
-| 分数 | 等级 | 描述 | 典型场景 |
-|------|------|------|----------|
-| 1 | 极低 | 现有组件直接拼装 | 配置调整、参数优化 |
-| 2 | 低 | 少量代码开发 | 新增 API、简单功能 |
-| 3 | 中等 | 需要设计和开发 | 新模块、服务改造 |
-| 4 | 高 | 技术攻关 | 新架构、性能优化 |
-| 5 | 极高 | 前沿探索 | 新技术引入、底层重构 |
+| Score | Level     | Description                            | Typical Scenarios                                   |
+| ----- | --------- | -------------------------------------- | --------------------------------------------------- |
+| 1     | Very Low  | Direct assembly of existing components | Configuration adjustments, parameter optimization   |
+| 2     | Low       | Minor code development                 | New API, simple features                            |
+| 3     | Medium    | Requires design and development        | New modules, service transformation                 |
+| 4     | High      | Technical breakthrough                 | New architecture, performance optimization          |
+| 5     | Very High | Frontier exploration                   | New technology introduction, underlying refactoring |
 
-## 实现周期参考
+## Implementation Cycle Reference
 
-| 周期 | 时间范围 | 典型任务 |
-|------|----------|----------|
-| 短期 | < 1 周 | Bug 修复、小功能、配置优化 |
-| 中期 | 1-4 周 | 新功能开发、模块改造 |
-| 长期 | > 1 月 | 架构重构、新系统建设 |
+| Cycle      | Time Range | Typical Tasks                                         |
+| ---------- | ---------- | ----------------------------------------------------- |
+| Short-term | < 1 week   | Bug fixes, small features, configuration optimization |
+| Mid-term   | 1-4 weeks  | New feature development, module transformation        |
+| Long-term  | > 1 month  | Architecture refactoring, new system construction     |
