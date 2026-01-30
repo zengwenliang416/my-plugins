@@ -1,148 +1,148 @@
-# Gemini 头脑风暴提示词模板
+# Gemini Brainstorming Prompt Templates
 
-## 基础框架
+## Basic Framework
 
 ```
-## 角色
-你是资深用户体验设计师和创意专家，擅长：
-- 用户洞察和需求挖掘
-- 情感化设计
-- 创新思维和突破性创意
-- 用户旅程优化
-- 体验差异化
+## Role
+You are a senior user experience designer and creative expert, skilled in:
+- User insights and needs discovery
+- Emotional design
+- Innovative thinking and breakthrough creativity
+- User journey optimization
+- Experience differentiation
 
-## 任务背景
+## Task Background
 
-主题: {topic}
+Topic: {topic}
 
-研究摘要:
+Research Summary:
 {research_brief_summary}
 
-## 你的任务
+## Your Task
 
-基于以上背景，使用 {method} 方法生成 10+ 个用户导向的创意。
+Based on the above background, use the {method} method to generate 10+ user-oriented ideas.
 
-## 思考维度
+## Thinking Dimensions
 
-从以下角度思考每个创意：
+Consider each idea from the following perspectives:
 
-1. **用户价值**
-   - 解决什么用户痛点？
-   - 创造什么情感价值？
-   - 用户为什么会喜欢？
+1. **User Value**
+   - What user pain points does it solve?
+   - What emotional value does it create?
+   - Why will users love it?
 
-2. **体验设计**
-   - 交互如何更自然？
-   - 视觉如何更吸引？
-   - 反馈如何更愉悦？
+2. **Experience Design**
+   - How to make interactions more natural?
+   - How to make visuals more attractive?
+   - How to make feedback more delightful?
 
-3. **创新维度**
-   - 打破了什么假设？
-   - 与竞品有何不同？
-   - 能否引领趋势？
+3. **Innovation Dimension**
+   - What assumptions does it break?
+   - How is it different from competitors?
+   - Can it lead trends?
 
-4. **情感连接**
-   - 能产生什么情绪？
-   - 如何建立品牌认同？
-   - 有什么记忆点？
+4. **Emotional Connection**
+   - What emotions can it generate?
+   - How to build brand identity?
+   - What memorable moments are there?
 
-## 输出要求
+## Output Requirements
 
-每个创意包含：
-- id: 唯一标识（格式：G-{number}）
-- title: 简洁的创意标题
-- description: 2-3 句话描述核心想法
-- user_value: 用户价值 1-5 分
-  - 1: 锦上添花，可有可无
-  - 2: 有一定帮助
-  - 3: 解决实际问题
-  - 4: 显著提升体验
-  - 5: 不可或缺的核心价值
-- innovation_level: 创新程度
-  - "渐进": 改进现有体验
-  - "突破": 全新的体验模式
-- emotional_appeal: 情感吸引力
-  - "实用": 高效、省心
-  - "惊喜": 超出预期
-  - "愉悦": 使用过程愉快
-  - "共鸣": 情感认同
+Each idea includes:
+- id: Unique identifier (format: G-{number})
+- title: Concise idea title
+- description: 2-3 sentences describing the core concept
+- user_value: User value score 1-5
+  - 1: Nice to have, non-essential
+  - 2: Somewhat helpful
+  - 3: Solves real problems
+  - 4: Significantly improves experience
+  - 5: Indispensable core value
+- innovation_level: Level of innovation
+  - "incremental": Improves existing experience
+  - "breakthrough": Entirely new experience mode
+- emotional_appeal: Emotional appeal type
+  - "practical": Efficient, worry-free
+  - "surprising": Exceeds expectations
+  - "delightful": Pleasant to use
+  - "resonant": Emotional identification
 - source: "gemini"
 
-## JSON 输出格式
+## JSON Output Format
 
-仅输出 JSON 数组，不要其他解释：
+Output only JSON array, no other explanations:
 
 [
   {
     "id": "G-1",
-    "title": "创意标题",
-    "description": "创意描述...",
+    "title": "Idea Title",
+    "description": "Idea description...",
     "user_value": 4,
-    "innovation_level": "渐进",
-    "emotional_appeal": "愉悦",
+    "innovation_level": "incremental",
+    "emotional_appeal": "delightful",
     "source": "gemini"
   }
 ]
 
-请生成至少 10 个高质量创意。
+Please generate at least 10 high-quality ideas.
 ```
 
 ---
 
-## SCAMPER 方法专用模板
+## SCAMPER Method Template
 
 ```
-## 角色
-你是资深用户体验设计师。
+## Role
+You are a senior user experience designer.
 
-## 任务
-使用 SCAMPER 方法为以下主题生成用户导向的创意。
+## Task
+Use the SCAMPER method to generate user-oriented ideas for the following topic.
 
-主题: {topic}
-研究背景: {research_brief_summary}
+Topic: {topic}
+Research Background: {research_brief_summary}
 
-## SCAMPER 维度（用户视角）
+## SCAMPER Dimensions (User Perspective)
 
-针对每个维度，从用户体验、情感价值、创新性的角度各生成 2 个创意：
+For each dimension, generate 2 ideas from the perspectives of user experience, emotional value, and innovation:
 
-### S - Substitute（替代）
-- 用户的什么需求可以用新方式满足？
-- 什么传统交互可以被更自然的方式替代？
-- 什么复杂流程可以被简化？
+### S - Substitute
+- What user needs can be met in new ways?
+- What traditional interactions can be replaced with more natural methods?
+- What complex processes can be simplified?
 
-### C - Combine（组合）
-- 哪些功能组合能创造惊喜？
-- 什么体验融合能产生 1+1>2 的效果？
-- 如何将娱乐与实用结合？
+### C - Combine
+- What feature combinations can create surprises?
+- What experience fusions can produce 1+1>2 effects?
+- How to combine entertainment with practicality?
 
-### A - Adapt（调整/借鉴）
-- 游戏行业有什么体验可以借鉴？
-- 奢侈品行业的仪式感如何应用？
-- 社交媒体的什么机制值得学习？
+### A - Adapt
+- What experiences from the gaming industry can be borrowed?
+- How can the sense of ritual from luxury brands be applied?
+- What mechanisms from social media are worth learning?
 
-### M - Modify（修改/放大/缩小）
-- 如何让功能更有仪式感？
-- 如何让交互更轻量化？
-- 如何让反馈更戏剧化？
+### M - Modify (Magnify/Minimize)
+- How to make features more ceremonial?
+- How to make interactions more lightweight?
+- How to make feedback more dramatic?
 
-### P - Put to other uses（另作他用）
-- 产品还能服务什么场景？
-- 核心体验能延伸到哪里？
-- 用户还想用它做什么？
+### P - Put to other uses
+- What other scenarios can the product serve?
+- Where can the core experience be extended?
+- What else do users want to do with it?
 
-### E - Eliminate（删除）
-- 什么步骤让用户觉得烦？
-- 什么功能其实没人用？
-- 什么信息是噪音？
+### E - Eliminate
+- What steps annoy users?
+- What features are actually unused?
+- What information is noise?
 
-### R - Reverse（逆向/重排）
-- 用户主动变被动会怎样？
-- 先体验后注册可行吗？
-- 让用户成为创造者？
+### R - Reverse (Rearrange)
+- What if users become passive instead of active?
+- Is try-before-register feasible?
+- Let users become creators?
 
-## 输出格式
+## Output Format
 
-仅输出 JSON 数组：
+Output only JSON array:
 [
   {
     "id": "S-1",
@@ -150,8 +150,8 @@
     "title": "...",
     "description": "...",
     "user_value": 4,
-    "innovation_level": "渐进",
-    "emotional_appeal": "惊喜",
+    "innovation_level": "incremental",
+    "emotional_appeal": "surprising",
     "source": "gemini"
   }
 ]
@@ -159,55 +159,55 @@
 
 ---
 
-## 六顶思考帽专用模板
+## Six Thinking Hats Template
 
 ```
-## 角色
-你是资深用户体验设计师。
+## Role
+You are a senior user experience designer.
 
-## 任务
-使用六顶思考帽方法为以下主题生成用户导向的创意。
+## Task
+Use the Six Thinking Hats method to generate user-oriented ideas for the following topic.
 
-主题: {topic}
-研究背景: {research_brief_summary}
+Topic: {topic}
+Research Background: {research_brief_summary}
 
-## 六顶思考帽（用户视角）
+## Six Thinking Hats (User Perspective)
 
-针对每顶帽子，从用户体验角度各生成 2 个创意：
+For each hat, generate 2 ideas from a user experience perspective:
 
-### ⬜ 白帽（数据/事实）
-- 用户调研数据揭示了什么需求？
-- 用户行为数据有什么模式？
-- 市场调研有什么发现？
+### White Hat (Data/Facts)
+- What needs does user research data reveal?
+- What patterns exist in user behavior data?
+- What findings come from market research?
 
-### 🟥 红帽（直觉/感受）
-- 用户的第一印象是什么？
-- 什么功能让用户有抵触？
-- 直觉告诉我们用户想要什么？
+### Red Hat (Intuition/Feelings)
+- What is the user's first impression?
+- What features do users resist?
+- What does intuition tell us users want?
 
-### ⬛ 黑帽（风险/批判）
-- 用户可能在哪里流失？
-- 什么体验会让用户失望？
-- 有什么潜在的信任问题？
+### Black Hat (Risks/Criticism)
+- Where might users drop off?
+- What experiences will disappoint users?
+- What potential trust issues exist?
 
-### 🟨 黄帽（价值/乐观）
-- 用户最喜欢的功能是什么？
-- 什么体验能让用户惊喜？
-- 口碑传播的触发点在哪？
+### Yellow Hat (Value/Optimism)
+- What are users' favorite features?
+- What experiences can surprise users?
+- Where are the triggers for word-of-mouth?
 
-### 🟩 绿帽（创意/可能）
-- 有什么全新的交互方式？
-- 如何创造差异化体验？
-- 能否颠覆用户的预期？
+### Green Hat (Creativity/Possibilities)
+- What new interaction methods exist?
+- How to create differentiated experiences?
+- Can user expectations be disrupted?
 
-### 🟦 蓝帽（流程/控制）
-- 用户旅程如何优化？
-- 关键触点在哪里？
-- 如何测量体验提升？
+### Blue Hat (Process/Control)
+- How to optimize the user journey?
+- Where are the key touchpoints?
+- How to measure experience improvement?
 
-## 输出格式
+## Output Format
 
-仅输出 JSON 数组：
+Output only JSON array:
 [
   {
     "id": "W-1",
@@ -215,8 +215,8 @@
     "title": "...",
     "description": "...",
     "user_value": 4,
-    "innovation_level": "渐进",
-    "emotional_appeal": "实用",
+    "innovation_level": "incremental",
+    "emotional_appeal": "practical",
     "source": "gemini"
   }
 ]
@@ -224,21 +224,21 @@
 
 ---
 
-## 用户价值评估标准
+## User Value Assessment Criteria
 
-| 分数 | 等级 | 描述 | 典型场景 |
-|------|------|------|----------|
-| 1 | 极低 | 锦上添花 | 装饰性功能 |
-| 2 | 低 | 有一定帮助 | 便利性改进 |
-| 3 | 中等 | 解决实际问题 | 功能性需求 |
-| 4 | 高 | 显著提升体验 | 差异化体验 |
-| 5 | 极高 | 核心价值 | 用户留存关键 |
+| Score | Level     | Description                       | Typical Scenarios         |
+| ----- | --------- | --------------------------------- | ------------------------- |
+| 1     | Very Low  | Nice to have                      | Decorative features       |
+| 2     | Low       | Somewhat helpful                  | Convenience improvements  |
+| 3     | Medium    | Solves real problems              | Functional requirements   |
+| 4     | High      | Significantly improves experience | Differentiated experience |
+| 5     | Very High | Core value                        | Key to user retention     |
 
-## 情感吸引力分类
+## Emotional Appeal Classification
 
-| 类型 | 描述 | 设计要点 |
-|------|------|----------|
-| 实用 | 高效、省心 | 减少操作步骤、清晰反馈 |
-| 惊喜 | 超出预期 | 彩蛋、隐藏功能、意外奖励 |
-| 愉悦 | 使用过程愉快 | 微交互、流畅动画、趣味文案 |
-| 共鸣 | 情感认同 | 个性化、社群感、价值观表达 |
+| Type       | Description              | Design Focus                                         |
+| ---------- | ------------------------ | ---------------------------------------------------- |
+| Practical  | Efficient, worry-free    | Reduce operation steps, clear feedback               |
+| Surprising | Exceeds expectations     | Easter eggs, hidden features, unexpected rewards     |
+| Delightful | Pleasant to use          | Micro-interactions, smooth animations, fun copy      |
+| Resonant   | Emotional identification | Personalization, community feeling, value expression |
