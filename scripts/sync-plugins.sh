@@ -6,12 +6,14 @@
 #   -i, --install     Install plugins after syncing
 #   -l, --list        List all available plugins
 #   -s, --select      Interactive selection mode
+#   -y, --yes         Skip all confirmations (non-interactive)
 #   -d, --dry-run     Show what would be done without doing it
-#   -q, --quiet       Minimal output
+#   -q, --quiet       Minimal output (implies --yes)
 #   -h, --help        Show this help message
 #
 # Examples:
-#   ./scripts/sync-plugins.sh                    # sync all plugins
+#   ./scripts/sync-plugins.sh                    # interactive sync
+#   ./scripts/sync-plugins.sh -y                 # sync all without prompts
 #   ./scripts/sync-plugins.sh commit tpd         # sync specific plugins
 #   ./scripts/sync-plugins.sh -i                 # sync all and install
 #   ./scripts/sync-plugins.sh -s                 # interactive selection
@@ -72,6 +74,7 @@ DO_LIST=false
 DO_SELECT=false
 DO_DRY_RUN=false
 QUIET_MODE=false
+AUTO_YES=false
 PLUGIN_NAMES=()
 SYNC_COUNT=0
 SKIP_COUNT=0
@@ -155,7 +158,7 @@ spin() {
 
   while kill -0 "$pid" 2>/dev/null; do
     local char="${spinstr:$i:1}"
-    printf "\r${CYAN}%s${NC} %s" "$char" "$msg"
+    printf "\r%b%s%b %s" "$CYAN" "$char" "$NC" "$msg"
     i=$(( (i + 1) % ${#spinstr} ))
     sleep 0.1
   done
@@ -171,10 +174,10 @@ progress_bar() {
   local filled=$((current * width / total))
   local empty=$((width - filled))
 
-  printf "\r  ${DIM}[${NC}"
-  printf "${GREEN}%*s${NC}" $filled '' | tr ' ' '█'
-  printf "${DIM}%*s${NC}" $empty '' | tr ' ' '░'
-  printf "${DIM}]${NC} ${WHITE}%3d%%${NC} " $percent
+  printf "\r  %b[%b" "$DIM" "$NC"
+  printf "%b%*s%b" "$GREEN" $filled '' "$NC" | tr ' ' '█'
+  printf "%b%*s%b" "$DIM" $empty '' "$NC" | tr ' ' '░'
+  printf "%b]%b %b%3d%%%b " "$DIM" "$NC" "$WHITE" $percent "$NC"
 }
 
 # Format duration
@@ -185,6 +188,72 @@ format_duration() {
   else
     printf "%dm %ds" $((seconds / 60)) $((seconds % 60))
   fi
+}
+
+# Confirm prompt (returns 0 for yes, 1 for no)
+confirm() {
+  local prompt="$1"
+  local default="${2:-y}"  # y or n
+
+  [[ "$AUTO_YES" == true ]] && return 0
+
+  local yn_hint="Y/n"
+  [[ "$default" == "n" ]] && yn_hint="y/N"
+
+  printf "  %b?%b %s %b[%s]%b " "$YELLOW" "$NC" "$prompt" "$DIM" "$yn_hint" "$NC"
+  read -r response
+
+  response=${response:-$default}
+  [[ "$response" =~ ^[Yy]$ ]]
+}
+
+# Ask yes/no/quit
+ask_ynq() {
+  local prompt="$1"
+
+  [[ "$AUTO_YES" == true ]] && return 0
+
+  printf "  %b?%b %s %b[Y/n/q]%b " "$YELLOW" "$NC" "$prompt" "$DIM" "$NC"
+  read -r response
+
+  case "$response" in
+    [Qq]*)
+      echo ""
+      info "Operation cancelled"
+      exit 0
+      ;;
+    [Nn]*)
+      return 1
+      ;;
+    *)
+      return 0
+      ;;
+  esac
+}
+
+# Show plugin preview table
+show_plugin_preview() {
+  local plugins=("$@")
+
+  echo -e "  ${BOLD}${WHITE}#   PLUGIN          CMDS  SKILLS  HOOKS${NC}"
+  echo -e "  ${DIM}$(printf '─%.0s' {1..45})${NC}"
+
+  local i=1
+  for plugin in "${plugins[@]}"; do
+    local info=($(get_plugin_info "$plugin"))
+    local cmd_count=${info[0]:-0}
+    local skill_count=${info[1]:-0}
+    local has_hooks=${info[2]:-no}
+
+    local hooks_icon="${DIM}─${NC}"
+    [[ "$has_hooks" == "yes" ]] && hooks_icon="${YELLOW}${SYM_HOOK}${NC}"
+
+    # Use %b for interpreting escape sequences
+    printf "  %b%2d%b  %b%-15s%b %4s   %4s    %b\n" \
+      "$CYAN" $i "$NC" "$GREEN" "$plugin" "$NC" "$cmd_count" "$skill_count" "$hooks_icon"
+    i=$((i + 1))
+  done
+  echo ""
 }
 
 # ============================================================================
@@ -247,7 +316,7 @@ list_plugins() {
   done < <(get_plugins)
 
   # Table header
-  printf "  ${BOLD}${WHITE}%-15s %-8s %-8s %-6s %s${NC}\n" "NAME" "CMDS" "SKILLS" "HOOKS" "DESCRIPTION"
+  printf "  %b%b%-15s %-8s %-8s %-6s %s%b\n" "$BOLD" "$WHITE" "NAME" "CMDS" "SKILLS" "HOOKS" "DESCRIPTION" "$NC"
   echo -e "  ${DIM}$(printf '─%.0s' {1..70})${NC}"
 
   for plugin in "${plugins[@]}"; do
@@ -265,8 +334,8 @@ list_plugins() {
     local hooks_icon="${DIM}─${NC}"
     [[ "$has_hooks" == "yes" ]] && hooks_icon="${YELLOW}${SYM_HOOK}${NC}"
 
-    printf "  ${GREEN}%-15s${NC} ${CYAN}%4s${NC}    ${MAGENTA}%4s${NC}    %s   %s\n" \
-      "$plugin" "$cmd_count" "$skill_count" "$hooks_icon" "$desc"
+    printf "  %b%-15s%b %b%4s%b    %b%4s%b    %b   %s\n" \
+      "$GREEN" "$plugin" "$NC" "$CYAN" "$cmd_count" "$NC" "$MAGENTA" "$skill_count" "$NC" "$hooks_icon" "$desc"
   done
 
   echo ""
@@ -292,12 +361,12 @@ select_plugins() {
   for plugin in "${plugins[@]}"; do
     local desc=$(get_plugin_description "$plugin")
     [[ ${#desc} -gt 40 ]] && desc="${desc:0:37}..."
-    printf "  ${CYAN}%2d${NC}) ${GREEN}%-15s${NC} %s\n" $i "$plugin" "$desc"
+    printf "  %b%2d%b) %b%-15s%b %s\n" "$CYAN" $i "$NC" "$GREEN" "$plugin" "$NC" "$desc"
     i=$((i + 1))
   done
 
   echo ""
-  printf "  ${YELLOW}${SYM_ARROW}${NC} Selection: "
+  printf "  %b%s%b Selection: " "$YELLOW" "$SYM_ARROW" "$NC"
   read -r selection
 
   if [[ "$selection" == "q" ]]; then
@@ -402,9 +471,9 @@ install_plugins() {
     [[ "$QUIET_MODE" != true ]] && progress_bar $current $total
 
     if claude plugin install "${plugin}@${MARKETPLACE_NAME}" 2>/dev/null; then
-      printf "${GREEN}${SYM_CHECK}${NC} %s\n" "$plugin"
+      printf "%b%s%b %s\n" "$GREEN" "$SYM_CHECK" "$NC" "$plugin"
     else
-      printf "${YELLOW}${SYM_DOT}${NC} %s ${DIM}(already installed)${NC}\n" "$plugin"
+      printf "%b%s%b %s %b(already installed)%b\n" "$YELLOW" "$SYM_DOT" "$NC" "$plugin" "$DIM" "$NC"
     fi
   done
 
@@ -437,12 +506,14 @@ print_help() {
   echo -e "  ${GREEN}-i, --install${NC}    Install plugins after syncing"
   echo -e "  ${GREEN}-l, --list${NC}       List all available plugins"
   echo -e "  ${GREEN}-s, --select${NC}     Interactive selection mode"
+  echo -e "  ${GREEN}-y, --yes${NC}        Skip all confirmations"
   echo -e "  ${GREEN}-d, --dry-run${NC}    Show what would be done without doing it"
-  echo -e "  ${GREEN}-q, --quiet${NC}      Minimal output"
+  echo -e "  ${GREEN}-q, --quiet${NC}      Minimal output (implies --yes)"
   echo -e "  ${GREEN}-h, --help${NC}       Show this help message"
   echo ""
   echo -e "${BOLD}EXAMPLES:${NC}"
-  echo "  ./scripts/sync-plugins.sh                # sync all plugins"
+  echo "  ./scripts/sync-plugins.sh                # interactive sync"
+  echo "  ./scripts/sync-plugins.sh -y             # sync all without prompts"
   echo "  ./scripts/sync-plugins.sh commit tpd     # sync specific plugins"
   echo "  ./scripts/sync-plugins.sh -i             # sync all and install"
   echo "  ./scripts/sync-plugins.sh -s             # interactive selection"
@@ -473,12 +544,17 @@ main() {
         DO_SELECT=true
         shift
         ;;
+      -y|--yes)
+        AUTO_YES=true
+        shift
+        ;;
       -d|--dry-run)
         DO_DRY_RUN=true
         shift
         ;;
       -q|--quiet)
         QUIET_MODE=true
+        AUTO_YES=true  # quiet implies yes
         shift
         ;;
       -h|--help)
@@ -524,6 +600,28 @@ main() {
     echo ""
   fi
 
+  # Show preview and ask for confirmation (unless --yes or --select)
+  if [[ "$AUTO_YES" != true && "$DO_SELECT" != true && "$QUIET_MODE" != true ]]; then
+    echo -e "  ${BOLD}Plugins to sync:${NC}"
+    echo ""
+    show_plugin_preview "${PLUGIN_NAMES[@]}"
+
+    if ! ask_ynq "Proceed with sync?"; then
+      # User said no, offer selection mode
+      echo ""
+      if confirm "Would you like to select specific plugins instead?" "y"; then
+        PLUGIN_NAMES=()
+        select_plugins
+        echo ""
+      else
+        echo ""
+        info "Operation cancelled"
+        exit 0
+      fi
+    fi
+    echo ""
+  fi
+
   # Sync plugins
   print_section "Syncing Plugins"
 
@@ -531,16 +629,22 @@ main() {
     sync_plugin "$plugin"
   done
 
-  # Install if requested
-  if [[ "$DO_INSTALL" == true ]]; then
-    install_plugins "${PLUGIN_NAMES[@]}"
-  fi
-
   # Print summary
   [[ "$QUIET_MODE" != true ]] && print_summary
 
-  # Hint
-  if [[ "$DO_INSTALL" == false && "$QUIET_MODE" != true ]]; then
+  # Ask about installation (unless --install already specified or --yes)
+  if [[ "$DO_INSTALL" == true ]]; then
+    install_plugins "${PLUGIN_NAMES[@]}"
+  elif [[ "$AUTO_YES" != true && "$QUIET_MODE" != true && $SYNC_COUNT -gt 0 ]]; then
+    if confirm "Install synced plugins to Claude Code?" "y"; then
+      install_plugins "${PLUGIN_NAMES[@]}"
+    else
+      echo ""
+      echo -e "  ${DIM}To install later:${NC}"
+      echo -e "    ${CYAN}./scripts/sync-plugins.sh -i${NC}"
+      echo ""
+    fi
+  elif [[ "$QUIET_MODE" != true && "$DO_INSTALL" == false ]]; then
     echo -e "  ${DIM}To install plugins:${NC}"
     echo -e "    ${CYAN}./scripts/sync-plugins.sh -i${NC}"
     echo ""
