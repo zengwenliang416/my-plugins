@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add branch-creator skill for automatic feature branch creation (branch-creator)
 - Add interactive selection mode (-s) and dry-run mode (-d) to sync-plugins.sh (scripts)
 - Add unified TPD (Thinking→Plan→Dev) workflow plugin (tpd)
   - Consolidates dev, plan, thinking plugins into single integrated workflow
@@ -57,6 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Update commit workflow documentation with branch-creator integration (commit)
+- Translate commit skill documentation to English (skills)
 - Translate all TPD commands and skills documentation to English (tpd)
 - Remove deprecated dev, plan, thinking plugins (migrated to tpd) (plugins)
   - dev: 42 files removed
