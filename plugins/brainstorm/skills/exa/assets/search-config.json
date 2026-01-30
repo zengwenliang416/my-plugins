@@ -2,7 +2,12 @@
   "search_modes": {
     "trends": {
       "query_template": "{topic} trends 2026",
-      "recommended_domains": ["techcrunch.com", "wired.com", "theverge.com", "arstechnica.com"],
+      "recommended_domains": [
+        "techcrunch.com",
+        "wired.com",
+        "theverge.com",
+        "arstechnica.com"
+      ],
       "category": "news",
       "default_limit": 5
     },
@@ -32,10 +37,10 @@
     }
   },
   "cross_industry_mapping": {
-    "电商": ["游戏", "金融"],
-    "SaaS": ["消费品", "媒体"],
-    "教育": ["游戏", "娱乐"],
-    "医疗": ["航空", "核能"]
+    "E-commerce": ["Gaming", "Finance"],
+    "SaaS": ["Consumer goods", "Media"],
+    "Education": ["Gaming", "Entertainment"],
+    "Healthcare": ["Aviation", "Nuclear"]
   },
   "priority": {
     "recency": {

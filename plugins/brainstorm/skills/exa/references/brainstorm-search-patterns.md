@@ -1,178 +1,182 @@
-# 头脑风暴搜索模式
+# Brainstorm Search Patterns
 
-针对头脑风暴场景优化的 Exa 搜索策略。
+Exa search strategies optimized for brainstorming scenarios.
 
-## 五大搜索维度
+## Five Search Dimensions
 
-### 1. 趋势搜索 (Trends)
+### 1. Trends
 
-**目的**: 了解领域最新动态和发展方向
+**Purpose**: Understand the latest dynamics and development directions in the field
 
 ```bash
-# 模板
+# Template
 "{topic} trends 2026"
 "{topic} future predictions"
 "{topic} emerging technologies"
 
-# 示例
+# Examples
 "smart home trends 2026" --content --limit 5
 "AI applications future predictions" --content --limit 5
 ```
 
-**优质来源**:
+**Quality Sources**:
+
 - `--include techcrunch.com,wired.com,theverge.com`
 - `--category news`
 
-### 2. 案例搜索 (Case Studies)
+### 2. Case Studies
 
-**目的**: 学习成功案例和最佳实践
+**Purpose**: Learn from success stories and best practices
 
 ```bash
-# 模板
+# Template
 "{topic} case study success story"
 "{topic} best practices examples"
 "{company} {topic} implementation"
 
-# 示例
+# Examples
 "subscription model case study success story" --content --limit 5
 "gamification user engagement best practices" --content --limit 5
 ```
 
-**优质来源**:
+**Quality Sources**:
+
 - `--include hbr.org,medium.com,forbes.com`
 - `--category company`
 
-### 3. 跨领域灵感 (Cross-Industry)
+### 3. Cross-Industry Inspiration
 
-**目的**: 从其他行业借鉴创新思路
+**Purpose**: Borrow innovative ideas from other industries
 
 ```bash
-# 模板
+# Template
 "{problem} solution from {other_industry}"
 "{topic} inspiration {industry_name}"
 "how {industry} solved {similar_problem}"
 
-# 示例
+# Examples
 "checkout optimization from gaming industry" --content --limit 5
 "user onboarding inspiration from hospitality" --content --limit 5
 ```
 
-**推荐跨领域映射**:
-| 原领域 | 借鉴领域 | 原因 |
-|--------|----------|------|
-| 电商 | 游戏、金融 | 转化率、支付体验 |
-| SaaS | 消费品、媒体 | 订阅、留存 |
-| 教育 | 游戏、娱乐 | 参与度、激励 |
-| 医疗 | 航空、核能 | 安全流程 |
+**Recommended Cross-Industry Mapping**:
+| Original Industry | Reference Industry | Reason |
+|-------------------|-------------------|--------|
+| E-commerce | Gaming, Finance | Conversion rate, payment experience |
+| SaaS | Consumer goods, Media | Subscription, retention |
+| Education | Gaming, Entertainment | Engagement, incentives |
+| Healthcare | Aviation, Nuclear | Safety processes |
 
-### 4. 问题与痛点 (Pain Points)
+### 4. Pain Points
 
-**目的**: 深入理解用户需求和市场空白
+**Purpose**: Deeply understand user needs and market gaps
 
 ```bash
-# 模板
+# Template
 "{topic} challenges problems"
 "{topic} user complaints reviews"
 "{topic} pain points frustrations"
 "why {topic} fails"
 
-# 示例
+# Examples
 "remote work challenges problems" --content --limit 5
 "fitness app user complaints reviews" --content --limit 5
 ```
 
-**优质来源**:
+**Quality Sources**:
+
 - `--include reddit.com,quora.com`
-- `--category tweet` (真实用户声音)
+- `--category tweet` (authentic user voices)
 
-### 5. 创新机会 (Opportunities)
+### 5. Opportunities
 
-**目的**: 发现市场机会和创新方向
+**Purpose**: Discover market opportunities and innovation directions
 
 ```bash
-# 模板
+# Template
 "{topic} opportunities innovations"
 "{topic} startups funding 2025-2026"
 "{topic} disruption potential"
 "underserved {topic} market"
 
-# 示例
+# Examples
 "eldercare technology opportunities innovations" --content --limit 5
 "sustainable packaging startups funding 2025-2026" --content --limit 5
 ```
 
-**优质来源**:
+**Quality Sources**:
+
 - `--include crunchbase.com,pitchbook.com`
 - `--category company`
 
-## 搜索组合策略
+## Search Combination Strategies
 
-### 快速研究 (3 次搜索)
+### Quick Research (3 searches)
 
-适用于时间有限或主题明确：
+Suitable for limited time or clear topics:
 
-1. 趋势搜索 - 了解大方向
-2. 案例搜索 - 学习成功经验
-3. 跨领域搜索 - 获取灵感
+1. Trends search - Understand the big picture
+2. Case studies search - Learn from successes
+3. Cross-industry search - Get inspiration
 
-### 深度研究 (5 次搜索)
+### Deep Research (5 searches)
 
-适用于需要全面洞察：
+Suitable for comprehensive insights:
 
-1. 趋势搜索
-2. 案例搜索
-3. 跨领域搜索
-4. 问题搜索 - 发现痛点
-5. 机会搜索 - 识别空白
+1. Trends search
+2. Case studies search
+3. Cross-industry search
+4. Pain points search - Discover issues
+5. Opportunities search - Identify gaps
 
-## 结果筛选优先级
+## Result Filtering Priority
 
-### 时效性
+### Timeliness
 
-| 发布时间 | 优先级 | 用途 |
-|----------|--------|------|
-| < 6 个月 | ⭐⭐⭐⭐⭐ | 最新趋势 |
-| 6-12 个月 | ⭐⭐⭐⭐ | 有效参考 |
-| 1-2 年 | ⭐⭐⭐ | 需验证 |
-| > 2 年 | ⭐⭐ | 历史参考 |
+| Publication Time | Priority   | Usage                |
+| ---------------- | ---------- | -------------------- |
+| < 6 months       | ⭐⭐⭐⭐⭐ | Latest trends        |
+| 6-12 months      | ⭐⭐⭐⭐   | Valid reference      |
+| 1-2 years        | ⭐⭐⭐     | Needs verification   |
+| > 2 years        | ⭐⭐       | Historical reference |
 
-### 来源权威性
+### Source Authority
 
-| 来源类型 | 优先级 | 适用搜索 |
-|----------|--------|----------|
-| 行业报告 | ⭐⭐⭐⭐⭐ | 趋势、机会 |
-| 知名媒体 | ⭐⭐⭐⭐ | 案例、趋势 |
-| 学术论文 | ⭐⭐⭐⭐ | 问题、方法 |
-| 公司博客 | ⭐⭐⭐ | 案例、实践 |
-| 社交媒体 | ⭐⭐ | 痛点、反馈 |
+| Source Type      | Priority   | Applicable Search     |
+| ---------------- | ---------- | --------------------- |
+| Industry reports | ⭐⭐⭐⭐⭐ | Trends, opportunities |
+| Major media      | ⭐⭐⭐⭐   | Cases, trends         |
+| Academic papers  | ⭐⭐⭐⭐   | Problems, methods     |
+| Company blogs    | ⭐⭐⭐     | Cases, practices      |
+| Social media     | ⭐⭐       | Pain points, feedback |
 
-## 常用域名过滤
+## Common Domain Filters
 
-### 趋势/新闻
+### Trends/News
 
 ```bash
 --include techcrunch.com,wired.com,theverge.com,arstechnica.com
 ```
 
-### 商业/案例
+### Business/Cases
 
 ```bash
 --include hbr.org,forbes.com,inc.com,fastcompany.com
 ```
 
-### 技术/开发
+### Technology/Development
 
 ```bash
 --include github.com,dev.to,medium.com,stackoverflow.com
 ```
 
-### 用户声音
+### User Voices
 
 ```bash
 --include reddit.com,quora.com,producthunt.com
 ```
 
-### 研究/报告
+### Research/Reports
 
 ```bash
 --include mckinsey.com,gartner.com,forrester.com
