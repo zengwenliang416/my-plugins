@@ -1,5 +1,5 @@
 ---
-description: "头脑风暴：AI 协作创意生成 (搜索 → 发散 → 评估 → 报告)"
+description: "Brainstorming workflow: research -> ideation -> evaluation -> report"
 argument-hint: <topic> [--deep] [--method=scamper|hats|auto] [--skip-research]
 allowed-tools:
   - Skill
@@ -8,182 +8,165 @@ allowed-tools:
   - Bash
 ---
 
-# /brainstorm - AI 协作头脑风暴
+# /brainstorm - AI Collaborative Brainstorming
 
-## 使用方式
+## Usage
 
 ```bash
-# 快速开始
-/brainstorm "为程序员设计的减压玩具"
+# Quick start
+/brainstorm "stress relief toys for programmers"
 
-# 深度研究模式
-/brainstorm "2026年智能家居新趋势" --deep
+# Deep research mode
+/brainstorm "2026 smart home trends" --deep
 
-# 指定发散方法
-/brainstorm "优化结账流程" --method=scamper
+# Specify ideation method
+/brainstorm "optimize checkout flow" --method=scamper
 
-# 恢复会话
+# Resume session
 /brainstorm --run-id=20260118T090000Z
 ```
 
-## 🚨🚨🚨 强制执行规则 🚨🚨🚨
+## Execution Rules
 
-**你必须按照下面的 Phase 顺序，使用 Skill 工具调用对应的 skill。**
+**Required:** Execute phases sequentially using Skill tool calls.
 
-**禁止行为（违反则工作流失败）：**
+**Constraints:**
 
-- ❌ 跳过 Skill 调用，自己直接生成创意
-- ❌ 用 Read/Write/Bash 替代 Skill 调用
-- ❌ 省略任何 Phase（除非用户指定 --skip-research）
-
-**每个 Phase 你必须：**
-
-1. 调用指定的 Skill（使用 Skill 工具）
-2. 等待 Skill 执行完成
-3. 验证输出文件存在
-4. 再进入下一个 Phase
+- Must call Skill tool (not generate ideas directly)
+- Must not use Read/Write/Bash to replace Skill calls
+- Verify output files before proceeding to next phase
+- No phase skipping (except --skip-research)
 
 ---
 
-## Phase 0: 环境准备
+## Phase 0: Setup
 
-1. 解析参数：
-   - TOPIC: 用户输入的主题
-   - DEEP: 是否深度研究 (--deep)
-   - METHOD: 发散方法 (scamper/hats/auto, 默认 auto)
-   - SKIP_RESEARCH: 是否跳过研究阶段 (--skip-research)
-   - RUN_ID: 恢复已有会话 (--run-id=xxx)
+1. Parse arguments:
+   - TOPIC: User input topic
+   - DEEP: Deep research mode (--deep)
+   - METHOD: Ideation method (scamper/hats/auto, default auto)
+   - SKIP_RESEARCH: Skip research phase (--skip-research)
+   - RUN_ID: Resume existing session (--run-id=xxx)
 
-2. 生成运行目录：
+2. Create run directory:
+
    ```bash
    RUN_ID=$(date -u +%Y%m%dT%H%M%SZ)
    RUN_DIR=".claude/brainstorm/runs/${RUN_ID}"
    mkdir -p "$RUN_DIR"
    ```
 
-3. 使用 AskUserQuestion 确认执行计划：
-   - 主题理解是否正确
-   - 是否需要深度研究
-   - 发散方法偏好
+3. Use AskUserQuestion to confirm execution plan
 
 ---
 
-## Phase 1: 主题研究
+## Phase 1: Topic Research
 
-### 🚨🚨🚨 强制执行 🚨🚨🚨
+**Call Skill:**
 
-**立即调用 Skill 工具：**
 ```
 Skill(skill="brainstorm:topic-researcher", args="run_dir=${RUN_DIR} topic='${TOPIC}' deep=${DEEP}")
 ```
 
-**跳过条件**：
-- 用户指定 --skip-research
-- RUN_DIR 中已存在 research-brief.md
+**Skip conditions:**
 
-**验证**：
-- 确认 `${RUN_DIR}/research-brief.md` 已生成
-- 文件包含趋势、案例、发散方向建议
+- User specified --skip-research
+- research-brief.md already exists in RUN_DIR
+
+**Verify:** `${RUN_DIR}/research-brief.md` exists with trends, cases, and suggestions
 
 ---
 
-## Phase 2: 创意发散（多模型并行）
+## Phase 2: Idea Generation (Multi-model Parallel)
 
-### 🚨🚨🚨 强制执行 - 禁止跳过 🚨🚨🚨
+**Call Skill:**
 
-**❌ 禁止行为：**
-- ❌ 自己生成创意
-- ❌ 跳过 Skill 调用直接写 ideas-pool.md
-
-**✅ 唯一正确做法：调用 Skill 工具**
-
-**立即调用：**
 ```
 Skill(skill="brainstorm:idea-generator", args="run_dir=${RUN_DIR} method=${METHOD}")
 ```
 
-**验证**：
-- 确认 `${RUN_DIR}/ideas-pool.md` 已生成
-- 文件包含至少 20 个创意
-- 创意标注了来源（codex/gemini）
+**Verify:**
+
+- `${RUN_DIR}/ideas-pool.md` exists
+- Contains 20+ ideas with source labels (codex/gemini)
 
 ---
 
-## Phase 3: 创意评估
+## Phase 3: Idea Evaluation
 
-### 🚨🚨🚨 强制执行 🚨🚨🚨
+**Call Skill:**
 
-**立即调用 Skill 工具：**
 ```
 Skill(skill="brainstorm:idea-evaluator", args="run_dir=${RUN_DIR}")
 ```
 
-**验证**：
-- 确认 `${RUN_DIR}/evaluation.md` 已生成
-- 文件包含 Mermaid 思维导图代码
-- 文件包含 Top 5 排名
+**Verify:**
 
-**⏸️ 硬停止**：使用 AskUserQuestion 展示 Top 5，确认用户满意后继续
+- `${RUN_DIR}/evaluation.md` exists
+- Contains Mermaid mindmap and Top 5 ranking
+
+**Hard stop:** Use AskUserQuestion to show Top 5, confirm before proceeding
 
 ---
 
-## Phase 4: 报告生成
+## Phase 4: Report Generation
 
-### 🚨🚨🚨 强制执行 🚨🚨🚨
+**Call Skill:**
 
-**立即调用 Skill 工具：**
 ```
 Skill(skill="brainstorm:report-synthesizer", args="run_dir=${RUN_DIR}")
 ```
 
-**验证**：
-- 确认 `${RUN_DIR}/brainstorm-report.md` 已生成
+**Verify:** `${RUN_DIR}/brainstorm-report.md` exists
 
 ---
 
-## Phase 5: 交付
+## Phase 5: Delivery
 
-输出完成摘要：
+Output completion summary:
 
 ```
-🎯 头脑风暴完成！
+Brainstorming Complete!
 
-📋 主题: ${TOPIC}
-🔬 研究模式: ${DEEP ? '深度' : '快速'}
-💡 发散方法: ${METHOD}
+Topic: ${TOPIC}
+Research Mode: ${DEEP ? 'Deep' : 'Quick'}
+Ideation Method: ${METHOD}
 
-📊 成果统计:
-- 研究发现: N 条趋势/案例
-- 生成创意: M 个
-- Top 5 方案: ✅
+Results:
+- Research findings: N trends/cases
+- Ideas generated: M
+- Top 5 solutions: Done
 
-📁 产物:
+Artifacts:
   ${RUN_DIR}/
-  ├── research-brief.md    # 研究简报
-  ├── ideas-pool.md        # 创意池 (20+ 创意)
-  ├── evaluation.md        # 评估结果 (含思维导图)
-  └── brainstorm-report.md # 最终报告
+  ├── research-brief.md    # Research brief
+  ├── ideas-pool.md        # Idea pool (20+ ideas)
+  ├── evaluation.md        # Evaluation (with mindmap)
+  └── brainstorm-report.md # Final report
 ```
 
 ---
 
-## 特殊情况处理
+## Special Cases
 
-### 恢复会话
+### Resume Session
 
-如果指定 --run-id：
-1. 检查对应 RUN_DIR 是否存在
-2. 检查各阶段产物
-3. 从缺失的阶段继续执行
+If --run-id specified:
 
-### 主题过于宽泛
+1. Check if RUN_DIR exists
+2. Check phase artifacts
+3. Continue from missing phase
 
-如果主题缺乏具体方向：
-- topic-researcher 会自动询问用户细化方向
-- 或在 Phase 0 提前询问约束条件
+### Broad Topic
 
-### 简化模式
+If topic lacks specificity:
 
-如果用户要求快速执行：
-- --skip-research 跳过研究阶段
-- --method=auto 自动选择最合适的发散方法
+- topic-researcher will ask user for clarification
+- Or ask constraints in Phase 0
+
+### Quick Mode
+
+For fast execution:
+
+- --skip-research skips research phase
+- --method=auto selects best ideation method automatically
