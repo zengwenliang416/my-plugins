@@ -1,78 +1,78 @@
-# Mermaid 可视化模板
+# Mermaid Visualization Templates
 
-## 思维导图（Mindmap）
+## Mind Map
 
-### 基础模板 - 创意分组
+### Basic Template - Idea Grouping
 
 ```mermaid
 mindmap
-  root((主题名称))
-    产品功能
-      C-1: 功能创意标题
-      C-4: 功能创意标题
-      G-3: 功能创意标题
-    用户体验
-      G-1: 体验创意标题
-      G-2: 体验创意标题
-    技术架构
-      C-2: 架构创意标题
-      C-3: 架构创意标题
-    商业模式
-      C-5: 模式创意标题
-    运营策略
-      G-4: 策略创意标题
+  root((Topic Name))
+    Product Features
+      C-1: Feature idea title
+      C-4: Feature idea title
+      G-3: Feature idea title
+    User Experience
+      G-1: Experience idea title
+      G-2: Experience idea title
+    Technical Architecture
+      C-2: Architecture idea title
+      C-3: Architecture idea title
+    Business Model
+      C-5: Model idea title
+    Operations Strategy
+      G-4: Strategy idea title
 ```
 
-### 变体 - 带图标
+### Variant - With Icons
 
 ```mermaid
 mindmap
-  root((🎯 主题))
-    💡 产品功能
-      ⭐ C-1: 核心功能
-      C-4: 辅助功能
-    🎨 用户体验
-      ⭐ G-1: 关键体验
-      G-2: 增强体验
-    ⚙️ 技术架构
-      C-2: 基础设施
-    💰 商业模式
-      C-5: 变现方式
+  root((🎯 Topic))
+    💡 Product Features
+      ⭐ C-1: Core feature
+      C-4: Supporting feature
+    🎨 User Experience
+      ⭐ G-1: Key experience
+      G-2: Enhanced experience
+    ⚙️ Technical Architecture
+      C-2: Infrastructure
+    💰 Business Model
+      C-5: Monetization method
 ```
 
-### 变体 - 层级展开
+### Variant - Hierarchical Expansion
 
 ```mermaid
 mindmap
-  root((主题))
-    产品功能
-      新功能
-        C-1: 创意1
-        C-2: 创意2
-      功能增强
-        C-3: 创意3
-    用户体验
-      交互优化
-        G-1: 创意1
-      情感设计
-        G-2: 创意2
+  root((Topic))
+    Product Features
+      New Features
+        C-1: Idea 1
+        C-2: Idea 2
+      Feature Enhancements
+        C-3: Idea 3
+    User Experience
+      Interaction Optimization
+        G-1: Idea 1
+      Emotional Design
+        G-2: Idea 2
 ```
 
 ---
 
-## 评估矩阵（Quadrant Chart）
+## Evaluation Matrix (Quadrant Chart)
 
-### 基础模板 - Impact vs Feasibility
+### Basic Template - Impact vs Feasibility
 
 ```mermaid
 quadrantChart
-    title 创意评估矩阵
-    x-axis 低可行性 --> 高可行性
-    y-axis 低影响力 --> 高影响力
-    quadrant-1 优先执行
-    quadrant-2 战略储备
-    quadrant-3 快速尝试
-    quadrant-4 暂时搁置
+    title Idea Evaluation Matrix
+    x-axis Low Feasibility --> High Feasibility
+    y-axis Low Impact --> High Impact
+    quadrant-1 Priority Execution
+    quadrant-2 Strategic Reserve
+    quadrant-3 Quick Trial
+    quadrant-4 Temporarily Shelve
     C-1: [0.80, 0.90]
     C-2: [0.45, 0.85]
     G-1: [0.75, 0.70]
@@ -83,66 +83,66 @@ quadrantChart
     G-4: [0.25, 0.35]
 ```
 
-### 变体 - 带颜色标注
+### Variant - With Color Annotations
 
 ```mermaid
 %%{init: {"themeVariables": {"quadrant1Fill": "#d4edda", "quadrant2Fill": "#fff3cd", "quadrant3Fill": "#cce5ff", "quadrant4Fill": "#f8d7da"}}}%%
 quadrantChart
-    title 创意优先级矩阵
-    x-axis 实现难度高 --> 实现难度低
-    y-axis 价值低 --> 价值高
-    quadrant-1 立即行动
-    quadrant-2 规划实施
-    quadrant-3 快速测试
-    quadrant-4 考虑放弃
-    创意A: [0.8, 0.9]
-    创意B: [0.3, 0.85]
-    创意C: [0.75, 0.45]
+    title Idea Priority Matrix
+    x-axis High Implementation Difficulty --> Low Implementation Difficulty
+    y-axis Low Value --> High Value
+    quadrant-1 Act Immediately
+    quadrant-2 Plan Implementation
+    quadrant-3 Quick Test
+    quadrant-4 Consider Abandoning
+    Idea A: [0.8, 0.9]
+    Idea B: [0.3, 0.85]
+    Idea C: [0.75, 0.45]
 ```
 
-### 坐标计算方法
+### Coordinate Calculation Method
 
-将 1-5 分的评分转换为 0-1 的坐标：
+Convert 1-5 scores to 0-1 coordinates:
 
 ```
-坐标值 = (评分 - 1) / 4
+Coordinate Value = (Score - 1) / 4
 ```
 
-| 评分 | 坐标值 |
-|------|--------|
-| 1 | 0.00 |
-| 2 | 0.25 |
-| 3 | 0.50 |
-| 4 | 0.75 |
-| 5 | 1.00 |
+| Score | Coordinate Value |
+| ----- | ---------------- |
+| 1     | 0.00             |
+| 2     | 0.25             |
+| 3     | 0.50             |
+| 4     | 0.75             |
+| 5     | 1.00             |
 
 ---
 
-## 排名展示（Flow Chart）
+## Ranking Display (Flow Chart)
 
-### Top 3 展示
+### Top 3 Display
 
 ```mermaid
 graph LR
-    subgraph "🏆 Top 3 创意"
-        A["🥇 C-1<br/>创意标题<br/>综合分: 4.08"]
-        B["🥈 G-1<br/>创意标题<br/>综合分: 4.03"]
-        C["🥉 C-2<br/>创意标题<br/>综合分: 3.93"]
+    subgraph "🏆 Top 3 Ideas"
+        A["🥇 C-1<br/>Idea Title<br/>Score: 4.08"]
+        B["🥈 G-1<br/>Idea Title<br/>Score: 4.03"]
+        C["🥉 C-2<br/>Idea Title<br/>Score: 3.93"]
     end
 
     A --> B --> C
 ```
 
-### Top 5 垂直展示
+### Top 5 Vertical Display
 
 ```mermaid
 graph TB
-    subgraph "🎯 Top 5 创意排名"
-        A["🥇 第一名 - C-1<br/>创意标题<br/>综合分: 4.08"]
-        B["🥈 第二名 - G-1<br/>创意标题<br/>综合分: 4.03"]
-        C["🥉 第三名 - C-2<br/>创意标题<br/>综合分: 3.93"]
-        D["4️⃣ 第四名 - G-3<br/>创意标题<br/>综合分: 3.88"]
-        E["5️⃣ 第五名 - C-4<br/>创意标题<br/>综合分: 3.85"]
+    subgraph "🎯 Top 5 Idea Ranking"
+        A["🥇 1st Place - C-1<br/>Idea Title<br/>Score: 4.08"]
+        B["🥈 2nd Place - G-1<br/>Idea Title<br/>Score: 4.03"]
+        C["🥉 3rd Place - C-2<br/>Idea Title<br/>Score: 3.93"]
+        D["4️⃣ 4th Place - G-3<br/>Idea Title<br/>Score: 3.88"]
+        E["5️⃣ 5th Place - C-4<br/>Idea Title<br/>Score: 3.85"]
     end
 
     A --> B --> C --> D --> E
@@ -150,96 +150,98 @@ graph TB
 
 ---
 
-## 分组统计（Pie Chart）
+## Group Statistics (Pie Chart)
 
-### 来源分布
+### Source Distribution
 
 ```mermaid
 pie showData
-    title 创意来源分布
-    "Codex (技术视角)" : 12
-    "Gemini (用户视角)" : 10
-    "合并创意" : 3
+    title Idea Source Distribution
+    "Codex (Technical Perspective)" : 12
+    "Gemini (User Perspective)" : 10
+    "Merged Ideas" : 3
 ```
 
-### 分组分布
+### Category Distribution
 
 ```mermaid
 pie showData
-    title 创意分组分布
-    "产品功能" : 8
-    "用户体验" : 6
-    "技术架构" : 4
-    "商业模式" : 3
-    "运营策略" : 4
+    title Idea Category Distribution
+    "Product Features" : 8
+    "User Experience" : 6
+    "Technical Architecture" : 4
+    "Business Model" : 3
+    "Operations Strategy" : 4
 ```
 
 ---
 
-## 实施路线图（Gantt）
+## Implementation Roadmap (Gantt)
 
-### 基于优先级的路线图
+### Priority-Based Roadmap
 
 ```mermaid
 gantt
-    title 创意实施路线图
+    title Idea Implementation Roadmap
     dateFormat  YYYY-MM-DD
-    section 优先执行
-    C-1: 核心功能        :a1, 2026-01-20, 2w
-    G-1: 体验优化        :a2, after a1, 1w
-    section 快速尝试
-    G-2: 小功能测试      :b1, 2026-01-20, 1w
-    C-4: 技术验证        :b2, 2026-01-27, 1w
-    section 战略储备
-    C-2: 架构升级        :c1, 2026-02-10, 4w
-    C-3: 长期投入        :c2, 2026-03-01, 6w
+    section Priority Execution
+    C-1: Core Feature        :a1, 2026-01-20, 2w
+    G-1: Experience Optimization        :a2, after a1, 1w
+    section Quick Trial
+    G-2: Small Feature Test      :b1, 2026-01-20, 1w
+    C-4: Technical Validation        :b2, 2026-01-27, 1w
+    section Strategic Reserve
+    C-2: Architecture Upgrade        :c1, 2026-02-10, 4w
+    C-3: Long-term Investment        :c2, 2026-03-01, 6w
 ```
 
 ---
 
-## 评估详情（Table）
+## Evaluation Details (Table)
 
-### Markdown 表格模板
+### Markdown Table Template
 
 ```markdown
-| 排名 | ID | 创意 | 影响力 | 可行性 | 创新度 | 契合度 | 综合分 |
-|:----:|:---:|:-----|:------:|:------:|:------:|:------:|:------:|
-| 🥇 | C-1 | 创意标题 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | **4.08** |
-| 🥈 | G-1 | 创意标题 | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | **4.03** |
-| 🥉 | C-2 | 创意标题 | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | **3.93** |
+| Rank | ID  | Idea       |   Impact   | Feasibility | Innovation | Alignment |  Score   |
+| :--: | :-: | :--------- | :--------: | :---------: | :--------: | :-------: | :------: |
+|  🥇  | C-1 | Idea Title | ⭐⭐⭐⭐⭐ |  ⭐⭐⭐⭐   |  ⭐⭐⭐⭐  | ⭐⭐⭐⭐  | **4.08** |
+|  🥈  | G-1 | Idea Title |  ⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐  |  ⭐⭐⭐⭐  |  ⭐⭐⭐   | **4.03** |
+|  🥉  | C-2 | Idea Title |  ⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐  |  ⭐⭐⭐⭐  | ⭐⭐⭐⭐  | **3.93** |
 ```
 
-### 星级转换
+### Star Rating Conversion
 
-| 分数 | 显示 |
-|------|------|
-| 5 | ⭐⭐⭐⭐⭐ |
-| 4 | ⭐⭐⭐⭐ |
-| 3 | ⭐⭐⭐ |
-| 2 | ⭐⭐ |
-| 1 | ⭐ |
+| Score | Display    |
+| ----- | ---------- |
+| 5     | ⭐⭐⭐⭐⭐ |
+| 4     | ⭐⭐⭐⭐   |
+| 3     | ⭐⭐⭐     |
+| 2     | ⭐⭐       |
+| 1     | ⭐         |
 
 ---
 
-## 使用注意事项
+## Usage Guidelines
 
-### Mermaid 兼容性
+### Mermaid Compatibility
 
-1. 确保代码块使用 ` ```mermaid ` 标记
-2. 节点标签中避免特殊字符
-3. 使用 `<br/>` 进行换行
-4. 中文内容需要用引号包裹
+1. Ensure code blocks use ` ```mermaid ` markup
+2. Avoid special characters in node labels
+3. Use `<br/>` for line breaks
+4. Wrap Chinese content in quotes
 
-### 渲染测试
+### Rendering Test
 
-在生成后，建议在以下工具中预览：
-- GitHub/GitLab 预览
-- VS Code Mermaid 插件
+After generation, preview in the following tools:
+
+- GitHub/GitLab preview
+- VS Code Mermaid plugin
 - https://mermaid.live
 
-### 长内容处理
+### Handling Long Content
 
-当创意数量超过 20 个时：
-1. 思维导图只显示 Top 创意
-2. 评估矩阵只显示关键创意
-3. 完整列表使用表格展示
+When idea count exceeds 20:
+
+1. Mind map shows only top ideas
+2. Evaluation matrix shows only key ideas
+3. Use tables for complete listings

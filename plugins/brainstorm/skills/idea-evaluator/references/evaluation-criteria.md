@@ -1,86 +1,90 @@
-# 创意评估标准
+# Idea Evaluation Criteria
 
-## 评估维度详解
+## Evaluation Dimensions Explained
 
-### Impact（影响力）- 默认权重 35%
+### Impact - Default Weight 35%
 
-评估创意能产生的价值和影响范围。
+Evaluates the value and scope of influence an idea can produce.
 
-| 分数 | 等级 | 描述 | 示例 |
-|------|------|------|------|
-| 5 | 卓越 | 彻底解决核心问题，影响广泛 | 颠覆性产品，改变用户行为 |
-| 4 | 优秀 | 显著改善问题，影响较大 | 核心功能大幅提升 |
-| 3 | 良好 | 部分解决问题，中等影响 | 体验明显改善 |
-| 2 | 一般 | 微小改善，影响有限 | 边缘功能优化 |
-| 1 | 较低 | 几乎无影响 | 锦上添花 |
+| Score | Level     | Description                                          | Example                                   |
+| ----- | --------- | ---------------------------------------------------- | ----------------------------------------- |
+| 5     | Excellent | Completely solves core problem, wide-reaching impact | Disruptive product, changes user behavior |
+| 4     | Good      | Significantly improves problem, substantial impact   | Major enhancement to core features        |
+| 3     | Fair      | Partially solves problem, moderate impact            | Noticeable experience improvement         |
+| 2     | Low       | Minor improvement, limited impact                    | Edge feature optimization                 |
+| 1     | Minimal   | Almost no impact                                     | Nice to have                              |
 
-**评估提问**：
-- 解决的问题有多重要？
-- 受益用户有多少？
-- 价值能持续多久？
-- 是否可量化衡量？
+**Evaluation Questions**:
 
-### Feasibility（可行性）- 默认权重 35%
+- How important is the problem being solved?
+- How many users will benefit?
+- How long will the value last?
+- Can it be quantitatively measured?
 
-评估实现的难度和资源需求。
+### Feasibility - Default Weight 35%
 
-| 分数 | 等级 | 描述 | 时间参考 |
-|------|------|------|----------|
-| 5 | 极易 | 现有技术/资源即可实现 | < 1 周 |
-| 4 | 容易 | 少量新技术/资源学习 | 1-2 周 |
-| 3 | 中等 | 中等技术挑战 | 2-4 周 |
-| 2 | 困难 | 较大挑战，需要新能力 | 1-3 月 |
-| 1 | 极难 | 技术瓶颈严重，不确定 | > 3 月或未知 |
+Evaluates implementation difficulty and resource requirements.
 
-**评估提问**：
-- 技术上能否实现？
-- 需要什么资源？
-- 有什么依赖和风险？
-- 团队是否有能力？
+| Score | Level          | Description                                           | Time Reference        |
+| ----- | -------------- | ----------------------------------------------------- | --------------------- |
+| 5     | Very Easy      | Can be implemented with existing technology/resources | < 1 week              |
+| 4     | Easy           | Minor new technology/resource learning                | 1-2 weeks             |
+| 3     | Moderate       | Medium technical challenge                            | 2-4 weeks             |
+| 2     | Difficult      | Significant challenge, requires new capabilities      | 1-3 months            |
+| 1     | Very Difficult | Severe technical bottleneck, uncertain                | > 3 months or unknown |
 
-### Innovation（创新度）- 默认权重 20%
+**Evaluation Questions**:
 
-评估创意的新颖程度和差异化。
+- Is it technically achievable?
+- What resources are needed?
+- What dependencies and risks exist?
+- Does the team have the capability?
 
-| 分数 | 等级 | 描述 | 市场影响 |
-|------|------|------|----------|
-| 5 | 颠覆性 | 全新品类/模式 | 可能重新定义市场 |
-| 4 | 突破性 | 显著创新，市场少见 | 形成明显差异化 |
-| 3 | 进阶性 | 有创新点，但非首创 | 一定差异化 |
-| 2 | 渐进性 | 微小创新，市场已有 | 差异化有限 |
-| 1 | 跟随性 | 几乎无创新 | 无差异化 |
+### Innovation - Default Weight 20%
 
-**评估提问**：
-- 市场上有类似方案吗？
-- 创新点在哪里？
-- 能否形成壁垒？
-- 用户会感到惊喜吗？
+Evaluates the novelty and differentiation of the idea.
 
-### Alignment（契合度）- 默认权重 10%
+| Score | Level        | Description                                      | Market Impact                 |
+| ----- | ------------ | ------------------------------------------------ | ----------------------------- |
+| 5     | Disruptive   | Entirely new category/model                      | May redefine the market       |
+| 4     | Breakthrough | Significant innovation, rarely seen in market    | Creates clear differentiation |
+| 3     | Progressive  | Has innovation points, but not first-of-its-kind | Some differentiation          |
+| 2     | Incremental  | Minor innovation, already exists in market       | Limited differentiation       |
+| 1     | Imitative    | Almost no innovation                             | No differentiation            |
 
-评估与目标、约束的匹配程度。
+**Evaluation Questions**:
 
-| 分数 | 等级 | 描述 |
-|------|------|------|
-| 5 | 完美匹配 | 完全符合目标和约束 |
-| 4 | 高度匹配 | 主要方面契合 |
-| 3 | 基本匹配 | 大部分契合，小部分偏离 |
-| 2 | 部分匹配 | 有明显偏离 |
-| 1 | 低匹配 | 严重偏离目标或违反约束 |
+- Are there similar solutions in the market?
+- Where is the innovation point?
+- Can it create barriers?
+- Will users be pleasantly surprised?
 
-**评估提问**：
-- 与原始目标一致吗？
-- 有违反约束条件吗？
-- 与现有能力匹配吗？
-- 与战略方向一致吗？
+### Alignment - Default Weight 10%
+
+Evaluates the match with goals and constraints.
+
+| Score | Level         | Description                                          |
+| ----- | ------------- | ---------------------------------------------------- |
+| 5     | Perfect Match | Fully meets goals and constraints                    |
+| 4     | High Match    | Major aspects align                                  |
+| 3     | Basic Match   | Mostly aligned, minor deviations                     |
+| 2     | Partial Match | Clear deviations                                     |
+| 1     | Low Match     | Severely deviates from goals or violates constraints |
+
+**Evaluation Questions**:
+
+- Is it consistent with the original goal?
+- Does it violate any constraints?
+- Does it match existing capabilities?
+- Is it aligned with strategic direction?
 
 ---
 
-## 权重预设方案
+## Weight Preset Schemes
 
-### balanced（平衡模式）- 默认
+### balanced (Balanced Mode) - Default
 
-适用于大多数场景，均衡考虑各维度。
+Suitable for most scenarios, balances all dimensions.
 
 ```
 Impact: 35%
@@ -89,14 +93,15 @@ Innovation: 20%
 Alignment: 10%
 ```
 
-**适用场景**：
-- 常规产品迭代
-- 无特殊偏好时
-- 需要综合权衡时
+**Applicable Scenarios**:
 
-### impact（影响力优先）
+- Regular product iterations
+- When no special preference exists
+- When comprehensive trade-offs are needed
 
-适用于追求最大价值的场景。
+### impact (Impact Priority)
+
+Suitable for scenarios pursuing maximum value.
 
 ```
 Impact: 50%
@@ -105,14 +110,15 @@ Innovation: 15%
 Alignment: 10%
 ```
 
-**适用场景**：
-- 资源充足时
-- 追求突破性成果
-- 战略级项目
+**Applicable Scenarios**:
 
-### feasibility（可行性优先）
+- When resources are abundant
+- Pursuing breakthrough results
+- Strategic projects
 
-适用于资源有限、需要快速验证的场景。
+### feasibility (Feasibility Priority)
+
+Suitable for resource-limited scenarios requiring quick validation.
 
 ```
 Impact: 25%
@@ -121,14 +127,15 @@ Innovation: 15%
 Alignment: 10%
 ```
 
-**适用场景**：
-- 资源紧张时
-- 快速验证假设
-- MVP 阶段
+**Applicable Scenarios**:
 
-### innovation（创新优先）
+- When resources are tight
+- Quick hypothesis validation
+- MVP stage
 
-适用于差异化竞争、探索性项目。
+### innovation (Innovation Priority)
+
+Suitable for differentiation competition and exploratory projects.
 
 ```
 Impact: 25%
@@ -137,71 +144,75 @@ Innovation: 40%
 Alignment: 10%
 ```
 
-**适用场景**：
-- 创新驱动型项目
-- 差异化竞争
-- 探索新方向
+**Applicable Scenarios**:
+
+- Innovation-driven projects
+- Differentiation competition
+- Exploring new directions
 
 ---
 
-## 综合分计算
+## Composite Score Calculation
 
-### 公式
+### Formula
 
 ```
-综合分 = (Impact × W_i) + (Feasibility × W_f) + (Innovation × W_n) + (Alignment × W_a)
+Composite Score = (Impact × W_i) + (Feasibility × W_f) + (Innovation × W_n) + (Alignment × W_a)
 ```
 
-### 示例计算（balanced 模式）
+### Example Calculation (balanced mode)
 
-创意 C-1：
+Idea C-1:
+
 - Impact: 4.5
 - Feasibility: 4.0
 - Innovation: 3.5
 - Alignment: 4.0
 
 ```
-综合分 = 4.5 × 0.35 + 4.0 × 0.35 + 3.5 × 0.20 + 4.0 × 0.10
-       = 1.575 + 1.400 + 0.700 + 0.400
-       = 4.075
+Composite Score = 4.5 × 0.35 + 4.0 × 0.35 + 3.5 × 0.20 + 4.0 × 0.10
+               = 1.575 + 1.400 + 0.700 + 0.400
+               = 4.075
 ```
 
-### 分数区间解读
+### Score Range Interpretation
 
-| 综合分 | 等级 | 建议行动 |
-|--------|------|----------|
-| 4.5+ | 卓越 | 优先执行，高度关注 |
-| 4.0-4.5 | 优秀 | 值得投入，认真规划 |
-| 3.5-4.0 | 良好 | 可以考虑，需要取舍 |
-| 3.0-3.5 | 一般 | 作为备选，低优先级 |
-| < 3.0 | 较差 | 暂时搁置或放弃 |
+| Composite Score | Level     | Recommended Action                     |
+| --------------- | --------- | -------------------------------------- |
+| 4.5+            | Excellent | Prioritize execution, high attention   |
+| 4.0-4.5         | Good      | Worth investing, careful planning      |
+| 3.5-4.0         | Fair      | Can be considered, requires trade-offs |
+| 3.0-3.5         | Average   | Keep as backup, low priority           |
+| < 3.0           | Poor      | Shelve or abandon for now              |
 
 ---
 
-## 评估注意事项
+## Evaluation Guidelines
 
-### 避免常见偏差
+### Avoiding Common Biases
 
-1. **光环效应**：不因创意来源（Codex/Gemini）而偏向
-2. **锚定效应**：独立评估每个创意
-3. **从众效应**：基于标准评估，而非相互比较
-4. **确认偏差**：客观看待与预期不符的创意
+1. **Halo Effect**: Don't favor ideas based on their source (Codex/Gemini)
+2. **Anchoring Effect**: Evaluate each idea independently
+3. **Bandwagon Effect**: Base evaluation on criteria, not comparison
+4. **Confirmation Bias**: Objectively consider ideas that don't match expectations
 
-### 评估一致性
+### Evaluation Consistency
 
-1. 所有创意使用相同标准
-2. 先定义参照点再评分
-3. 记录评估理由便于复核
-4. 有疑问时取中间值
+1. Use the same criteria for all ideas
+2. Define reference points before scoring
+3. Document evaluation rationale for review
+4. When in doubt, use the middle value
 
-### 特殊情况处理
+### Handling Special Cases
 
-**信息不足时**：
-- 标注"待验证"
-- 给出范围而非精确值
-- 在评估理由中说明
+**When information is insufficient**:
 
-**创意重叠时**：
-- 评估最优版本
-- 注明变体关系
-- 综合考虑整合可能
+- Mark as "to be verified"
+- Provide a range rather than precise value
+- Explain in evaluation rationale
+
+**When ideas overlap**:
+
+- Evaluate the best version
+- Note variant relationships
+- Consider integration possibilities

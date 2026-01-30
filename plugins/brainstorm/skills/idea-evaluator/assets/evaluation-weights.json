@@ -1,93 +1,153 @@
 {
   "presets": {
     "balanced": {
-      "name": "平衡模式",
-      "description": "默认权重，均衡考虑各维度",
+      "name": "Balanced Mode",
+      "description": "Default weights, balancing all dimensions",
       "weights": {
         "impact": 35,
         "feasibility": 35,
         "innovation": 20,
         "alignment": 10
       },
-      "suitable_for": ["通用场景", "初次评估"]
+      "suitable_for": ["General scenarios", "Initial evaluation"]
     },
     "impact_first": {
-      "name": "影响力优先",
-      "description": "追求最大价值和影响力",
+      "name": "Impact Priority",
+      "description": "Pursuing maximum value and impact",
       "weights": {
         "impact": 50,
         "feasibility": 25,
         "innovation": 15,
         "alignment": 10
       },
-      "suitable_for": ["战略决策", "资源充足时"]
+      "suitable_for": ["Strategic decisions", "When resources are abundant"]
     },
     "feasibility_first": {
-      "name": "可行性优先",
-      "description": "快速验证，低风险实现",
+      "name": "Feasibility Priority",
+      "description": "Quick validation, low-risk implementation",
       "weights": {
         "impact": 25,
         "feasibility": 50,
         "innovation": 15,
         "alignment": 10
       },
-      "suitable_for": ["快速原型", "资源有限时", "MVP"]
+      "suitable_for": ["Rapid prototyping", "When resources are limited", "MVP"]
     },
     "innovation_first": {
-      "name": "创新优先",
-      "description": "追求突破性创新",
+      "name": "Innovation Priority",
+      "description": "Pursuing breakthrough innovation",
       "weights": {
         "impact": 25,
         "feasibility": 25,
         "innovation": 40,
         "alignment": 10
       },
-      "suitable_for": ["探索性项目", "竞争差异化"]
+      "suitable_for": ["Exploratory projects", "Competitive differentiation"]
     }
   },
   "scoring_criteria": {
     "impact": {
-      "name": "影响力",
-      "description": "解决问题的程度、受益人数、价值大小",
+      "name": "Impact",
+      "description": "Degree of problem solving, number of beneficiaries, value magnitude",
       "levels": [
-        { "score": 1, "label": "极低", "description": "几乎无影响" },
-        { "score": 2, "label": "低", "description": "微小改善，影响有限" },
-        { "score": 3, "label": "中", "description": "部分解决问题，中等影响" },
-        { "score": 4, "label": "高", "description": "显著改善问题，影响较大" },
-        { "score": 5, "label": "极高", "description": "彻底解决核心问题，影响广泛" }
+        { "score": 1, "label": "Very Low", "description": "Almost no impact" },
+        {
+          "score": 2,
+          "label": "Low",
+          "description": "Minor improvement, limited impact"
+        },
+        {
+          "score": 3,
+          "label": "Medium",
+          "description": "Partially solves problem, moderate impact"
+        },
+        {
+          "score": 4,
+          "label": "High",
+          "description": "Significantly improves problem, substantial impact"
+        },
+        {
+          "score": 5,
+          "label": "Very High",
+          "description": "Completely solves core problem, wide-reaching impact"
+        }
       ]
     },
     "feasibility": {
-      "name": "可行性",
-      "description": "技术难度、资源需求、时间成本",
+      "name": "Feasibility",
+      "description": "Technical difficulty, resource requirements, time cost",
       "levels": [
-        { "score": 1, "label": "极低", "description": "技术瓶颈严重，不确定" },
-        { "score": 2, "label": "低", "description": "较大挑战，需6个月+" },
-        { "score": 3, "label": "中", "description": "中等技术挑战，1季度内" },
-        { "score": 4, "label": "高", "description": "少量新技术/资源，1个月内" },
-        { "score": 5, "label": "极高", "description": "现有技术/资源即可实现，1周内" }
+        {
+          "score": 1,
+          "label": "Very Low",
+          "description": "Severe technical bottleneck, uncertain"
+        },
+        {
+          "score": 2,
+          "label": "Low",
+          "description": "Significant challenge, requires 6+ months"
+        },
+        {
+          "score": 3,
+          "label": "Medium",
+          "description": "Medium technical challenge, within 1 quarter"
+        },
+        {
+          "score": 4,
+          "label": "High",
+          "description": "Minor new technology/resources, within 1 month"
+        },
+        {
+          "score": 5,
+          "label": "Very High",
+          "description": "Can be implemented with existing technology/resources, within 1 week"
+        }
       ]
     },
     "innovation": {
-      "name": "创新度",
-      "description": "新颖性、差异化、市场反应预期",
+      "name": "Innovation",
+      "description": "Novelty, differentiation, expected market response",
       "levels": [
-        { "score": 1, "label": "模仿", "description": "已有成熟方案" },
-        { "score": 2, "label": "改进", "description": "小幅改进现有方案" },
-        { "score": 3, "label": "优化", "description": "显著优化体验" },
-        { "score": 4, "label": "创新", "description": "新颖的解决方案" },
-        { "score": 5, "label": "突破", "description": "颠覆性创新" }
+        {
+          "score": 1,
+          "label": "Imitative",
+          "description": "Mature solutions already exist"
+        },
+        {
+          "score": 2,
+          "label": "Incremental",
+          "description": "Minor improvements to existing solutions"
+        },
+        {
+          "score": 3,
+          "label": "Optimized",
+          "description": "Significantly optimized experience"
+        },
+        { "score": 4, "label": "Innovative", "description": "Novel solution" },
+        {
+          "score": 5,
+          "label": "Breakthrough",
+          "description": "Disruptive innovation"
+        }
       ]
     },
     "alignment": {
-      "name": "契合度",
-      "description": "与目标/约束的契合程度",
+      "name": "Alignment",
+      "description": "Degree of alignment with goals/constraints",
       "levels": [
-        { "score": 1, "label": "不符", "description": "与目标冲突" },
-        { "score": 2, "label": "勉强", "description": "部分符合" },
-        { "score": 3, "label": "一般", "description": "基本符合" },
-        { "score": 4, "label": "良好", "description": "高度契合" },
-        { "score": 5, "label": "完美", "description": "完全匹配目标" }
+        {
+          "score": 1,
+          "label": "Misaligned",
+          "description": "Conflicts with goals"
+        },
+        { "score": 2, "label": "Marginal", "description": "Partially aligned" },
+        { "score": 3, "label": "Moderate", "description": "Basically aligned" },
+        { "score": 4, "label": "Good", "description": "Highly aligned" },
+        {
+          "score": 5,
+          "label": "Perfect",
+          "description": "Completely matches goals"
+        }
       ]
     }
   }
