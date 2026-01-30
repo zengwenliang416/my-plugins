@@ -8,27 +8,27 @@ Rules for change analysis: type inference, scope extraction, split recommendatio
 
 ### 1.1 Based on file changes
 
-| File change pattern | Inferred type | Confidence |
-|---------------------|---------------|------------|
-| New feature code files | `feat` | high |
-| Modify existing feature code | `feat` or `fix` | medium |
-| Delete code files | `refactor` | high |
-| Modify test files | `test` | high |
-| Modify documentation files | `docs` | high |
-| Modify config files | `chore` or `build` | medium |
-| Modify CI/CD files | `ci` | high |
-| Modify style files | `style` | high |
+| File change pattern          | Inferred type      | Confidence |
+| ---------------------------- | ------------------ | ---------- |
+| New feature code files       | `feat`             | high       |
+| Modify existing feature code | `feat` or `fix`    | medium     |
+| Delete code files            | `refactor`         | high       |
+| Modify test files            | `test`             | high       |
+| Modify documentation files   | `docs`             | high       |
+| Modify config files          | `chore` or `build` | medium     |
+| Modify CI/CD files           | `ci`               | high       |
+| Modify style files           | `style`            | high       |
 
 ### 1.2 Based on semantic analysis
 
-| Semantic signal | Inferred type |
-|-----------------|---------------|
-| Add new interface/API | `feat` |
-| Fix error handling | `fix` |
-| Performance optimization | `perf` |
-| Refactor code structure | `refactor` |
-| Add/update dependencies | `build` |
-| Code formatting | `style` |
+| Semantic signal          | Inferred type |
+| ------------------------ | ------------- |
+| Add new interface/API    | `feat`        |
+| Fix error handling       | `fix`         |
+| Performance optimization | `perf`        |
+| Refactor code structure  | `refactor`    |
+| Add/update dependencies  | `build`       |
+| Code formatting          | `style`       |
 
 ### 1.3 Type priority (on conflict)
 
@@ -69,14 +69,14 @@ AuthService + TokenManager  → scope: "auth"
 
 **When LSP and semantic analysis are unavailable**:
 
-| Path pattern | Inferred scope |
-|-------------|----------------|
-| `src/components/*` | `components` |
-| `src/services/*` | `services` |
-| `src/utils/*` | `utils` |
-| `src/api/*` | `api` |
-| `packages/core/*` | `core` |
-| `apps/web/*` | `web` |
+| Path pattern       | Inferred scope |
+| ------------------ | -------------- |
+| `src/components/*` | `components`   |
+| `src/services/*`   | `services`     |
+| `src/utils/*`      | `utils`        |
+| `src/api/*`        | `api`          |
+| `packages/core/*`  | `core`         |
+| `apps/web/*`       | `web`          |
 
 ---
 
@@ -84,12 +84,12 @@ AuthService + TokenManager  → scope: "auth"
 
 ### 3.1 Dimensions
 
-| Dimension | Low | Medium | High |
-|-----------|-----|--------|------|
-| Files | ≤3 | ≤10 | >10 |
-| Lines changed | ≤50 | ≤300 | >300 |
-| Scopes | 1 | 2-3 | >3 |
-| Types | 1 | 2 | >2 |
+| Dimension     | Low | Medium | High |
+| ------------- | --- | ------ | ---- |
+| Files         | ≤3  | ≤10    | >10  |
+| Lines changed | ≤50 | ≤300   | >300 |
+| Scopes        | 1   | 2-3    | >3   |
+| Types         | 1   | 2      | >2   |
 
 ### 3.2 Overall scoring
 
@@ -105,12 +105,12 @@ high: files >10 or lines >300 or scopes >3
 
 ### 4.1 Split triggers
 
-| Rule | Trigger | Recommendation |
-|------|---------|----------------|
-| Multiple scopes | 2+ distinct scopes | Split by scope |
-| Large change | files >10 or lines >300 | Split by feature |
-| Mixed types | feat + fix together | Separate commits |
-| Add + delete | new and deleted files together | Consider split |
+| Rule                | Trigger                              | Recommendation     |
+| ------------------- | ------------------------------------ | ------------------ |
+| Multiple scopes     | 2+ distinct scopes                   | Split by scope     |
+| Large change        | files >10 or lines >300              | Split by feature   |
+| Mixed types         | feat + fix together                  | Separate commits   |
+| Add + delete        | new and deleted files together       | Consider split     |
 | Unrelated semantics | auggie-mcp deems semantics unrelated | Split by semantics |
 
 ### 4.2 Split priority
@@ -133,15 +133,21 @@ high: files >10 or lines >300 or scopes >3
       {
         "type": "feat",
         "scope": "auth-service",
+        "emoji": "✨",
         "files": ["src/auth/AuthService.ts"],
         "description": "新增 token 刷新功能",
+        "message": "feat(auth-service): ✨ 新增 token 刷新功能",
+        "body": "新增 token 自动刷新功能，支持过期前自动续期。\n\n变更文件:\n- src/auth/AuthService.ts: 添加 refreshToken 方法",
         "priority": 1
       },
       {
         "type": "docs",
         "scope": "docs",
+        "emoji": "📝",
         "files": ["docs/README.md"],
         "description": "更新认证文档",
+        "message": "docs(docs): 📝 更新认证文档",
+        "body": "更新认证相关文档，添加 token 刷新说明。\n\n变更文件:\n- docs/README.md: 添加认证章节",
         "priority": 2
       }
     ]
@@ -149,17 +155,30 @@ high: files >10 or lines >300 or scopes >3
 }
 ```
 
+**Commit fields:**
+
+| Field       | Required | Description                      |
+| ----------- | -------- | -------------------------------- |
+| type        | ✅       | Conventional Commit type         |
+| scope       | ✅       | Change scope                     |
+| emoji       | ✅       | Type-specific emoji              |
+| files       | ✅       | Files in this commit             |
+| description | ✅       | Short description (Chinese)      |
+| message     | ✅       | Complete title line              |
+| body        | ✅       | Detailed description + file list |
+| priority    | ✅       | Commit order                     |
+
 ---
 
 ## 5. Confidence assessment
 
 ### 5.1 Factors
 
-| Factor | high | medium | low |
-|--------|------|--------|-----|
-| Scope | single | 2 | 3+ |
-| Type | single | 2 | 3+ |
-| Complexity | low | medium | high |
+| Factor               | high              | medium            | low       |
+| -------------------- | ----------------- | ----------------- | --------- |
+| Scope                | single            | 2                 | 3+        |
+| Type                 | single            | 2                 | 3+        |
+| Complexity           | low               | medium            | high      |
 | Semantic consistency | highly consistent | partially related | unrelated |
 
 ### 5.2 Overall confidence

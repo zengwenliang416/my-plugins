@@ -62,5 +62,24 @@
     "low": { "max_files": 3, "max_lines": 50 },
     "medium": { "max_files": 10, "max_lines": 300 },
     "high": { "min_files": 11, "min_lines": 301 }
+  },
+  "split_commit_fields": {
+    "type": { "required": true, "description": "Conventional Commit type" },
+    "scope": { "required": true, "description": "Change scope" },
+    "emoji": { "required": true, "description": "Type-specific emoji" },
+    "files": { "required": true, "description": "Files in this commit" },
+    "description": {
+      "required": true,
+      "description": "Short description (Chinese)"
+    },
+    "message": {
+      "required": true,
+      "description": "Complete title: type(scope): emoji description"
+    },
+    "body": {
+      "required": true,
+      "description": "Detailed description + file list"
+    },
+    "priority": { "required": true, "description": "Commit order (1 = first)" }
   }
 }
