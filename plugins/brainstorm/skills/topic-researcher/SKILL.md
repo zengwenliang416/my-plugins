@@ -1,10 +1,10 @@
 ---
 name: topic-researcher
 description: |
-  【触发条件】brainstorm 工作流 Phase 1：解析主题并执行外部研究
-  【核心产出】输出 ${run_dir}/research-brief.md
-  【不触发】用户指定 --skip-research 或已有 research-brief.md
-  【先问什么】主题过于宽泛时，询问具体方向或约束
+  [Trigger] Brainstorm Phase 1: Parse topic and execute external research
+  [Output] ${run_dir}/research-brief.md
+  [Skip] User specifies --skip-research or research-brief.md exists
+  [Ask] When topic is too broad, ask for specific direction or constraints
 allowed-tools:
   - Read
   - Write
@@ -19,157 +19,136 @@ allowed-tools:
 
 # Topic Researcher
 
-解析头脑风暴主题并执行外部研究，为后续创意发散提供信息基础。
+Parse brainstorm topic and execute external research to provide information foundation for ideation.
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具 | 用途 | 触发条件 |
-|----------|------|----------|
-| `sequential-thinking` | 结构化分解主题，规划搜索策略 | 🚨 每次执行必用 |
-| `auggie-mcp` | 检索项目代码上下文 | 🚨 每次执行必用 |
-| `context7` | 查询技术文档和最佳实践 | 🚨 每次执行必用 |
+| Tool                  | Purpose                                         | Required |
+| --------------------- | ----------------------------------------------- | -------- |
+| `sequential-thinking` | Structured topic decomposition, search planning | Yes      |
+| `auggie-mcp`          | Retrieve project code context                   | Yes      |
+| `context7`            | Query technical docs and best practices         | Yes      |
 
-## 参数
+## Parameters
 
-| 参数 | 类型 | 必需 | 说明 |
-|------|------|------|------|
-| run_dir | string | ✅ | 运行目录路径 |
-| topic | string | ✅ | 头脑风暴主题 |
-| deep | boolean | ❌ | 是否启用深度搜索（更多 exa 查询），默认 false |
+| Param   | Type    | Required | Description                                      |
+| ------- | ------- | -------- | ------------------------------------------------ |
+| run_dir | string  | Yes      | Run directory path                               |
+| topic   | string  | Yes      | Brainstorm topic                                 |
+| deep    | boolean | No       | Enable deep search (more queries), default false |
 
-## 执行流程
+## Workflow
 
-### Step 1: 创建运行目录
+### Step 1: Create Run Directory
 
 ```bash
 mkdir -p "${run_dir}"
 ```
 
-### Step 2: 结构化分解主题（sequential-thinking）
+### Step 2: Topic Decomposition (sequential-thinking)
 
-🚨 **必须使用 sequential-thinking 进行主题分解**
+**Required MCP call:**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "分析主题：{topic}。需要识别核心问题、关键词、领域和约束。",
+  thought: "Analyze topic: {topic}. Identify core problems, keywords, domain, constraints.",
   thoughtNumber: 1,
   totalThoughts: 4,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
-1. **主题解析**：识别主题的核心含义和潜在歧义
-2. **领域定位**：确定主题所属领域（产品/技术/市场/流程）
-3. **搜索规划**：设计最有效的搜索策略
-4. **验证假设**：确认理解是否完整，是否需要澄清
+**Focus areas:** Topic parsing -> Domain identification -> Search strategy -> Validation
 
-**提取信息**：
-- **核心问题**：一句话描述
-- **关键词**：3-5 个关键词
-- **领域**：产品/技术/市场/流程等
-- **约束条件**：用户提供的限制
+**Extract:**
 
-如果主题过于宽泛（无法提取具体方向），使用 AskUserQuestion 询问：
-- 目标用户是谁？
-- 有什么具体约束？
-- 期望解决什么问题？
+- Core problem (one sentence)
+- Keywords (3-5)
+- Domain (product/tech/market/process)
+- Constraints (user-provided)
 
-### Step 2.1: 代码上下文检索（auggie-mcp）
+If topic too broad, use AskUserQuestion: target users? constraints? problem to solve?
 
-🚨 **必须执行**
+### Step 2.1: Code Context Retrieval (auggie-mcp)
 
 ```
 mcp__auggie-mcp__codebase-retrieval({
-  information_request: "与 {topic} 相关的代码实现、架构设计、现有功能"
+  information_request: "Code related to {topic}: implementation, architecture, existing features"
 })
 ```
 
-**用途**：
-- 了解项目现有实现
-- 识别技术约束和依赖
-- 发现可复用的模块
-
-### Step 2.2: 技术文档查询（context7）
-
-🚨 **必须执行**
+### Step 2.2: Technical Docs Query (context7)
 
 ```
-# 1. 先解析库 ID
 mcp__context7__resolve-library-id({
   libraryName: "{technology_name}",
-  query: "{topic} 最佳实践和实现方式"
+  query: "{topic} best practices and implementation"
 })
 
-# 2. 查询文档
 mcp__context7__query-docs({
   libraryId: "{resolved_library_id}",
-  query: "{topic} 实现方法、API 用法、常见模式"
+  query: "{topic} implementation methods, API usage, common patterns"
 })
 ```
 
-**用途**：
-- 获取最新技术文档
-- 学习最佳实践
-- 避免重复造轮子
+### Step 3: Execute Exa Search
 
-### Step 3: 执行 Exa 搜索
+Use exa skill for 3-5 searches:
 
-使用 exa skill 执行 3-5 次搜索：
+**Basic searches (always execute):**
 
-**基础搜索（始终执行）：**
+1. **Trends:**
 
-1. **趋势搜索**：
 ```
 Skill(skill="brainstorm:exa", args="search \"{topic} trends 2026\" --content --limit 5")
 ```
 
-2. **案例搜索**：
+2. **Case studies:**
+
 ```
 Skill(skill="brainstorm:exa", args="search \"{topic} case study examples\" --content --limit 5")
 ```
 
-3. **跨领域搜索**：
+3. **Cross-domain:**
+
 ```
 Skill(skill="brainstorm:exa", args="search \"{topic} inspiration from other industries\" --content --limit 5")
 ```
 
-**深度搜索（仅当 deep=true）：**
+**Deep searches (only when deep=true):**
 
-4. **问题搜索**：
+4. **Problems:**
+
 ```
 Skill(skill="brainstorm:exa", args="search \"{topic} challenges problems pain points\" --content --limit 5")
 ```
 
-5. **机会搜索**：
+5. **Opportunities:**
+
 ```
 Skill(skill="brainstorm:exa", args="search \"{topic} opportunities innovations startups\" --content --limit 5")
 ```
 
-### Step 4: 综合生成研究简报
+### Step 4: Generate Research Brief
 
-根据搜索结果，生成 `${run_dir}/research-brief.md`。
+Generate `${run_dir}/research-brief.md` using template from references/research-brief-template.md.
 
-使用 references/research-brief-template.md 中的模板结构。
+**Core sections:**
 
-核心内容：
-1. **主题解析**：核心问题、关键词、约束
-2. **行业趋势**：从趋势搜索中提取 3-5 条关键趋势
-3. **相关案例**：整理 3-5 个相关案例（表格形式）
-4. **跨领域灵感**：从其他行业找到的启发
-5. **发散方向建议**：基于研究提出 3-5 个发散方向
+1. Topic Analysis: core problem, keywords, constraints
+2. Industry Trends: 3-5 key trends from search
+3. Related Cases: 3-5 cases (table format)
+4. Cross-domain Insights: inspiration from other industries
+5. Divergence Directions: 3-5 suggested directions
 
-### Step 5: 保存原始搜索结果
+### Step 5: Save Raw Results
 
-在 research-brief.md 的附录中保存原始搜索记录（使用 `<details>` 折叠）。
+Append raw search records in appendix using `<details>` collapse.
 
-## 输出验证
+## Output Validation
 
-确认输出文件：
-- `${run_dir}/research-brief.md` 存在
-- 文件包含所有必需章节
-- 至少有 3 条趋势、3 个案例
+Confirm:
 
-## 搜索策略参考
-
-详见 references/search-strategies.md
+- `${run_dir}/research-brief.md` exists
+- Contains all required sections
+- At least 3 trends, 3 cases

@@ -1,67 +1,73 @@
 {
   "modes": {
     "basic": {
-      "name": "基础研究",
-      "description": "快速了解主题的核心趋势和案例",
+      "name": "Basic Research",
+      "description": "Quick overview of core trends and cases for the topic",
       "searches": ["trends", "cases", "cross_industry"],
       "total_queries": 3
     },
     "deep": {
-      "name": "深度研究",
-      "description": "全面分析主题的趋势、案例、问题和机会",
-      "searches": ["trends", "cases", "cross_industry", "pain_points", "opportunities"],
+      "name": "Deep Research",
+      "description": "Comprehensive analysis of trends, cases, problems, and opportunities",
+      "searches": [
+        "trends",
+        "cases",
+        "cross_industry",
+        "pain_points",
+        "opportunities"
+      ],
       "total_queries": 5
     }
   },
   "search_templates": {
     "trends": {
       "query": "{topic} trends 2026",
-      "purpose": "了解行业最新动态和发展方向",
+      "purpose": "Understand the latest industry dynamics and development directions",
       "priority": 1
     },
     "cases": {
       "query": "{topic} case study success story",
-      "purpose": "学习成功案例和最佳实践",
+      "purpose": "Learn from success cases and best practices",
       "priority": 2
     },
     "cross_industry": {
       "query": "{topic} inspiration from other industries",
-      "purpose": "从其他行业借鉴创新思路",
+      "purpose": "Borrow innovative ideas from other industries",
       "priority": 3
     },
     "pain_points": {
       "query": "{topic} challenges problems pain points",
-      "purpose": "深入理解用户需求和市场空白",
+      "purpose": "Deeply understand user needs and market gaps",
       "priority": 4
     },
     "opportunities": {
       "query": "{topic} opportunities innovations startups",
-      "purpose": "发现市场机会和创新方向",
+      "purpose": "Discover market opportunities and innovation directions",
       "priority": 5
     }
   },
   "topic_parsing": {
     "extract_fields": ["core_problem", "keywords", "domain", "constraints"],
     "clarification_triggers": [
-      "主题过于宽泛",
-      "缺少具体方向",
-      "多个可能的解读"
+      "Topic is too broad",
+      "Lacks specific direction",
+      "Multiple possible interpretations"
     ],
     "clarification_questions": [
-      "目标用户是谁？",
-      "有什么具体约束？",
-      "期望解决什么问题？"
+      "Who is the target user?",
+      "Are there any specific constraints?",
+      "What problem do you expect to solve?"
     ]
   },
   "output_template": {
     "file": "research-brief.md",
     "sections": [
-      "主题解析",
-      "行业趋势",
-      "相关案例",
-      "跨领域灵感",
-      "发散方向建议",
-      "原始搜索结果"
+      "Topic Analysis",
+      "Industry Trends",
+      "Related Cases",
+      "Cross-Industry Inspiration",
+      "Divergent Direction Suggestions",
+      "Raw Search Results"
     ]
   }
 }

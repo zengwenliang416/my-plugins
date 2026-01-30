@@ -1,208 +1,212 @@
-# 研究简报输出模板
+# Research Brief Output Template
 
-## 模板结构
+## Template Structure
 
-```markdown
+````markdown
 ---
-generated_at: {timestamp}
+generated_at: { timestamp }
 topic: "{topic}"
-search_count: {N}
-deep_mode: {true/false}
+search_count: { N }
+deep_mode: { true/false }
 ---
 
-# 主题研究简报
+# Topic Research Brief
 
-## 1. 主题解析
+## 1. Topic Analysis
 
-**核心问题**: {一句话描述用户想要解决的问题或探索的方向}
+**Core Problem**: {One sentence describing the problem the user wants to solve or the direction to explore}
 
-**关键词**: `{keyword1}`, `{keyword2}`, `{keyword3}`, `{keyword4}`
+**Keywords**: `{keyword1}`, `{keyword2}`, `{keyword3}`, `{keyword4}`
 
-**领域分类**: {产品/技术/市场/流程/体验}
+**Domain Category**: {Product/Technology/Market/Process/Experience}
 
-**约束条件**:
-- {用户提供的限制 1}
-- {用户提供的限制 2}
-- {时间/预算/技术等约束}
+**Constraints**:
 
----
-
-## 2. 外部趋势
-
-### 2.1 行业趋势
-
-| 趋势 | 描述 | 来源 | 相关度 |
-|------|------|------|--------|
-| {趋势名称} | {简要描述} | [{来源名}]({url}) | ⭐⭐⭐⭐⭐ |
-| {趋势名称} | {简要描述} | [{来源名}]({url}) | ⭐⭐⭐⭐ |
-| {趋势名称} | {简要描述} | [{来源名}]({url}) | ⭐⭐⭐ |
-
-**关键洞察**:
-> {从趋势中提炼的 1-2 句核心洞察}
-
-### 2.2 相关案例
-
-| 案例 | 公司/产品 | 关键做法 | 效果 | 来源 |
-|------|-----------|----------|------|------|
-| {案例名} | {公司名} | {核心做法} | {量化效果} | [{来源}]({url}) |
-| {案例名} | {公司名} | {核心做法} | {量化效果} | [{来源}]({url}) |
-| {案例名} | {公司名} | {核心做法} | {量化效果} | [{来源}]({url}) |
-
-**可借鉴点**:
-- {借鉴点 1}
-- {借鉴点 2}
-
-### 2.3 跨领域灵感
-
-| 来源领域 | 启发点 | 可迁移应用 |
-|----------|--------|------------|
-| {领域名} | {该领域的做法} | {如何应用到当前主题} |
-| {领域名} | {该领域的做法} | {如何应用到当前主题} |
+- {User-provided limitation 1}
+- {User-provided limitation 2}
+- {Time/budget/technical constraints}
 
 ---
 
-## 3. 问题与机会 {deep_mode ? '' : '(深度模式可解锁)'}
+## 2. External Trends
 
-{如果 deep_mode = true}
+### 2.1 Industry Trends
 
-### 3.1 已识别问题
+| Trend        | Description         | Source                 | Relevance  |
+| ------------ | ------------------- | ---------------------- | ---------- |
+| {Trend name} | {Brief description} | [{Source name}]({url}) | ⭐⭐⭐⭐⭐ |
+| {Trend name} | {Brief description} | [{Source name}]({url}) | ⭐⭐⭐⭐   |
+| {Trend name} | {Brief description} | [{Source name}]({url}) | ⭐⭐⭐     |
 
-| 问题 | 影响 | 当前解决方案 | 改进空间 |
-|------|------|--------------|----------|
-| {问题} | {影响描述} | {现有方案} | {改进方向} |
+**Key Insights**:
 
-### 3.2 潜在机会
+> {1-2 core insights extracted from the trends}
 
-| 机会 | 市场规模/影响 | 竞争状况 | 进入难度 |
-|------|---------------|----------|----------|
-| {机会} | {规模} | {竞争} | {难度} |
+### 2.2 Related Cases
 
-{否则显示}
+| Case        | Company/Product | Key Approach    | Results              | Source            |
+| ----------- | --------------- | --------------- | -------------------- | ----------------- |
+| {Case name} | {Company name}  | {Core approach} | {Quantified results} | [{Source}]({url}) |
+| {Case name} | {Company name}  | {Core approach} | {Quantified results} | [{Source}]({url}) |
+| {Case name} | {Company name}  | {Core approach} | {Quantified results} | [{Source}]({url}) |
 
-> 💡 使用 `--deep` 参数可解锁问题与机会的深度分析
+**Takeaways**:
 
----
+- {Takeaway 1}
+- {Takeaway 2}
 
-## 4. 发散方向建议
+### 2.3 Cross-Industry Inspiration
 
-基于以上研究，建议从以下方向进行创意发散：
-
-### 方向 1: {方向名称}
-
-**描述**: {一句话描述}
-
-**依据**: {为什么建议这个方向}
-
-**潜在创意类型**: {功能创新/体验优化/商业模式/...}
-
-### 方向 2: {方向名称}
-
-**描述**: {一句话描述}
-
-**依据**: {为什么建议这个方向}
-
-**潜在创意类型**: {功能创新/体验优化/商业模式/...}
-
-### 方向 3: {方向名称}
-
-**描述**: {一句话描述}
-
-**依据**: {为什么建议这个方向}
-
-**潜在创意类型**: {功能创新/体验优化/商业模式/...}
+| Source Domain | Inspiration Point           | Transferable Application        |
+| ------------- | --------------------------- | ------------------------------- |
+| {Domain name} | {Approach from that domain} | {How to apply to current topic} |
+| {Domain name} | {Approach from that domain} | {How to apply to current topic} |
 
 ---
 
-## 5. 研究局限
+## 3. Problems & Opportunities {deep_mode ? '' : '(Unlock with Deep Mode)'}
 
-- **未覆盖领域**: {搜索未能覆盖的方面}
-- **信息时效性**: {信息可能过时的部分}
-- **需要验证**: {需要进一步验证的假设}
+{If deep_mode = true}
+
+### 3.1 Identified Problems
+
+| Problem   | Impact               | Current Solution    | Room for Improvement    |
+| --------- | -------------------- | ------------------- | ----------------------- |
+| {Problem} | {Impact description} | {Existing solution} | {Improvement direction} |
+
+### 3.2 Potential Opportunities
+
+| Opportunity   | Market Size/Impact | Competition   | Entry Difficulty |
+| ------------- | ------------------ | ------------- | ---------------- |
+| {Opportunity} | {Size}             | {Competition} | {Difficulty}     |
+
+{Otherwise display}
+
+> 💡 Use the `--deep` parameter to unlock in-depth analysis of problems and opportunities
 
 ---
 
-## 附录: 原始搜索结果
+## 4. Divergent Direction Suggestions
+
+Based on the above research, the following directions are recommended for creative divergence:
+
+### Direction 1: {Direction Name}
+
+**Description**: {One sentence description}
+
+**Rationale**: {Why this direction is recommended}
+
+**Potential Idea Types**: {Feature innovation/Experience optimization/Business model/...}
+
+### Direction 2: {Direction Name}
+
+**Description**: {One sentence description}
+
+**Rationale**: {Why this direction is recommended}
+
+**Potential Idea Types**: {Feature innovation/Experience optimization/Business model/...}
+
+### Direction 3: {Direction Name}
+
+**Description**: {One sentence description}
+
+**Rationale**: {Why this direction is recommended}
+
+**Potential Idea Types**: {Feature innovation/Experience optimization/Business model/...}
+
+---
+
+## 5. Research Limitations
+
+- **Uncovered Areas**: {Aspects not covered by the search}
+- **Information Timeliness**: {Parts where information may be outdated}
+- **Needs Verification**: {Assumptions that need further validation}
+
+---
+
+## Appendix: Raw Search Results
 
 <details>
-<summary>点击展开搜索记录</summary>
+<summary>Click to expand search records</summary>
 
-### 搜索 1: 趋势搜索
+### Search 1: Trend Search
 
-**查询**: `{query}`
-**时间**: {timestamp}
-**结果数**: {N}
+**Query**: `{query}`
+**Time**: {timestamp}
+**Result Count**: {N}
+
+```json
+{exa_results_json}
+```
+````
+
+### Search 2: Case Search
+
+**Query**: `{query}`
+**Time**: {timestamp}
+**Result Count**: {N}
 
 ```json
 {exa_results_json}
 ```
 
-### 搜索 2: 案例搜索
+### Search 3: Cross-Industry Search
 
-**查询**: `{query}`
-**时间**: {timestamp}
-**结果数**: {N}
-
-```json
-{exa_results_json}
-```
-
-### 搜索 3: 跨领域搜索
-
-**查询**: `{query}`
-**时间**: {timestamp}
-**结果数**: {N}
+**Query**: `{query}`
+**Time**: {timestamp}
+**Result Count**: {N}
 
 ```json
 {exa_results_json}
 ```
 
-{如果 deep_mode}
+{If deep_mode}
 
-### 搜索 4: 问题搜索
+### Search 4: Problem Search
 
-**查询**: `{query}`
-**时间**: {timestamp}
-**结果数**: {N}
-
-```json
-{exa_results_json}
-```
-
-### 搜索 5: 机会搜索
-
-**查询**: `{query}`
-**时间**: {timestamp}
-**结果数**: {N}
+**Query**: `{query}`
+**Time**: {timestamp}
+**Result Count**: {N}
 
 ```json
 {exa_results_json}
 ```
 
-{/如果}
+### Search 5: Opportunity Search
+
+**Query**: `{query}`
+**Time**: {timestamp}
+**Result Count**: {N}
+
+```json
+{exa_results_json}
+```
+
+{/If}
 
 </details>
 ```
 
-## 字段填写指南
+## Field Filling Guide
 
-### 相关度评分
+### Relevance Scoring
 
-- ⭐⭐⭐⭐⭐: 直接相关，可直接应用
-- ⭐⭐⭐⭐: 高度相关，稍加调整可用
-- ⭐⭐⭐: 中度相关，需要转化
-- ⭐⭐: 间接相关，作为参考
-- ⭐: 弱相关，仅供了解
+- ⭐⭐⭐⭐⭐: Directly relevant, can be applied immediately
+- ⭐⭐⭐⭐: Highly relevant, usable with minor adjustments
+- ⭐⭐⭐: Moderately relevant, requires transformation
+- ⭐⭐: Indirectly relevant, for reference
+- ⭐: Weakly relevant, for awareness only
 
-### 关键词提取原则
+### Keyword Extraction Principles
 
-1. 提取名词性关键词优先
-2. 包含领域/技术/用户相关词汇
-3. 避免太宽泛的词（如"好""快""用户"）
-4. 3-5 个关键词为宜
+1. Prioritize extracting noun-based keywords
+2. Include domain/technology/user-related terms
+3. Avoid overly broad words (e.g., "good", "fast", "user")
+4. 3-5 keywords are ideal
 
-### 案例选择标准
+### Case Selection Criteria
 
-1. 优先选择可量化效果的案例
-2. 优先选择知名公司/产品
-3. 优先选择近 2 年内的案例
-4. 多样性：不同规模、不同地区
+1. Prioritize cases with quantifiable results
+2. Prioritize well-known companies/products
+3. Prioritize cases from the past 2 years
+4. Diversity: different scales, different regions
