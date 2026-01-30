@@ -1,410 +1,415 @@
-# 头脑风暴报告模板
+# Brainstorming Report Template
 
-## 简洁版（brief）
+## Brief Version
 
 ```markdown
-# {topic} - 头脑风暴报告
+# {topic} - Brainstorming Report
 
-**日期**: {date}
-**参与模型**: Codex, Gemini
-**发散方法**: {method}
-**总创意数**: {total_ideas}
-
----
-
-## 🎯 核心洞察
-
-{一段话总结本次头脑风暴的核心发现和结论，约 100-150 字}
+**Date**: {date}
+**Participating Models**: Codex, Gemini
+**Divergence Method**: {method}
+**Total Ideas**: {total_ideas}
 
 ---
 
-## 🏆 Top 3 方案
+## 🎯 Core Insights
+
+{A paragraph summarizing the core findings and conclusions of this brainstorming session, about 100-150 words}
+
+---
+
+## 🏆 Top 3 Solutions
 
 ### 1. {title} ⭐ {score}
 
-**描述**: {简要描述，1-2 句话}
+**Description**: {Brief description, 1-2 sentences}
 
-**亮点**: {核心优势}
+**Highlights**: {Core advantages}
 
-**下一步**: {立即可执行的行动}
+**Next Step**: {Immediately actionable item}
 
 ---
 
 ### 2. {title} ⭐ {score}
 
-**描述**: {简要描述}
+**Description**: {Brief description}
 
-**亮点**: {核心优势}
+**Highlights**: {Core advantages}
 
-**下一步**: {立即可执行的行动}
+**Next Step**: {Immediately actionable item}
 
 ---
 
 ### 3. {title} ⭐ {score}
 
-**描述**: {简要描述}
+**Description**: {Brief description}
 
-**亮点**: {核心优势}
+**Highlights**: {Core advantages}
 
-**下一步**: {立即可执行的行动}
-
----
-
-## 📋 下一步行动
-
-- [ ] **本周**: {最紧急的行动项}
-- [ ] **本周**: {次紧急的行动项}
-- [ ] **下周**: {需要准备的行动项}
-- [ ] **本月**: {中期行动项}
+**Next Step**: {Immediately actionable item}
 
 ---
 
-> 📁 完整报告: `{run_dir}/`
+## 📋 Next Steps
+
+- [ ] **This Week**: {Most urgent action item}
+- [ ] **This Week**: {Second most urgent action item}
+- [ ] **Next Week**: {Action item requiring preparation}
+- [ ] **This Month**: {Mid-term action item}
+
+---
+
+> 📁 Full Report: `{run_dir}/`
 >
-> 包含研究简报、创意池、评估详情等完整资料。
+> Contains complete materials including research brief, idea pool, evaluation details, etc.
 ```
 
 ---
 
-## 详细版（detailed）
+## Detailed Version
 
 ```markdown
 ---
-generated_at: {timestamp}
+generated_at: { timestamp }
 topic: "{topic}"
 method: "{method}"
-total_ideas: {total_ideas}
+total_ideas: { total_ideas }
 top_ideas: 5
 format: detailed
 ---
 
-# {topic} - 头脑风暴完整报告
+# {topic} - Complete Brainstorming Report
 
-## 1. 执行概要
+## 1. Executive Summary
 
-### 1.1 问题定义
+### 1.1 Problem Definition
 
-**核心问题**: {research_brief.核心问题}
+**Core Problem**: {research_brief.core_problem}
 
-**关键词**: `{keyword1}`, `{keyword2}`, `{keyword3}`
+**Keywords**: `{keyword1}`, `{keyword2}`, `{keyword3}`
 
-### 1.2 关键约束
+### 1.2 Key Constraints
 
-| 约束类型 | 具体内容 |
-|----------|----------|
-| 时间 | {时间约束} |
-| 资源 | {资源约束} |
-| 技术 | {技术约束} |
-| 其他 | {其他约束} |
+| Constraint Type | Details                 |
+| --------------- | ----------------------- |
+| Time            | {Time constraint}       |
+| Resources       | {Resource constraint}   |
+| Technology      | {Technology constraint} |
+| Other           | {Other constraints}     |
 
-### 1.3 成果概览
+### 1.3 Results Overview
 
-| 指标 | 数值 |
-|------|------|
-| 研究发现 | {N} 条趋势/案例 |
-| 生成创意 | {M} 个 |
-| 筛选方案 | Top 5 |
-| 平均评分 | {avg_score} |
-
----
-
-## 2. 研究发现
-
-{如果有 research-brief.md}
-
-### 2.1 市场趋势
-
-| 趋势 | 描述 | 相关度 |
-|------|------|--------|
-| {趋势1} | {描述} | ⭐⭐⭐⭐⭐ |
-| {趋势2} | {描述} | ⭐⭐⭐⭐ |
-| {趋势3} | {描述} | ⭐⭐⭐⭐ |
-
-**关键洞察**: {从趋势中提炼的核心洞察}
-
-### 2.2 案例分析
-
-| 案例 | 公司 | 关键做法 | 效果 |
-|------|------|----------|------|
-| {案例1} | {公司} | {做法} | {效果} |
-| {案例2} | {公司} | {做法} | {效果} |
-| {案例3} | {公司} | {做法} | {效果} |
-
-**可借鉴点**:
-- {借鉴点1}
-- {借鉴点2}
-
-### 2.3 跨领域灵感
-
-| 来源领域 | 启发点 | 可迁移应用 |
-|----------|--------|------------|
-| {领域1} | {启发点} | {应用方式} |
-| {领域2} | {启发点} | {应用方式} |
-
-{否则显示}
-
-> ℹ️ 本次头脑风暴跳过了研究阶段（--skip-research）
-
-{/如果}
+| Metric             | Value            |
+| ------------------ | ---------------- |
+| Research Findings  | {N} trends/cases |
+| Generated Ideas    | {M}              |
+| Filtered Solutions | Top 5            |
+| Average Score      | {avg_score}      |
 
 ---
 
-## 3. 创意概览
+## 2. Research Findings
 
-### 3.1 思维导图
+{If research-brief.md exists}
+
+### 2.1 Market Trends
+
+| Trend     | Description   | Relevance  |
+| --------- | ------------- | ---------- |
+| {Trend 1} | {Description} | ⭐⭐⭐⭐⭐ |
+| {Trend 2} | {Description} | ⭐⭐⭐⭐   |
+| {Trend 3} | {Description} | ⭐⭐⭐⭐   |
+
+**Key Insights**: {Core insights extracted from trends}
+
+### 2.2 Case Analysis
+
+| Case     | Company   | Key Approach | Results   |
+| -------- | --------- | ------------ | --------- |
+| {Case 1} | {Company} | {Approach}   | {Results} |
+| {Case 2} | {Company} | {Approach}   | {Results} |
+| {Case 3} | {Company} | {Approach}   | {Results} |
+
+**Takeaways**:
+
+- {Takeaway 1}
+- {Takeaway 2}
+
+### 2.3 Cross-Industry Inspiration
+
+| Source Domain | Inspiration Point   | Transferable Application |
+| ------------- | ------------------- | ------------------------ |
+| {Domain 1}    | {Inspiration point} | {Application method}     |
+| {Domain 2}    | {Inspiration point} | {Application method}     |
+
+{Otherwise display}
+
+> ℹ️ This brainstorming session skipped the research phase (--skip-research)
+
+{/If}
+
+---
+
+## 3. Ideas Overview
+
+### 3.1 Mind Map
 
 {evaluation.mermaid_mindmap}
 
-### 3.2 分类统计
+### 3.2 Category Statistics
 
-| 类别 | 数量 | 占比 | 代表创意 |
-|------|------|------|----------|
-| 产品功能 | {n1} | {%} | {代表} |
-| 用户体验 | {n2} | {%} | {代表} |
-| 技术架构 | {n3} | {%} | {代表} |
-| 商业模式 | {n4} | {%} | {代表} |
-| 运营策略 | {n5} | {%} | {代表} |
+| Category               | Count | Percentage | Representative Idea |
+| ---------------------- | ----- | ---------- | ------------------- |
+| Product Features       | {n1}  | {%}        | {Representative}    |
+| User Experience        | {n2}  | {%}        | {Representative}    |
+| Technical Architecture | {n3}  | {%}        | {Representative}    |
+| Business Model         | {n4}  | {%}        | {Representative}    |
+| Operations Strategy    | {n5}  | {%}        | {Representative}    |
 
-### 3.3 来源分布
+### 3.3 Source Distribution
 
-| 来源 | 数量 | 特点 |
-|------|------|------|
-| Codex | {n_codex} | 技术可行性强 |
-| Gemini | {n_gemini} | 用户价值高 |
-| 合并 | {n_merged} | 双视角融合 |
+| Source | Count      | Characteristics              |
+| ------ | ---------- | ---------------------------- |
+| Codex  | {n_codex}  | Strong technical feasibility |
+| Gemini | {n_gemini} | High user value              |
+| Merged | {n_merged} | Dual perspective fusion      |
 
 ---
 
-## 4. 评估结果
+## 4. Evaluation Results
 
-### 4.1 评估标准
+### 4.1 Evaluation Criteria
 
-**模式**: {criteria}
+**Mode**: {criteria}
 
-| 维度 | 权重 | 说明 |
-|------|------|------|
-| Impact | {w1}% | 影响力/价值 |
-| Feasibility | {w2}% | 可行性/难度 |
-| Innovation | {w3}% | 创新度/差异化 |
-| Alignment | {w4}% | 契合度 |
+| Dimension   | Weight | Description                |
+| ----------- | ------ | -------------------------- |
+| Impact      | {w1}%  | Impact/Value               |
+| Feasibility | {w2}%  | Feasibility/Difficulty     |
+| Innovation  | {w3}%  | Innovation/Differentiation |
+| Alignment   | {w4}%  | Fit                        |
 
-### 4.2 评估矩阵
+### 4.2 Evaluation Matrix
 
 {evaluation.mermaid_quadrant}
 
-**矩阵解读**:
-- **优先执行**: {列出创意 ID}
-- **战略储备**: {列出创意 ID}
-- **快速尝试**: {列出创意 ID}
-- **暂时搁置**: {列出创意 ID}
+**Matrix Interpretation**:
 
-### 4.3 排名总览
+- **Execute First**: {List idea IDs}
+- **Strategic Reserve**: {List idea IDs}
+- **Quick Experiment**: {List idea IDs}
+- **Temporarily Shelve**: {List idea IDs}
 
-| 排名 | ID | 创意 | 影响力 | 可行性 | 创新度 | 契合度 | 综合分 |
-|------|-----|------|--------|--------|--------|--------|--------|
-| 🥇 | {id} | {title} | {i} | {f} | {n} | {a} | **{score}** |
-| 🥈 | {id} | {title} | {i} | {f} | {n} | {a} | **{score}** |
-| 🥉 | {id} | {title} | {i} | {f} | {n} | {a} | **{score}** |
-| 4 | {id} | {title} | {i} | {f} | {n} | {a} | **{score}** |
-| 5 | {id} | {title} | {i} | {f} | {n} | {a} | **{score}** |
+### 4.3 Ranking Overview
+
+| Rank | ID   | Idea    | Impact | Feasibility | Innovation | Alignment | Total Score |
+| ---- | ---- | ------- | ------ | ----------- | ---------- | --------- | ----------- |
+| 🥇   | {id} | {title} | {i}    | {f}         | {n}        | {a}       | **{score}** |
+| 🥈   | {id} | {title} | {i}    | {f}         | {n}        | {a}       | **{score}** |
+| 🥉   | {id} | {title} | {i}    | {f}         | {n}        | {a}       | **{score}** |
+| 4    | {id} | {title} | {i}    | {f}         | {n}        | {a}       | **{score}** |
+| 5    | {id} | {title} | {i}    | {f}         | {n}        | {a}       | **{score}** |
 
 ---
 
-## 5. Top 5 方案详解
+## 5. Top 5 Solutions Detailed
 
-### 5.1 🥇 方案一: {title}
+### 5.1 🥇 Solution One: {title}
 
 **ID**: {id}
-**来源**: {source}
-**综合评分**: ⭐ {score}
+**Source**: {source}
+**Overall Score**: ⭐ {score}
 
-#### 描述
+#### Description
 
-{详细描述，3-5 句话}
+{Detailed description, 3-5 sentences}
 
-#### 评估详情
+#### Evaluation Details
 
-| 维度 | 评分 | 理由 |
-|------|------|------|
-| 影响力 | ⭐×{n} | {理由} |
-| 可行性 | ⭐×{n} | {理由} |
-| 创新度 | ⭐×{n} | {理由} |
-| 契合度 | ⭐×{n} | {理由} |
+| Dimension   | Score  | Rationale   |
+| ----------- | ------ | ----------- |
+| Impact      | ⭐×{n} | {Rationale} |
+| Feasibility | ⭐×{n} | {Rationale} |
+| Innovation  | ⭐×{n} | {Rationale} |
+| Alignment   | ⭐×{n} | {Rationale} |
 
-#### 优势
+#### Advantages
 
-- {优势1}
-- {优势2}
-- {优势3}
+- {Advantage 1}
+- {Advantage 2}
+- {Advantage 3}
 
-#### 风险与挑战
+#### Risks & Challenges
 
-- {风险1}
-- {风险2}
+- {Risk 1}
+- {Risk 2}
 
-#### 实施建议
+#### Implementation Recommendations
 
-1. **第一步**: {具体行动}
-2. **第二步**: {具体行动}
-3. **第三步**: {具体行动}
+1. **Step One**: {Specific action}
+2. **Step Two**: {Specific action}
+3. **Step Three**: {Specific action}
 
-#### 资源需求
+#### Resource Requirements
 
-| 资源类型 | 需求 |
-|----------|------|
-| 人力 | {描述} |
-| 时间 | {描述} |
-| 预算 | {描述} |
-| 技术 | {描述} |
-
----
-
-### 5.2 🥈 方案二: {title}
-
-{同上结构...}
+| Resource Type | Requirement   |
+| ------------- | ------------- |
+| Personnel     | {Description} |
+| Time          | {Description} |
+| Budget        | {Description} |
+| Technology    | {Description} |
 
 ---
 
-### 5.3 🥉 方案三: {title}
+### 5.2 🥈 Solution Two: {title}
 
-{同上结构...}
-
----
-
-### 5.4 方案四: {title}
-
-{简化版，只包含描述、评分、核心优势和下一步}
+{Same structure as above...}
 
 ---
 
-### 5.5 方案五: {title}
+### 5.3 🥉 Solution Three: {title}
 
-{简化版}
-
----
-
-## 6. 风险与盲点
-
-### 6.1 已识别风险
-
-| 风险 | 等级 | 影响范围 | 缓解措施 |
-|------|------|----------|----------|
-| {风险1} | 🔴 高 | {范围} | {措施} |
-| {风险2} | 🟡 中 | {范围} | {措施} |
-| {风险3} | 🟢 低 | {范围} | {措施} |
-
-### 6.2 潜在盲点
-
-**未充分考虑的因素**:
-- {盲点1}
-- {盲点2}
-
-**需要进一步验证**:
-- {假设1}
-- {假设2}
-
-**建议补充调研**:
-- {调研方向1}
-- {调研方向2}
+{Same structure as above...}
 
 ---
 
-## 7. 下一步行动
+### 5.4 Solution Four: {title}
 
-### 7.1 立即行动（本周）
-
-- [ ] {行动项1} - 负责人: {TBD}
-- [ ] {行动项2} - 负责人: {TBD}
-- [ ] {行动项3} - 负责人: {TBD}
-
-### 7.2 短期计划（1个月内）
-
-- [ ] {行动项1}
-- [ ] {行动项2}
-- [ ] {行动项3}
-
-### 7.3 中期规划（1季度内）
-
-- [ ] {行动项1}
-- [ ] {行动项2}
-
-### 7.4 决策点
-
-| 时间节点 | 决策内容 | 依据 |
-|----------|----------|------|
-| {日期} | {决策1} | {依据} |
-| {日期} | {决策2} | {依据} |
+{Simplified version, only includes description, score, core advantages, and next step}
 
 ---
 
-## 附录
+### 5.5 Solution Five: {title}
 
-### A. 完整创意列表
+{Simplified version}
+
+---
+
+## 6. Risks & Blind Spots
+
+### 6.1 Identified Risks
+
+| Risk     | Level     | Impact Scope | Mitigation Measures |
+| -------- | --------- | ------------ | ------------------- |
+| {Risk 1} | 🔴 High   | {Scope}      | {Measures}          |
+| {Risk 2} | 🟡 Medium | {Scope}      | {Measures}          |
+| {Risk 3} | 🟢 Low    | {Scope}      | {Measures}          |
+
+### 6.2 Potential Blind Spots
+
+**Factors Not Fully Considered**:
+
+- {Blind spot 1}
+- {Blind spot 2}
+
+**Requires Further Validation**:
+
+- {Assumption 1}
+- {Assumption 2}
+
+**Recommended Additional Research**:
+
+- {Research direction 1}
+- {Research direction 2}
+
+---
+
+## 7. Next Steps
+
+### 7.1 Immediate Actions (This Week)
+
+- [ ] {Action item 1} - Owner: {TBD}
+- [ ] {Action item 2} - Owner: {TBD}
+- [ ] {Action item 3} - Owner: {TBD}
+
+### 7.2 Short-term Plan (Within 1 Month)
+
+- [ ] {Action item 1}
+- [ ] {Action item 2}
+- [ ] {Action item 3}
+
+### 7.3 Mid-term Plan (Within 1 Quarter)
+
+- [ ] {Action item 1}
+- [ ] {Action item 2}
+
+### 7.4 Decision Points
+
+| Timeline | Decision Content | Basis   |
+| -------- | ---------------- | ------- |
+| {Date}   | {Decision 1}     | {Basis} |
+| {Date}   | {Decision 2}     | {Basis} |
+
+---
+
+## Appendix
+
+### A. Complete Idea List
 
 <details>
-<summary>点击展开（{total_ideas} 个创意）</summary>
+<summary>Click to expand ({total_ideas} ideas)</summary>
 
-{ideas_pool.完整列表}
+{ideas_pool.complete_list}
 
 </details>
 
-### B. 研究原始数据
+### B. Raw Research Data
 
 <details>
-<summary>点击展开搜索记录</summary>
+<summary>Click to expand search records</summary>
 
-{research_brief.原始搜索结果}
+{research_brief.raw_search_results}
 
 </details>
 
-### C. 模型协作记录
+### C. Model Collaboration Records
 
-| 模型 | 贡献 | 特点 |
-|------|------|------|
-| Codex | {n} 个创意 | 技术深度 |
-| Gemini | {n} 个创意 | 用户洞察 |
+| Model  | Contribution | Characteristics |
+| ------ | ------------ | --------------- |
+| Codex  | {n} ideas    | Technical depth |
+| Gemini | {n} ideas    | User insights   |
 
-### D. 工作流执行记录
+### D. Workflow Execution Records
 
-| 阶段 | 状态 | 输出文件 |
-|------|------|----------|
-| Phase 1: 研究 | ✅ | research-brief.md |
-| Phase 2: 发散 | ✅ | ideas-pool.md |
-| Phase 3: 评估 | ✅ | evaluation.md |
-| Phase 4: 报告 | ✅ | brainstorm-report.md |
+| Phase               | Status | Output File          |
+| ------------------- | ------ | -------------------- |
+| Phase 1: Research   | ✅     | research-brief.md    |
+| Phase 2: Divergence | ✅     | ideas-pool.md        |
+| Phase 3: Evaluation | ✅     | evaluation.md        |
+| Phase 4: Report     | ✅     | brainstorm-report.md |
 
 ---
 
-> 📅 生成时间: {timestamp}
+> 📅 Generated at: {timestamp}
 >
-> 📁 完整工作目录: `{run_dir}/`
+> 📁 Complete working directory: `{run_dir}/`
 ```
 
 ---
 
-## 字段填写指南
+## Field Filling Guide
 
-### 评分显示转换
+### Score Display Conversion
 
-| 分数 | 显示方式 |
-|------|----------|
-| 5.0 | ⭐⭐⭐⭐⭐ |
-| 4.0-4.9 | ⭐⭐⭐⭐ |
-| 3.0-3.9 | ⭐⭐⭐ |
-| 2.0-2.9 | ⭐⭐ |
-| 1.0-1.9 | ⭐ |
+| Score   | Display    |
+| ------- | ---------- |
+| 5.0     | ⭐⭐⭐⭐⭐ |
+| 4.0-4.9 | ⭐⭐⭐⭐   |
+| 3.0-3.9 | ⭐⭐⭐     |
+| 2.0-2.9 | ⭐⭐       |
+| 1.0-1.9 | ⭐         |
 
-### 风险等级颜色
+### Risk Level Colors
 
-| 等级 | 图标 | 判断标准 |
-|------|------|----------|
-| 高 | 🔴 | 可能导致失败 |
-| 中 | 🟡 | 需要关注和预案 |
-| 低 | 🟢 | 可控的小问题 |
+| Level  | Icon | Criteria                                |
+| ------ | ---- | --------------------------------------- |
+| High   | 🔴   | May lead to failure                     |
+| Medium | 🟡   | Requires attention and contingency plan |
+| Low    | 🟢   | Controllable minor issues               |
 
-### 时间节点建议
+### Timeline Recommendations
 
-- **本周**: 可立即启动的小行动
-- **本月**: 需要准备和协调的行动
-- **本季度**: 需要资源投入的行动
-- **决策点**: 需要根据结果调整的节点
+- **This Week**: Small actions that can be started immediately
+- **This Month**: Actions requiring preparation and coordination
+- **This Quarter**: Actions requiring resource investment
+- **Decision Points**: Nodes requiring adjustment based on results

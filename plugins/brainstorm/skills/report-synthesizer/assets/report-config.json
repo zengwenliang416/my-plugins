@@ -1,30 +1,38 @@
 {
   "formats": {
     "brief": {
-      "name": "简洁版",
-      "description": "快速概览，适合汇报和分享",
-      "sections": ["核心洞察", "Top 3 方案", "下一步行动"],
+      "name": "Brief Version",
+      "description": "Quick overview, suitable for reporting and sharing",
+      "sections": ["Core Insights", "Top 3 Solutions", "Next Steps"],
       "max_length": "~500 words"
     },
     "detailed": {
-      "name": "详细版",
-      "description": "完整报告，包含所有分析细节",
+      "name": "Detailed Version",
+      "description": "Complete report with all analysis details",
       "sections": [
-        "执行概要",
-        "研究发现",
-        "创意概览",
-        "评估结果",
-        "Top 5 方案详解",
-        "风险与盲点",
-        "下一步行动",
-        "附录"
+        "Executive Summary",
+        "Research Findings",
+        "Ideas Overview",
+        "Evaluation Results",
+        "Top 5 Solutions Detailed",
+        "Risks & Blind Spots",
+        "Next Steps",
+        "Appendix"
       ],
       "max_length": "~3000 words"
     }
   },
   "templates": {
     "top_idea": {
-      "fields": ["title", "description", "scores", "pros", "cons", "next_steps", "resources"]
+      "fields": [
+        "title",
+        "description",
+        "scores",
+        "pros",
+        "cons",
+        "next_steps",
+        "resources"
+      ]
     },
     "action_item": {
       "fields": ["task", "owner", "deadline", "priority", "status"]
@@ -38,8 +46,8 @@
     },
     "quadrant_chart": {
       "enabled": true,
-      "x_axis": "可行性",
-      "y_axis": "影响力"
+      "x_axis": "Feasibility",
+      "y_axis": "Impact"
     },
     "ranking_chart": {
       "enabled": true,
