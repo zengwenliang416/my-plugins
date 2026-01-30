@@ -1,0 +1,95 @@
+{
+  "format": {
+    "pattern": "<type>/<scope>-<description>",
+    "max_length": 50,
+    "separator": "-",
+    "type_separator": "/"
+  },
+  "type_prefixes": [
+    "feat",
+    "fix",
+    "docs",
+    "style",
+    "refactor",
+    "perf",
+    "test",
+    "build",
+    "ci",
+    "chore",
+    "revert"
+  ],
+  "protected_branches": ["main", "master", "develop", "release/*", "hotfix/*"],
+  "sanitization": {
+    "to_lowercase": true,
+    "replace_patterns": [
+      { "from": " ", "to": "-" },
+      { "from": "_", "to": "-" },
+      { "from": ":", "to": "-" },
+      { "from": "--+", "to": "-", "regex": true }
+    ],
+    "allowed_chars": "a-z0-9-/",
+    "trim_hyphens": true
+  },
+  "stop_words": [
+    "the",
+    "a",
+    "an",
+    "in",
+    "on",
+    "at",
+    "to",
+    "for",
+    "with",
+    "of",
+    "by",
+    "and",
+    "or",
+    "but",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "being",
+    "have",
+    "has",
+    "had",
+    "having",
+    "do",
+    "does",
+    "did",
+    "doing",
+    "will",
+    "would",
+    "could",
+    "should",
+    "may",
+    "might",
+    "this",
+    "that",
+    "these",
+    "those"
+  ],
+  "conflict_resolution": {
+    "suffix_pattern": "-v{n}",
+    "max_suffix": 10
+  },
+  "examples": {
+    "feat": {
+      "scope": "auth",
+      "summary": "Add OAuth integration",
+      "result": "feat/auth-oauth-integration"
+    },
+    "fix": {
+      "scope": "api",
+      "summary": "Fix token validation error",
+      "result": "fix/api-token-validation"
+    },
+    "docs": {
+      "scope": "readme",
+      "summary": "Update installation guide",
+      "result": "docs/readme-installation-guide"
+    }
+  }
+}
