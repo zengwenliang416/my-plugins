@@ -1,13 +1,13 @@
 {
   "status_codes": {
-    "M": { "type": "modified", "description": "文件内容被修改" },
-    "A": { "type": "added", "description": "新添加到暂存区的文件" },
-    "D": { "type": "deleted", "description": "文件被删除" },
-    "R": { "type": "renamed", "description": "文件被重命名" },
-    "C": { "type": "copied", "description": "文件被复制" },
-    "U": { "type": "unmerged", "description": "存在合并冲突" },
-    "??": { "type": "untracked", "description": "未跟踪的新文件" },
-    "!!": { "type": "ignored", "description": "被 .gitignore 忽略的文件" }
+    "M": { "type": "modified", "description": "File content modified" },
+    "A": { "type": "added", "description": "New file added to staging" },
+    "D": { "type": "deleted", "description": "File deleted" },
+    "R": { "type": "renamed", "description": "File renamed" },
+    "C": { "type": "copied", "description": "File copied" },
+    "U": { "type": "unmerged", "description": "Merge conflicts present" },
+    "??": { "type": "untracked", "description": "New untracked file" },
+    "!!": { "type": "ignored", "description": "Ignored by .gitignore" }
   },
   "file_types": {
     "ts": "typescript",

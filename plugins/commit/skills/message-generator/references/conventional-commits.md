@@ -1,12 +1,12 @@
 # Conventional Commits Reference
 
-Conventional Commits 1.0.0 规范及 Emoji 映射。
+Conventional Commits 1.0.0 specification and emoji mapping.
 
 ---
 
-## 1. 格式规范
+## 1. Format
 
-### 1.1 提交消息结构
+### 1.1 Commit message structure
 
 ```
 <type>[optional scope]: <description>
@@ -16,56 +16,56 @@ Conventional Commits 1.0.0 规范及 Emoji 映射。
 [optional footer(s)]
 ```
 
-### 1.2 标题行规则
+### 1.2 Title line rules
 
-- **长度限制**: ≤72 字符（推荐 ≤50 字符）
-- **大小写**: 首字母小写
-- **标点**: 末尾不加句号
-- **语气**: 祈使语气（Add, Fix, Update）
+- **Length**: ≤72 characters (recommended ≤50)
+- **Case**: lowercase first letter
+- **Punctuation**: no trailing period
+- **Mood**: imperative (Add, Fix, Update)
 
 ---
 
-## 2. 类型定义
+## 2. Types
 
-### 2.1 标准类型
+### 2.1 Standard types
 
-| 类型 | 描述 | SemVer 影响 |
-|------|------|-------------|
-| `feat` | 新功能 | MINOR |
-| `fix` | Bug 修复 | PATCH |
-| `docs` | 文档更新 | - |
-| `style` | 代码格式（不影响逻辑） | - |
-| `refactor` | 代码重构（非 feat/fix） | - |
-| `perf` | 性能优化 | PATCH |
-| `test` | 测试相关 | - |
-| `build` | 构建系统/依赖 | - |
-| `ci` | CI/CD 配置 | - |
-| `chore` | 其他杂项 | - |
-| `revert` | 撤销提交 | - |
+| Type | Description | SemVer impact |
+|------|-------------|---------------|
+| `feat` | New feature | MINOR |
+| `fix` | Bug fix | PATCH |
+| `docs` | Documentation | - |
+| `style` | Code style (no logic change) | - |
+| `refactor` | Refactoring (non feat/fix) | - |
+| `perf` | Performance | PATCH |
+| `test` | Tests | - |
+| `build` | Build system/deps | - |
+| `ci` | CI/CD config | - |
+| `chore` | Miscellaneous | - |
+| `revert` | Revert commit | - |
 
 ### 2.2 Breaking Changes
 
-**标记方式**：
+**Marking methods**:
 
 ```
 feat!: add new API (breaking)
 feat(api)!: change response format
 
-# 或在 footer 中
+# Or in footer
 feat: add new API
 
 BREAKING CHANGE: API response format changed
 ```
 
-**SemVer 影响**: MAJOR
+**SemVer impact**: MAJOR
 
 ---
 
-## 3. Emoji 映射
+## 3. Emoji Mapping
 
-### 3.1 类型 Emoji
+### 3.1 Type emoji
 
-| 类型 | Emoji | Unicode |
+| Type | Emoji | Unicode |
 |------|-------|---------|
 | `feat` | ✨ | `:sparkles:` |
 | `fix` | 🐛 | `:bug:` |
@@ -79,54 +79,54 @@ BREAKING CHANGE: API response format changed
 | `chore` | 🔧 | `:wrench:` |
 | `revert` | ⏪ | `:rewind:` |
 
-### 3.2 其他常用 Emoji
+### 3.2 Other common emojis
 
-| 场景 | Emoji | 说明 |
-|------|-------|------|
+| Scenario | Emoji | Description |
+|----------|-------|-------------|
 | Breaking Change | 💥 | `:boom:` |
-| 安全修复 | 🔒 | `:lock:` |
-| 紧急修复 | 🚑 | `:ambulance:` |
+| Security fix | 🔒 | `:lock:` |
+| Hotfix | 🚑 | `:ambulance:` |
 | WIP | 🚧 | `:construction:` |
-| 初始化 | 🎉 | `:tada:` |
-| 配置文件 | ⚙️ | `:gear:` |
-| 数据库 | 🗃️ | `:card_file_box:` |
-| 日志相关 | 🔊 | `:loud_sound:` |
+| Initialization | 🎉 | `:tada:` |
+| Config file | ⚙️ | `:gear:` |
+| Database | 🗃️ | `:card_file_box:` |
+| Logging | 🔊 | `:loud_sound:` |
 | UI/UX | 🎨 | `:art:` |
-| 国际化 | 🌐 | `:globe_with_meridians:` |
+| i18n | 🌐 | `:globe_with_meridians:` |
 
 ---
 
-## 4. Scope 规范
+## 4. Scope
 
-### 4.1 常见 Scope
+### 4.1 Common scopes
 
-| Scope | 适用场景 |
+| Scope | Use case |
 |-------|----------|
-| `api` | API 相关变更 |
-| `auth` | 认证授权 |
-| `ui` | 用户界面 |
-| `db` | 数据库相关 |
-| `config` | 配置相关 |
-| `deps` | 依赖更新 |
-| `core` | 核心模块 |
+| `api` | API-related changes |
+| `auth` | Authentication/authorization |
+| `ui` | User interface |
+| `db` | Database |
+| `config` | Configuration |
+| `deps` | Dependency updates |
+| `core` | Core module |
 
-### 4.2 Scope 命名规则
+### 4.2 Scope naming rules
 
-- 使用 kebab-case：`user-auth`
-- 保持简短：1-2 个单词
-- 避免过于具体：用 `api` 而非 `api-v2-users-endpoint`
+- Use kebab-case: `user-auth`
+- Keep it short: 1-2 words
+- Avoid being too specific: use `api` rather than `api-v2-users-endpoint`
 
 ---
 
-## 5. Body 规范
+## 5. Body
 
-### 5.1 格式要求
+### 5.1 Format requirements
 
-- 空行分隔标题和正文
-- 每行 ≤72 字符
-- 解释"为什么"而非"是什么"
+- Blank line between title and body
+- Each line ≤72 characters
+- Explain "why" not just "what"
 
-### 5.2 示例
+### 5.2 Example
 
 ```
 fix(auth): resolve token refresh race condition
@@ -140,9 +140,9 @@ one refresh operation runs at a time.
 
 ---
 
-## 6. Footer 规范
+## 6. Footer
 
-### 6.1 关联 Issue
+### 6.1 Related issues
 
 ```
 Closes #123
@@ -166,15 +166,15 @@ Co-authored-by: Name <email@example.com>
 
 ---
 
-## 7. 完整示例
+## 7. Full Examples
 
-### 7.1 简单提交
+### 7.1 Simple commit
 
 ```
 feat(auth): add JWT token refresh
 ```
 
-### 7.2 带 Body
+### 7.2 With body
 
 ```
 fix(api): handle null response from external service
@@ -186,7 +186,7 @@ runtime crashes.
 Fixes #234
 ```
 
-### 7.3 Breaking Change
+### 7.3 Breaking change
 
 ```
 feat(api)!: change response format to camelCase
@@ -198,19 +198,4 @@ BREAKING CHANGE: All API response keys are now camelCase.
 Clients using snake_case keys need to update.
 
 Closes #567
-```
-
-### 7.4 带 Emoji
-
-```
-✨ feat(dashboard): add real-time notifications
-
-Implement WebSocket-based notification system for
-instant updates on the dashboard.
-
-- Add NotificationService
-- Integrate Socket.IO
-- Add notification bell component
-
-Closes #890
 ```

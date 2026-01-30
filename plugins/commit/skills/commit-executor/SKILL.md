@@ -1,10 +1,10 @@
 ---
 name: commit-executor
 description: |
-  【触发条件】commit 工作流最后一步：执行 git commit。
-  【核心产出】输出 ${run_dir}/commit-result.json，包含提交哈希和结果。
-  【不触发】生成消息（用 message-generator）、分析变更（用 change-analyzer）。
-  【先问什么】pre-commit hook 失败时，询问是否跳过 hook 或修复问题
+  【Trigger】Final step of the commit workflow: execute git commit.
+  【Core Output】Write ${run_dir}/commit-result.json with commit hash and result.
+  【Not Triggered】Generate message (use message-generator), analyze changes (use change-analyzer).
+  【Ask First】If a pre-commit hook fails, ask whether to skip the hook or fix the issue.
 allowed-tools:
   - Read
   - Write
@@ -14,98 +14,98 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（包含 commit-message.md）
+    description: Runtime directory path (contains commit-message.md)
   - name: options
     type: string
     required: false
-    description: Git commit 选项 JSON（如 '{"no_verify": true, "amend": false}'）
+    description: Git commit options JSON (e.g. '{"no_verify": true, "amend": false}')
 ---
 
-# Commit Executor - 提交执行原子技能
+# Commit Executor - Atomic Commit Execution Skill
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                                 | 触发条件        |
-| --------------------- | ------------------------------------ | --------------- |
-| `sequential-thinking` | 结构化提交执行策略，确保操作安全可靠 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                                  | Trigger        |
+| --------------------- | ---------------------------------------- | -------------- |
+| `sequential-thinking` | Structure commit execution strategy and ensure safety | 🚨 Required every run |
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化提交执行规划（sequential-thinking）
+### Step 0: Structured Execution Plan (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划提交执行策略**
+🚨 **You must first use sequential-thinking to plan the execution strategy.**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划提交执行策略。需要：1) 读取提交信息 2) 解析选项 3) 验证暂存区 4) 构建并执行命令 5) 收集结果并写入",
+  thought: "Plan the commit execution strategy. Need: 1) read commit message 2) parse options 3) verify staging area 4) build and execute command 5) collect results and write",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking steps**:
 
-1. **提交信息读取**：从 commit-message.md 提取标题、正文、Footer
-2. **选项解析**：处理 no_verify、amend、signoff、dry_run 选项
-3. **暂存区验证**：检查是否有暂存变更（amend 模式除外）
-4. **命令执行**：构建 HEREDOC 格式命令并执行 git commit
-5. **结果收集**：获取提交哈希等信息，写入 commit-result.json
-
----
-
-## 职责边界
-
-- **输入**: `run_dir`（包含 `commit-message.md`）+ `options`
-- **输出**: `${run_dir}/commit-result.json`
-- **单一职责**: 只执行 git commit，不做分析，不生成消息
+1. **Read commit message**: extract title, body, footer from commit-message.md
+2. **Parse options**: handle no_verify, amend, signoff, dry_run
+3. **Verify staging area**: check for staged changes (except amend)
+4. **Execute command**: build HEREDOC command and run git commit
+5. **Collect results**: fetch commit hash, write commit-result.json
 
 ---
 
-## 执行流程
+## Responsibility Boundaries
 
-### Step 1: 读取提交信息
+- **Input**: `run_dir` (contains `commit-message.md`) + `options`
+- **Output**: `${run_dir}/commit-result.json`
+- **Single responsibility**: only execute git commit; no analysis, no message generation
 
-读取 `${run_dir}/commit-message.md`，提取：
+---
 
-- 标题（`## 标题` 下的内容）
-- 正文（`## 正文` 下的内容）
-- Footer（`## Footer` 下的内容，如有）
+## Execution Flow
 
-### Step 2: 解析选项
+### Step 1: Read commit message
 
-从 `options` 参数解析（如有）：
+Read `${run_dir}/commit-message.md` and extract:
 
-| 选项        | 说明               | 默认值 |
-| ----------- | ------------------ | ------ |
-| `no_verify` | 跳过 git hooks     | false  |
-| `amend`     | 修改上次提交       | false  |
-| `signoff`   | 添加 Signed-off-by | false  |
-| `dry_run`   | 模拟执行           | false  |
+- Title (content under `## Title`)
+- Body (content under `## Body`)
+- Footer (content under `## Footer`, if any)
 
-### Step 3: 验证暂存区
+### Step 2: Parse options
+
+Parse from `options` (if provided):
+
+| Option      | Description         | Default |
+| ----------- | ------------------- | ------- |
+| `no_verify` | Skip git hooks      | false   |
+| `amend`     | Amend last commit   | false   |
+| `signoff`   | Add Signed-off-by   | false   |
+| `dry_run`   | Dry run only        | false   |
+
+### Step 3: Verify staging area
 
 ```bash
-# 检查是否有暂存变更（amend 模式除外）
+# Check for staged changes (except amend)
 git diff --cached --quiet
 ```
 
-如果没有暂存变更且不是 amend 模式，报错退出。
+If there are no staged changes and it is not amend mode, error out.
 
-### Step 4: 构建提交命令
+### Step 4: Build commit command
 
-构建 git commit 命令：
+Build the git commit command:
 
 ```bash
 git commit \
-  -m "标题" \
-  -m "正文" \
+  -m "Title" \
+  -m "Body" \
   ${no_verify:+--no-verify} \
   ${amend:+--amend} \
   ${signoff:+--signoff}
 ```
 
-**重要**：使用 HEREDOC 格式传递多行消息：
+**Important**: use HEREDOC to pass multi-line message:
 
 ```bash
 git commit -m "$(cat <<'EOF'
@@ -121,38 +121,38 @@ EOF
 )"
 ```
 
-### Step 5: 执行提交
+### Step 5: Execute commit
 
-执行 git commit 命令。
+Run the git commit command.
 
-**如果 dry_run=true**：
+**If dry_run=true**:
 
-- 不执行实际提交
-- 输出模拟结果
+- Do not perform the actual commit
+- Output simulated results
 
-### Step 6: 收集结果
+### Step 6: Collect results
 
-提交成功后，获取结果信息：
+After a successful commit, collect:
 
 ```bash
-# 获取提交哈希
+# Get commit hash
 git rev-parse HEAD
 
-# 获取简短哈希
+# Get short hash
 git rev-parse --short HEAD
 
-# 获取当前分支
+# Get current branch
 git branch --show-current
 
-# 获取变更统计
+# Get change stats
 git show --stat --oneline HEAD
 ```
 
-### Step 7: 写入结果
+### Step 7: Write results
 
-使用 Write 工具将结果写入 `${run_dir}/commit-result.json`：
+Use the Write tool to write `${run_dir}/commit-result.json`:
 
-**成功示例**：
+**Success example**:
 
 ```json
 {
@@ -168,65 +168,65 @@ git show --stat --oneline HEAD
 }
 ```
 
-**失败示例**：
+**Failure example**:
 
 ```json
 {
   "success": false,
   "error": "hook_failed",
-  "error_message": "pre-commit hook 返回非零退出码",
+  "error_message": "pre-commit hook returned non-zero exit code",
   "hook_output": "ESLint found 3 errors...",
-  "suggestion": "使用 --no-verify 跳过 hooks，或修复错误后重试"
+  "suggestion": "Use --no-verify to skip hooks, or fix errors and retry"
 }
 ```
 
 ---
 
-## 错误处理
+## Error Handling
 
-| 错误类型      | 处理方式                       |
-| ------------- | ------------------------------ |
-| 不是 Git 仓库 | 报错退出                       |
-| 无暂存变更    | 报错退出（amend 除外）         |
-| Hook 失败     | 记录错误，建议使用 --no-verify |
-| 冲突          | 报错退出，提示解决冲突         |
-
----
-
-## 返回值
-
-执行完成后，返回：
-
-**成功**：
-
-```
-✅ 提交成功！
-
-📝 消息: ${commit_message_title}
-📦 哈希: ${commit_hash_short}
-🔀 分支: ${branch}
-📊 变更: ${files_committed} 个文件，+${insertions}/-${deletions} 行
-
-输出: ${run_dir}/commit-result.json
-```
-
-**失败**：
-
-```
-❌ 提交失败
-
-错误: ${error_message}
-建议: ${suggestion}
-
-输出: ${run_dir}/commit-result.json
-```
+| Error type     | Handling                                  |
+| -------------- | ----------------------------------------- |
+| Not a Git repo | Error out                                 |
+| No staged changes | Error out (except amend)              |
+| Hook failure   | Record error; suggest --no-verify         |
+| Conflicts      | Error out; instruct to resolve conflicts  |
 
 ---
 
-## 约束
+## Return Value
 
-- 不做变更分析（交给 change-analyzer）
-- 不生成提交消息（交给 message-generator）
-- 使用 HEREDOC 格式传递多行消息，确保格式正确
-- 不使用 `-i` 等交互式选项
-- 不执行 `git push`（由用户决定）
+After execution, return:
+
+**Success**:
+
+```
+✅ Commit succeeded!
+
+📝 Message: ${commit_message_title}
+📦 Hash: ${commit_hash_short}
+🔀 Branch: ${branch}
+📊 Changes: ${files_committed} files, +${insertions}/-${deletions} lines
+
+Output: ${run_dir}/commit-result.json
+```
+
+**Failure**:
+
+```
+❌ Commit failed
+
+Error: ${error_message}
+Suggestion: ${suggestion}
+
+Output: ${run_dir}/commit-result.json
+```
+
+---
+
+## Constraints
+
+- Do not analyze changes (handled by change-analyzer)
+- Do not generate commit messages (handled by message-generator)
+- Use HEREDOC for multi-line messages to ensure correct format
+- Do not use interactive options like `-i`
+- Do not run `git push` (user decides)

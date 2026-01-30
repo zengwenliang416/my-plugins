@@ -2,7 +2,7 @@
   "types": {
     "feat": {
       "emoji": "✨",
-      "description": "新功能",
+      "description": "New feature",
       "templates": [
         "feat({scope}): add {feature}",
         "feat({scope}): implement {feature}",
@@ -11,7 +11,7 @@
     },
     "fix": {
       "emoji": "🐛",
-      "description": "Bug 修复",
+      "description": "Bug fix",
       "templates": [
         "fix({scope}): resolve {issue}",
         "fix({scope}): correct {issue}",
@@ -20,7 +20,7 @@
     },
     "docs": {
       "emoji": "📝",
-      "description": "文档更新",
+      "description": "Documentation update",
       "templates": [
         "docs({scope}): update {document}",
         "docs({scope}): add {document}",
@@ -29,7 +29,7 @@
     },
     "style": {
       "emoji": "💄",
-      "description": "代码格式",
+      "description": "Code style",
       "templates": [
         "style({scope}): format {target}",
         "style({scope}): fix linting in {target}"
@@ -37,7 +37,7 @@
     },
     "refactor": {
       "emoji": "♻️",
-      "description": "代码重构",
+      "description": "Refactoring",
       "templates": [
         "refactor({scope}): restructure {target}",
         "refactor({scope}): simplify {target}",
@@ -46,7 +46,7 @@
     },
     "perf": {
       "emoji": "⚡️",
-      "description": "性能优化",
+      "description": "Performance optimization",
       "templates": [
         "perf({scope}): optimize {target}",
         "perf({scope}): improve {target} performance"
@@ -54,7 +54,7 @@
     },
     "test": {
       "emoji": "✅",
-      "description": "测试相关",
+      "description": "Tests",
       "templates": [
         "test({scope}): add tests for {target}",
         "test({scope}): update tests for {target}"
@@ -62,7 +62,7 @@
     },
     "build": {
       "emoji": "📦",
-      "description": "构建系统",
+      "description": "Build system",
       "templates": [
         "build({scope}): update {target}",
         "build({scope}): configure {target}"
@@ -70,7 +70,7 @@
     },
     "ci": {
       "emoji": "👷",
-      "description": "CI 配置",
+      "description": "CI configuration",
       "templates": [
         "ci({scope}): update {target}",
         "ci({scope}): add {target}"
@@ -78,7 +78,7 @@
     },
     "chore": {
       "emoji": "🔧",
-      "description": "其他更改",
+      "description": "Other changes",
       "templates": [
         "chore({scope}): update {target}",
         "chore({scope}): configure {target}"
@@ -86,7 +86,7 @@
     },
     "revert": {
       "emoji": "⏪",
-      "description": "回滚提交",
+      "description": "Revert commit",
       "templates": [
         "revert: {original_commit}"
       ]

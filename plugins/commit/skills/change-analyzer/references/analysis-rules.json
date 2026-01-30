@@ -1,37 +1,37 @@
 {
   "type_inference_rules": [
     {
-      "condition": "新增文件且为功能代码",
+      "condition": "New files that are feature code",
       "type": "feat",
       "confidence": "high"
     },
     {
-      "condition": "修改现有代码且修复问题",
+      "condition": "Modify existing code to fix an issue",
       "type": "fix",
       "confidence": "medium"
     },
     {
-      "condition": "仅修改文档文件",
+      "condition": "Only documentation files changed",
       "type": "docs",
       "confidence": "high"
     },
     {
-      "condition": "仅修改测试文件",
+      "condition": "Only test files changed",
       "type": "test",
       "confidence": "high"
     },
     {
-      "condition": "修改配置文件",
+      "condition": "Configuration files changed",
       "type": "chore",
       "confidence": "medium"
     },
     {
-      "condition": "重命名或移动文件",
+      "condition": "Rename or move files",
       "type": "refactor",
       "confidence": "medium"
     },
     {
-      "condition": "删除无用代码",
+      "condition": "Delete unused code",
       "type": "refactor",
       "confidence": "medium"
     }
@@ -39,23 +39,23 @@
   "split_rules": [
     {
       "name": "multi_scope",
-      "condition": "涉及 2+ 个不同作用域",
-      "action": "建议拆分"
+      "condition": "Involves 2+ distinct scopes",
+      "action": "Recommend split"
     },
     {
       "name": "large_change",
-      "condition": "文件数 > 10 或变更行数 > 300",
-      "action": "建议拆分"
+      "condition": "Files > 10 or lines changed > 300",
+      "action": "Recommend split"
     },
     {
       "name": "mixed_types",
-      "condition": "同时有 feat + fix",
-      "action": "可选拆分"
+      "condition": "feat and fix together",
+      "action": "Optional split"
     },
     {
       "name": "add_delete_mix",
-      "condition": "同时有新增和删除文件",
-      "action": "建议拆分"
+      "condition": "New and deleted files together",
+      "action": "Recommend split"
     }
   ],
   "complexity_thresholds": {

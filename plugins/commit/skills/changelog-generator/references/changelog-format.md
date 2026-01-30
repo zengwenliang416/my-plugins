@@ -1,12 +1,12 @@
 # Changelog Format Reference
 
-基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 规范。
+Based on the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) specification.
 
 ---
 
-## 1. 文件结构
+## 1. File structure
 
-### 1.1 基本结构
+### 1.1 Basic structure
 
 ```markdown
 # Changelog
@@ -39,22 +39,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## 2. 变更类型
+## 2. Change types
 
-### 2.1 类型定义（按优先级排序）
+### 2.1 Type definitions (in priority order)
 
-| 类型 | 描述 | 对应 Conventional Commit |
-|------|------|--------------------------|
-| `Changed` | 现有功能的变更 | `refactor`, `perf`, `style` |
-| `Added` | 新增功能 | `feat` |
-| `Deprecated` | 即将移除的功能 | - |
-| `Removed` | 已移除的功能 | `feat` (删除) |
-| `Fixed` | Bug 修复 | `fix` |
-| `Security` | 安全漏洞修复 | `fix` (安全相关) |
+| Type | Description | Conventional Commit mapping |
+|------|-------------|-----------------------------|
+| `Changed` | Changes to existing functionality | `refactor`, `perf`, `style` |
+| `Added` | New features | `feat` |
+| `Deprecated` | Features to be removed | - |
+| `Removed` | Removed features | `feat` (removal) |
+| `Fixed` | Bug fixes | `fix` |
+| `Security` | Security fixes | `fix` (security) |
 
-### 2.2 类型映射
+### 2.2 Type mapping
 
-| Conventional Commit | Changelog 类型 |
+| Conventional Commit | Changelog Type |
 |---------------------|----------------|
 | `feat` | `Added` |
 | `fix` | `Fixed` |
@@ -62,39 +62,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 | `refactor` | `Changed` |
 | `perf` | `Changed` |
 | `style` | `Changed` |
-| `docs` | - (通常不记录) |
-| `test` | - (通常不记录) |
-| `ci` | - (通常不记录) |
-| `chore` | - (通常不记录) |
+| `docs` | - (usually not recorded) |
+| `test` | - (usually not recorded) |
+| `ci` | - (usually not recorded) |
+| `chore` | - (usually not recorded) |
 | `revert` | `Removed` |
-| `BREAKING CHANGE` | `Changed` (带前缀) |
+| `BREAKING CHANGE` | `Changed` (with prefix) |
 
 ---
 
-## 3. 条目格式
+## 3. Entry format
 
-### 3.1 基本格式
+### 3.1 Basic format
 
 ```markdown
 - Add user authentication with JWT tokens
 ```
 
-### 3.2 带引用
+### 3.2 With references
 
 ```markdown
 - Add user authentication with JWT tokens ([#123](link))
 ```
 
-### 3.3 Breaking Changes
+### 3.3 Breaking changes
 
 ```markdown
 - **Breaking:** Change API response format from snake_case to camelCase
 ```
 
-### 3.4 祈使语气动词
+### 3.4 Imperative verbs
 
-| 类型 | 推荐动词 |
-|------|----------|
+| Type | Recommended verbs |
+|------|------------------|
 | Added | Add, Introduce, Implement |
 | Changed | Change, Update, Refactor, Improve, Optimize |
 | Deprecated | Deprecate, Mark as deprecated |
@@ -104,32 +104,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## 4. 版本号规范
+## 4. Versioning
 
 ### 4.1 Semantic Versioning
 
 ```
 MAJOR.MINOR.PATCH
 
-MAJOR: 不兼容的 API 变更
-MINOR: 向后兼容的功能新增
-PATCH: 向后兼容的 Bug 修复
+MAJOR: incompatible API changes
+MINOR: backward-compatible feature additions
+PATCH: backward-compatible bug fixes
 ```
 
-### 4.2 日期格式
+### 4.2 Date format
 
 ```
 YYYY-MM-DD (ISO 8601)
 
-正确: 2026-01-15
-错误: 01/15/2026, Jan 15 2026
+Correct: 2026-01-15
+Wrong: 01/15/2026, Jan 15 2026
 ```
 
 ---
 
-## 5. 版本链接
+## 5. Version links
 
-### 5.1 GitHub 格式
+### 5.1 GitHub format
 
 ```markdown
 [Unreleased]: https://github.com/user/repo/compare/v1.1.0...HEAD
@@ -137,7 +137,7 @@ YYYY-MM-DD (ISO 8601)
 [1.0.0]: https://github.com/user/repo/releases/tag/v1.0.0
 ```
 
-### 5.2 GitLab 格式
+### 5.2 GitLab format
 
 ```markdown
 [Unreleased]: https://gitlab.com/user/repo/-/compare/v1.1.0...HEAD
@@ -147,23 +147,23 @@ YYYY-MM-DD (ISO 8601)
 
 ---
 
-## 6. 更新流程
+## 6. Update process
 
-### 6.1 添加到 Unreleased
+### 6.1 Add to Unreleased
 
 ```markdown
 ## [Unreleased]
 
 ### Added
 
-- Add new feature X  <!-- 新增条目 -->
+- Add new feature X  <!-- new entry -->
 
 ### Fixed
 
 - Fix existing bug Y
 ```
 
-### 6.2 发布新版本
+### 6.2 Release a new version
 
 **Before:**
 ```markdown
@@ -189,11 +189,11 @@ YYYY-MM-DD (ISO 8601)
 
 ---
 
-## 7. 批量模式
+## 7. Batch mode
 
-### 7.1 多提交汇总
+### 7.1 Multiple commits summary
 
-当一次 changelog 更新包含多个提交时：
+When a single changelog update includes multiple commits:
 
 ```markdown
 ### Added
@@ -205,7 +205,7 @@ YYYY-MM-DD (ISO 8601)
 - Add app entry and main interface (app)
 ```
 
-### 7.2 按作用域分组
+### 7.2 Group by scope
 
 ```markdown
 ### Added
@@ -221,28 +221,28 @@ YYYY-MM-DD (ISO 8601)
 
 ---
 
-## 8. 最佳实践
+## 8. Best practices
 
-### 8.1 应该记录
+### 8.1 Should record
 
-- 所有用户可感知的变更
-- API 变更（新增、修改、删除）
-- 配置变更
-- 重要的性能改进
-- 安全修复
+- User-visible changes
+- API changes (add/modify/remove)
+- Configuration changes
+- Important performance improvements
+- Security fixes
 
-### 8.2 不应记录
+### 8.2 Should not record
 
-- 内部重构（除非影响 API）
-- 代码格式化
-- 测试变更
-- CI/CD 变更
-- 依赖更新（除非有安全影响）
+- Internal refactors (unless they affect API)
+- Code formatting
+- Test changes
+- CI/CD changes
+- Dependency updates (unless security-related)
 
-### 8.3 书写规范
+### 8.3 Writing guidelines
 
-- 使用祈使语气
-- 面向用户而非开发者
-- 简洁但信息完整
-- 重要变更放在前面
-- Breaking Changes 必须突出显示
+- Use imperative mood
+- Write for users, not developers
+- Be concise but complete
+- Put important changes first
+- Breaking changes must be highlighted

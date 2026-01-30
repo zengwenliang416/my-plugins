@@ -1,10 +1,10 @@
 ---
 name: change-collector
 description: |
-  【触发条件】commit 工作流第一步：收集 git 变更信息。
-  【核心产出】输出 ${run_dir}/changes-raw.json，包含暂存变更、未暂存变更、统计信息。
-  【不触发】分析变更（用 change-analyzer）、生成消息（用 message-generator）。
-  【先问什么】当前目录不是 Git 仓库时，询问是否初始化
+  【Trigger】Step 1 of the commit workflow: collect git change information.
+  【Core Output】Write ${run_dir}/changes-raw.json, including staged changes, unstaged changes, and stats.
+  【Not Triggered】Change analysis (use change-analyzer), message generation (use message-generator).
+  【Ask First】If the current directory is not a Git repository, ask whether to initialize.
 allowed-tools:
   - Bash
   - Write
@@ -14,107 +14,107 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（由 commit command 传入）
+    description: Runtime directory path (passed from the commit command)
 ---
 
-# Change Collector - 变更收集原子技能
+# Change Collector - Atomic Change Collection Skill
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                               | 触发条件        |
-| --------------------- | ---------------------------------- | --------------- |
-| `sequential-thinking` | 结构化变更收集策略，确保数据完整性 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                               | Trigger        |
+| --------------------- | ------------------------------------- | -------------- |
+| `sequential-thinking` | Structure the collection strategy and ensure data completeness | 🚨 Required every run |
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化变更收集规划（sequential-thinking）
+### Step 0: Structured Collection Plan (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划变更收集策略**
+🚨 **You must first use sequential-thinking to plan the collection strategy.**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划变更收集策略。需要：1) 创建运行目录 2) 验证 Git 仓库 3) 收集变更信息 4) 解析状态构建 JSON 5) 写入结果文件",
+  thought: "Plan the change collection strategy. Need: 1) create runtime dir 2) verify Git repo 3) collect change data 4) parse status and build JSON 5) write output file",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking steps**:
 
-1. **运行目录创建**：确保 run_dir 存在
-2. **Git 仓库验证**：检查是否在 Git 仓库中，处理初始化
-3. **变更信息收集**：执行 git status/diff 命令
-4. **JSON 构建**：解析 git 输出，构建结构化数据
-5. **结果写入**：写入 changes-raw.json
-
----
-
-## 职责边界
-
-- **输入**: `run_dir`
-- **输出**: `${run_dir}/changes-raw.json`
-- **单一职责**: 只收集 git 变更数据，不做分析
+1. **Create runtime dir**: ensure run_dir exists
+2. **Verify Git repo**: check whether we are inside a Git repo and handle initialization
+3. **Collect change data**: run git status/diff commands
+4. **Build JSON**: parse git output into structured data
+5. **Write results**: write changes-raw.json
 
 ---
 
-## 执行流程
+## Responsibility Boundaries
 
-### Step 1: 创建运行目录
+- **Input**: `run_dir`
+- **Output**: `${run_dir}/changes-raw.json`
+- **Single responsibility**: only collect git change data; no analysis
+
+---
+
+## Execution Flow
+
+### Step 1: Create runtime directory
 
 ```bash
 mkdir -p ${run_dir}
 ```
 
-### Step 2: 检查 Git 仓库状态
+### Step 2: Check Git repository status
 
 ```bash
-# 验证是否在 Git 仓库中
+# Verify we are inside a Git repo
 git rev-parse --is-inside-work-tree
 ```
 
-**如果不是 Git 仓库**，使用 AskUserQuestion 询问：
+**If not a Git repo**, use AskUserQuestion:
 
 ```
-问题: 当前目录不是 Git 仓库，是否需要初始化？
-选项:
-  - 初始化新仓库 (git init)
-  - 取消操作
+Question: The current directory is not a Git repository. Initialize?
+Options:
+  - Initialize a new repo (git init)
+  - Cancel
 ```
 
-**如果用户选择初始化**：
+**If the user chooses to initialize**:
 
 ```bash
 git init
 ```
 
-**继续获取分支信息**：
+**Continue to get branch info**:
 
 ```bash
-# 获取当前分支
+# Get current branch
 git branch --show-current
 ```
 
-**注意**：新仓库可能没有分支（无提交），此时 branch 为空，记录为 `"branch": null`
+**Note**: A new repo may have no branch (no commits). In that case, branch is empty and recorded as `"branch": null`.
 
-### Step 3: 收集变更信息
+### Step 3: Collect change information
 
-执行以下 git 命令：
+Run the following git commands:
 
 ```bash
-# 1. 获取文件状态（porcelain 格式）
+# 1. Get file status (porcelain format)
 git status --porcelain
 
-# 2. 获取暂存区 diff 统计
+# 2. Get staged diff stats
 git diff --staged --numstat
 
-# 3. 获取暂存区文件列表
+# 3. Get staged file list
 git diff --staged --name-status
 ```
 
-### Step 4: 解析并构建 JSON
+### Step 4: Parse and build JSON
 
-根据 git 输出，构建以下结构的 JSON：
+Build JSON with the following structure based on git output:
 
 ```json
 {
@@ -142,39 +142,39 @@ git diff --staged --name-status
 }
 ```
 
-**字段说明：**
+**Field descriptions:**
 
-| 字段        | 说明                                                             |
-| ----------- | ---------------------------------------------------------------- |
-| `status`    | Git 状态码（M=修改, A=新增, D=删除, R=重命名）                   |
-| `type`      | 变更类型（modified, added, deleted, renamed）                    |
-| `file_type` | 文件类型（根据扩展名：ts→typescript, py→python 等）              |
-| `scope`     | 作用域（路径第二级目录，如 src/components/Foo.tsx → components） |
+| Field       | Description                                                                 |
+| ----------- | --------------------------------------------------------------------------- |
+| `status`    | Git status code (M=modified, A=added, D=deleted, R=renamed)                  |
+| `type`      | Change type (modified, added, deleted, renamed)                             |
+| `file_type` | File type (by extension: ts→typescript, py→python, etc.)                     |
+| `scope`     | Scope (second-level directory, e.g. src/components/Foo.tsx → components)    |
 
-### Step 5: 写入结果
+### Step 5: Write results
 
-使用 Write 工具将 JSON 写入 `${run_dir}/changes-raw.json`
+Use the Write tool to write JSON to `${run_dir}/changes-raw.json`.
 
 ---
 
-## 文件类型映射
+## File Type Mapping
 
-| 扩展名    | file_type  |
-| --------- | ---------- |
-| ts, tsx   | typescript |
-| js, jsx   | javascript |
-| py        | python     |
-| go        | go         |
-| rs        | rust       |
-| md, mdx   | markdown   |
-| json      | json       |
-| yaml, yml | yaml       |
-| sh, bash  | shell      |
-| 其他      | other      |
+| Extension  | file_type  |
+| ---------- | ---------- |
+| ts, tsx    | typescript |
+| js, jsx    | javascript |
+| py         | python     |
+| go         | go         |
+| rs         | rust       |
+| md, mdx    | markdown   |
+| json       | json       |
+| yaml, yml  | yaml       |
+| sh, bash   | shell      |
+| other      | other      |
 
-## Git 状态码映射
+## Git Status Code Mapping
 
-| 状态码 | type      |
+| Status | type      |
 | ------ | --------- |
 | `M`    | modified  |
 | `A`    | added     |
@@ -185,37 +185,37 @@ git diff --staged --name-status
 
 ---
 
-## 返回值
+## Return Value
 
-执行完成后，返回：
+After execution, return:
 
 ```
-📊 变更收集完成
+📊 Change collection completed
 
-分支: ${branch}
-已暂存: ${staged_count} 个文件
-未暂存: ${unstaged_count} 个文件
-未跟踪: ${untracked_count} 个文件
-变更统计: +${insertions}/-${deletions} 行
+Branch: ${branch}
+Staged: ${staged_count} files
+Unstaged: ${unstaged_count} files
+Untracked: ${untracked_count} files
+Diff stats: +${insertions}/-${deletions} lines
 
-输出: ${run_dir}/changes-raw.json
+Output: ${run_dir}/changes-raw.json
 ```
 
 ---
 
-## 错误处理
+## Error Handling
 
-| 情况          | 处理                               |
-| ------------- | ---------------------------------- |
-| 不是 Git 仓库 | 询问用户是否初始化，用户拒绝则退出 |
-| 没有暂存变更  | 正常输出，has_staged=false         |
-| git 命令失败  | 报错退出                           |
-| 新仓库无分支  | 正常输出，branch=null              |
+| Case           | Handling                              |
+| -------------- | ------------------------------------- |
+| Not a Git repo | Ask whether to initialize; exit if user declines |
+| No staged changes | Output normally; has_staged=false  |
+| Git command failed | Error out                           |
+| New repo without branch | Output normally; branch=null    |
 
 ---
 
-## 约束
+## Constraints
 
-- 不做变更分析（交给 change-analyzer）
-- 不生成提交消息（交给 message-generator）
-- 只收集数据，保持原子性
+- Do not analyze changes (use change-analyzer)
+- Do not generate commit messages (use message-generator)
+- Only collect data; keep it atomic

@@ -1,11 +1,11 @@
 ---
 name: changelog-generator
 description: |
-  【触发条件】commit 工作流 Phase 5.5：必须执行，更新 CHANGELOG.md。
-  【核心产出】更新项目根目录的 CHANGELOG.md，添加新的变更条目。
-  【不触发】生成提交消息（用 message-generator）、执行提交（用 commit-executor）。
-  【先问什么】发布版本时，询问版本号（不传则添加到 Unreleased）
-  【🚨 强制】除非用户指定 --no-changelog，否则必须执行此 Skill。
+  【Trigger】Commit workflow Phase 5.5: must run to update CHANGELOG.md.
+  【Core Output】Update CHANGELOG.md at project root with new change entries.
+  【Not Triggered】Generate commit message (use message-generator), execute commit (use commit-executor).
+  【Ask First】When releasing a version, ask for the version number (if not provided, add to Unreleased).
+  【🚨 Mandatory】Must run unless user specifies --no-changelog.
 allowed-tools:
   - Read
   - Write
@@ -15,147 +15,147 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（包含 changes-analysis.json 和 commit-message.md）
+    description: Runtime directory path (contains changes-analysis.json and commit-message.md)
   - name: version
     type: string
     required: false
-    description: 版本号（如 "1.2.0"），不传则添加到 Unreleased 部分
+    description: Version number (e.g. "1.2.0"); if omitted, add to Unreleased
   - name: commits
     type: string
     required: false
-    description: 批量提交模式 - JSON 格式的提交列表，如 '[{"type":"feat","scope":"api","description":"..."}]'
+    description: Batch commit mode - JSON list of commits, e.g. '[{"type":"feat","scope":"api","description":"..."}]'
 ---
 
-# Changelog Generator - 变更日志生成原子技能
+# Changelog Generator - Atomic Changelog Update Skill
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                                    | 触发条件        |
-| --------------------- | --------------------------------------- | --------------- |
-| `sequential-thinking` | 结构化 Changelog 更新策略，确保格式规范 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                                    | Trigger        |
+| --------------------- | ------------------------------------------ | -------------- |
+| `sequential-thinking` | Structure Changelog update strategy and ensure format compliance | 🚨 Required every run |
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化 Changelog 更新规划（sequential-thinking）
+### Step 0: Structured Changelog Plan (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划 Changelog 更新策略**
+🚨 **You must first use sequential-thinking to plan the Changelog update strategy.**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划 Changelog 更新策略。需要：1) 判断模式（单次/批量） 2) 检查现有 CHANGELOG.md 3) 确定变更类型 4) 生成条目内容 5) 更新文件并写入记录",
+  thought: "Plan the Changelog update strategy. Need: 1) determine mode (single/batch) 2) check existing CHANGELOG.md 3) map change types 4) generate entry content 5) update file and write record",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking steps**:
 
-1. **模式判断**：检查 commits 参数，确定单次或批量模式
-2. **文件检查**：检查 CHANGELOG.md 是否存在，必要时创建
-3. **类型映射**：将 Conventional Commit 类型映射到 Changelog 类型
-4. **条目生成**：生成符合 Keep a Changelog 规范的条目
-5. **文件更新**：更新 CHANGELOG.md 并写入 changelog-entry.md 记录
-
----
-
-## 🚨🚨🚨 强制执行规则（不可跳过）
-
-**此 Skill 是 commit 工作流的必须步骤（Phase 5.5）**
-
-**禁止以下行为：**
-
-- ❌ 跳过此 Skill（除非用户指定 --no-changelog）
-- ❌ 不创建 CHANGELOG.md（如果不存在）
-- ❌ 不更新 CHANGELOG.md（如果已存在）
-- ❌ 忘记写入 changelog-entry.md 记录
-
-**必须遵守：**
-
-- ✅ 读取 changes-analysis.json 和 commit-message.md
-- ✅ 如果 CHANGELOG.md 不存在，创建它
-- ✅ 将变更条目添加到 [Unreleased] 部分
-- ✅ 写入 ${run_dir}/changelog-entry.md
+1. **Mode detection**: check commits parameter to determine single or batch
+2. **File check**: check whether CHANGELOG.md exists; create if necessary
+3. **Type mapping**: map Conventional Commit types to Changelog types
+4. **Entry generation**: generate entries compliant with Keep a Changelog
+5. **File update**: update CHANGELOG.md and write changelog-entry.md record
 
 ---
 
-## 职责边界
+## 🚨🚨🚨 Mandatory Rules (Must Not Be Skipped)
 
-- **输入**: `run_dir`（包含 `changes-analysis.json`、`commit-message.md`）+ `version`
-- **输出**: 更新 `CHANGELOG.md`
-- **单一职责**: 只更新变更日志，不做分析，不执行提交
+**This Skill is required in the commit workflow (Phase 5.5).**
 
----
+**The following are forbidden:**
 
-## 规范参考
+- ❌ Skip this Skill (unless user specifies --no-changelog)
+- ❌ Do not create CHANGELOG.md (if it does not exist)
+- ❌ Do not update CHANGELOG.md (if it exists)
+- ❌ Forget to write the changelog-entry.md record
 
-基于 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 和 [Common Changelog](https://common-changelog.org/) 最佳实践。
+**You must obey:**
 
-### 变更类型映射
-
-| Conventional Commit | Changelog 类型                   |
-| ------------------- | -------------------------------- |
-| feat                | Added                            |
-| fix                 | Fixed                            |
-| docs                | Changed                          |
-| style               | Changed                          |
-| refactor            | Changed                          |
-| perf                | Changed                          |
-| test                | -（通常不记录）                  |
-| build               | Changed                          |
-| ci                  | -（通常不记录）                  |
-| chore               | -（通常不记录）                  |
-| revert              | Removed                          |
-| BREAKING CHANGE     | Changed（带 **Breaking:** 前缀） |
-
-### Changelog 类型优先级
-
-1. **Changed** - 功能变更（最先列出）
-2. **Added** - 新增功能
-3. **Deprecated** - 即将移除的功能
-4. **Removed** - 已移除的功能
-5. **Fixed** - Bug 修复
-6. **Security** - 安全修复
+- ✅ Read changes-analysis.json and commit-message.md
+- ✅ Create CHANGELOG.md if it does not exist
+- ✅ Add entries under [Unreleased]
+- ✅ Write ${run_dir}/changelog-entry.md
 
 ---
 
-## 执行流程
+## Responsibility Boundaries
 
-### Step 1: 判断模式
+- **Input**: `run_dir` (contains `changes-analysis.json`, `commit-message.md`) + `version`
+- **Output**: Updated `CHANGELOG.md`
+- **Single responsibility**: only update changelog; no analysis, no commit execution
 
-**检查 `commits` 参数**：
+---
 
-- 如果有 `commits` 参数 → **批量模式**：从参数解析提交列表
-- 如果没有 → **单次模式**：读取 `run_dir` 中的分析结果
+## References
 
-### Step 1A: 单次模式 - 读取分析结果
+Based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Common Changelog](https://common-changelog.org/) best practices.
 
-读取 `${run_dir}/changes-analysis.json` 和 `${run_dir}/commit-message.md`，提取：
+### Change Type Mapping
 
-- `primary_type`（从 analysis）
-- `commit_message_title`（从 message）
-- `files_by_type`（从 analysis）
+| Conventional Commit | Changelog Type                       |
+| ------------------- | ------------------------------------ |
+| feat                | Added                                |
+| fix                 | Fixed                                |
+| docs                | Changed                              |
+| style               | Changed                              |
+| refactor            | Changed                              |
+| perf                | Changed                              |
+| test                | - (usually not recorded)             |
+| build               | Changed                              |
+| ci                  | - (usually not recorded)             |
+| chore               | - (usually not recorded)             |
+| revert              | Removed                              |
+| BREAKING CHANGE     | Changed (with **Breaking:** prefix)  |
 
-### Step 1B: 批量模式 - 解析提交列表
+### Changelog Type Priority
 
-从 `commits` 参数解析 JSON：
+1. **Changed** - functional changes (listed first)
+2. **Added** - new features
+3. **Deprecated** - features to be removed
+4. **Removed** - removed features
+5. **Fixed** - bug fixes
+6. **Security** - security fixes
+
+---
+
+## Execution Flow
+
+### Step 1: Determine mode
+
+**Check `commits` parameter**:
+
+- If `commits` exists → **Batch mode**: parse commit list from parameter
+- If not → **Single mode**: read analysis results from `run_dir`
+
+### Step 1A: Single mode - read analysis results
+
+Read `${run_dir}/changes-analysis.json` and `${run_dir}/commit-message.md`, extract:
+
+- `primary_type` (from analysis)
+- `commit_message_title` (from message)
+- `files_by_type` (from analysis)
+
+### Step 1B: Batch mode - parse commit list
+
+Parse JSON from `commits` parameter:
 
 ```json
 [
-  { "type": "chore", "scope": "project", "description": "初始化项目脚手架" },
-  { "type": "feat", "scope": "types", "description": "添加 Todo 类型定义" },
-  { "type": "feat", "scope": "hooks", "description": "添加状态管理 Hook" }
+  { "type": "chore", "scope": "project", "description": "Initialize project scaffold" },
+  { "type": "feat", "scope": "types", "description": "Add Todo type definitions" },
+  { "type": "feat", "scope": "hooks", "description": "Add state management hook" }
 ]
 ```
 
-### Step 2: 检查现有 CHANGELOG.md
+### Step 2: Check existing CHANGELOG.md
 
 ```bash
-# 检查项目根目录是否存在 CHANGELOG.md
+# Check whether CHANGELOG.md exists at project root
 ls CHANGELOG.md 2>/dev/null
 ```
 
-**如果不存在**，创建初始结构：
+**If it does not exist**, create initial structure:
 
 ```markdown
 # Changelog
@@ -168,9 +168,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ```
 
-### Step 3: 确定变更类型
+### Step 3: Determine change type
 
-根据 `primary_type` 映射到 Changelog 类型：
+Map `primary_type` to Changelog type:
 
 ```
 feat      → Added
@@ -178,19 +178,19 @@ fix       → Fixed
 refactor  → Changed
 perf      → Changed
 docs      → Changed
-BREAKING  → Changed（带 **Breaking:** 前缀）
+BREAKING  → Changed (with **Breaking:** prefix)
 ```
 
-### Step 4: 生成条目内容
+### Step 4: Generate entry content
 
-**格式规范**：
+**Format rules**:
 
-- 使用祈使语气（Add, Fix, Update, Remove）
-- 每行以 `- ` 开头
-- Breaking changes 用 `**Breaking:**` 前缀
-- 包含相关引用（如有）：`([#123](link))`
+- Use imperative mood (Add, Fix, Update, Remove)
+- Each line starts with `- `
+- Breaking changes use `**Breaking:**` prefix
+- Include references if any: `([#123](link))`
 
-**单次模式示例**：
+**Single mode example**:
 
 ```markdown
 ### Added
@@ -198,16 +198,16 @@ BREAKING  → Changed（带 **Breaking:** 前缀）
 - Add Button component with multiple styles and sizes
 ```
 
-**批量模式示例**（多个提交汇总）：
+**Batch mode example** (multiple commits summary):
 
 ```markdown
 ### Added
 
-- Add Todo 类型定义 (types)
-- Add 本地存储持久化工具 (storage)
-- Add Todo 状态管理 Hook (hooks)
-- Add Todo UI 组件 (components)
-- Add 应用入口和主界面 (app)
+- Add Todo type definitions (types)
+- Add local storage persistence utilities (storage)
+- Add Todo state management hooks (hooks)
+- Add Todo UI components (components)
+- Add app entry and main interface (app)
 
 ### Changed
 
@@ -218,27 +218,27 @@ BREAKING  → Changed（带 **Breaking:** 前缀）
 - Fix user authentication failure on expired tokens
 ```
 
-**批量模式规则**：
+**Batch mode rules**:
 
-- 按 Changelog 类型分组（Added, Changed, Fixed 等）
-- 每个提交一行
-- 在描述后标注 scope：`(scope)`
+- Group by Changelog type (Added, Changed, Fixed, etc.)
+- One line per commit
+- Append scope after description: `(scope)`
 
-### Step 5: 更新 CHANGELOG.md
+### Step 5: Update CHANGELOG.md
 
-**读取现有文件**，找到 `## [Unreleased]` 部分，在对应类型下添加新条目。
+**Read existing file**, find `## [Unreleased]`, and append new entries under the correct type.
 
-**如果版本号已指定**：
+**If a version is specified**:
 
-- 创建新版本部分：`## [X.Y.Z] - YYYY-MM-DD`
-- 将 Unreleased 内容移至新版本
-- 在文件底部添加版本链接
+- Create new version section: `## [X.Y.Z] - YYYY-MM-DD`
+- Move Unreleased content into the new version
+- Add version links at the bottom
 
-### Step 6: 写入结果
+### Step 6: Write results
 
-使用 Write 工具更新 `CHANGELOG.md`。
+Use the Write tool to update `CHANGELOG.md`.
 
-同时写入 `${run_dir}/changelog-entry.md` 记录本次添加的条目：
+Also write `${run_dir}/changelog-entry.md` to record the entries added:
 
 ```markdown
 # Changelog Entry
@@ -258,7 +258,7 @@ Added
 
 ---
 
-## CHANGELOG.md 结构规范
+## CHANGELOG.md Structure Guidelines
 
 ```markdown
 # Changelog
@@ -306,40 +306,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## 返回值
+## Return Value
 
-执行完成后，返回：
+After execution, return:
 
 ```
-📋 Changelog 更新完成
+📋 Changelog update completed
 
-类型: ${changelog_type}
-条目: ${entry_content}
-目标: ${target_section}
+Type: ${changelog_type}
+Entry: ${entry_content}
+Target: ${target_section}
 
-文件: CHANGELOG.md
-记录: ${run_dir}/changelog-entry.md
+File: CHANGELOG.md
+Record: ${run_dir}/changelog-entry.md
 ```
 
 ---
 
-## 约束
+## Constraints
 
-- 不做变更分析（交给 change-analyzer）
-- 不生成提交消息（交给 message-generator）
-- 遵循 Keep a Changelog 规范
-- 日期格式：YYYY-MM-DD (ISO 8601)
-- 使用祈使语气描述变更
-- test/ci/chore 类型通常不记录到 changelog
-- **🚨 必须执行此 Skill（除非 --no-changelog）**
-- **🚨 必须创建/更新 CHANGELOG.md**
+- Do not analyze changes (handled by change-analyzer)
+- Do not generate commit messages (handled by message-generator)
+- Follow Keep a Changelog
+- Date format: YYYY-MM-DD (ISO 8601)
+- Use imperative mood for entries
+- test/ci/chore types are usually not recorded in changelog
+- **🚨 Must run this Skill (unless --no-changelog)**
+- **🚨 Must create/update CHANGELOG.md**
 
-## 验证检查点
+## Verification Checklist
 
-执行完成后，自检以下内容：
+After execution, self-check:
 
-- [ ] CHANGELOG.md 存在于项目根目录
-- [ ] [Unreleased] 部分包含新条目
-- [ ] ${run_dir}/changelog-entry.md 已写入
+- [ ] CHANGELOG.md exists at project root
+- [ ] [Unreleased] contains new entries
+- [ ] ${run_dir}/changelog-entry.md is written
 
-**如果任一检查失败，必须重新执行！**
+**If any check fails, you must re-run!**
