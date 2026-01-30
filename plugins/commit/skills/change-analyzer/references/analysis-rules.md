@@ -1,36 +1,36 @@
 # Change Analysis Rules Reference
 
-变更分析规则：类型推断、作用域提取、拆分建议。
+Rules for change analysis: type inference, scope extraction, split recommendations.
 
 ---
 
-## 1. 类型推断规则
+## 1. Type inference rules
 
-### 1.1 基于文件变更推断
+### 1.1 Based on file changes
 
-| 文件变更模式 | 推断类型 | 置信度 |
-|--------------|----------|--------|
-| 新增功能代码文件 | `feat` | high |
-| 修改现有功能代码 | `feat` 或 `fix` | medium |
-| 删除代码文件 | `refactor` | high |
-| 修改测试文件 | `test` | high |
-| 修改文档文件 | `docs` | high |
-| 修改配置文件 | `chore` 或 `build` | medium |
-| 修改 CI/CD 文件 | `ci` | high |
-| 修改样式文件 | `style` | high |
+| File change pattern | Inferred type | Confidence |
+|---------------------|---------------|------------|
+| New feature code files | `feat` | high |
+| Modify existing feature code | `feat` or `fix` | medium |
+| Delete code files | `refactor` | high |
+| Modify test files | `test` | high |
+| Modify documentation files | `docs` | high |
+| Modify config files | `chore` or `build` | medium |
+| Modify CI/CD files | `ci` | high |
+| Modify style files | `style` | high |
 
-### 1.2 基于语义分析推断
+### 1.2 Based on semantic analysis
 
-| 语义特征 | 推断类型 |
-|----------|----------|
-| 添加新接口/API | `feat` |
-| 修复错误处理 | `fix` |
-| 优化性能 | `perf` |
-| 重构代码结构 | `refactor` |
-| 添加/更新依赖 | `build` |
-| 格式化代码 | `style` |
+| Semantic signal | Inferred type |
+|-----------------|---------------|
+| Add new interface/API | `feat` |
+| Fix error handling | `fix` |
+| Performance optimization | `perf` |
+| Refactor code structure | `refactor` |
+| Add/update dependencies | `build` |
+| Code formatting | `style` |
 
-### 1.3 类型优先级（冲突时）
+### 1.3 Type priority (on conflict)
 
 ```
 feat > fix > perf > refactor > style > docs > test > chore
@@ -38,39 +38,39 @@ feat > fix > perf > refactor > style > docs > test > chore
 
 ---
 
-## 2. 作用域提取规则
+## 2. Scope extraction rules
 
-### 2.1 LSP 符号优先
+### 2.1 LSP symbols first
 
-**优先使用 LSP 提取的符号作为作用域**：
+**Prefer LSP symbols as scope**:
 
 ```typescript
-// 变更集中在单个类
+// Changes concentrated in a single class
 class AuthService { ... }  → scope: "auth-service"
 
-// 变更集中在单个函数
+// Changes concentrated in a single function
 function validateToken() { ... }  → scope: "auth/validate"
 
-// 变更涉及多个相关符号
+// Changes involve multiple related symbols
 AuthService + TokenManager  → scope: "auth"
 ```
 
-### 2.2 语义分析次优先
+### 2.2 Semantic analysis second
 
-**使用 auggie-mcp 识别的功能模块**：
+**Use feature modules identified by auggie-mcp**:
 
 ```
-"用户认证流程" → scope: "auth"
-"支付处理" → scope: "payment"
-"数据库连接" → scope: "db"
+"User authentication flow" → scope: "auth"
+"Payment processing" → scope: "payment"
+"Database connection" → scope: "db"
 ```
 
-### 2.3 路径推断（降级）
+### 2.3 Path inference (fallback)
 
-**当 LSP 和语义分析不可用时**：
+**When LSP and semantic analysis are unavailable**:
 
-| 路径模式 | 推断作用域 |
-|----------|------------|
+| Path pattern | Inferred scope |
+|-------------|----------------|
 | `src/components/*` | `components` |
 | `src/services/*` | `services` |
 | `src/utils/*` | `utils` |
@@ -80,55 +80,55 @@ AuthService + TokenManager  → scope: "auth"
 
 ---
 
-## 3. 复杂度评估
+## 3. Complexity assessment
 
-### 3.1 评估维度
+### 3.1 Dimensions
 
-| 维度 | 低 | 中 | 高 |
-|------|----|----|-----|
-| 文件数 | ≤3 | ≤10 | >10 |
-| 变更行数 | ≤50 | ≤300 | >300 |
-| 作用域数 | 1 | 2-3 | >3 |
-| 类型数 | 1 | 2 | >2 |
+| Dimension | Low | Medium | High |
+|-----------|-----|--------|------|
+| Files | ≤3 | ≤10 | >10 |
+| Lines changed | ≤50 | ≤300 | >300 |
+| Scopes | 1 | 2-3 | >3 |
+| Types | 1 | 2 | >2 |
 
-### 3.2 综合评分
+### 3.2 Overall scoring
 
 ```
-low: 文件数 ≤3 且 行数 ≤50 且 作用域数 =1
-medium: 文件数 ≤10 且 行数 ≤300
-high: 文件数 >10 或 行数 >300 或 作用域数 >3
+low: files ≤3 and lines ≤50 and scopes =1
+medium: files ≤10 and lines ≤300
+high: files >10 or lines >300 or scopes >3
 ```
 
 ---
 
-## 4. 拆分建议规则
+## 4. Split recommendation rules
 
-### 4.1 触发拆分条件
+### 4.1 Split triggers
 
-| 规则 | 触发条件 | 建议操作 |
-|------|----------|----------|
-| 多作用域 | 涉及 2+ 个不同作用域 | 按作用域拆分 |
-| 大变更 | 文件数 >10 或行数 >300 | 按功能拆分 |
-| 混合类型 | 同时有 feat + fix | 分别提交 |
-| 新增+删除 | 同时有新增和删除 | 考虑拆分 |
-| 语义不相关 | auggie-mcp 判断变更语义不相关 | 按语义拆分 |
+| Rule | Trigger | Recommendation |
+|------|---------|----------------|
+| Multiple scopes | 2+ distinct scopes | Split by scope |
+| Large change | files >10 or lines >300 | Split by feature |
+| Mixed types | feat + fix together | Separate commits |
+| Add + delete | new and deleted files together | Consider split |
+| Unrelated semantics | auggie-mcp deems semantics unrelated | Split by semantics |
 
-### 4.2 拆分优先级
+### 4.2 Split priority
 
 ```
-1. feat 类型优先
-2. fix 类型次之
-3. refactor/perf 再次
-4. docs/test/chore 最后
+1. feat first
+2. fix next
+3. refactor/perf after
+4. docs/test/chore last
 ```
 
-### 4.3 拆分建议格式
+### 4.3 Split recommendation format
 
 ```json
 {
   "should_split": true,
   "split_recommendation": {
-    "reason": "包含多个独立功能，建议拆分为 2 个提交",
+    "reason": "Contains multiple independent features; recommend splitting into 2 commits",
     "commits": [
       {
         "type": "feat",
@@ -151,21 +151,21 @@ high: 文件数 >10 或 行数 >300 或 作用域数 >3
 
 ---
 
-## 5. 置信度评估
+## 5. Confidence assessment
 
-### 5.1 评估因素
+### 5.1 Factors
 
-| 因素 | high | medium | low |
-|------|------|--------|-----|
-| 作用域 | 单一 | 2 个 | 3+ 个 |
-| 类型 | 单一 | 2 个 | 3+ 个 |
-| 复杂度 | low | medium | high |
-| 语义一致性 | 高度一致 | 部分相关 | 不相关 |
+| Factor | high | medium | low |
+|--------|------|--------|-----|
+| Scope | single | 2 | 3+ |
+| Type | single | 2 | 3+ |
+| Complexity | low | medium | high |
+| Semantic consistency | highly consistent | partially related | unrelated |
 
-### 5.2 综合置信度
+### 5.2 Overall confidence
 
 ```
-high: 单一作用域 + 单一类型 + low 复杂度 + 语义一致
-medium: 单一作用域 或 medium 复杂度
-low: 多作用域 + high 复杂度 + 语义不一致
+high: single scope + single type + low complexity + consistent semantics
+medium: single scope or medium complexity
+low: multiple scopes + high complexity + inconsistent semantics
 ```

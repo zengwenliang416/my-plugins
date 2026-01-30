@@ -2,21 +2,21 @@
   "checks": [
     {
       "name": "staged_files",
-      "description": "确保有暂存的文件",
+      "description": "Ensure there are staged files",
       "command": "git diff --cached --name-only | wc -l",
       "expect": "> 0",
-      "error": "没有暂存的文件，请先 git add"
+      "error": "No staged files; please run git add first"
     },
     {
       "name": "no_conflict_markers",
-      "description": "检查冲突标记",
+      "description": "Check for conflict markers",
       "command": "git diff --cached | grep -c '^[<>=]\\{7\\}'",
       "expect": "= 0",
-      "error": "发现冲突标记，请解决后重试"
+      "error": "Conflict markers found; resolve and retry"
     },
     {
       "name": "no_debug_code",
-      "description": "检查调试代码",
+      "description": "Check for debug code",
       "patterns": [
         "console.log",
         "debugger",
@@ -29,11 +29,11 @@
   ],
   "hooks": {
     "pre-commit": {
-      "description": "提交前检查",
+      "description": "Pre-commit checks",
       "skip_flag": "--no-verify"
     },
     "commit-msg": {
-      "description": "提交消息格式检查",
+      "description": "Commit message format checks",
       "skip_flag": "--no-verify"
     }
   },

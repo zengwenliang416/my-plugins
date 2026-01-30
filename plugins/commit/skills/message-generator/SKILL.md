@@ -1,10 +1,10 @@
 ---
 name: message-generator
 description: |
-  【触发条件】commit 工作流第三步：生成 Conventional Commit 提交信息。
-  【核心产出】输出 ${run_dir}/commit-message.md，包含标题、正文、footer。
-  【不触发】分析变更（用 change-analyzer）、执行提交（用 commit-executor）。
-  【先问什么】changes-analysis.json 缺失时，询问是否先执行变更分析
+  【Trigger】Step 3 of the commit workflow: generate Conventional Commit messages.
+  【Core Output】Write ${run_dir}/commit-message.md with title, body, and footer.
+  【Not Triggered】Analyze changes (use change-analyzer), execute commit (use commit-executor).
+  【Ask First】If changes-analysis.json is missing, ask whether to run change analysis first.
 allowed-tools:
   - Read
   - Write
@@ -13,98 +13,98 @@ arguments:
   - name: run_dir
     type: string
     required: true
-    description: 运行目录路径（包含 changes-analysis.json）
+    description: Runtime directory path (contains changes-analysis.json)
   - name: options
     type: string
     required: false
-    description: 用户选项 JSON（如 '{"emoji": true, "type": "feat", "scope": "api"}'）
+    description: User options JSON (e.g. '{"emoji": true, "type": "feat", "scope": "api"}')
 ---
 
-# Message Generator - 提交信息生成原子技能
+# Message Generator - Atomic Commit Message Generation Skill
 
-## MCP 工具集成
+## MCP Tool Integration
 
-| MCP 工具              | 用途                                 | 触发条件        |
-| --------------------- | ------------------------------------ | --------------- |
-| `sequential-thinking` | 结构化消息生成策略，确保格式规范一致 | 🚨 每次执行必用 |
+| MCP Tool              | Purpose                                   | Trigger        |
+| --------------------- | ----------------------------------------- | -------------- |
+| `sequential-thinking` | Structure message generation strategy and ensure consistent format | 🚨 Required every run |
 
-## 执行流程
+## Execution Flow
 
-### Step 0: 结构化消息生成规划（sequential-thinking）
+### Step 0: Structured Message Plan (sequential-thinking)
 
-🚨 **必须首先使用 sequential-thinking 规划消息生成策略**
+🚨 **You must first use sequential-thinking to plan the message strategy.**
 
 ```
 mcp__sequential-thinking__sequentialthinking({
-  thought: "规划消息生成策略。需要：1) 读取分析结果 2) 解析用户选项 3) 选择 Emoji 4) 生成标题/正文/Footer 5) 写入结果文件",
+  thought: "Plan the message generation strategy. Need: 1) read analysis results 2) parse user options 3) choose emoji 4) generate title/body/footer 5) write output file",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 ```
 
-**思考步骤**：
+**Thinking steps**:
 
-1. **分析结果读取**：从 changes-analysis.json 提取类型、作用域、策略
-2. **用户选项解析**：处理 emoji、type、scope、breaking 等选项
-3. **Emoji 选择**：根据 commit 类型从映射表选取 emoji
-4. **消息生成**：生成标题（≤72字符）、正文、Footer
-5. **结果写入**：写入 commit-message.md 并验证格式
-
----
-
-## 🚨🚨🚨 强制执行规则（不可跳过）
-
-**禁止以下行为：**
-
-- ❌ 不使用 emoji
-- ❌ 使用英文描述
-- ❌ 自行决定格式
-- ❌ 跳过 emoji 映射表
-
-**必须遵守：**
-
-- ✅ 格式必须是：`type(scope): emoji 简短描述`
-- ✅ emoji 必须来自下方映射表
-- ✅ 描述必须使用中文
-- ✅ 示例：`feat(components): ✨ 新增 Button 组件`
+1. **Read analysis results**: extract type, scope, strategy from changes-analysis.json
+2. **Parse user options**: handle emoji, type, scope, breaking, etc.
+3. **Choose emoji**: select emoji by commit type from the mapping table
+4. **Generate message**: title (≤72 chars), body, footer
+5. **Write results**: write commit-message.md and validate format
 
 ---
 
-## 职责边界
+## 🚨🚨🚨 Mandatory Rules (Must Not Be Skipped)
 
-- **输入**: `run_dir`（包含 `changes-analysis.json`）+ `options`
-- **输出**: `${run_dir}/commit-message.md`
-- **单一职责**: 只生成提交信息，不做分析，不执行提交
+**The following are forbidden:**
+
+- ❌ Not using emoji
+- ❌ Using English descriptions
+- ❌ Inventing your own format
+- ❌ Skipping the emoji mapping table
+
+**You must obey:**
+
+- ✅ Format must be: `type(scope): emoji short description`
+- ✅ Emoji must come from the mapping table below
+- ✅ Description must be in Chinese
+- ✅ Example: `feat(components): ✨ 新增 Button 组件`
 
 ---
 
-## 执行流程
+## Responsibility Boundaries
 
-### Step 1: 读取分析结果
+- **Input**: `run_dir` (contains `changes-analysis.json`) + `options`
+- **Output**: `${run_dir}/commit-message.md`
+- **Single responsibility**: only generate commit messages; no analysis or commit execution
 
-读取 `${run_dir}/changes-analysis.json`，提取：
+---
+
+## Execution Flow
+
+### Step 1: Read analysis results
+
+Read `${run_dir}/changes-analysis.json` and extract:
 
 - `primary_type`
 - `primary_scope`
 - `commit_strategy`
 - `files_by_type`
 
-### Step 2: 解析用户选项
+### Step 2: Parse user options
 
-从 `options` 参数解析（如有）：
+Parse from `options` (if provided):
 
-| 选项       | 说明                   | 默认值   |
-| ---------- | ---------------------- | -------- |
-| `emoji`    | 是否使用 emoji         | true     |
-| `type`     | 强制指定类型           | 来自分析 |
-| `scope`    | 强制指定作用域         | 来自分析 |
-| `breaking` | 是否为 Breaking Change | false    |
-| `issue`    | 关联的 issue 编号      | -        |
+| Option      | Description                 | Default      |
+| ----------- | --------------------------- | ------------ |
+| `emoji`     | Use emoji                   | true         |
+| `type`      | Force type                  | from analysis |
+| `scope`     | Force scope                 | from analysis |
+| `breaking`  | Breaking Change or not      | false        |
+| `issue`     | Related issue number        | -            |
 
-### Step 3: 选择 Emoji
+### Step 3: Choose Emoji
 
-| 类型     | Emoji |
+| Type     | Emoji |
 | -------- | ----- |
 | feat     | ✨    |
 | fix      | 🐛    |
@@ -118,17 +118,17 @@ mcp__sequential-thinking__sequentialthinking({
 | chore    | 🔧    |
 | revert   | ⏪    |
 
-### Step 4: 生成标题
+### Step 4: Generate Title
 
-**格式**：`type(scope): emoji 简短描述`
+**Format**: `type(scope): emoji short description`
 
-**规则**：
+**Rules**:
 
-- 总长度 ≤ 72 字符
-- 使用祈使语气（Add, Fix, Update...）
-- 不以句号结尾
+- Total length ≤ 72 characters
+- Use imperative mood (Add, Fix, Update...)
+- Do not end with a period
 
-**示例**：
+**Examples**:
 
 ```
 feat(components): ✨ 新增 Button 组件
@@ -136,21 +136,21 @@ fix(api): 🐛 修复用户认证失败问题
 docs(readme): 📝 更新安装说明
 ```
 
-**Breaking Change 标题**：
+**Breaking Change title**:
 
 ```
 feat(api)!: ✨ 修改响应数据格式
 ```
 
-### Step 5: 生成正文
+### Step 5: Generate Body
 
-**内容**：
+**Content**:
 
-1. 简要说明变更目的
-2. 列出变更文件清单
-3. 变更统计
+1. Briefly describe the change intent
+2. List changed files
+3. Change statistics
 
-**示例**：
+**Example**:
 
 ```markdown
 新增可复用的 Button 组件，支持多种样式和尺寸。
@@ -163,25 +163,25 @@ feat(api)!: ✨ 修改响应数据格式
 统计: 2 个文件，+80/-0 行
 ```
 
-### Step 6: 生成 Footer
+### Step 6: Generate Footer
 
-**包含**：
+**Include**:
 
-- `Closes #123`（如有关联 issue）
-- `BREAKING CHANGE: 描述`（如有）
+- `Closes #123` (if related issue)
+- `BREAKING CHANGE: description` (if any)
 
-### Step 7: 写入结果
+### Step 7: Write results
 
-使用 Write 工具将结果写入 `${run_dir}/commit-message.md`：
+Use the Write tool to write to `${run_dir}/commit-message.md`:
 
 ```markdown
 # Commit Message
 
-## 标题
+## Title
 
 feat(components): ✨ 新增 Button 组件
 
-## 正文
+## Body
 
 新增可复用的 Button 组件，支持多种样式和尺寸。
 
@@ -199,69 +199,69 @@ Closes #123
 
 ---
 
-## Conventional Commit 规范
+## Conventional Commit Specification
 
-### 类型定义
+### Type definitions
 
-| 类型     | 说明     | 版本影响 |
-| -------- | -------- | -------- |
-| feat     | 新功能   | minor    |
-| fix      | Bug 修复 | patch    |
-| docs     | 文档变更 | -        |
-| style    | 代码格式 | -        |
-| refactor | 重构     | -        |
-| perf     | 性能优化 | patch    |
-| test     | 测试     | -        |
-| build    | 构建系统 | -        |
-| ci       | CI 配置  | -        |
-| chore    | 杂项     | -        |
-| revert   | 回滚     | -        |
+| Type     | Description    | Version impact |
+| -------- | -------------- | -------------- |
+| feat     | New feature    | minor          |
+| fix      | Bug fix        | patch          |
+| docs     | Documentation  | -              |
+| style    | Code style     | -              |
+| refactor | Refactoring    | -              |
+| perf     | Performance    | patch          |
+| test     | Tests          | -              |
+| build    | Build system   | -              |
+| ci       | CI config      | -              |
+| chore    | Miscellaneous  | -              |
+| revert   | Revert         | -              |
 
 ### Breaking Change
 
-在类型后加感叹号表示破坏性变更：
+Add an exclamation mark after the type to indicate a breaking change:
 
     feat(api)!: 修改响应格式
 
-并在 Footer 中详细说明：
+And describe it in the footer:
 
     BREAKING CHANGE: 所有 API 响应字段从下划线改为驼峰命名
 
 ---
 
-## 返回值
+## Return Value
 
-执行完成后，返回：
+After execution, return:
 
 ```
-📝 提交信息生成完成
+📝 Commit message generated
 
-标题: ${title}
-类型: ${type}
-作用域: ${scope}
+Title: ${title}
+Type: ${type}
+Scope: ${scope}
 Emoji: ${emoji}
 
-输出: ${run_dir}/commit-message.md
+Output: ${run_dir}/commit-message.md
 ```
 
 ---
 
-## 约束
+## Constraints
 
-- 不做变更分析（交给 change-analyzer）
-- 不执行提交（交给 commit-executor）
-- 标题长度必须 ≤ 72 字符
-- 遵循 Conventional Commits 规范
-- **🚨 格式必须是 `type(scope): emoji 中文描述`**
-- **🚨 必须使用 emoji（从映射表选取）**
-- **🚨 描述必须使用中文**
+- Do not analyze changes (handled by change-analyzer)
+- Do not execute commits (handled by commit-executor)
+- Title length must be ≤ 72 characters
+- Follow the Conventional Commits spec
+- **🚨 Format must be `type(scope): emoji Chinese description`**
+- **🚨 Must use emoji (from the mapping table)**
+- **🚨 Description must be in Chinese**
 
-## 验证检查点
+## Verification Checklist
 
-生成提交信息后，自检以下内容：
+After generating the commit message, self-check:
 
-- [ ] 标题包含 emoji（✨🐛📝💄♻️⚡✅📦👷🔧⏪ 之一）
-- [ ] 描述是中文
-- [ ] 格式符合 `type(scope): emoji 中文描述`
+- [ ] Title contains emoji (one of ✨🐛📝💄♻️⚡✅📦👷🔧⏪)
+- [ ] Description is in Chinese
+- [ ] Format matches `type(scope): emoji Chinese description`
 
-**如果不符合，必须重新生成！**
+**If any check fails, you must regenerate!**

@@ -1,26 +1,26 @@
 # Git Safety Reference
 
-Git 提交安全检查清单和错误处理指南。
+Git commit safety checklist and error handling guide.
 
 ---
 
-## 1. 安全检查清单
+## 1. Safety checklist
 
-### 1.1 提交前检查
+### 1.1 Pre-commit checks
 
-| 检查项 | 说明 | 严重性 |
-|--------|------|--------|
-| 敏感文件 | 检查 .env, credentials, keys | 🔴 Critical |
-| 大文件 | 检查 >10MB 文件 | 🟡 Warning |
-| 二进制文件 | 检查意外的二进制文件 | 🟡 Warning |
-| 合并冲突标记 | 检查 `<<<<<<<` 等标记 | 🔴 Critical |
-| TODO/FIXME | 检查未完成的标记 | 🟢 Info |
-| Console.log | 检查调试代码 | 🟡 Warning |
+| Check | Description | Severity |
+|-------|-------------|----------|
+| Sensitive files | Check .env, credentials, keys | 🔴 Critical |
+| Large files | Check files >10MB | 🟡 Warning |
+| Binary files | Check unexpected binary files | 🟡 Warning |
+| Merge conflict markers | Check `<<<<<<<` etc. | 🔴 Critical |
+| TODO/FIXME | Check unfinished markers | 🟢 Info |
+| Console.log | Check debug code | 🟡 Warning |
 
-### 1.2 敏感文件模式
+### 1.2 Sensitive file patterns
 
 ```
-# 绝对不能提交
+# Must never commit
 .env
 .env.*
 *.pem
@@ -33,7 +33,7 @@ secrets.yaml
 *.p12
 *.pfx
 
-# 需要警告
+# Should warn
 config.local.*
 *.local.json
 *secret*
@@ -43,133 +43,133 @@ config.local.*
 
 ---
 
-## 2. Pre-commit Hook 处理
+## 2. Pre-commit hook handling
 
-### 2.1 常见 Hook 类型
+### 2.1 Common hook types
 
-| Hook | 用途 | 失败处理 |
-|------|------|----------|
-| `pre-commit` | 代码检查 | 修复问题或跳过 |
-| `commit-msg` | 消息格式验证 | 调整消息格式 |
-| `prepare-commit-msg` | 消息模板 | 通常不失败 |
+| Hook | Purpose | Failure handling |
+|------|---------|------------------|
+| `pre-commit` | Code checks | Fix issues or skip |
+| `commit-msg` | Message format validation | Adjust message format |
+| `prepare-commit-msg` | Message template | Usually does not fail |
 
-### 2.2 Hook 失败处理流程
+### 2.2 Hook failure handling flow
 
 ```
-Hook 失败
+Hook failed
     ↓
-分析错误类型
+Analyze error type
     ↓
 ┌─────────────────┬──────────────────┐
-│ Lint 错误       │ 格式错误          │
+│ Lint errors     │ Format errors     │
 │                 │                  │
-│ → 自动修复      │ → 调整消息格式    │
+│ → Auto-fix      │ → Adjust message  │
 │   npm run lint  │                  │
 │   --fix         │                  │
 └─────────────────┴──────────────────┘
     ↓
-重新提交
+Retry commit
     ↓
-仍然失败？→ 询问用户是否跳过
+Still failing? → Ask user whether to skip
 ```
 
-### 2.3 跳过 Hook 选项
+### 2.3 Skip hook options
 
 ```bash
-# 跳过所有 hooks
+# Skip all hooks
 git commit --no-verify
 
-# 跳过特定 hook (需要自定义配置)
+# Skip a specific hook (requires custom config)
 SKIP=eslint git commit
 ```
 
-**警告**: 跳过 hooks 应该是最后手段，需要用户明确确认。
+**Warning**: Skipping hooks should be the last resort and requires explicit user confirmation.
 
 ---
 
-## 3. 错误处理
+## 3. Error handling
 
-### 3.1 常见错误及解决
+### 3.1 Common errors and fixes
 
-| 错误 | 原因 | 解决方案 |
-|------|------|----------|
-| `nothing to commit` | 暂存区为空 | 先执行 `git add` |
-| `Changes not staged` | 有未暂存的修改 | 暂存或忽略 |
-| `commit message empty` | 消息为空 | 提供有效消息 |
-| `hook failed` | Pre-commit 失败 | 修复问题或跳过 |
-| `detached HEAD` | 不在分支上 | 创建或切换分支 |
-| `merge conflict` | 存在冲突 | 解决冲突后提交 |
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `nothing to commit` | Staging area is empty | Run `git add` first |
+| `Changes not staged` | There are unstaged changes | Stage or ignore |
+| `commit message empty` | Message is empty | Provide a valid message |
+| `hook failed` | Pre-commit failed | Fix issues or skip |
+| `detached HEAD` | Not on a branch | Create or switch branch |
+| `merge conflict` | Conflicts exist | Resolve conflicts then commit |
 
-### 3.2 错误代码映射
+### 3.2 Exit code mapping
 
-| 退出码 | 含义 |
-|--------|------|
-| 0 | 成功 |
-| 1 | 一般错误 |
-| 128 | Git 仓库错误 |
-
----
-
-## 4. 提交策略
-
-### 4.1 原子提交原则
-
-```
-✅ 好的提交
-- 一个提交解决一个问题
-- 提交后代码可编译运行
-- 提交消息描述清晰
-
-❌ 差的提交
-- 一个提交包含多个无关变更
-- 提交后代码编译失败
-- 消息模糊如 "fix bugs"
-```
-
-### 4.2 提交频率
-
-```
-推荐: 小而频繁的提交
-- 每完成一个小功能就提交
-- 方便代码审查
-- 便于回滚
-
-避免: 大而稀疏的提交
-- 几天的工作合并成一个提交
-- 难以审查
-- 回滚代价大
-```
+| Exit code | Meaning |
+|-----------|---------|
+| 0 | Success |
+| 1 | General error |
+| 128 | Git repository error |
 
 ---
 
-## 5. 危险操作警告
+## 4. Commit strategy
 
-### 5.1 禁止的操作
-
-| 操作 | 风险 | 替代方案 |
-|------|------|----------|
-| `--amend` 已推送 | 覆盖历史 | 新建提交 |
-| `push --force` | 覆盖远程 | `--force-with-lease` |
-| `reset --hard` | 丢失数据 | `stash` 或 `reset --soft` |
-| `rebase` 公共分支 | 破坏历史 | merge |
-
-### 5.2 需要确认的操作
+### 4.1 Atomic commit principle
 
 ```
-⚠️ 以下操作需要用户明确确认:
+✅ Good commits
+- One commit solves one problem
+- Code compiles and runs after the commit
+- Commit message is clear
 
-1. --amend: 修改最近的提交
-2. --no-verify: 跳过 pre-commit hooks
-3. 推送到受保护分支 (main/master)
-4. 提交包含敏感文件
-5. 提交大文件 (>10MB)
+❌ Bad commits
+- One commit includes multiple unrelated changes
+- Code fails to compile after the commit
+- Message is vague like "fix bugs"
+```
+
+### 4.2 Commit frequency
+
+```
+Recommended: small and frequent commits
+- Commit after each small feature
+- Easier to review
+- Easier to roll back
+
+Avoid: large and infrequent commits
+- Days of work merged into one commit
+- Hard to review
+- Expensive to roll back
 ```
 
 ---
 
-## 6. 提交结果格式
+## 5. Dangerous operations warning
 
-### 6.1 成功结果
+### 5.1 Forbidden operations
+
+| Operation | Risk | Alternative |
+|-----------|------|-------------|
+| `--amend` after push | Rewrites history | Create a new commit |
+| `push --force` | Overwrites remote | Use `--force-with-lease` |
+| `reset --hard` | Data loss | Use `stash` or `reset --soft` |
+| `rebase` on shared branch | Breaks history | Use merge |
+
+### 5.2 Operations requiring confirmation
+
+```
+⚠️ The following operations require explicit user confirmation:
+
+1. --amend: modify the latest commit
+2. --no-verify: skip pre-commit hooks
+3. Push to protected branch (main/master)
+4. Commit includes sensitive files
+5. Commit includes large files (>10MB)
+```
+
+---
+
+## 6. Commit result format
+
+### 6.1 Success result
 
 ```json
 {
@@ -183,7 +183,7 @@ SKIP=eslint git commit
 }
 ```
 
-### 6.2 失败结果
+### 6.2 Failure result
 
 ```json
 {
@@ -196,34 +196,4 @@ SKIP=eslint git commit
     "Use --no-verify to skip hooks"
   ]
 }
-```
-
----
-
-## 7. 最佳实践
-
-### 7.1 提交前
-
-- [ ] 运行测试确保通过
-- [ ] 检查 diff 确认变更正确
-- [ ] 确认没有敏感信息
-- [ ] 确认提交消息符合规范
-
-### 7.2 提交后
-
-- [ ] 验证提交成功
-- [ ] 检查 CI 状态
-- [ ] 必要时推送到远程
-
-### 7.3 问题恢复
-
-```bash
-# 撤销最近的提交（保留更改）
-git reset --soft HEAD~1
-
-# 修改最近的提交消息
-git commit --amend -m "new message"
-
-# 撤销暂存
-git reset HEAD <file>
 ```

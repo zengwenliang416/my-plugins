@@ -1,57 +1,57 @@
 # Git Status Mapping Reference
 
-Git `status --porcelain` 输出解析规则和文件类型映射。
+Parsing rules for Git `status --porcelain` output and file type mappings.
 
 ---
 
-## 1. Git 状态码映射
+## 1. Git status code mapping
 
-### 1.1 Porcelain 格式说明
+### 1.1 Porcelain format
 
 ```
 XY PATH
 XY ORIG_PATH -> PATH  (for renames)
 ```
 
-- **X**: 暂存区状态
-- **Y**: 工作区状态
-- **PATH**: 文件路径
+- **X**: index (staged) status
+- **Y**: working tree status
+- **PATH**: file path
 
-### 1.2 状态码对照表
+### 1.2 Status code table
 
-| 状态码 | 含义 | type 映射 |
-|--------|------|-----------|
-| `M` | Modified (已修改) | `modified` |
-| `A` | Added (已添加) | `added` |
-| `D` | Deleted (已删除) | `deleted` |
-| `R` | Renamed (已重命名) | `renamed` |
-| `C` | Copied (已复制) | `copied` |
-| `U` | Updated but Unmerged | `unmerged` |
-| `??` | Untracked (未跟踪) | `untracked` |
-| `!!` | Ignored (已忽略) | `ignored` |
+| Status | Meaning | type mapping |
+|--------|---------|--------------|
+| `M` | Modified | `modified` |
+| `A` | Added | `added` |
+| `D` | Deleted | `deleted` |
+| `R` | Renamed | `renamed` |
+| `C` | Copied | `copied` |
+| `U` | Updated but unmerged | `unmerged` |
+| `??` | Untracked | `untracked` |
+| `!!` | Ignored | `ignored` |
 
-### 1.3 组合状态示例
+### 1.3 Combined status examples
 
-| 输出 | 暂存区 | 工作区 | 说明 |
-|------|--------|--------|------|
-| `M ` | Modified | - | 已暂存的修改 |
-| ` M` | - | Modified | 未暂存的修改 |
-| `MM` | Modified | Modified | 暂存后又修改 |
-| `A ` | Added | - | 新增文件已暂存 |
-| `AM` | Added | Modified | 新增后又修改 |
-| `D ` | Deleted | - | 删除已暂存 |
-| ` D` | - | Deleted | 删除未暂存 |
-| `R ` | Renamed | - | 重命名已暂存 |
-| `??` | - | - | 未跟踪文件 |
+| Output | Index | Working tree | Description |
+|--------|-------|--------------|-------------|
+| `M ` | Modified | - | Staged modification |
+| ` M` | - | Modified | Unstaged modification |
+| `MM` | Modified | Modified | Modified after staging |
+| `A ` | Added | - | New file staged |
+| `AM` | Added | Modified | Modified after add |
+| `D ` | Deleted | - | Deletion staged |
+| ` D` | - | Deleted | Deletion unstaged |
+| `R ` | Renamed | - | Rename staged |
+| `??` | - | - | Untracked file |
 
 ---
 
-## 2. 文件类型映射
+## 2. File type mapping
 
-### 2.1 扩展名映射表
+### 2.1 Extension mapping table
 
-| 扩展名 | file_type |
-|--------|-----------|
+| Extension | file_type |
+|-----------|-----------|
 | `.ts`, `.tsx` | `typescript` |
 | `.js`, `.jsx` | `javascript` |
 | `.py` | `python` |
@@ -77,12 +77,12 @@ XY ORIG_PATH -> PATH  (for renames)
 | `.graphql`, `.gql` | `graphql` |
 | `.proto` | `protobuf` |
 | `.dockerfile`, `Dockerfile` | `dockerfile` |
-| 其他 | `other` |
+| Other | `other` |
 
-### 2.2 特殊文件识别
+### 2.2 Special file identification
 
-| 文件名 | 类型 |
-|--------|------|
+| File name | Type |
+|----------|------|
 | `package.json` | `npm-config` |
 | `tsconfig.json` | `ts-config` |
 | `Cargo.toml` | `rust-config` |
@@ -94,9 +94,9 @@ XY ORIG_PATH -> PATH  (for renames)
 
 ---
 
-## 3. 作用域推断规则
+## 3. Scope inference rules
 
-### 3.1 路径解析策略
+### 3.1 Path parsing strategy
 
 ```
 src/components/Button.tsx → scope: "components"
@@ -105,15 +105,15 @@ tests/unit/auth.test.ts → scope: "tests"
 docs/README.md → scope: "docs"
 ```
 
-**规则**:
-1. 取 `src/` 后的第一级目录
-2. 如果无 `src/`，取根目录下第一级
-3. 根目录文件使用 `root` 作用域
+**Rules**:
+1. Take the first directory after `src/`
+2. If no `src/`, take the first directory at repo root
+3. Root-level files use scope `root`
 
-### 3.2 常见作用域
+### 3.2 Common scopes
 
-| 路径模式 | 推断作用域 |
-|----------|------------|
+| Path pattern | Inferred scope |
+|-------------|----------------|
 | `src/components/*` | `components` |
 | `src/pages/*` | `pages` |
 | `src/utils/*` | `utils` |
@@ -127,9 +127,9 @@ docs/README.md → scope: "docs"
 
 ---
 
-## 4. 解析示例
+## 4. Parsing example
 
-### 输入
+### Input
 
 ```
 M  src/utils/helper.ts
@@ -139,7 +139,7 @@ R  src/old.ts -> src/new.ts
 ?? src/temp.ts
 ```
 
-### 输出 JSON
+### Output JSON
 
 ```json
 {
