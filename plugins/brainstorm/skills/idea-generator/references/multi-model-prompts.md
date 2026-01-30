@@ -1,6 +1,6 @@
-# 多模型并行发散提示词
+# Multi-Model Parallel Divergence Prompts
 
-## 架构概述
+## Architecture Overview
 
 ```
                     ┌─────────────────┐
@@ -12,244 +12,252 @@
               ▼                             ▼
     ┌─────────────────┐           ┌─────────────────┐
     │     Codex       │           │     Gemini      │
-    │  技术/可行性    │           │  创意/用户      │
+    │  Tech/Feasibility│          │  Creative/User  │
     └────────┬────────┘           └────────┬────────┘
              │                             │
              │    ┌─────────────────┐      │
              └───►│   Ideas Pool    │◄─────┘
-                  │   (合并去重)     │
+                  │  (Merge & Dedup) │
                   └─────────────────┘
 ```
 
-## Codex 基础框架
+## Codex Base Framework
 
-### 系统角色
-
-```
-你是一位资深的技术架构师和后端专家，擅长：
-- 系统设计和架构规划
-- 技术可行性评估
-- 性能优化和扩展性考虑
-- 数据模型设计
-- API 设计
-```
-
-### 提示词模板
+### System Role
 
 ```
-## 任务背景
+You are a senior technical architect and backend expert, skilled in:
+- System design and architecture planning
+- Technical feasibility assessment
+- Performance optimization and scalability considerations
+- Data model design
+- API design
+```
 
-主题: {topic}
+### Prompt Template
 
-研究摘要:
+````
+## Task Background
+
+Topic: {topic}
+
+Research Summary:
 {research_brief_summary}
 
-## 你的任务
+## Your Task
 
-基于以上背景，使用 {method} 方法生成 10+ 个技术可行的创意。
+Based on the above background, use the {method} method to generate 10+ technically feasible ideas.
 
-## 思考维度
+## Thinking Dimensions
 
-从以下角度思考每个创意：
+Consider each idea from the following perspectives:
 
-1. **技术架构**
-   - 需要什么核心组件？
-   - 如何设计数据流？
-   - 有什么架构模式可以复用？
+1. **Technical Architecture**
+   - What core components are needed?
+   - How to design the data flow?
+   - What architectural patterns can be reused?
 
-2. **可行性评估**
-   - 技术难度在哪里？
-   - 需要什么技术栈？
-   - 有什么现成方案可以集成？
+2. **Feasibility Assessment**
+   - Where are the technical difficulties?
+   - What tech stack is required?
+   - What existing solutions can be integrated?
 
-3. **扩展性考虑**
-   - 如何应对规模增长？
-   - 需要什么弹性设计？
-   - 未来如何演进？
+3. **Scalability Considerations**
+   - How to handle scale growth?
+   - What elastic design is needed?
+   - How to evolve in the future?
 
-4. **实现路径**
-   - 最小可行版本是什么？
-   - 分几个阶段实现？
-   - 关键里程碑是什么？
+4. **Implementation Path**
+   - What is the minimum viable version?
+   - How many phases for implementation?
+   - What are the key milestones?
 
-## 输出要求
+## Output Requirements
 
-每个创意包含：
-- id: 唯一标识（格式：{method_prefix}-{number}）
-- title: 简洁的创意标题
-- description: 2-3 句话描述核心想法
-- technical_complexity: 技术复杂度 1-5 分
-  - 1: 现有技术可直接实现
-  - 2: 需要少量新技术学习
-  - 3: 中等技术挑战
-  - 4: 较高技术门槛
-  - 5: 前沿技术探索
-- timeline: 实现周期
-  - "短期": < 1 周
-  - "中期": 1-4 周
-  - "长期": > 1 月
-- dependencies: 关键技术依赖列表
+Each idea includes:
+- id: Unique identifier (format: {method_prefix}-{number})
+- title: Concise idea title
+- description: 2-3 sentences describing the core concept
+- technical_complexity: Technical complexity 1-5 points
+  - 1: Can be directly implemented with existing technology
+  - 2: Requires minimal new technology learning
+  - 3: Moderate technical challenge
+  - 4: Higher technical barrier
+  - 5: Cutting-edge technology exploration
+- timeline: Implementation cycle
+  - "short-term": < 1 week
+  - "medium-term": 1-4 weeks
+  - "long-term": > 1 month
+- dependencies: List of key technical dependencies
 - source: "codex"
 
-## JSON 输出格式
+## JSON Output Format
 
 ```json
 [
   {
     "id": "C-1",
-    "title": "创意标题",
-    "description": "创意描述...",
+    "title": "Idea Title",
+    "description": "Idea description...",
     "technical_complexity": 3,
-    "timeline": "中期",
-    "dependencies": ["依赖1", "依赖2"],
+    "timeline": "medium-term",
+    "dependencies": ["dependency1", "dependency2"],
     "source": "codex"
   }
 ]
-```
+````
 
-请生成至少 10 个高质量创意。
-```
-
-## Gemini 基础框架
-
-### 系统角色
+Please generate at least 10 high-quality ideas.
 
 ```
-你是一位资深的创意设计师和用户体验专家，擅长：
-- 用户洞察和共情
-- 创新思维和跨界联想
-- 体验设计和情感设计
-- 品牌策略和市场定位
-- 趋势捕捉和概念创新
-```
 
-### 提示词模板
+## Gemini Base Framework
+
+### System Role
 
 ```
-## 任务背景
 
-主题: {topic}
+You are a senior creative designer and user experience expert, skilled in:
 
-研究摘要:
+- User insights and empathy
+- Innovative thinking and cross-domain association
+- Experience design and emotional design
+- Brand strategy and market positioning
+- Trend capture and concept innovation
+
+```
+
+### Prompt Template
+
+```
+
+## Task Background
+
+Topic: {topic}
+
+Research Summary:
 {research_brief_summary}
 
-## 你的任务
+## Your Task
 
-基于以上背景，使用 {method} 方法生成 10+ 个用户导向的创意。
+Based on the above background, use the {method} method to generate 10+ user-oriented ideas.
 
-## 思考维度
+## Thinking Dimensions
 
-从以下角度思考每个创意：
+Consider each idea from the following perspectives:
 
-1. **用户价值**
-   - 解决用户什么痛点？
-   - 带来什么独特价值？
-   - 用户为什么会选择？
+1. **User Value**
+   - What user pain points does it solve?
+   - What unique value does it bring?
+   - Why would users choose this?
 
-2. **情感体验**
-   - 用户会有什么情绪反应？
-   - 什么会让用户惊喜？
-   - 如何建立情感连接？
+2. **Emotional Experience**
+   - What emotional reactions will users have?
+   - What will delight users?
+   - How to build emotional connections?
 
-3. **创新程度**
-   - 与现有方案有何不同？
-   - 是渐进式还是颠覆式？
-   - 能否形成差异化优势？
+3. **Innovation Level**
+   - How is it different from existing solutions?
+   - Is it incremental or disruptive?
+   - Can it form a differentiated advantage?
 
-4. **市场潜力**
-   - 目标用户群体是谁？
-   - 市场规模有多大？
-   - 增长空间在哪里？
+4. **Market Potential**
+   - Who is the target user group?
+   - How large is the market size?
+   - Where is the growth potential?
 
-## 输出要求
+## Output Requirements
 
-每个创意包含：
-- id: 唯一标识（格式：{method_prefix}-{number}）
-- title: 简洁的创意标题
-- description: 2-3 句话描述核心想法
-- user_value: 用户价值 1-5 分
-  - 1: 锦上添花
-  - 2: 有一定帮助
-  - 3: 解决实际问题
-  - 4: 大幅改善体验
-  - 5: 颠覆性价值
-- innovation_level: 创新程度
-  - "渐进": 现有方案的优化改进
-  - "突破": 全新的解决思路
-- emotional_appeal: 情感吸引力关键词
-  - 如：惊喜、信任、愉悦、安心、期待、成就感
+Each idea includes:
+
+- id: Unique identifier (format: {method_prefix}-{number})
+- title: Concise idea title
+- description: 2-3 sentences describing the core concept
+- user_value: User value 1-5 points
+  - 1: Nice to have
+  - 2: Somewhat helpful
+  - 3: Solves real problems
+  - 4: Significantly improves experience
+  - 5: Disruptive value
+- innovation_level: Innovation level
+  - "incremental": Optimization of existing solutions
+  - "breakthrough": Entirely new approach
+- emotional_appeal: Emotional appeal keyword
+  - e.g.: delight, trust, joy, reassurance, anticipation, accomplishment
 - source: "gemini"
 
-## JSON 输出格式
+## JSON Output Format
 
 ```json
 [
   {
     "id": "G-1",
-    "title": "创意标题",
-    "description": "创意描述...",
+    "title": "Idea Title",
+    "description": "Idea description...",
     "user_value": 4,
-    "innovation_level": "突破",
-    "emotional_appeal": "惊喜",
+    "innovation_level": "breakthrough",
+    "emotional_appeal": "delight",
     "source": "gemini"
   }
 ]
 ```
 
-请生成至少 10 个高质量创意，注重创意的多样性和新颖性。
+Please generate at least 10 high-quality ideas, focusing on diversity and novelty.
+
 ```
 
-## 方法特定前缀
+## Method-Specific Prefixes
 
-| 方法 | Codex 前缀 | Gemini 前缀 |
-|------|------------|-------------|
+| Method | Codex Prefix | Gemini Prefix |
+|--------|--------------|---------------|
 | SCAMPER | S-1, C-1, A-1, M-1, P-1, E-1, R-1 | S-1, C-1, A-1, M-1, P-1, E-1, R-1 |
-| 六顶思考帽 | W-1, R-1, B-1, Y-1, G-1, BL-1 | W-1, R-1, B-1, Y-1, G-1, BL-1 |
+| Six Thinking Hats | W-1, R-1, B-1, Y-1, G-1, BL-1 | W-1, R-1, B-1, Y-1, G-1, BL-1 |
 | Auto | C-1, C-2, ... | G-1, G-2, ... |
 
-## 合并去重策略
+## Merge and Deduplication Strategy
 
-### 相似度判断
+### Similarity Judgment
 
-两个创意被认为相似（需合并）当：
-- 标题关键词重叠 > 60%
-- 描述语义相似度 > 80%
-- 解决的问题相同
+Two ideas are considered similar (need merging) when:
+- Title keyword overlap > 60%
+- Description semantic similarity > 80%
+- Same problem being solved
 
-### 合并规则
+### Merge Rules
 
-1. 保留描述更详细的版本
-2. 合并两个版本的优势评估
-3. 标注双来源：`[codex+gemini]`
+1. Keep the version with more detailed description
+2. Merge advantage assessments from both versions
+3. Mark dual sources: `[codex+gemini]`
 
-### 去重后编号
+### Post-Deduplication Numbering
 
-合并后重新统一编号：
-- `C-1, C-2, ...`: 仅 Codex 来源
-- `G-1, G-2, ...`: 仅 Gemini 来源
-- `M-1, M-2, ...`: 合并来源
+Renumber uniformly after merging:
+- `C-1, C-2, ...`: Codex source only
+- `G-1, G-2, ...`: Gemini source only
+- `M-1, M-2, ...`: Merged sources
 
-## 质量控制
+## Quality Control
 
-### 创意质量检查
+### Idea Quality Check
 
-✅ 高质量创意特征：
-- 具体可执行
-- 有清晰的价值主张
-- 考虑了实现路径
-- 有差异化亮点
+High-quality idea characteristics:
+- Specific and actionable
+- Clear value proposition
+- Implementation path considered
+- Differentiated highlights
 
-❌ 低质量创意特征：
-- 过于抽象笼统
-- 与主题关联不强
-- 缺乏可行性考虑
-- 与现有方案无差异
+Low-quality idea characteristics:
+- Too abstract or vague
+- Weak relevance to the topic
+- Lack of feasibility consideration
+- No difference from existing solutions
 
-### 数量要求
+### Quantity Requirements
 
-| 指标 | 最低要求 | 理想状态 |
-|------|----------|----------|
-| 总创意数 | 20 | 30+ |
-| Codex 贡献 | 8 | 12+ |
-| Gemini 贡献 | 8 | 12+ |
-| 高分创意（≥4） | 5 | 10+ |
+| Metric | Minimum Requirement | Ideal State |
+|--------|---------------------|-------------|
+| Total ideas | 20 | 30+ |
+| Codex contribution | 8 | 12+ |
+| Gemini contribution | 8 | 12+ |
+| High-scoring ideas (>=4) | 5 | 10+ |
+```

@@ -2,121 +2,129 @@
   "methods": {
     "scamper": {
       "name": "SCAMPER",
-      "description": "系统化创新方法，通过7个维度激发创意",
+      "description": "Systematic innovation method that stimulates creativity through 7 dimensions",
       "dimensions": [
         {
           "key": "S",
           "name": "Substitute",
-          "name_zh": "替代",
-          "codex_prompt": "哪些技术/组件可以被替代？",
-          "gemini_prompt": "用户的什么需求可以用新方式满足？"
+          "name_zh": "Substitute",
+          "codex_prompt": "What technologies/components can be substituted?",
+          "gemini_prompt": "What user needs can be met in new ways?"
         },
         {
           "key": "C",
           "name": "Combine",
-          "name_zh": "组合",
-          "codex_prompt": "哪些功能可以组合？",
-          "gemini_prompt": "哪些体验可以融合创造惊喜？"
+          "name_zh": "Combine",
+          "codex_prompt": "What features can be combined?",
+          "gemini_prompt": "What experiences can be merged to create delight?"
         },
         {
           "key": "A",
           "name": "Adapt",
-          "name_zh": "调整",
-          "codex_prompt": "其他领域的什么技术可以借鉴？",
-          "gemini_prompt": "其他行业的什么体验可以借鉴？"
+          "name_zh": "Adapt",
+          "codex_prompt": "What technologies from other domains can be borrowed?",
+          "gemini_prompt": "What experiences from other industries can be borrowed?"
         },
         {
           "key": "M",
           "name": "Modify",
-          "name_zh": "修改",
-          "codex_prompt": "性能/规模/复杂度如何调整？",
-          "gemini_prompt": "交互/视觉/情感如何增强？"
+          "name_zh": "Modify",
+          "codex_prompt": "How can performance/scale/complexity be adjusted?",
+          "gemini_prompt": "How can interaction/visual/emotion be enhanced?"
         },
         {
           "key": "P",
           "name": "Put to other uses",
-          "name_zh": "另作他用",
-          "codex_prompt": "现有能力还能解决什么问题？",
-          "gemini_prompt": "产品还能服务什么场景？"
+          "name_zh": "Repurpose",
+          "codex_prompt": "What other problems can existing capabilities solve?",
+          "gemini_prompt": "What other scenarios can the product serve?"
         },
         {
           "key": "E",
           "name": "Eliminate",
-          "name_zh": "删除",
-          "codex_prompt": "哪些环节可以简化或去除？",
-          "gemini_prompt": "用户的什么痛点可以彻底消除？"
+          "name_zh": "Eliminate",
+          "codex_prompt": "What steps can be simplified or removed?",
+          "gemini_prompt": "What user pain points can be completely eliminated?"
         },
         {
           "key": "R",
           "name": "Reverse",
-          "name_zh": "逆向",
-          "codex_prompt": "流程/角色/假设可以颠倒吗？",
-          "gemini_prompt": "传统假设可以打破吗？"
+          "name_zh": "Reverse",
+          "codex_prompt": "Can processes/roles/assumptions be reversed?",
+          "gemini_prompt": "Can traditional assumptions be broken?"
         }
       ],
       "ideas_per_dimension": 2,
-      "suitable_for": ["产品创新", "功能优化", "流程改进"]
+      "suitable_for": [
+        "Product innovation",
+        "Feature optimization",
+        "Process improvement"
+      ]
     },
     "hats": {
-      "name": "六顶思考帽",
-      "description": "从6个不同角度思考问题",
+      "name": "Six Thinking Hats",
+      "description": "Think about problems from 6 different perspectives",
       "dimensions": [
         {
           "key": "white",
           "emoji": "⬜",
-          "name": "数据/事实",
-          "codex_prompt": "需要收集什么数据来验证技术假设？",
-          "gemini_prompt": "用户调研数据揭示了什么需求？"
+          "name": "Data/Facts",
+          "codex_prompt": "What data needs to be collected to validate technical assumptions?",
+          "gemini_prompt": "What needs does user research data reveal?"
         },
         {
           "key": "red",
           "emoji": "🟥",
-          "name": "直觉/感受",
-          "codex_prompt": "团队对哪些技术方案最有信心？",
-          "gemini_prompt": "用户的第一印象是什么？"
+          "name": "Intuition/Feelings",
+          "codex_prompt": "Which technical solutions does the team feel most confident about?",
+          "gemini_prompt": "What is the user's first impression?"
         },
         {
           "key": "black",
           "emoji": "⬛",
-          "name": "风险/批判",
-          "codex_prompt": "最大的技术风险是什么？",
-          "gemini_prompt": "用户可能在哪里流失？"
+          "name": "Risk/Critique",
+          "codex_prompt": "What is the biggest technical risk?",
+          "gemini_prompt": "Where might users drop off?"
         },
         {
           "key": "yellow",
           "emoji": "🟨",
-          "name": "价值/乐观",
-          "codex_prompt": "现有技术栈的最大优势是什么？",
-          "gemini_prompt": "用户最喜欢的功能是什么？"
+          "name": "Value/Optimism",
+          "codex_prompt": "What is the biggest advantage of the existing tech stack?",
+          "gemini_prompt": "What is the user's favorite feature?"
         },
         {
           "key": "green",
           "emoji": "🟩",
-          "name": "创意/可能",
-          "codex_prompt": "有什么新技术值得尝试？",
-          "gemini_prompt": "有什么全新的交互方式？"
+          "name": "Creativity/Possibilities",
+          "codex_prompt": "What new technologies are worth trying?",
+          "gemini_prompt": "What brand new interaction methods are possible?"
         },
         {
           "key": "blue",
           "emoji": "🟦",
-          "name": "流程/控制",
-          "codex_prompt": "技术实施的最优顺序是什么？",
-          "gemini_prompt": "用户旅程如何优化？"
+          "name": "Process/Control",
+          "codex_prompt": "What is the optimal sequence for technical implementation?",
+          "gemini_prompt": "How can the user journey be optimized?"
         }
       ],
       "ideas_per_hat": 2,
-      "suitable_for": ["战略决策", "问题分析", "团队讨论"]
+      "suitable_for": [
+        "Strategic decisions",
+        "Problem analysis",
+        "Team discussions"
+      ]
     },
     "auto": {
-      "name": "自动选择",
-      "description": "根据主题类型自动选择最适合的方法",
+      "name": "Auto Select",
+      "description": "Automatically select the most suitable method based on topic type",
       "rules": [
         {
-          "condition": "产品|功能|优化|改进",
+          "condition": "product|feature|optimization|improvement",
           "method": "scamper"
         },
         {
-          "condition": "策略|决策|分析|评估",
+          "condition": "strategy|decision|analysis|evaluation",
           "method": "hats"
         },
         {

@@ -1,188 +1,206 @@
-# 六顶思考帽创意发散方法
+# Six Thinking Hats Creative Divergence Method
 
-## 方法概述
+## Method Overview
 
-六顶思考帽是 Edward de Bono 提出的平行思考方法。通过六种不同颜色的"帽子"代表六种思考模式，让思考更加全面和系统。
+Six Thinking Hats is a parallel thinking method proposed by Edward de Bono. By using six different colored "hats" representing six thinking modes, it makes thinking more comprehensive and systematic.
 
-| 帽子 | 颜色 | 思考角度 | 关键词 |
-|------|------|----------|--------|
-| ⬜ | 白色 | 事实与数据 | 客观、中立、信息 |
-| 🟥 | 红色 | 情感与直觉 | 感受、预感、本能 |
-| ⬛ | 黑色 | 批判与风险 | 谨慎、问题、障碍 |
-| 🟨 | 黄色 | 乐观与价值 | 好处、机会、积极 |
-| 🟩 | 绿色 | 创意与可能 | 新想法、替代方案 |
-| 🟦 | 蓝色 | 控制与总结 | 流程、整合、决策 |
+| Hat    | Color  | Thinking Perspective         | Keywords                          |
+| ------ | ------ | ---------------------------- | --------------------------------- |
+| White  | White  | Facts and Data               | Objective, Neutral, Information   |
+| Red    | Red    | Emotions and Intuition       | Feelings, Hunches, Instinct       |
+| Black  | Black  | Critique and Risk            | Caution, Problems, Obstacles      |
+| Yellow | Yellow | Optimism and Value           | Benefits, Opportunities, Positive |
+| Green  | Green  | Creativity and Possibilities | New ideas, Alternatives           |
+| Blue   | Blue   | Control and Summary          | Process, Integration, Decision    |
 
-## 详细维度与提问模板
+## Detailed Dimensions and Question Templates
 
-### ⬜ 白帽（事实与数据）
+### White Hat (Facts and Data)
 
-**核心思想**：关注客观信息，不做判断
+**Core Concept**: Focus on objective information without making judgments
 
-**提问清单**：
-- 我们目前知道什么？
-- 还需要什么信息？
-- 数据来源是什么？
-- 有什么是确定的事实？
-- 有什么是不确定的假设？
+**Question Checklist**:
 
-**产出类型**：
-- 现状梳理类创意
-- 数据驱动类创意
-- 信息透明类创意
+- What do we currently know?
+- What information is still needed?
+- What are the data sources?
+- What are the confirmed facts?
+- What are uncertain assumptions?
 
-**示例问题**：
-- "关于用户行为，我们有哪些确切数据？"
-- "竞争对手的实际市场份额是多少？"
+**Output Types**:
 
-### 🟥 红帽（情感与直觉）
+- Status assessment ideas
+- Data-driven ideas
+- Information transparency ideas
 
-**核心思想**：表达感受，允许非理性
+**Example Questions**:
 
-**提问清单**：
-- 对这个想法的第一反应是什么？
-- 用户可能会有什么情绪？
-- 直觉告诉我们什么？
-- 什么让人兴奋/不安？
-- 团队的热情在哪里？
+- "What exact data do we have about user behavior?"
+- "What is the competitor's actual market share?"
 
-**产出类型**：
-- 情感体验类创意
-- 用户共情类创意
-- 品牌情感类创意
+### Red Hat (Emotions and Intuition)
 
-**示例问题**：
-- "用户第一次使用时会感到什么？"
-- "这个方案让我感到隐隐不安的是什么？"
+**Core Concept**: Express feelings, allow irrationality
 
-### ⬛ 黑帽（批判与风险）
+**Question Checklist**:
 
-**核心思想**：识别问题和风险，谨慎评估
+- What is your first reaction to this idea?
+- What emotions might users have?
+- What does intuition tell us?
+- What excites or concerns people?
+- Where is the team's enthusiasm?
 
-**提问清单**：
-- 可能出什么问题？
-- 有什么风险和障碍？
-- 为什么可能失败？
-- 有什么负面后果？
-- 资源是否足够？
+**Output Types**:
 
-**产出类型**：
-- 风险规避类创意
-- 问题解决类创意
-- 安全保障类创意
+- Emotional experience ideas
+- User empathy ideas
+- Brand emotion ideas
 
-**示例问题**：
-- "如果竞争对手快速跟进怎么办？"
-- "技术上最大的风险是什么？"
+**Example Questions**:
 
-### 🟨 黄帽（乐观与价值）
+- "What will users feel when they first use it?"
+- "What about this solution makes me feel uneasy?"
 
-**核心思想**：寻找价值和机会，积极评估
+### Black Hat (Critique and Risk)
 
-**提问清单**：
-- 最好的情况是什么？
-- 有什么好处和机会？
-- 为什么会成功？
-- 谁会从中受益？
-- 长期价值在哪里？
+**Core Concept**: Identify problems and risks, evaluate cautiously
 
-**产出类型**：
-- 价值放大类创意
-- 机会把握类创意
-- 差异化优势类创意
+**Question Checklist**:
 
-**示例问题**：
-- "这个方案最大的价值点是什么？"
-- "如果成功了，3年后会是什么样子？"
+- What could go wrong?
+- What are the risks and obstacles?
+- Why might it fail?
+- What are the negative consequences?
+- Are resources sufficient?
 
-### 🟩 绿帽（创意与可能）
+**Output Types**:
 
-**核心思想**：跳出框架，探索新可能
+- Risk mitigation ideas
+- Problem-solving ideas
+- Safety assurance ideas
 
-**提问清单**：
-- 还有什么替代方案？
-- 如果没有限制会怎样？
-- 可以用什么新方法？
-- 有什么疯狂的想法？
-- 如何突破现有边界？
+**Example Questions**:
 
-**产出类型**：
-- 颠覆性创意
-- 跨界融合类创意
-- 实验探索类创意
+- "What if competitors quickly follow?"
+- "What is the biggest technical risk?"
 
-**示例问题**：
-- "如果我们完全重新设计，会怎么做？"
-- "有没有完全不同的方法解决这个问题？"
+### Yellow Hat (Optimism and Value)
 
-### 🟦 蓝帽（控制与总结）
+**Core Concept**: Seek value and opportunities, evaluate positively
 
-**核心思想**：管理思考过程，整合结论
+**Question Checklist**:
 
-**提问清单**：
-- 下一步应该怎么做？
-- 如何整合各方观点？
-- 优先级是什么？
-- 需要做什么决策？
-- 如何跟进执行？
+- What is the best-case scenario?
+- What are the benefits and opportunities?
+- Why will it succeed?
+- Who will benefit from it?
+- Where is the long-term value?
 
-**产出类型**：
-- 流程优化类创意
-- 决策机制类创意
-- 执行规划类创意
+**Output Types**:
 
-**示例问题**：
-- "综合以上讨论，我们的核心结论是什么？"
-- "下一步最关键的行动是什么？"
+- Value amplification ideas
+- Opportunity capture ideas
+- Differentiation advantage ideas
 
-## Codex 提示词模板（技术视角）
+**Example Questions**:
+
+- "What is the biggest value point of this solution?"
+- "If successful, what will it look like in 3 years?"
+
+### Green Hat (Creativity and Possibilities)
+
+**Core Concept**: Think outside the box, explore new possibilities
+
+**Question Checklist**:
+
+- What alternatives are there?
+- What if there were no constraints?
+- What new methods can be used?
+- What crazy ideas are there?
+- How to break existing boundaries?
+
+**Output Types**:
+
+- Disruptive ideas
+- Cross-domain fusion ideas
+- Experimental exploration ideas
+
+**Example Questions**:
+
+- "If we completely redesigned it, how would we do it?"
+- "Is there a completely different way to solve this problem?"
+
+### Blue Hat (Control and Summary)
+
+**Core Concept**: Manage the thinking process, integrate conclusions
+
+**Question Checklist**:
+
+- What should the next step be?
+- How to integrate all perspectives?
+- What are the priorities?
+- What decisions need to be made?
+- How to follow up on execution?
+
+**Output Types**:
+
+- Process optimization ideas
+- Decision mechanism ideas
+- Execution planning ideas
+
+**Example Questions**:
+
+- "Based on the above discussion, what is our core conclusion?"
+- "What is the most critical next action?"
+
+## Codex Prompt Template (Technical Perspective)
 
 ```
-作为系统架构师，使用六顶思考帽方法为以下主题生成创意：
+As a system architect, use the Six Thinking Hats method to generate ideas for the following topic:
 
-主题: {topic}
-研究背景: {research_brief_summary}
+Topic: {topic}
+Research Background: {research_brief_summary}
 
-请从技术实现角度，针对每顶帽子各生成 2-3 个创意：
+From a technical implementation perspective, generate 2-3 ideas for each hat:
 
-⬜ 白帽（数据/事实）：
-- 需要收集什么数据来验证假设？
-- 技术上有哪些确定的约束？
-- 现有系统的实际性能指标是什么？
+White Hat (Data/Facts):
+- What data needs to be collected to validate assumptions?
+- What are the confirmed technical constraints?
+- What are the actual performance metrics of the existing system?
 
-🟥 红帽（直觉/感受）：
-- 技术团队对哪些方案最有信心？
-- 哪些技术债务让人感到担忧？
-- 直觉告诉我们哪个方向最有潜力？
+Red Hat (Intuition/Feelings):
+- Which solutions does the technical team feel most confident about?
+- Which technical debt is concerning?
+- Which direction does intuition suggest has the most potential?
 
-⬛ 黑帽（风险/批判）：
-- 技术上最大的风险是什么？
-- 可能遇到什么性能瓶颈？
-- 有什么安全隐患？
+Black Hat (Risk/Critique):
+- What is the biggest technical risk?
+- What performance bottlenecks might be encountered?
+- What security vulnerabilities exist?
 
-🟨 黄帽（价值/乐观）：
-- 技术上最大的优势是什么？
-- 哪些现有能力可以复用？
-- 成功后能带来什么技术积累？
+Yellow Hat (Value/Optimism):
+- What is the biggest technical advantage?
+- What existing capabilities can be reused?
+- What technical accumulation will success bring?
 
-🟩 绿帽（创意/可能）：
-- 有什么新技术可以尝试？
-- 架构上有什么创新可能？
-- 如何突破现有技术限制？
+Green Hat (Creativity/Possibilities):
+- What new technologies are worth trying?
+- What architectural innovations are possible?
+- How to break through existing technical limitations?
 
-🟦 蓝帽（流程/控制）：
-- 技术实施的最优顺序是什么？
-- 如何分阶段验证？
-- 需要什么决策点和回退机制？
+Blue Hat (Process/Control):
+- What is the optimal sequence for technical implementation?
+- How to validate in phases?
+- What decision points and rollback mechanisms are needed?
 
-每个创意请包含：
-- 创意标题
-- 简要描述（2-3 句话）
-- 技术复杂度（1-5 分）
-- 预估实现周期
-- 关键依赖
+For each idea, include:
+- Idea title
+- Brief description (2-3 sentences)
+- Technical complexity (1-5 points)
+- Estimated implementation timeline
+- Key dependencies
 
-输出 JSON 格式：
+Output in JSON format:
 [
   {
     "id": "W-1",
@@ -190,61 +208,61 @@
     "title": "...",
     "description": "...",
     "technical_complexity": 3,
-    "timeline": "中期",
+    "timeline": "medium-term",
     "dependencies": ["..."],
     "source": "codex"
   }
 ]
 ```
 
-## Gemini 提示词模板（用户视角）
+## Gemini Prompt Template (User Perspective)
 
 ```
-作为用户体验专家，使用六顶思考帽方法为以下主题生成创意：
+As a user experience expert, use the Six Thinking Hats method to generate ideas for the following topic:
 
-主题: {topic}
-研究背景: {research_brief_summary}
+Topic: {topic}
+Research Background: {research_brief_summary}
 
-请从用户体验角度，针对每顶帽子各生成 2-3 个创意：
+From a user experience perspective, generate 2-3 ideas for each hat:
 
-⬜ 白帽（数据/事实）：
-- 用户行为数据告诉我们什么？
-- 用户反馈的核心诉求是什么？
-- 市场调研揭示了什么趋势？
+White Hat (Data/Facts):
+- What does user behavior data tell us?
+- What are the core demands from user feedback?
+- What trends does market research reveal?
 
-🟥 红帽（直觉/感受）：
-- 用户的情感需求是什么？
-- 什么会让用户感到惊喜/失望？
-- 我们对用户的直觉理解是什么？
+Red Hat (Intuition/Feelings):
+- What are the users' emotional needs?
+- What will delight/disappoint users?
+- What is our intuitive understanding of users?
 
-⬛ 黑帽（风险/批判）：
-- 用户可能会抵触什么？
-- 什么体验问题会导致流失？
-- 竞品在哪些体验上做得更好？
+Black Hat (Risk/Critique):
+- What might users resist?
+- What experience issues will cause churn?
+- Where do competitors deliver better experiences?
 
-🟨 黄帽（价值/乐观）：
-- 对用户最大的价值是什么？
-- 什么体验会让用户主动推荐？
-- 成功后用户会如何描述这个产品？
+Yellow Hat (Value/Optimism):
+- What is the greatest value to users?
+- What experience will make users actively recommend?
+- How will users describe this product after success?
 
-🟩 绿帽（创意/可能）：
-- 有什么全新的交互方式？
-- 如何创造超出预期的体验？
-- 有什么跨界的用户体验可以借鉴？
+Green Hat (Creativity/Possibilities):
+- What brand new interaction methods are possible?
+- How to create experiences beyond expectations?
+- What cross-domain user experiences can be borrowed?
 
-🟦 蓝帽（流程/控制）：
-- 用户旅程的最佳设计是什么？
-- 如何分阶段优化体验？
-- 什么是体验设计的优先级？
+Blue Hat (Process/Control):
+- What is the optimal user journey design?
+- How to optimize experience in phases?
+- What are the experience design priorities?
 
-每个创意请包含：
-- 创意标题
-- 简要描述（2-3 句话）
-- 用户价值评分（1-5 分）
-- 创新程度（渐进/突破）
-- 情感吸引力关键词
+For each idea, include:
+- Idea title
+- Brief description (2-3 sentences)
+- User value score (1-5 points)
+- Innovation level (incremental/breakthrough)
+- Emotional appeal keywords
 
-输出 JSON 格式：
+Output in JSON format:
 [
   {
     "id": "W-1",
@@ -252,37 +270,37 @@
     "title": "...",
     "description": "...",
     "user_value": 4,
-    "innovation_level": "突破",
-    "emotional_appeal": "信任",
+    "innovation_level": "breakthrough",
+    "emotional_appeal": "trust",
     "source": "gemini"
   }
 ]
 ```
 
-## 使用建议
+## Usage Recommendations
 
-### 适用场景
+### Applicable Scenarios
 
-- 战略决策类问题
-- 复杂项目评估
-- 需要多角度分析的主题
-- 团队协作头脑风暴
+- Strategic decision problems
+- Complex project evaluation
+- Topics requiring multi-angle analysis
+- Team collaborative brainstorming
 
-### 执行顺序建议
+### Recommended Execution Order
 
-1. 🟦 蓝帽：明确问题定义
-2. ⬜ 白帽：收集事实信息
-3. 🟩 绿帽：发散创意
-4. 🟨 黄帽：评估价值
-5. ⬛ 黑帽：识别风险
-6. 🟥 红帽：直觉判断
-7. 🟦 蓝帽：总结行动
+1. Blue Hat: Define the problem clearly
+2. White Hat: Gather factual information
+3. Green Hat: Diverge ideas
+4. Yellow Hat: Evaluate value
+5. Black Hat: Identify risks
+6. Red Hat: Intuitive judgment
+7. Blue Hat: Summarize actions
 
-### 与 SCAMPER 的区别
+### Differences from SCAMPER
 
-| 维度 | 六顶思考帽 | SCAMPER |
-|------|------------|---------|
-| 思考方式 | 多角度评估 | 变换操作 |
-| 适用阶段 | 评估决策 | 创意发散 |
-| 产出特点 | 全面深入 | 数量丰富 |
-| 最佳场景 | 战略问题 | 产品创新 |
+| Dimension              | Six Thinking Hats       | SCAMPER                   |
+| ---------------------- | ----------------------- | ------------------------- |
+| Thinking Approach      | Multi-angle evaluation  | Transformation operations |
+| Applicable Stage       | Evaluation and decision | Creative divergence       |
+| Output Characteristics | Comprehensive and deep  | Abundant quantity         |
+| Best Scenarios         | Strategic issues        | Product innovation        |

@@ -1,159 +1,173 @@
-# SCAMPER 创意发散方法
+# SCAMPER Creative Divergence Method
 
-## 方法概述
+## Method Overview
 
-SCAMPER 是一种系统性的创意发散技术，通过七种思考角度激发新想法。每个字母代表一种思考方式：
+SCAMPER is a systematic creative divergence technique that stimulates new ideas through seven thinking perspectives. Each letter represents a thinking approach:
 
-| 字母 | 英文 | 中文 | 核心提问 |
-|------|------|------|----------|
-| S | Substitute | 替代 | 可以用什么替代？ |
-| C | Combine | 组合 | 可以和什么组合？ |
-| A | Adapt | 调整 | 可以从哪里借鉴？ |
-| M | Modify/Magnify/Minify | 修改 | 可以放大/缩小/改变什么？ |
-| P | Put to other uses | 另作他用 | 还能用在哪里？ |
-| E | Eliminate | 删除 | 可以删掉什么？ |
-| R | Reverse/Rearrange | 逆向 | 可以颠倒/重排什么？ |
+| Letter | English               | Chinese   | Core Question                         |
+| ------ | --------------------- | --------- | ------------------------------------- |
+| S      | Substitute            | Replace   | What can be substituted?              |
+| C      | Combine               | Combine   | What can be combined?                 |
+| A      | Adapt                 | Adapt     | What can be borrowed from?            |
+| M      | Modify/Magnify/Minify | Modify    | What can be enlarged/reduced/changed? |
+| P      | Put to other uses     | Repurpose | Where else can it be used?            |
+| E      | Eliminate             | Eliminate | What can be removed?                  |
+| R      | Reverse/Rearrange     | Reverse   | What can be reversed/rearranged?      |
 
-## 详细维度与提问模板
+## Detailed Dimensions and Question Templates
 
-### S - Substitute（替代）
+### S - Substitute
 
-**核心思想**：用其他元素替换现有组件
+**Core Concept**: Replace existing components with other elements
 
-**提问清单**：
-- 可以用什么材料/组件/人员替代？
-- 可以用什么流程/方法替代？
-- 可以用什么技术/工具替代？
-- 可以改变什么规则/假设？
-- 可以用什么其他产品/服务替代？
+**Question Checklist**:
 
-**示例**：
-- 用 AI 替代人工客服
-- 用订阅制替代一次性购买
-- 用异步沟通替代会议
+- What materials/components/personnel can be substituted?
+- What processes/methods can be substituted?
+- What technologies/tools can be substituted?
+- What rules/assumptions can be changed?
+- What other products/services can be substituted?
 
-### C - Combine（组合）
+**Examples**:
 
-**核心思想**：将不同元素合并创造新价值
+- Replace human customer service with AI
+- Replace one-time purchase with subscription model
+- Replace meetings with asynchronous communication
 
-**提问清单**：
-- 可以把什么功能/服务组合在一起？
-- 可以把什么人群/需求合并服务？
-- 可以融合什么技术/方法？
-- 可以整合什么资源/渠道？
-- 可以混搭什么风格/体验？
+### C - Combine
 
-**示例**：
-- 健身 + 社交 → 运动社群
-- 支付 + 理财 → 余额宝
-- 导航 + 音乐 → 驾驶体验
+**Core Concept**: Merge different elements to create new value
 
-### A - Adapt（调整/借鉴）
+**Question Checklist**:
 
-**核心思想**：从其他领域借鉴成功经验
+- What features/services can be combined?
+- What user groups/needs can be merged to serve?
+- What technologies/methods can be integrated?
+- What resources/channels can be consolidated?
+- What styles/experiences can be mixed?
 
-**提问清单**：
-- 其他行业如何解决类似问题？
-- 历史上有什么成功经验可借鉴？
-- 自然界有什么类似机制？
-- 其他文化/地区是怎么做的？
-- 竞争对手的什么做法值得学习？
+**Examples**:
 
-**示例**：
-- 借鉴游戏化机制提升学习参与度
-- 借鉴酒店行业的会员体系
-- 借鉴生物进化的迭代思想
+- Fitness + Social -> Sports community
+- Payment + Investment -> Yu'ebao (money market fund)
+- Navigation + Music -> Driving experience
 
-### M - Modify/Magnify/Minify（修改/放大/缩小）
+### A - Adapt
 
-**核心思想**：改变属性的程度或形式
+**Core Concept**: Borrow successful experiences from other domains
 
-**提问清单**：
-- 可以放大什么特性/功能？
-- 可以缩小什么成本/复杂度？
-- 可以加快/减慢什么速度？
-- 可以增强/减弱什么强度？
-- 可以改变什么形状/颜色/声音？
+**Question Checklist**:
 
-**示例**：
-- 放大：将按钮做得更大更明显
-- 缩小：将功能精简到极致（MVP）
-- 改变：从文字改成语音交互
+- How do other industries solve similar problems?
+- What historical success stories can be referenced?
+- What similar mechanisms exist in nature?
+- How do other cultures/regions do it?
+- What competitor practices are worth learning?
 
-### P - Put to other uses（另作他用）
+**Examples**:
 
-**核心思想**：发现现有资源的新用途
+- Apply gamification to improve learning engagement
+- Borrow membership systems from the hotel industry
+- Adopt iterative thinking from biological evolution
 
-**提问清单**：
-- 现有能力还能解决什么问题？
-- 现有用户还有什么需求？
-- 现有数据还能产生什么价值？
-- 现有渠道还能触达谁？
-- 副产品可以变成什么新产品？
+### M - Modify/Magnify/Minify
 
-**示例**：
-- 地图数据 → 城市规划服务
-- 电商评论 → 市场调研数据
-- 物流网络 → 即时配送服务
+**Core Concept**: Change the degree or form of attributes
 
-### E - Eliminate（删除）
+**Question Checklist**:
 
-**核心思想**：通过减法创造价值
+- What features/functions can be magnified?
+- What costs/complexity can be minimized?
+- What can be sped up/slowed down?
+- What intensity can be strengthened/weakened?
+- What shapes/colors/sounds can be changed?
 
-**提问清单**：
-- 可以删除什么步骤/流程？
-- 可以去掉什么功能/特性？
-- 可以省略什么中间环节？
-- 可以取消什么限制/规则？
-- 什么是用户真正不需要的？
+**Examples**:
 
-**示例**：
-- 去中介化（Uber、Airbnb）
-- 无密码登录
-- 一键下单（跳过购物车）
+- Magnify: Make buttons bigger and more prominent
+- Minimize: Simplify features to the extreme (MVP)
+- Modify: Change from text to voice interaction
 
-### R - Reverse/Rearrange（逆向/重排）
+### P - Put to other uses
 
-**核心思想**：颠倒顺序或换位思考
+**Core Concept**: Discover new uses for existing resources
 
-**提问清单**：
-- 可以颠倒什么顺序/流程？
-- 可以交换什么角色/位置？
-- 可以从结果倒推过程？
-- 如果反过来做会怎样？
-- 用户和提供者可以互换吗？
+**Question Checklist**:
 
-**示例**：
-- 先试后买 → 先买后试退
-- 公司招人 → 人选公司
-- 固定价格 → 动态定价
+- What other problems can existing capabilities solve?
+- What other needs do existing users have?
+- What other value can existing data generate?
+- Who else can existing channels reach?
+- What new products can byproducts become?
 
-## Codex 提示词模板
+**Examples**:
+
+- Map data -> Urban planning services
+- E-commerce reviews -> Market research data
+- Logistics network -> On-demand delivery services
+
+### E - Eliminate
+
+**Core Concept**: Create value through subtraction
+
+**Question Checklist**:
+
+- What steps/processes can be eliminated?
+- What features/characteristics can be removed?
+- What intermediary steps can be skipped?
+- What restrictions/rules can be canceled?
+- What do users truly not need?
+
+**Examples**:
+
+- Disintermediation (Uber, Airbnb)
+- Passwordless login
+- One-click ordering (skip the shopping cart)
+
+### R - Reverse/Rearrange
+
+**Core Concept**: Reverse order or think from a different perspective
+
+**Question Checklist**:
+
+- What sequence/process can be reversed?
+- What roles/positions can be swapped?
+- Can we work backward from results to process?
+- What if we did it the opposite way?
+- Can users and providers be interchanged?
+
+**Examples**:
+
+- Try before buy -> Buy then try and return
+- Company recruits people -> People choose companies
+- Fixed pricing -> Dynamic pricing
+
+## Codex Prompt Template
 
 ```
-作为后端架构师和技术专家，使用 SCAMPER 方法为以下主题生成创意：
+As a backend architect and technical expert, use the SCAMPER method to generate ideas for the following topic:
 
-主题: {topic}
-研究背景: {research_brief_summary}
+Topic: {topic}
+Research Background: {research_brief_summary}
 
-请针对每个 SCAMPER 维度，从技术可行性、系统架构、数据模型的角度各生成 2-3 个创意：
+For each SCAMPER dimension, generate 2-3 ideas from the perspectives of technical feasibility, system architecture, and data modeling:
 
-1. Substitute（替代）：哪些技术/组件/流程可以被替代？
-2. Combine（组合）：哪些功能/服务/数据可以组合？
-3. Adapt（调整）：其他领域的什么技术模式可以借鉴？
-4. Modify（修改）：性能/规模/复杂度如何调整？
-5. Put to other uses（另作他用）：现有技术能力还能解决什么问题？
-6. Eliminate（删除）：哪些环节/依赖可以简化或去除？
-7. Reverse（逆向）：流程/数据流/架构可以颠倒吗？
+1. Substitute: What technologies/components/processes can be substituted?
+2. Combine: What features/services/data can be combined?
+3. Adapt: What technical patterns from other domains can be borrowed?
+4. Modify: How can performance/scale/complexity be adjusted?
+5. Put to other uses: What other problems can existing technical capabilities solve?
+6. Eliminate: What steps/dependencies can be simplified or removed?
+7. Reverse: Can processes/data flows/architecture be reversed?
 
-每个创意请包含：
-- 创意标题
-- 简要描述（2-3 句话）
-- 技术复杂度（1-5 分）
-- 预估实现周期（短期<1周/中期1-4周/长期>1月）
-- 关键技术依赖
+For each idea, include:
+- Idea title
+- Brief description (2-3 sentences)
+- Technical complexity (1-5 points)
+- Estimated implementation timeline (short-term <1 week/medium-term 1-4 weeks/long-term >1 month)
+- Key technical dependencies
 
-输出 JSON 格式：
+Output in JSON format:
 [
   {
     "id": "S-1",
@@ -161,39 +175,39 @@ SCAMPER 是一种系统性的创意发散技术，通过七种思考角度激发
     "title": "...",
     "description": "...",
     "technical_complexity": 3,
-    "timeline": "中期",
+    "timeline": "medium-term",
     "dependencies": ["..."],
     "source": "codex"
   }
 ]
 ```
 
-## Gemini 提示词模板
+## Gemini Prompt Template
 
 ```
-作为创意设计师和用户体验专家，使用 SCAMPER 方法为以下主题生成创意：
+As a creative designer and user experience expert, use the SCAMPER method to generate ideas for the following topic:
 
-主题: {topic}
-研究背景: {research_brief_summary}
+Topic: {topic}
+Research Background: {research_brief_summary}
 
-请针对每个 SCAMPER 维度，从用户体验、情感价值、创新性的角度各生成 2-3 个创意：
+For each SCAMPER dimension, generate 2-3 ideas from the perspectives of user experience, emotional value, and innovation:
 
-1. Substitute（替代）：用户的什么需求可以用新方式满足？
-2. Combine（组合）：哪些体验可以融合创造惊喜？
-3. Adapt（调整）：其他行业的什么体验设计可以借鉴？
-4. Modify（修改）：交互/视觉/情感体验如何增强？
-5. Put to other uses（另作他用）：产品还能服务什么场景/人群？
-6. Eliminate（删除）：用户的什么痛点/摩擦可以彻底消除？
-7. Reverse（逆向）：传统假设/用户习惯可以打破吗？
+1. Substitute: What user needs can be met in new ways?
+2. Combine: What experiences can be merged to create delight?
+3. Adapt: What experience designs from other industries can be borrowed?
+4. Modify: How can interaction/visual/emotional experience be enhanced?
+5. Put to other uses: What other scenarios/user groups can the product serve?
+6. Eliminate: What user pain points/friction can be completely eliminated?
+7. Reverse: Can traditional assumptions/user habits be broken?
 
-每个创意请包含：
-- 创意标题
-- 简要描述（2-3 句话）
-- 用户价值评分（1-5 分）
-- 创新程度（渐进/突破）
-- 情感吸引力关键词
+For each idea, include:
+- Idea title
+- Brief description (2-3 sentences)
+- User value score (1-5 points)
+- Innovation level (incremental/breakthrough)
+- Emotional appeal keywords
 
-输出 JSON 格式：
+Output in JSON format:
 [
   {
     "id": "S-1",
@@ -201,8 +215,8 @@ SCAMPER 是一种系统性的创意发散技术，通过七种思考角度激发
     "title": "...",
     "description": "...",
     "user_value": 4,
-    "innovation_level": "突破",
-    "emotional_appeal": "惊喜",
+    "innovation_level": "breakthrough",
+    "emotional_appeal": "delight",
     "source": "gemini"
   }
 ]
