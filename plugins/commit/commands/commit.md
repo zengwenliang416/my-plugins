@@ -1,7 +1,7 @@
 ---
-description: "Commit workflow: collect → analyze → branch → message → commit"
+description: "Commit workflow: investigate → parallel analyze → synthesize → branch → message → commit"
 argument-hint: "[--no-verify] [--amend] [--scope] [--type] [--no-changelog] [--version] [--skip-branch] [--branch]"
-allowed-tools: [Skill, AskUserQuestion, Read, Bash]
+allowed-tools: [Task, Skill, AskUserQuestion, Read, Bash]
 ---
 
 # /commit
@@ -10,11 +10,11 @@ allowed-tools: [Skill, AskUserQuestion, Read, Bash]
 
 **FULLY AUTOMATED. NO STOPPING BETWEEN PHASES.**
 
-| ❌ Forbidden                   | ✅ Required                          |
-| ------------------------------ | ------------------------------------ |
-| Stop after Skill completes     | After Skill → IMMEDIATELY call next  |
-| Ask "continue?" between phases | Hard stops ONLY at Phase 4 & 7.2     |
-| Output intermediate results    | Phases 1→2→3→3.5 as atomic operation |
+| ❌ Forbidden                    | ✅ Required                              |
+| ------------------------------- | ---------------------------------------- |
+| Stop after Task/Skill completes | After Task/Skill → IMMEDIATELY call next |
+| Ask "continue?" between phases  | Hard stops ONLY at Phase 6 & 10          |
+| Output intermediate results     | Phases 1→2→3→4→5 as atomic operation     |
 
 ---
 
@@ -22,16 +22,19 @@ allowed-tools: [Skill, AskUserQuestion, Read, Bash]
 
 ```
 1   Initialize      → mkdir RUN_DIR
-2   Collect         → Skill("change-collector")      ─┐
-3   Analyze         → Skill("change-analyzer")        │ AUTO
-3.5 Branch          → Skill("branch-creator")        ─┘
-4   Confirm         → AskUserQuestion ⏸️ HARD STOP
-    ├─ Single → 5 → 5.5 → 6 → 7
-    └─ Split  → 4B → 5.5 → 7
-5   Message         → Skill("message-generator")
-5.5 Changelog       → Skill("changelog-generator")
-6   Commit          → Skill("commit-executor")
-7   Deliver         → Summary + Next action ⏸️ HARD STOP
+2   Investigate     → Task("change-investigator")    ─┐
+3   Parallel Analyze                                   │
+    ├─ Task("semantic-analyzer", run_in_background)    │ PARALLEL
+    └─ Task("symbol-analyzer", run_in_background)     ─┤
+4   Synthesize      → Skill("analysis-synthesizer")  ─┘
+5   Branch          → Skill("branch-creator")
+6   Confirm         → AskUserQuestion ⏸️ HARD STOP
+    ├─ Single → 7 → 8 → 9 → 10
+    └─ Split  → 6B → 8 → 10
+7   Message         → Skill("message-generator")
+8   Changelog       → Skill("changelog-generator")
+9   Execute         → Task("commit-worker")
+10  Deliver         → Summary + Next action ⏸️ HARD STOP
 ```
 
 ---
@@ -60,22 +63,66 @@ RUN_DIR=".claude/committing/runs/$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p ${RUN_DIR}
 ```
 
-### Phase 2→3→3.5: Auto-Execute Chain
+### Phase 2: Investigate
 
 ```
-Skill("change-collector", "run_dir=${RUN_DIR}")  → changes-raw.json
-  ↓ NO STOP
-Skill("change-analyzer", "run_dir=${RUN_DIR}")   → changes-analysis.json
-  ↓ NO STOP
-Skill("branch-creator", "run_dir=${RUN_DIR}")    → branch-info.json
-  ↓ → Phase 4
+Task(
+  subagent_type="general-purpose",
+  prompt="Execute change-investigator agent. Read plugins/commit/agents/change-investigator.md for instructions. run_dir=${RUN_DIR}",
+  description="investigate changes"
+)
 ```
 
-### Phase 4: Confirm ⏸️
+Output: `${RUN_DIR}/changes-raw.json`, `${RUN_DIR}/investigation-summary.md`
+
+### Phase 3: Parallel Analyze 🔀
+
+**CRITICAL: Launch BOTH agents in a SINGLE message with TWO Task tool calls.**
+
+```
+// In ONE message, call BOTH:
+Task(
+  subagent_type="general-purpose",
+  prompt="Execute semantic-analyzer agent. Read plugins/commit/agents/semantic-analyzer.md for instructions. run_dir=${RUN_DIR}",
+  description="semantic analysis",
+  run_in_background=true
+)
+
+Task(
+  subagent_type="general-purpose",
+  prompt="Execute symbol-analyzer agent. Read plugins/commit/agents/symbol-analyzer.md for instructions. run_dir=${RUN_DIR}",
+  description="symbol analysis",
+  run_in_background=true
+)
+```
+
+**Wait for BOTH to complete before Phase 4.**
+
+Output: `${RUN_DIR}/semantic-analysis.json`, `${RUN_DIR}/symbol-analysis.json`
+
+### Phase 4: Synthesize
+
+```
+Skill("analysis-synthesizer", "run_dir=${RUN_DIR}")
+```
+
+Merges parallel analysis results into unified `changes-analysis.json`.
+
+Output: `${RUN_DIR}/changes-analysis.json`
+
+### Phase 5: Branch
+
+```
+Skill("branch-creator", "run_dir=${RUN_DIR}")
+```
+
+Output: `${RUN_DIR}/branch-info.json` + new branch (if needed)
+
+### Phase 6: Confirm ⏸️
 
 Show: type, scope, files, complexity → User chooses: accept / customize / cancel / split
 
-### Phase 4B: Split Mode
+### Phase 6B: Split Mode
 
 ```bash
 git reset HEAD
@@ -98,7 +145,7 @@ for commit in commits:
 | refactor | ♻️    | revert | ⏪    |
 | perf     | ⚡    |        |       |
 
-### Phase 5: Generate Message
+### Phase 7: Generate Message
 
 ```
 Skill("message-generator", "run_dir=${RUN_DIR} options=${OPTIONS}")
@@ -106,7 +153,7 @@ Skill("message-generator", "run_dir=${RUN_DIR} options=${OPTIONS}")
 
 → User confirms → AUTO-CONTINUE
 
-### Phase 5.5: Changelog
+### Phase 8: Changelog
 
 ```
 Skill("changelog-generator", "run_dir=${RUN_DIR} version=${VERSION}")
@@ -114,22 +161,26 @@ Skill("changelog-generator", "run_dir=${RUN_DIR} version=${VERSION}")
 
 Skip only if: `--no-changelog` OR (test/ci/chore + user confirms)
 
-### Phase 6: Execute
+### Phase 9: Execute
 
 ```
-Skill("commit-executor", "run_dir=${RUN_DIR} options=${OPTIONS}")
+Task(
+  subagent_type="general-purpose",
+  prompt="Execute commit-worker agent. Read plugins/commit/agents/commit-worker.md for instructions. run_dir=${RUN_DIR} options=${OPTIONS}",
+  description="execute commit"
+)
 ```
 
-### Phase 7: Deliver ⏸️
+### Phase 10: Deliver ⏸️
 
-**7.1 Summary:**
+**10.1 Summary:**
 
 ```
 🎉 Commit completed!
 📝 ${title} | 🔀 ${branch} | 📦 ${hash} | 📊 ${files} files
 ```
 
-**7.2 Next Action (if new branch):**
+**10.2 Next Action (if new branch):**
 
 | Option     | Action                              |
 | ---------- | ----------------------------------- |
