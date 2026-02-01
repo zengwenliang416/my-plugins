@@ -286,7 +286,7 @@ Example structure:
 - If code spans multiple subdirectories/modules → **must parallel** split boundaries
 - If scale is small/single directory → can keep only 1 core boundary
 
-### Step 3.3 Sub-agent Parallel Exploration (Unified JSON Template)
+### Step 3.3 Multi-Boundary Parallel Exploration
 
 **Unified Output Template (must be consistent)**:
 
@@ -311,27 +311,29 @@ Skill(skill="tpd:context-explorer", args="run_dir=${THINKING_DIR} boundary=<boun
 
 #### Deep/Ultra Mode (Multi-Boundary Parallel)
 
+**Launch multiple Task agents in a single message for parallel execution:**
+
 > The following are examples only, actual boundaries must be based on `boundaries.json`.
 
 ```
 Task(
   subagent_type="general-purpose",
-  description="Explore boundary: user-domain",
-  prompt="Skill(skill=\"tpd:context-explorer\", args=\"run_dir=${THINKING_DIR} boundary=user-domain scope=user-related models/services/UI\")",
+  description="Explore user-domain",
+  prompt="You are the boundary-explorer agent. Read plugins/tpd/agents/investigation/boundary-explorer.md to understand your role. Execute with: run_dir=${THINKING_DIR} boundary=user-domain scope='user-related models/services/UI'",
   run_in_background=true
 )
 
 Task(
   subagent_type="general-purpose",
-  description="Explore boundary: auth-session",
-  prompt="Skill(skill=\"tpd:context-explorer\", args=\"run_dir=${THINKING_DIR} boundary=auth-session scope=authentication/session/middleware\")",
+  description="Explore auth-session",
+  prompt="You are the boundary-explorer agent. Read plugins/tpd/agents/investigation/boundary-explorer.md to understand your role. Execute with: run_dir=${THINKING_DIR} boundary=auth-session scope='authentication/session/middleware'",
   run_in_background=true
 )
 
 Task(
   subagent_type="general-purpose",
-  description="Explore boundary: config-infra",
-  prompt="Skill(skill=\"tpd:context-explorer\", args=\"run_dir=${THINKING_DIR} boundary=config-infra scope=configuration/deployment/build scripts\")",
+  description="Explore config-infra",
+  prompt="You are the boundary-explorer agent. Read plugins/tpd/agents/investigation/boundary-explorer.md to understand your role. Execute with: run_dir=${THINKING_DIR} boundary=config-infra scope='configuration/deployment/build scripts'",
   run_in_background=true
 )
 ```
@@ -340,18 +342,20 @@ Task(
 
 **Principle**: Only do constraint/risk/success criteria analysis, **forbidden to generate code or modify project**.
 
+**Launch both constraint agents in parallel:**
+
 ```
 Task(
   subagent_type="general-purpose",
-  description="Codex constraints analysis",
-  prompt="Skill(skill=\"tpd:codex-thinker\", args=\"run_dir=${THINKING_DIR} level=low\")",
+  description="Codex constraint analysis",
+  prompt="You are the codex-constraint agent. Read plugins/tpd/agents/reasoning/codex-constraint.md to understand your role. Execute with: run_dir=${THINKING_DIR} level=low",
   run_in_background=true
 )
 
 Task(
   subagent_type="general-purpose",
-  description="Gemini constraints analysis",
-  prompt="Skill(skill=\"tpd:gemini-thinker\", args=\"run_dir=${THINKING_DIR} level=medium\")",
+  description="Gemini constraint analysis",
+  prompt="You are the gemini-constraint agent. Read plugins/tpd/agents/reasoning/gemini-constraint.md to understand your role. Execute with: run_dir=${THINKING_DIR} level=medium",
   run_in_background=true
 )
 ```

@@ -1,5 +1,5 @@
 {
   "name": "tpd",
-  "version": "1.0.0",
-  "description": "TPD 工作流：thinking → plan → dev（支持 OpenSpec 交接与可验证产物）"
+  "version": "2.0.0",
+  "description": "TPD v2: 独立四阶段工作流（thinking → plan → dev），支持并行分析与 OpenSpec 数据交接"
 }

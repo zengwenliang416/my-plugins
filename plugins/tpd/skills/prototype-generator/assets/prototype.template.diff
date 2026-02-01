@@ -1,9 +1,0 @@
-diff --git a/${FILE_PATH} b/${FILE_PATH}
-index ${OLD_HASH}..${NEW_HASH} 100644
---- a/${FILE_PATH}
-+++ b/${FILE_PATH}
-@@ -${OLD_START},${OLD_COUNT} +${NEW_START},${NEW_COUNT} @@
- ${CONTEXT}
--${REMOVED_LINE}
-+${ADDED_LINE}
- ${CONTEXT}

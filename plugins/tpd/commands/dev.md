@@ -116,11 +116,22 @@ Skill(skill="tpd:context-retriever", args="run_dir=${DEV_DIR}")
 
 ## Phase 5: Task Analysis (Multi-Model Parallel)
 
-Call in parallel based on task_type:
+**Launch both implementer agents in analysis mode:**
 
 ```
-Skill(skill="tpd:multi-model-analyzer", args="run_dir=${DEV_DIR} model=codex")
-Skill(skill="tpd:multi-model-analyzer", args="run_dir=${DEV_DIR} model=gemini")
+Task(
+  subagent_type="general-purpose",
+  description="Codex analysis",
+  prompt="You are the codex-implementer agent. Read plugins/tpd/agents/execution/codex-implementer.md to understand your role. Execute with: run_dir=${DEV_DIR} mode=analyze",
+  run_in_background=true
+)
+
+Task(
+  subagent_type="general-purpose",
+  description="Gemini analysis",
+  prompt="You are the gemini-implementer agent. Read plugins/tpd/agents/execution/gemini-implementer.md to understand your role. Execute with: run_dir=${DEV_DIR} mode=analyze",
+  run_in_background=true
+)
 ```
 
 **Verify**: `analysis-codex.md` / `analysis-gemini.md`
@@ -131,9 +142,22 @@ Skill(skill="tpd:multi-model-analyzer", args="run_dir=${DEV_DIR} model=gemini")
 
 ## Phase 6: Prototype Generation (Multi-Model Parallel)
 
+**Launch both implementer agents in prototype mode:**
+
 ```
-Skill(skill="tpd:prototype-generator", args="run_dir=${DEV_DIR} model=codex focus=backend,api,logic")
-Skill(skill="tpd:prototype-generator", args="run_dir=${DEV_DIR} model=gemini focus=frontend,ui,styles")
+Task(
+  subagent_type="general-purpose",
+  description="Codex prototype",
+  prompt="You are the codex-implementer agent. Read plugins/tpd/agents/execution/codex-implementer.md to understand your role. Execute with: run_dir=${DEV_DIR} mode=prototype",
+  run_in_background=true
+)
+
+Task(
+  subagent_type="general-purpose",
+  description="Gemini prototype",
+  prompt="You are the gemini-implementer agent. Read plugins/tpd/agents/execution/gemini-implementer.md to understand your role. Execute with: run_dir=${DEV_DIR} mode=prototype",
+  run_in_background=true
+)
 ```
 
 **Verify**: `prototype-codex.diff` / `prototype-gemini.diff`
@@ -163,11 +187,24 @@ If issues found, must return to Phase 7 for correction.
 
 ---
 
-## Phase 9: Multi-Model Audit Verification
+## Phase 9: Multi-Model Audit Verification (Parallel)
+
+**Launch both auditor agents in a single message for parallel execution:**
 
 ```
-Skill(skill="tpd:audit-reviewer", args="run_dir=${DEV_DIR} model=codex focus=security,performance")
-Skill(skill="tpd:audit-reviewer", args="run_dir=${DEV_DIR} model=gemini focus=ux,accessibility")
+Task(
+  subagent_type="general-purpose",
+  description="Codex audit",
+  prompt="You are the codex-auditor agent. Read plugins/tpd/agents/execution/codex-auditor.md to understand your role. Execute with: run_dir=${DEV_DIR} focus=security,performance",
+  run_in_background=true
+)
+
+Task(
+  subagent_type="general-purpose",
+  description="Gemini audit",
+  prompt="You are the gemini-auditor agent. Read plugins/tpd/agents/execution/gemini-auditor.md to understand your role. Execute with: run_dir=${DEV_DIR} focus=ux,accessibility",
+  run_in_background=true
+)
 ```
 
 **Verify**: `audit-codex.md` / `audit-gemini.md`

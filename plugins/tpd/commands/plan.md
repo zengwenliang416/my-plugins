@@ -177,13 +177,24 @@ mcp__gemini__gemini: "Analyze proposal ${PROPOSAL_ID} for system properties. Def
 
 ---
 
-## Phase 8: Multi-Model Planning Refinement (Can Parallel)
+## Phase 8: Multi-Model Planning Refinement (Parallel)
 
-Call based on task_type:
+**Launch both architect agents in a single message for parallel execution:**
 
 ```
-Skill(skill="tpd:codex-planner", args="run_dir=${PLAN_DIR}")
-Skill(skill="tpd:gemini-planner", args="run_dir=${PLAN_DIR}")
+Task(
+  subagent_type="general-purpose",
+  description="Codex backend planning",
+  prompt="You are the codex-architect agent. Read plugins/tpd/agents/planning/codex-architect.md to understand your role. Execute with: run_dir=${PLAN_DIR} focus=architecture",
+  run_in_background=true
+)
+
+Task(
+  subagent_type="general-purpose",
+  description="Gemini frontend planning",
+  prompt="You are the gemini-architect agent. Read plugins/tpd/agents/planning/gemini-architect.md to understand your role. Execute with: run_dir=${PLAN_DIR} focus=components",
+  run_in_background=true
+)
 ```
 
 **Verify**: `codex-plan.md` / `gemini-plan.md`
