@@ -1,17 +1,101 @@
 #!/bin/bash
-# UserPromptSubmit hook - 意图评估 + 工具优先级注入
+# =============================================================================
+# unified-eval.sh - 智能插件路由 + 意图评估
+# =============================================================================
+# 核心思路：收集已启用插件元数据 → 注入 context → Claude 自主决策
+# =============================================================================
 
-cat << 'EOF'
+set -euo pipefail
+
+# -----------------------------------------------------------------------------
+# 1. 读取用户输入
+# -----------------------------------------------------------------------------
+input=$(cat)
+prompt=$(echo "$input" | jq -r '.prompt // empty')
+
+# -----------------------------------------------------------------------------
+# 2. 动态收集已启用插件信息
+# -----------------------------------------------------------------------------
+collect_plugin_catalog() {
+  local settings_file="$HOME/.claude/settings.json"
+  local cache_dir="$HOME/.claude/plugins/cache"
+  local catalog=""
+
+  if [[ ! -f "$settings_file" ]]; then
+    return
+  fi
+
+  # 获取已启用的插件列表
+  local enabled_plugins
+  enabled_plugins=$(jq -r '.enabledPlugins | to_entries[] | select(.value == true) | .key' "$settings_file" 2>/dev/null || echo "")
+
+  if [[ -z "$enabled_plugins" ]]; then
+    return
+  fi
+
+  catalog="## 🔌 已启用插件清单\n\n"
+  catalog+="根据用户意图，判断是否需要调用以下插件/技能：\n\n"
+
+  while IFS= read -r plugin_entry; do
+    [[ -z "$plugin_entry" ]] && continue
+
+    # 解析 plugin-name@marketplace
+    local plugin_name marketplace
+    plugin_name=$(echo "$plugin_entry" | cut -d'@' -f1)
+    marketplace=$(echo "$plugin_entry" | cut -d'@' -f2)
+
+    # 查找插件目录（取最新版本）
+    local plugin_dir
+    plugin_dir=$(find "$cache_dir/$marketplace/$plugin_name" -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1)
+
+    if [[ -z "$plugin_dir" || ! -d "$plugin_dir" ]]; then
+      continue
+    fi
+
+    # 读取插件描述
+    local description=""
+    if [[ -f "$plugin_dir/.claude-plugin/plugin.json" ]]; then
+      description=$(jq -r '.description // ""' "$plugin_dir/.claude-plugin/plugin.json" 2>/dev/null)
+    fi
+
+    catalog+="### /$plugin_name\n"
+    [[ -n "$description" ]] && catalog+="**描述**: $description\n"
+
+    # 收集 commands（用户可调用的命令）
+    if [[ -d "$plugin_dir/commands" ]]; then
+      local commands
+      commands=$(find "$plugin_dir/commands" -name "*.md" -exec basename {} .md \; 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
+      [[ -n "$commands" ]] && catalog+="**命令**: $commands\n"
+    fi
+
+    # 收集 skills（简化版，只列名称）
+    if [[ -d "$plugin_dir/skills" ]]; then
+      local skills
+      skills=$(find "$plugin_dir/skills" -maxdepth 1 -type d ! -name "skills" ! -name "_*" -exec basename {} \; 2>/dev/null | tr '\n' ', ' | sed 's/,$//')
+      [[ -n "$skills" ]] && catalog+="**技能**: $skills\n"
+    fi
+
+    catalog+="\n"
+  done <<< "$enabled_plugins"
+
+  echo -e "$catalog"
+}
+
+# -----------------------------------------------------------------------------
+# 3. 构建注入内容
+# -----------------------------------------------------------------------------
+build_context() {
+  local plugin_catalog
+  plugin_catalog=$(collect_plugin_catalog)
+
+  cat << 'STATIC_RULES'
 🔴 **强制：回复前必须先输出意图评估**
 
 格式（直接输出，不用代码块）：
 📋 **意图评估** | 类型: [询问/执行] | 意图: [一句话] | 方式: [直接回答/Skill(xxx)]
 
-可用 Skills: commit, debug, dev, image, review, test, plan, init
-调用格式: `Skill("ccg-core:xxx")`
-
 规则：
-- 执行类任务 → 输出评估 → 调用 Skill
+- 执行类任务 → 输出评估 → 调用对应 Skill
 - 询问类任务 → 输出评估 → 直接回答
 - 禁止跳过评估直接调用工具
 
@@ -34,4 +118,28 @@ mcp__auggie-mcp__codebase-retrieval({
   information_request: "用户认证功能的实现位置"
 })
 ```
-EOF
+
+---
+
+STATIC_RULES
+
+  # 追加动态插件清单
+  if [[ -n "$plugin_catalog" ]]; then
+    echo -e "$plugin_catalog"
+    cat << 'PLUGIN_RULES'
+
+📌 **插件路由规则**
+
+1. 根据用户意图匹配上述插件
+2. 如果匹配到插件，使用 `Skill("plugin:command")` 调用
+3. 如果无匹配，使用通用工具处理
+4. 复杂任务可组合多个插件
+
+PLUGIN_RULES
+  fi
+}
+
+# -----------------------------------------------------------------------------
+# 4. 输出
+# -----------------------------------------------------------------------------
+build_context
