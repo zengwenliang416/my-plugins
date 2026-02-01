@@ -1,0 +1,6 @@
+{
+  "enabledPlugins": {
+    "tr@tokenroll-cc-plugin": true,
+    "everything-claude-code@everything-claude-code": true
+  }
+}
