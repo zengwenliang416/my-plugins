@@ -13,7 +13,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/evaluation/unified-eval.sh",
-            "timeout": 5
+            "timeout": 10
           }
         ]
       }
