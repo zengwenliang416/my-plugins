@@ -75,6 +75,34 @@ collect_plugin_catalog() {
       [[ -n "$skills" ]] && catalog+="**技能**: $skills\n"
     fi
 
+    # 从插件 CLAUDE.md 提取触发条件和使用场景
+    local plugin_claude_md="$plugin_dir/CLAUDE.md"
+    if [[ -f "$plugin_claude_md" ]]; then
+      # 策略1: 提取 <available-skills> 或 <available-hooks> 表格
+      local trigger_table
+      trigger_table=$(sed -n '/<available-skills>/,/<\/available-skills>/p' "$plugin_claude_md" 2>/dev/null | grep -E '^\|.*\|' | head -8)
+      if [[ -z "$trigger_table" ]]; then
+        trigger_table=$(sed -n '/<available-hooks>/,/<\/available-hooks>/p' "$plugin_claude_md" 2>/dev/null | grep -E '^\|.*\|' | head -8)
+      fi
+      if [[ -n "$trigger_table" ]]; then
+        catalog+="**触发条件**:\n$trigger_table\n"
+      fi
+
+      # 策略2: 提取 "## When to Use" 或类似段落
+      local when_to_use
+      when_to_use=$(sed -n '/## When to [Uu]se/,/^## /p' "$plugin_claude_md" 2>/dev/null | grep -E '^[-*]' | head -5 | sed 's/^/  /')
+      if [[ -n "$when_to_use" ]]; then
+        catalog+="**使用场景**:\n$when_to_use\n"
+      fi
+
+      # 策略3: 提取 Workflow Phases（如 ui-design）
+      local workflow_phases
+      workflow_phases=$(sed -n '/## Workflow Phases/,/^## /p' "$plugin_claude_md" 2>/dev/null | grep -E '^[0-9]+\.' | head -5 | sed 's/^/  /')
+      if [[ -n "$workflow_phases" ]]; then
+        catalog+="**工作流阶段**:\n$workflow_phases\n"
+      fi
+    fi
+
     catalog+="\n"
   done <<< "$enabled_plugins"
 

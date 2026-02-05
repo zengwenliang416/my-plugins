@@ -36,6 +36,11 @@
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/security/db-guard.sh",
             "timeout": 3
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/security/git-conflict-guard.sh",
+            "timeout": 5
           }
         ]
       },

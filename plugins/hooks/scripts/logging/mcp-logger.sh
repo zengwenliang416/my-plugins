@@ -124,7 +124,6 @@ case "$server" in
     echo "🖼️ Banana Image: $tool"
     ;;
 
-  sequential-thinking)
     thought_num=$(echo "$input" | jq -r '.tool_input.thoughtNumber // 1')
     total=$(echo "$input" | jq -r '.tool_input.totalThoughts // 1')
     echo "🧠 思考中: $thought_num/$total"
