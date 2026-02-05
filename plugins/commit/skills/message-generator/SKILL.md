@@ -4,7 +4,6 @@ description: |
   【Trigger】Commit workflow step 3: generate commit message.
   【Output】${run_dir}/commit-message.md
   【Ask】If analysis missing, ask to run analyzer first.
-allowed-tools: [Read, Write, mcp__sequential-thinking__sequentialthinking]
 arguments:
   - name: run_dir
     type: string

@@ -4,7 +4,6 @@ description: |
   【Trigger】Commit workflow final step: execute git commit.
   【Output】${run_dir}/commit-result.json
   【Ask】If hook fails, ask to skip or fix.
-allowed-tools: [Read, Write, Bash, mcp__sequential-thinking__sequentialthinking]
 arguments:
   - name: run_dir
     type: string

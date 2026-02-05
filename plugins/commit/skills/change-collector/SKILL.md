@@ -5,7 +5,6 @@ description: |
   【Output】${run_dir}/changes-raw.json
   【Ask】If not a git repo, ask to initialize.
 allowed-tools:
-  [Bash, Write, AskUserQuestion, mcp__sequential-thinking__sequentialthinking]
 arguments:
   - name: run_dir
     type: string

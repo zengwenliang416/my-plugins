@@ -11,7 +11,6 @@ allowed-tools:
     LSP,
     AskUserQuestion,
     mcp__auggie-mcp__codebase-retrieval,
-    mcp__sequential-thinking__sequentialthinking,
   ]
 arguments:
   - name: run_dir

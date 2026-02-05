@@ -5,7 +5,6 @@ description: |
   【Output】${run_dir}/changes-analysis.json
   【Ask】If analyses conflict, ask user to resolve.
 allowed-tools:
-  [Read, Write, AskUserQuestion, mcp__sequential-thinking__sequentialthinking]
 arguments:
   - name: run_dir
     type: string
@@ -51,7 +50,6 @@ Priority for scope:
 If semantic and symbol analyses suggest different types/scopes:
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Analyzing conflict between semantic (${semantic_type}/${semantic_scope}) and symbol (${symbol_scope}) analysis...",
   thoughtNumber: 1,
   totalThoughts: 3,

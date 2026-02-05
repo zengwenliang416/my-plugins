@@ -4,7 +4,6 @@ description: |
   【Trigger】Commit workflow Phase 5.5: update CHANGELOG.md.
   【Output】Updated CHANGELOG.md + ${run_dir}/changelog-entry.md
   【🚨 Mandatory】Must run unless --no-changelog.
-allowed-tools: [Read, Write, Bash, mcp__sequential-thinking__sequentialthinking]
 arguments:
   - name: run_dir
     type: string

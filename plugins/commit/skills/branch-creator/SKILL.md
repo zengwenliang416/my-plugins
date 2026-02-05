@@ -10,7 +10,6 @@ allowed-tools:
     Read,
     Write,
     AskUserQuestion,
-    mcp__sequential-thinking__sequentialthinking,
   ]
 arguments:
   - name: run_dir
