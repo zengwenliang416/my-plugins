@@ -11,7 +11,6 @@ allowed-tools:
   - Skill
   - Bash
   - AskUserQuestion
-  - mcp__sequential-thinking__sequentialthinking
   - mcp__auggie-mcp__codebase-retrieval
   - mcp__context7__resolve-library-id
   - mcp__context7__query-docs
@@ -25,7 +24,6 @@ Parse brainstorm topic and execute external research to provide information foun
 
 | Tool                  | Purpose                                         | Required |
 | --------------------- | ----------------------------------------------- | -------- |
-| `sequential-thinking` | Structured topic decomposition, search planning | Yes      |
 | `auggie-mcp`          | Retrieve project code context                   | Yes      |
 | `context7`            | Query technical docs and best practices         | Yes      |
 
@@ -45,12 +43,10 @@ Parse brainstorm topic and execute external research to provide information foun
 mkdir -p "${run_dir}"
 ```
 
-### Step 2: Topic Decomposition (sequential-thinking)
 
 **Required MCP call:**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Analyze topic: {topic}. Identify core problems, keywords, domain, constraints.",
   thoughtNumber: 1,
   totalThoughts: 4,

@@ -9,7 +9,6 @@ allowed-tools:
   - Read
   - Write
   - AskUserQuestion
-  - mcp__sequential-thinking__sequentialthinking
   - mcp__auggie-mcp__codebase-retrieval
   - mcp__context7__resolve-library-id
   - mcp__context7__query-docs
@@ -23,7 +22,6 @@ Consolidate all phase artifacts and generate structured final brainstorm report.
 
 | Tool                  | Purpose                                       | Required |
 | --------------------- | --------------------------------------------- | -------- |
-| `sequential-thinking` | Structure report content, ensure logical flow | Yes      |
 | `auggie-mcp`          | Verify technical proposals against codebase   | Yes      |
 | `context7`            | Supplement best practice recommendations      | Yes      |
 
@@ -65,12 +63,10 @@ If format param missing, use AskUserQuestion:
 - **brief**: Concise version (quick sharing)
 - **detailed**: Full version (deep analysis)
 
-### Step 3.1: Report Planning (sequential-thinking)
 
 **Required MCP call:**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Plan brainstorm report. Format: {format}. Need to integrate research, ideas, evaluation phases.",
   thoughtNumber: 1,
   totalThoughts: 5,

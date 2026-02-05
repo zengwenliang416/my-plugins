@@ -12,7 +12,6 @@ allowed-tools:
   - Skill
   - Bash
   - AskUserQuestion
-  - mcp__sequential-thinking__sequentialthinking
   - mcp__auggie-mcp__codebase-retrieval
   - mcp__context7__resolve-library-id
   - mcp__context7__query-docs
@@ -26,7 +25,6 @@ Generate ideas using multi-model parallel execution (Codex + Gemini) based on di
 
 | Tool                  | Purpose                                             | Required |
 | --------------------- | --------------------------------------------------- | -------- |
-| `sequential-thinking` | Structured divergent thinking, ensure coverage      | Yes      |
 | `auggie-mcp`          | Retrieve code structure for technical context       | Yes      |
 | `context7`            | Query technical docs for implementation inspiration | Yes      |
 
@@ -52,12 +50,10 @@ research_brief=$(cat "${run_dir}/research-brief.md")
 
 Extract: topic, core problem, divergence directions, key trends/cases.
 
-### Step 2: Divergence Planning (sequential-thinking)
 
 **Required MCP call:**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Plan idea divergence strategy. Topic: {topic}. Determine method, angle coverage, idea count target.",
   thoughtNumber: 1,
   totalThoughts: 5,

@@ -9,7 +9,6 @@ allowed-tools:
   - Read
   - Write
   - AskUserQuestion
-  - mcp__sequential-thinking__sequentialthinking
   - mcp__auggie-mcp__codebase-retrieval
   - mcp__context7__resolve-library-id
   - mcp__context7__query-docs
@@ -23,7 +22,6 @@ Evaluate, categorize, and filter ideas; generate visualized evaluation results.
 
 | Tool                  | Purpose                                           | Required |
 | --------------------- | ------------------------------------------------- | -------- |
-| `sequential-thinking` | Structured multi-dimension evaluation, avoid bias | Yes      |
 | `auggie-mcp`          | Retrieve code context for feasibility assessment  | Yes      |
 | `context7`            | Query technical constraints and best practices    | Yes      |
 
@@ -62,12 +60,10 @@ Parse: idea ID, title, description, source (codex/gemini), existing scores.
 
 **Rules:** Each idea belongs to one primary group, may have secondary tag.
 
-### Step 2.1: Evaluation Planning (sequential-thinking)
 
 **Required MCP call:**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Plan idea evaluation strategy. Evaluating {total_ideas} ideas, ensure fair, comprehensive, comparable assessment.",
   thoughtNumber: 1,
   totalThoughts: 6,
