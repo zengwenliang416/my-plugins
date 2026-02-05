@@ -26,16 +26,13 @@
 
 - `Read` / `Write` / `Edit` - File operations (primary tools)
 - `mcp__auggie-mcp__codebase-retrieval` - Analyze code structure
-- `mcp__sequential-thinking__sequentialthinking` - Planning strategy
 - `LSP` - Type analysis and validation
 - `Bash` - TypeScript compilation check
 
 ## Execution Flow
 
-### Step 0: Planning (sequential-thinking)
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Plan code refactoring: 1) Analyze Gemini output 2) Refactor redundancies 3) Complete types 4) Add accessibility 5) Validate compilation",
   thoughtNumber: 1,
   totalThoughts: 5,

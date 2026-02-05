@@ -10,16 +10,13 @@
 
 - `mcp__gemini__gemini` - Creative style generation (MANDATORY)
 - `mcp__auggie-mcp__codebase-retrieval` - Analyze existing style system
-- `mcp__sequential-thinking__sequentialthinking` - Planning strategy
 - `LSP` - Analyze tailwind.config.js symbols
 - `Read` / `Write` / `Bash` - File operations
 
 ## Execution Flow
 
-### Step 0: Planning (sequential-thinking)
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Plan style recommendation: 1) Read requirements 2) Analyze existing styles 3) Match style library 4) Generate 3 variants 5) Create HTML previews",
   thoughtNumber: 1,
   totalThoughts: 5,

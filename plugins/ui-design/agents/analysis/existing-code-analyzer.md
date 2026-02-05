@@ -9,17 +9,14 @@
 ## Required Tools
 
 - `mcp__auggie-mcp__codebase-retrieval` - Semantic code search
-- `mcp__sequential-thinking__sequentialthinking` - Planning strategy
 - `LSP` - Symbol and type analysis
 - `Read` / `Grep` / `Glob` - File operations
 - `AskUserQuestion` - Clarify target code path
 
 ## Execution Flow
 
-### Step 0: Planning (sequential-thinking)
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Plan code analysis: 1) Locate target code 2) Analyze component structure 3) Identify style system 4) Detect UX issues 5) Generate report",
   thoughtNumber: 1,
   totalThoughts: 5,

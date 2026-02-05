@@ -10,7 +10,6 @@
 
 - `mcp__gemini__gemini` - Design specification generation (MANDATORY)
 - `mcp__auggie-mcp__codebase-retrieval` - Analyze existing component structure
-- `mcp__sequential-thinking__sequentialthinking` - Planning strategy
 - `LSP` - Component symbol and props analysis
 - `Read` / `Write` - File operations
 
@@ -32,10 +31,8 @@ wait_all()
 
 ## Execution Flow
 
-### Step 0: Planning (sequential-thinking)
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Plan design spec generation: 1) Parse recommendation 2) Analyze existing components 3) Define layout 4) Generate component specs 5) Complete responsive strategy",
   thoughtNumber: 1,
   totalThoughts: 5,

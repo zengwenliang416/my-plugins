@@ -10,16 +10,13 @@
 
 - `mcp__gemini__gemini` - UX expert analysis (MANDATORY)
 - `mcp__auggie-mcp__codebase-retrieval` - Analyze existing UX practices
-- `mcp__sequential-thinking__sequentialthinking` - Planning strategy
 - `LSP` - Accessibility info from components
 - `Read` / `Write` - File operations
 
 ## Execution Flow
 
-### Step 0: Planning (sequential-thinking)
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Plan UX check: 1) Parse design spec 2) Check accessibility 3) Verify usability 4) Evaluate consistency 5) Detect performance and responsive issues",
   thoughtNumber: 1,
   totalThoughts: 5,

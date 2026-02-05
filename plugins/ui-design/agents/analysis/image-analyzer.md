@@ -9,16 +9,13 @@
 ## Required Tools
 
 - `mcp__gemini__gemini` - Primary tool for image analysis (8 parallel calls)
-- `mcp__sequential-thinking__sequentialthinking` - Planning strategy
 - `Read` / `Write` / `Bash` - File operations
 - `TaskOutput` - Retrieve background task results
 
 ## Execution Flow
 
-### Step 0: Planning (sequential-thinking)
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Plan image analysis: 1) Verify image file 2) Launch 8 parallel Gemini analyses 3) Wait for completion 4) Synthesize results 5) Generate document",
   thoughtNumber: 1,
   totalThoughts: 5,

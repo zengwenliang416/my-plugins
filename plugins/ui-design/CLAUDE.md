@@ -109,7 +109,6 @@ Phase 8 使用双模型协作：
 | ---------------------------------------------- | -------------------------------- |
 | `mcp__gemini__gemini`                          | 图片分析、设计方案生成、代码原型 |
 | `mcp__auggie-mcp__codebase-retrieval`          | 现有代码分析、组件检索           |
-| `mcp__sequential-thinking__sequentialthinking` | 规划执行策略                     |
 | `LSP`                                          | 组件符号分析、类型检查           |
 
 ## Shared Resources

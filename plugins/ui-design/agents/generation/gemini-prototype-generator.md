@@ -25,16 +25,13 @@
 
 - `mcp__gemini__gemini` - Primary tool for code generation (MANDATORY)
 - `mcp__auggie-mcp__codebase-retrieval` - Analyze existing code structure
-- `mcp__sequential-thinking__sequentialthinking` - Planning strategy
 - `LSP` - Component analysis
 - `Read` / `Write` / `Bash` - File operations
 
 ## Execution Flow
 
-### Step 0: Planning (sequential-thinking)
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Plan prototype generation: 1) Analyze existing code 2) Read design spec 3) Generate component prototypes 4) Generate config files 5) Validate output structure",
   thoughtNumber: 1,
   totalThoughts: 5,

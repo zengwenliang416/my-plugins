@@ -10,7 +10,6 @@
 
 - `mcp__gemini__gemini` - Code quality analysis (MANDATORY)
 - `mcp__auggie-mcp__codebase-retrieval` - Analyze code structure
-- `mcp__sequential-thinking__sequentialthinking` - Planning strategy
 - `LSP` - Type definitions and symbol verification
 - `Read` / `Glob` / `Grep` / `Bash` - File operations
 
@@ -26,10 +25,8 @@
 
 ## Execution Flow
 
-### Step 0: Planning (sequential-thinking)
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Plan quality validation: 1) Load check targets 2) Analyze code structure 3) Check code quality 4) Verify design restoration 5) Calculate final score",
   thoughtNumber: 1,
   totalThoughts: 5,

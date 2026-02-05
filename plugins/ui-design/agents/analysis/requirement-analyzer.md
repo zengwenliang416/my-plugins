@@ -10,17 +10,14 @@
 
 - `mcp__auggie-mcp__codebase-retrieval` - Semantic code search (MUST use first)
 - `mcp__gemini__gemini` - Requirement analysis assistance
-- `mcp__sequential-thinking__sequentialthinking` - Planning strategy
 - `LSP` - Symbol analysis for components
 - `Read` / `Write` / `Bash` - File operations
 - `AskUserQuestion` - Gather missing information
 
 ## Execution Flow
 
-### Step 0: Planning (sequential-thinking)
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Plan requirement analysis: 1) Parse user description 2) Retrieve codebase context 3) Identify product type 4) Extract core functions 5) Determine design preferences",
   thoughtNumber: 1,
   totalThoughts: 5,
