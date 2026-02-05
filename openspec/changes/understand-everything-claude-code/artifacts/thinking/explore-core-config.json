@@ -1,0 +1,65 @@
+{
+  "module_name": "core-config",
+  "existing_structures": [
+    ".claude-plugin/plugin.json - Plugin metadata: name, version, description, author, homepage, repository, license, keywords, skills paths, agents list",
+    ".claude-plugin/marketplace.json - Marketplace registry: owner info, plugins array with name, source, description, category, tags",
+    "hooks/hooks.json - Lifecycle hooks: PreToolUse, PostToolUse, PreCompact, SessionStart, SessionEnd, Stop events with matchers and commands",
+    "package.json - Minimal dev dependencies only (eslint, markdownlint), no runtime deps",
+    "README.md - Comprehensive documentation with installation, usage, project structure",
+    "examples/CLAUDE.md - Template for project-level Claude configuration",
+    "examples/user-CLAUDE.md - Template for user-level (~/.claude/CLAUDE.md) configuration",
+    "No CLAUDE.md at project root - relies on examples as templates"
+  ],
+  "existing_conventions": [
+    "Skills referenced as directory paths in plugin.json: [\"./skills/\", \"./commands/\"]",
+    "Agents explicitly listed as individual .md file paths in plugin.json",
+    "Hooks auto-load from hooks/hooks.json by convention (Claude Code v2.1+) - NOT declared in plugin.json",
+    "Cross-platform Node.js scripts in scripts/ directory (not bash scripts)",
+    "Marketplace uses self-referencing source: \"source\": \"./\"",
+    "MIT license for open source distribution",
+    "Plugin naming: plugin-name@marketplace-name format for installation",
+    "Settings.json stores enabledPlugins and extraKnownMarketplaces for plugin management"
+  ],
+  "constraints_discovered": [
+    "CRITICAL: Do NOT add 'hooks' field to plugin.json - causes duplicate detection error in Claude Code v2.1+",
+    "Minimum Claude Code CLI version required: v2.1.0",
+    "Rules (rules/*.md) cannot be distributed via plugin system - upstream limitation, must copy manually",
+    "Context window limit: 200k shrinks to 70k with too many MCPs enabled",
+    "Recommended: Keep under 10 MCPs enabled per project, under 80 tools active",
+    "Package manager detection priority: env var > project config > package.json field > lock file > global config > fallback",
+    "All hook scripts must be Node.js for cross-platform compatibility (Windows, macOS, Linux)"
+  ],
+  "open_questions": [
+    "How does Claude Code discover and parse plugin.json fields like 'skills' and 'agents'?",
+    "Is there a formal JSON schema for plugin.json beyond the schemastore reference?",
+    "How is marketplace.json metadata (category, tags) used beyond plugin discovery?",
+    "What is the exact version compatibility matrix between plugin versions and Claude Code CLI versions?",
+    "How are plugin updates propagated to users who installed via marketplace?"
+  ],
+  "dependencies": [
+    "@eslint/js: ^9.39.2 (devDependency)",
+    "eslint: ^9.39.2 (devDependency)",
+    "globals: ^17.1.0 (devDependency)",
+    "markdownlint-cli: ^0.47.0 (devDependency)",
+    "Claude Code CLI v2.1.0+ (runtime requirement)",
+    "Node.js (for cross-platform hook scripts)",
+    "Optional: npx prettier (for auto-format hooks)",
+    "Optional: npx tsc (for TypeScript check hooks)"
+  ],
+  "risks": [
+    "Hooks auto-loading behavior changed between Claude Code versions - historical fix/revert cycles (issues #29, #52, #103)",
+    "No explicit version pinning in plugin.json schema - potential compatibility drift",
+    "Marketplace source can be github repo or local path - different sync behaviors",
+    "Context window consumption by enabled MCPs is non-obvious and can degrade performance",
+    "Rules require manual installation - users may miss this step and have inconsistent behavior"
+  ],
+  "success_criteria_hints": [
+    "Plugin installs successfully via: /plugin marketplace add affaan-m/everything-claude-code",
+    "Plugin installs via: /plugin install everything-claude-code@everything-claude-code",
+    "All slash commands registered and accessible (verify with /help or command palette)",
+    "Hooks fire correctly without duplicate detection errors",
+    "Test suite passes: node tests/run-all.js",
+    "Package manager detection works across platforms (test with scripts/setup-package-manager.js --detect)",
+    "No 'hooks' field present in .claude-plugin/plugin.json (regression test enforced)"
+  ]
+}

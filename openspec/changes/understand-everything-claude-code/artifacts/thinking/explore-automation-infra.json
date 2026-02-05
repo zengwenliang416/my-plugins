@@ -1,0 +1,71 @@
+{
+  "module_name": "automation-infra",
+  "existing_structures": [
+    "hooks/hooks.json - Master hook configuration with $schema validation",
+    "7 Hook Event Types: PreToolUse, PostToolUse, PreCompact, SessionStart, SessionEnd, Stop, Notification",
+    "Hook entry structure: { matcher, hooks: [{ type, command, timeout?, async? }], description }",
+    "scripts/lib/utils.js - Cross-platform utilities (platform detection, file ops, git ops, stdin/stdout handlers)",
+    "scripts/lib/package-manager.js - Package manager detection with 6-level priority cascade",
+    "scripts/hooks/*.js - Hook implementations (session-start, session-end, pre-compact, suggest-compact, evaluate-session, check-console-log)",
+    "tests/run-all.js - Test runner aggregating results from lib/*.test.js and hooks/*.test.js",
+    "Session files stored in ~/.claude/sessions/ with format YYYY-MM-DD-shortid-session.tmp",
+    "Package manager config stored in ~/.claude/package-manager.json or .claude/package-manager.json"
+  ],
+  "existing_conventions": [
+    "Hook scripts use shebang #!/usr/bin/env node for cross-platform execution",
+    "Scripts receive JSON via stdin for hook context, output to stderr for user visibility",
+    "Exit code 0 = allow/continue, exit code 1 = block/reject",
+    "Platform detection via process.platform ('win32' | 'darwin' | 'linux')",
+    "Path operations use path.join() for cross-platform compatibility",
+    "Home directory access via os.homedir() instead of $HOME",
+    "Safe command execution via spawnSync with argument arrays",
+    "Test files named *.test.js with simple test() helper using assert module",
+    "Test output format: 'Passed: N / Failed: N' for aggregation",
+    "Temp file cleanup after tests using fs.rmSync()",
+    "CLAUDE_PLUGIN_ROOT variable used for script paths in hooks.json",
+    "Session ID uses last 8 chars of CLAUDE_SESSION_ID or project name fallback"
+  ],
+  "constraints_discovered": [
+    "Claude Code v2.1+ auto-loads hooks/hooks.json - do NOT declare hooks in plugin.json (causes duplicate detection error)",
+    "All hook commands MUST start with 'node' for cross-platform compatibility",
+    "Script paths in hooks.json MUST use ${CLAUDE_PLUGIN_ROOT} variable",
+    "No external test framework dependencies - uses only Node.js built-in assert module",
+    "Hooks have timeout settings (3-30 seconds typical, 30s max for auto-format)",
+    "Package manager detection priority: env var > project config > package.json > lock file > global config > fallback",
+    "Lock file detection priority: pnpm > bun > yarn > npm (favors modern PMs)",
+    "Inline node -e hooks must escape strings properly for JSON parsing"
+  ],
+  "open_questions": [
+    "How do SubagentStop and SubagentStart events work? (mentioned in docs but not in hooks.json)",
+    "Are there additional hook event types not yet utilized by the project?",
+    "How does the compaction log integrate with session recovery workflow?",
+    "What is the pattern extraction mechanism in evaluate-session.js?",
+    "How does the async flag affect hook execution ordering relative to sync hooks?",
+    "Is there a maximum number of hooks per event type?",
+    "How are hook errors propagated back to the user?"
+  ],
+  "dependencies": [
+    "Node.js runtime (required for all hooks and scripts)",
+    "Claude Code CLI v2.1.0+ (minimum version for hook auto-loading)",
+    "Node.js built-in modules: fs, path, os, child_process, assert",
+    "Optional: git CLI (for repo detection in utils.js)",
+    "Optional: Package managers - npm (always with Node.js), pnpm, yarn, bun"
+  ],
+  "risks": [
+    "Hook Duplicate Detection: Declaring hooks in plugin.json causes 'Duplicate hooks file detected' error",
+    "Cross-Platform Shell Syntax: Some inline node -e hooks use shell-specific escaping",
+    "Session File Collisions: Multiple concurrent sessions using same project name could conflict",
+    "Timeout Sensitivity: Long-running hooks may timeout before completion",
+    "Package Manager Race Condition: Lock file detection before package.json could cause inconsistency",
+    "Regression Risk: The hooks declaration issue has caused repeated fix/revert cycles (issues #29, #52, #103)"
+  ],
+  "success_criteria_hints": [
+    "All hooks must be cross-platform (Node.js based, no shell scripts)",
+    "Tests should cover hook scripts, utilities, and hooks.json structural validation",
+    "plugin.json must NOT have hooks field (regression test exists in hooks.test.js)",
+    "Package manager detection should work without any explicit configuration",
+    "Session persistence should survive context compaction via PreCompact hook",
+    "Hook commands should use ${CLAUDE_PLUGIN_ROOT} for portability",
+    "Test coverage for all 4 supported package managers (npm, pnpm, yarn, bun)"
+  ]
+}

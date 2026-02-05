@@ -1,0 +1,31 @@
+{
+  "proposal_id": "understand-everything-claude-code",
+  "task_type": "fullstack",
+  "loop_mode": false,
+  "started_at": "2026-02-02T09:30:00Z",
+  "current_step": "step6_validation",
+  "status": "pending_approval",
+  "completed_steps": [
+    "step0_check",
+    "step1_init",
+    "step2_parallel_retrieval",
+    "step3_architecture_planning",
+    "step4_ambiguity_pbt",
+    "step5_integration"
+  ],
+  "artifacts": {
+    "input.md": true,
+    "proposal.md": true,
+    "requirements.md": true,
+    "context.md": true,
+    "codex-plan.md": true,
+    "gemini-plan.md": true,
+    "ambiguities.md": true,
+    "constraints.md": true,
+    "pbt.md": true,
+    "architecture.md": true,
+    "tasks.md": true,
+    "risks.md": true,
+    "plan.md": true
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "module_name": "cc-plugin-architecture",
+  "existing_structures": [
+    ".claude-plugin/plugin.json - Plugin metadata: name='tr', version='1.2.0', description, author fields",
+    "agents/ directory - 4 agent definitions: investigator.md, worker.md, recorder.md, scout.md",
+    "commands/ directory - 3 commands: initDoc.md, withScout.md, what.md (registered as /tr:initDoc, /tr:withScout, /tr:what)",
+    "skills/ directory - 5 skills: investigate/, commit/, update-doc/, read-doc/, doc-workflow/ (each with SKILL.md)",
+    "CLAUDE.example.md - System prompt template for user ~/.claude/CLAUDE.md integration",
+    "llmdoc/ directory structure - 4 categories: overview/, guides/, architecture/, reference/ + index.md",
+    "llmdoc/agent/ directory - Temporary storage for scout agent reports during initDoc workflow"
+  ],
+  "existing_conventions": [
+    "Agent Frontmatter Format: name, description, tools (comma-separated), model (sonnet|opus|inherit), color",
+    "Skill Frontmatter Format: name, description, disable-model-invocation (boolean), context (fork), allowed-tools (array)",
+    "Command Frontmatter Format: description, argument-hint (optional)",
+    "Task Tool Invocation: Task(subagent_type='tr:investigator', prompt='...', description='...', run_in_background=bool)",
+    "Documentation-First Principle: Always read llmdoc before source code investigation",
+    "Code Reference Policy: Never paste large code blocks; use 'path/to/file.ext:line~line (SymbolName)' format",
+    "Stateless Investigation: investigator agent outputs directly to conversation, no file writes",
+    "Option-Based Coding: Use AskUserQuestion tool to present choices rather than jumping to conclusions",
+    "Skills auto-triggered by keyword patterns (e.g., 'what is', 'how does X work' triggers /investigate)",
+    "Pre-fetched Context in Skills: Shell commands prefixed with '!' in SKILL.md for context injection"
+  ],
+  "constraints_discovered": [
+    "CRITICAL: scout agent MUST NOT run in background mode (run_in_background=false required)",
+    "At most 4 scout agents can run in parallel during initDoc workflow",
+    "At most 2 agents in parallel for general Task invocations",
+    "Report length constraint: investigator/recorder reports must be under 150 lines",
+    "Code block limit: If example unavoidable, MUST be less than 15 lines",
+    "Skill context='fork' indicates skill runs in isolated context",
+    "disable-model-invocation=true means skill uses pre-defined workflow only",
+    "recorder agent has two modes: 'content-only' (create/update docs) and 'full' (rebuild index.md)",
+    "scout agent output MUST be saved to projectRootPath/llmdoc/agent/ directory",
+    "AskUserQuestion MUST be used for 'Update project documentation' option after coding tasks"
+  ],
+  "open_questions": [
+    "How does Trae SOLO CODER mode's agent invocation API differ from Claude Code's Task tool?",
+    "Does Trae support the 'subagent_type' parameter for agent routing?",
+    "Can Trae's SOLO CODER mode handle run_in_background=true for parallel agent execution?",
+    "How does Trae handle skill auto-triggering based on keyword patterns?",
+    "Does Trae support the pre-fetched context mechanism (! shell commands in SKILL.md)?",
+    "What is Trae's equivalent of the AskUserQuestion tool for user interaction?",
+    "Does Trae support the 'model' field in agent frontmatter for model selection (sonnet/opus)?",
+    "How does Trae handle plugin marketplace and plugin installation commands?"
+  ],
+  "dependencies": [
+    "Claude Code CLI - Plugin execution environment",
+    "Git - Required for /commit skill and change tracking",
+    "llmdoc directory - Required for documentation-driven investigation",
+    "Task tool - Core mechanism for agent invocation",
+    "AskUserQuestion tool - User interaction for option-based decisions",
+    "WebSearch/WebFetch tools - Optional for external research (investigator, scout)",
+    "Bash/Read/Write/Edit/Glob/Grep tools - Core file operations for agents"
+  ],
+  "risks": [
+    "HIGH: Trae SOLO CODER mode may have different agent invocation API incompatible with Task tool",
+    "HIGH: run_in_background parallel execution may not be supported in Trae",
+    "MEDIUM: Pre-fetched context mechanism (! shell commands) may not work in Trae skills",
+    "MEDIUM: subagent_type routing format (e.g., 'tr:investigator') may differ in Trae",
+    "MEDIUM: Tool availability differs - Trae may lack AskUserQuestion, LSP, or MCP tools",
+    "LOW: Model selection (sonnet/opus) may not be respected in Trae environment",
+    "LOW: Plugin marketplace commands (/plugin install) may differ in Trae"
+  ],
+  "success_criteria_hints": [
+    "Agent definitions should be adapted to Trae's agent format while preserving core functionality",
+    "Multi-agent workflows (investigator -> worker, scout -> recorder) must be preserved or emulated",
+    "Documentation-first principle should remain central to the adapted solution",
+    "Parallel agent execution (up to 4 scouts, 2 general) should be supported or gracefully degraded",
+    "User interaction points (AskUserQuestion) must have Trae equivalents",
+    "Skill auto-triggering based on keywords should be preserved or documented for manual invocation"
+  ]
+}

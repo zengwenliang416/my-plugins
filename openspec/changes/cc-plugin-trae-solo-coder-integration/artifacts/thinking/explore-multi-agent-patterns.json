@@ -1,0 +1,105 @@
+{
+  "module_name": "multi-agent-patterns",
+  "existing_structures": [
+    "cc-plugin 4-layer architecture: Commands -> Agents -> Skills -> Hooks",
+    "Agent definitions in markdown files with YAML frontmatter (name, tools, model, color, description)",
+    "Task tool for agent invocation: Task(prompt, description, run_in_background, subagent_type)",
+    "Skill tool for atomic operations: Skill(skill-name, args)",
+    "Run directory pattern: .claude/{plugin}/runs/{timestamp}/ for state isolation",
+    "External model integration via codeagent-wrapper CLI (Codex/Gemini)",
+    "Session management for multi-turn conversations (--session parameter)",
+    "Hooks system for lifecycle interception (PreToolUse, PostToolUse, etc.)"
+  ],
+  "existing_conventions": [
+    "Agents read instructions from .md files, not hardcoded",
+    "run_in_background=true for parallel agent execution",
+    "Synthesizer skills merge parallel outputs after fork-join",
+    "External models use --sandbox read-only, output Unified Diff only",
+    "Claude reviews and applies all external model patches",
+    "State persisted in state.json for workflow resumption",
+    "AskUserQuestion for hard stops at critical decision points"
+  ],
+  "constraints_discovered": [
+    "HARD: cc-plugin depends on Claude Code's built-in Task/Skill tools - cannot be replaced",
+    "HARD: Trae SOLO operates as independent IDE platform with own agent runtime",
+    "HARD: cc-plugin external model integration requires codeagent-wrapper CLI interface",
+    "HARD: Sandbox constraint prohibits external models from direct file writes",
+    "SOFT: Agent definitions must be markdown files with specific YAML frontmatter schema",
+    "SOFT: All structured outputs expect JSON or Unified Diff format",
+    "SOFT: Session management required for multi-turn external model conversations"
+  ],
+  "open_questions": [
+    "Does Trae SOLO expose MCP-compatible API that cc-plugin could invoke?",
+    "Can Trae SOLO agents be wrapped as codeagent-wrapper targets similar to Codex/Gemini?",
+    "What is Trae SOLO's output format - compatible with Unified Diff convention?",
+    "Does Trae SOLO support read-only sandbox mode for safe integration?",
+    "How does Trae Plan Mode map to cc-plugin's phased workflow pattern?",
+    "Can Trae SOLO sub-agent delegation be exposed as Task tool invocations?",
+    "What session/context persistence does Trae SOLO provide across invocations?"
+  ],
+  "dependencies": [
+    "Claude Code Task tool (built-in, required for agent invocation)",
+    "Claude Code Skill tool (built-in, required for atomic operations)",
+    "codeagent-wrapper CLI (~/.claude/bin/codeagent-wrapper)",
+    "Run directory filesystem access for artifact storage",
+    "Trae SOLO platform API/CLI (external, needs investigation)",
+    "MCP protocol support (if Trae exposes MCP servers)"
+  ],
+  "risks": [
+    "HIGH: Platform boundary crossing - two distinct agent runtimes with different execution models",
+    "HIGH: Context synchronization - cc-plugin uses run directories, Trae uses IDE workspace",
+    "MEDIUM: Output format mismatch - Trae SOLO may not produce Unified Diff format",
+    "MEDIUM: Sandbox enforcement - Trae SOLO may not support read-only constraints",
+    "MEDIUM: Session state isolation - multi-turn context may leak across integrations",
+    "LOW: Latency overhead - bridging two platforms adds network/process hops",
+    "LOW: Error handling complexity - failures in one system may cascade"
+  ],
+  "success_criteria_hints": [
+    "Integration should preserve cc-plugin's sandbox safety guarantees",
+    "Trae SOLO invocations should appear as another codeagent-wrapper target",
+    "Output format must be Unified Diff for Claude to review and apply",
+    "Parallel execution pattern (run_in_background) should work with Trae agents",
+    "Session management should support multi-turn Trae conversations",
+    "Integration should not require modifications to cc-plugin core architecture"
+  ],
+  "comparison_analysis": {
+    "agent_definition": {
+      "cc_plugin": "Markdown files with YAML frontmatter (name, tools, model, description)",
+      "trae_solo": "Built-in agents (SOLO Builder, SOLO Coder) with platform-defined capabilities",
+      "gap": "Trae agents are platform-native, not user-definable via files"
+    },
+    "agent_invocation": {
+      "cc_plugin": "Task tool with prompt, description, run_in_background parameters",
+      "trae_solo": "Internal platform APIs, Plan Mode workflow, sub-agent delegation",
+      "gap": "Different invocation mechanisms, need adapter layer"
+    },
+    "parallel_execution": {
+      "cc_plugin": "run_in_background=true launches concurrent agents",
+      "trae_solo": "Platform-managed parallelism (implementation unknown)",
+      "gap": "Parallelism semantics may differ"
+    },
+    "context_management": {
+      "cc_plugin": "Run directories with state.json, artifact files",
+      "trae_solo": "IDE workspace context, Plan Mode state",
+      "gap": "Different context scopes and persistence models"
+    }
+  },
+  "integration_feasibility_assessment": {
+    "most_viable_path": "Wrap Trae SOLO as codeagent-wrapper target, similar to Codex/Gemini pattern",
+    "rationale": [
+      "cc-plugin already has external model integration pattern via codeagent-wrapper",
+      "Trae SOLO would become another --model option alongside codex/gemini",
+      "Existing sandbox, session, and output format conventions would apply",
+      "No changes to cc-plugin core architecture required"
+    ],
+    "prerequisites": [
+      "Trae SOLO must expose CLI or API for external invocation",
+      "Trae SOLO must support output in Unified Diff or structured JSON",
+      "Trae SOLO must support read-only mode or sandbox constraints"
+    ],
+    "alternative_paths": [
+      "MCP bridge: If Trae exposes MCP servers, invoke via MCP tool pattern",
+      "Bidirectional: Let Trae invoke cc-plugin agents via its sub-agent mechanism"
+    ]
+  }
+}

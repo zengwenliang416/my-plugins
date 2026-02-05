@@ -1,0 +1,20 @@
+{
+  "proposal_id": "understand-everything-claude-code",
+  "status": "completed",
+  "started_at": "2026-02-01T00:00:00Z",
+  "completed_at": "2026-02-01T00:00:00Z",
+  "current_step": 6,
+  "depth": "deep",
+  "target_project": "/Users/wenliang_zeng/workspace/open_sources/ccg-workflows/git-repos/everything-claude-code",
+  "boundaries_explored": [
+    "core-config",
+    "agent-system",
+    "skill-knowledge",
+    "automation-infra"
+  ],
+  "models_used": ["codex", "gemini"],
+  "confidence": {
+    "overall": "high",
+    "score": 8.0
+  }
+}

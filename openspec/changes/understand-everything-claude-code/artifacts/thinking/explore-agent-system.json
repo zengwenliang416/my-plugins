@@ -1,0 +1,94 @@
+{
+  "module_name": "agent-system",
+  "existing_structures": [
+    "YAML frontmatter with 4 required fields: name, description, tools, model",
+    "Markdown body structured with Role/Responsibilities/Workflow/Examples sections",
+    "12 agents registered in .claude-plugin/plugin.json under 'agents' array",
+    "Agent files stored in agents/ directory with kebab-case naming (e.g., code-reviewer.md)",
+    "Plugin manifest at .claude-plugin/plugin.json defining metadata and component paths",
+    "Marketplace manifest at .claude-plugin/marketplace.json for /plugin marketplace add",
+    "Tool arrays defined per agent controlling available capabilities",
+    "All agents specify model: opus"
+  ],
+  "existing_conventions": [
+    "Agent names use lowercase kebab-case: planner, code-reviewer, build-error-resolver",
+    "Descriptions include trigger conditions: 'Use PROACTIVELY when...'",
+    "Read-only agents: tools = ['Read', 'Grep', 'Glob'] (planners, reviewers)",
+    "Full access agents: tools = ['Read', 'Write', 'Edit', 'Bash', 'Grep', 'Glob']",
+    "Structured sections: Your Role, Core Responsibilities, Workflow, Best Practices, Anti-Patterns",
+    "Embedded bash commands for tool invocation (npm, tsc, go build, playwright, etc.)",
+    "Output format templates defined for each agent's deliverable",
+    "Success metrics/approval criteria: Critical/High/Medium issue thresholds",
+    "When to use / when NOT to use guidance sections",
+    "No emojis in agent definitions"
+  ],
+  "constraints_discovered": [
+    "Agents do not have Task tool - no direct nested delegation capability",
+    "All agents currently use model: opus (no fallback defined)",
+    "Rules cannot be distributed via plugins (Claude Code upstream limitation)",
+    "Hooks auto-loaded from hooks/hooks.json by convention (no explicit declaration in plugin.json)",
+    "Minimum Claude Code version: v2.1.0 required",
+    "Do NOT add 'hooks' field to plugin.json (causes duplicate detection error)",
+    "Agent tools are statically defined, not dynamically configurable",
+    "No agent versioning mechanism exists"
+  ],
+  "open_questions": [
+    "How to implement inter-agent delegation if Task tool is not available?",
+    "What triggers agent invocation - slash command, orchestrator, or manual selection?",
+    "Can agents be invoked with custom tool sets beyond frontmatter definition?",
+    "How are agent outputs consumed by the orchestrating context?",
+    "Is there a mechanism for agent-to-agent communication or shared state?"
+  ],
+  "dependencies": [
+    "Claude Code CLI v2.1.0+ for plugin system",
+    "Task tool for agent invocation (from orchestrator context)",
+    "Shell tools: Bash, Grep, Glob for codebase exploration",
+    "File tools: Read, Write, Edit for code modifications",
+    "External CLI tools assumed installed: npm, npx, tsc, go, playwright, knip, depcheck, eslint",
+    "Optional: staticcheck, golangci-lint, govulncheck for Go analysis",
+    "Optional: agent-browser for E2E testing"
+  ],
+  "risks": [
+    "Tool availability assumptions - agents may fail if CLI tools not installed",
+    "Model lock-in to opus - no graceful degradation to other models",
+    "No validation of frontmatter schema on load",
+    "External tool version mismatches could cause unexpected behavior",
+    "Large agent files could impact context window (some agents >500 lines)",
+    "Plugin system limitations: rules must be manually installed separately"
+  ],
+  "success_criteria_hints": [
+    "Agents define approval criteria: 'Approve if no CRITICAL or HIGH issues'",
+    "Verification commands embedded in workflows (npm run build, tsc --noEmit, go build ./...)",
+    "Checklists provided for quality gates (Security Checklist, Review Checklist)",
+    "Success metrics sections define measurable outcomes (80%+ coverage, build passing)",
+    "Output format templates enable structured parsing of agent results",
+    "Each agent specifies when to use and when NOT to use"
+  ],
+  "agent_catalog": {
+    "planning": ["planner.md", "architect.md"],
+    "quality_review": [
+      "code-reviewer.md",
+      "security-reviewer.md",
+      "go-reviewer.md",
+      "database-reviewer.md"
+    ],
+    "testing": ["tdd-guide.md", "e2e-runner.md"],
+    "error_resolution": ["build-error-resolver.md", "go-build-resolver.md"],
+    "maintenance": ["refactor-cleaner.md", "doc-updater.md"]
+  },
+  "frontmatter_schema": {
+    "name": "string (kebab-case, required)",
+    "description": "string (purpose + trigger conditions, required)",
+    "tools": "array of strings (available Claude Code tools, required)",
+    "model": "string (target model, required, currently always 'opus')"
+  },
+  "tool_categories": {
+    "read_only": ["Read", "Grep", "Glob"],
+    "file_modification": ["Write", "Edit"],
+    "shell_execution": ["Bash"],
+    "delegation": ["Task (not used by agents in this project)"],
+    "mcp_tools": [
+      "mcp__auggie-mcp__codebase-retrieval (not used in this project)"
+    ]
+  }
+}

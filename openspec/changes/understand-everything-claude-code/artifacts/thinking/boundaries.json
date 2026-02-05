@@ -1,0 +1,31 @@
+{
+  "project_path": "/Users/wenliang_zeng/workspace/open_sources/ccg-workflows/git-repos/everything-claude-code",
+  "identified_boundaries": [
+    {
+      "id": "core-config",
+      "name": "Plugin Core Configuration",
+      "scope": ".claude-plugin/, plugin.json, marketplace.json, package.json, CLAUDE.md",
+      "purpose": "Plugin metadata, marketplace integration, entry points"
+    },
+    {
+      "id": "agent-system",
+      "name": "Agent System",
+      "scope": "agents/ directory - planner, architect, reviewers, resolvers",
+      "purpose": "Specialized subagents for task delegation and automation"
+    },
+    {
+      "id": "skill-knowledge",
+      "name": "Skills & Domain Knowledge",
+      "scope": "skills/, commands/, rules/, contexts/",
+      "purpose": "Workflow definitions, best practices, slash commands, guidelines"
+    },
+    {
+      "id": "automation-infra",
+      "name": "Automation Infrastructure",
+      "scope": "hooks/, scripts/, tests/",
+      "purpose": "Trigger-based automation, cross-platform scripts, testing"
+    }
+  ],
+  "exploration_strategy": "parallel",
+  "max_agents": 4
+}

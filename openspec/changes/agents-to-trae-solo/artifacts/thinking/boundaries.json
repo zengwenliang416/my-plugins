@@ -1,0 +1,15 @@
+{
+  "depth": "light",
+  "boundary_count": 1,
+  "boundaries": [
+    {
+      "id": "agent-format",
+      "name": "Agent Format Transformation",
+      "scope": "Source agents format, target Trae IDE format, field mapping, tool mapping",
+      "files": [
+        "git-repos/cc-plugin/agents/*.md",
+        "git-repos/cc-plugin/agents/solo-coder/*.md"
+      ]
+    }
+  ]
+}

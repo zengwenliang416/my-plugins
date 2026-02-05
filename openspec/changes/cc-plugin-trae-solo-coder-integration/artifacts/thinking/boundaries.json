@@ -1,0 +1,44 @@
+{
+  "boundaries": [
+    {
+      "id": "cc-plugin-architecture",
+      "name": "cc-plugin 插件架构",
+      "scope": "cc-plugin 项目的 agents/commands/skills 结构及其运行机制",
+      "key_files": [
+        "git-repos/cc-plugin/agents/*.md",
+        "git-repos/cc-plugin/commands/*.md",
+        "git-repos/cc-plugin/.claude-plugin/plugin.json"
+      ]
+    },
+    {
+      "id": "trae-solo-mechanism",
+      "name": "Trae SOLO CODER 机制",
+      "scope": "Trae SOLO 的多智能体架构、Plan Mode、MCP 支持",
+      "key_sources": [
+        "https://www.trae.ai/solo",
+        "https://news.aibase.com/news/22829"
+      ]
+    },
+    {
+      "id": "claude-code-extension",
+      "name": "Claude Code 扩展能力",
+      "scope": "Claude Code 的 Task tool、Skill tool、Agent 定义能力",
+      "key_files": [
+        "llmdoc/architecture/plugin-architecture.md",
+        "llmdoc/architecture/multi-model-collaboration.md"
+      ]
+    },
+    {
+      "id": "multi-agent-patterns",
+      "name": "多智能体调用模式",
+      "scope": "两个系统的多智能体调用模式对比",
+      "comparison_points": [
+        "Agent 定义方式",
+        "Agent 调用机制",
+        "并行执行能力",
+        "上下文管理"
+      ]
+    }
+  ],
+  "analysis_goal": "评估 cc-plugin 与 Trae SOLO CODER 集成的技术可行性"
+}
