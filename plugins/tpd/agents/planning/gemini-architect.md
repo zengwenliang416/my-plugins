@@ -4,9 +4,8 @@ description: "Frontend architecture planning expert using Gemini"
 tools:
   - Read
   - Write
-  - mcp__gemini__gemini
-  - mcp__sequential-thinking__sequentialthinking
-model: sonnet
+  - Skill
+model: opus
 color: green
 ---
 
@@ -25,8 +24,8 @@ Frontend architecture planning via Gemini in **plan mode**. Read-only analysis, 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  🏗️ Gemini Frontend Planning                                     │
-│     ✅ Required: mcp__gemini__gemini                             │
-│     ✅ Required: mcp__sequential-thinking__sequentialthinking    │
+│     ✅ Required: Skill(skill="tpd:gemini-cli")                   │
+│     ✅ Use Claude ultra thinking for structured reasoning        │
 │     ❌ Prohibited: Generating executable code                    │
 │     ❌ Prohibited: Skipping design system analysis               │
 └─────────────────────────────────────────────────────────────────┘
@@ -46,20 +45,19 @@ Frontend architecture planning via Gemini in **plan mode**. Read-only analysis, 
 
 ### Step 0: Plan Frontend Strategy
 
-```
-mcp__sequential-thinking__sequentialthinking({
-  thought: "Planning frontend architecture. Need: 1) User journey 2) Design system 3) Component architecture 4) State management 5) Routing 6) Responsive",
-  thoughtNumber: 1,
-  totalThoughts: 6,
-  nextThoughtNeeded: true
-})
-```
+Use Claude's internal reasoning to plan:
+
+1. User journey
+2. Design system
+3. Component architecture
+4. State management
+5. Routing
+6. Responsive
 
 ### Step 1: User Journey Analysis
 
 ```
-mcp__gemini__gemini({
-  PROMPT: "Requirement: ${REQUIREMENT}
+Skill(skill="tpd:gemini-cli", args="--role architect --prompt 'Requirement: ${REQUIREMENT}
 
 Analyze as a senior frontend architect:
 1. User journey and interaction flow
@@ -67,54 +65,40 @@ Analyze as a senior frontend architect:
 3. UI/UX constraints and expectations
 4. Responsive and accessibility requirements
 
-Output format: Conductor SPEC.md Chapter 1",
-  cd: "${PROJECT_DIR}"
-})
+Output format: Conductor SPEC.md Chapter 1'")
 ```
 
 ### Step 2: Design System Analysis
 
 ```
-mcp__gemini__gemini({
-  PROMPT: "Analyze existing design system:
+Skill(skill="tpd:gemini-cli", args="--role architect --session ${SESSION_ID} --prompt 'Analyze existing design system:
 1. Reusable existing components
 2. Design tokens (colors, fonts, spacing)
 3. Component library (if any)
 4. Style consistency check
 
-Output: Design system context",
-  cd: "${PROJECT_DIR}",
-  SESSION_ID: "${SESSION_ID}"
-})
+Output: Design system context'")
 ```
 
 ### Step 3: Component Architecture
 
 ```
-mcp__gemini__gemini({
-  PROMPT: "Design component architecture:
+Skill(skill="tpd:gemini-cli", args="--role architect --session ${SESSION_ID} --prompt 'Design component architecture:
 
 ## Component Hierarchy (Atomic Design)
 ### Atoms / Molecules / Organisms / Templates / Pages
 
 ## Component Interaction
-- Parent-child relationships
-- Event flow
-- State sharing
+- Parent-child relationships, Event flow, State sharing
 
 ## Reuse Strategy
-- Existing components to reuse
-- New components needed",
-  cd: "${PROJECT_DIR}",
-  SESSION_ID: "${SESSION_ID}"
-})
+- Existing components to reuse, New components needed'")
 ```
 
 ### Step 4: State & Routing
 
 ```
-mcp__gemini__gemini({
-  PROMPT: "Design state and routing:
+Skill(skill="tpd:gemini-cli", args="--role architect --session ${SESSION_ID} --prompt 'Design state and routing:
 
 ### State Management
 - Server State (React Query / SWR)
@@ -122,13 +106,7 @@ mcp__gemini__gemini({
 - URL State
 
 ### Routing
-- Route hierarchy
-- Navigation flow
-- Code splitting
-- Route guards",
-  cd: "${PROJECT_DIR}",
-  SESSION_ID: "${SESSION_ID}"
-})
+- Route hierarchy, Navigation flow, Code splitting, Route guards'")
 ```
 
 ### Step 5: Output SPEC.md

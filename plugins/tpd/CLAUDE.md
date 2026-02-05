@@ -1,16 +1,6 @@
-# TPD Plugin - CLAUDE.md Example
+# TPD Plugin
 
-Add the following to your project's `.claude/CLAUDE.md` for optimal TPD integration.
-
-## Recommended Configuration
-
-```markdown
-Always answer in 简体中文
-
-</system-reminder>
-
-<system-reminder>
-
+<!-- Machine-readable metadata for unified-eval.sh -->
 <available-skills>
 
 | Skill           | Trigger                | Description                |
@@ -22,22 +12,17 @@ Always answer in 简体中文
 
 </available-skills>
 
-<phase-independence>
+## Overview
+
+TPD v2: 独立四阶段工作流（thinking → plan → dev），支持并行分析与 OpenSpec 数据交接。
 
 四个阶段完全独立，通过 OpenSpec 的 proposal_id 串联：
 
 - 每个阶段可单独执行
-- 数据交换通过 openspec/changes/<proposal_id>/ 目录
+- 数据交换通过 `openspec/changes/<proposal_id>/` 目录
 - 无需按顺序执行（但推荐 thinking → plan → dev）
 
-</phase-independence>
-
-</system-reminder>
-```
-
-## Usage Examples
-
-### 1. Full Workflow
+## Quick Start
 
 ```bash
 # 1. Initialize OpenSpec
@@ -51,26 +36,6 @@ Always answer in 简体中文
 
 # 4. Implement in minimal phases
 /tpd:dev
-```
-
-### 2. Independent Phase Execution
-
-```bash
-# Just do deep thinking without planning
-/tpd:thinking --depth=ultra "Analyze the architecture trade-offs"
-
-# Just create a plan for an existing proposal
-/tpd:plan proposal-123
-
-# Just implement a specific proposal
-/tpd:dev --proposal-id=proposal-123
-```
-
-### 3. Parallel Mode
-
-```bash
-# Force multi-model parallel analysis in light mode
-/tpd:thinking --parallel "Simple question but want multiple perspectives"
 ```
 
 ## Phase Data Flow
@@ -99,7 +64,7 @@ dev ──────────→ 最小可验证相位实现
 
 - `requirements.md` - Parsed requirements
 - `context.md` - Retrieved context
-- `analysis-*.md` - Multi-model analysis
+- `codex-plan.md` / `gemini-plan.md` - Multi-model analysis
 - `architecture.md` - Architecture design
 - `tasks.md` - Task decomposition
 - `plan.md` - Final plan
@@ -121,3 +86,44 @@ dev ──────────→ 最小可验证相位实现
 | Planning      | codex-architect, gemini-architect     |
 | Execution     | codex-implementer, gemini-implementer |
 |               | codex-auditor, gemini-auditor         |
+
+---
+
+## Recommended CLAUDE.md Configuration
+
+Copy the following to your project's `.claude/CLAUDE.md`:
+
+```markdown
+<system-reminder>
+
+## Workflow Completion Rules
+
+<workflow-completion>
+
+### Multi-Phase Workflow Management
+
+- All workflows use `.claude/{plugin}/runs/{timestamp}/` isolated run directories
+- Track phase progress via `state.json`, support `--run-id` to resume interrupted workflows
+- Use **Hard Stop** (`AskUserQuestion`) at critical decision points
+- Final phase MUST generate delivery summary and prompt next steps
+
+</workflow-completion>
+
+## Parallel Task Integration Rules
+
+<parallel-task-integration>
+
+### Consolidation Protocol
+
+When using parallel task agents:
+
+1. Wait for all parallel tasks to complete
+2. Merge findings into a single summary
+3. Highlight conflicts or concerns
+4. Present actionable next steps
+5. **Never leave parallel work hanging without a summary**
+
+</parallel-task-integration>
+
+</system-reminder>
+```

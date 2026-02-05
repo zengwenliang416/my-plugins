@@ -4,9 +4,8 @@ description: "Backend architecture planning expert using Codex"
 tools:
   - Read
   - Write
-  - mcp__codex__codex
-  - mcp__sequential-thinking__sequentialthinking
-model: sonnet
+  - Skill
+model: opus
 color: green
 ---
 
@@ -25,8 +24,8 @@ Backend architecture planning via Codex in **plan mode**. Read-only analysis, PL
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  🏗️ Codex Architecture Planning                                  │
-│     ✅ Required: mcp__codex__codex with sandbox: read-only       │
-│     ✅ Required: mcp__sequential-thinking__sequentialthinking    │
+│     ✅ Required: Skill(skill="tpd:codex-cli")                    │
+│     ✅ Use Claude ultra thinking for structured reasoning        │
 │     ❌ Prohibited: Generating executable code                    │
 │     ❌ Prohibited: Skipping codebase exploration                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -46,20 +45,18 @@ Backend architecture planning via Codex in **plan mode**. Read-only analysis, PL
 
 ### Step 0: Plan Architecture Strategy
 
-```
-mcp__sequential-thinking__sequentialthinking({
-  thought: "Planning backend architecture. Need: 1) Understand requirements 2) Explore codebase 3) Design solutions 4) Define specs 5) Plan implementation path",
-  thoughtNumber: 1,
-  totalThoughts: 5,
-  nextThoughtNeeded: true
-})
-```
+Use Claude's internal reasoning to plan:
+
+1. Understand requirements
+2. Explore codebase
+3. Design solutions
+4. Define specs
+5. Plan implementation path
 
 ### Step 1: Requirement Understanding
 
 ```
-mcp__codex__codex({
-  PROMPT: "Requirement: ${REQUIREMENT}
+Skill(skill="tpd:codex-cli", args="--role architect --prompt 'Requirement: ${REQUIREMENT}
 
 Analyze as a senior architect:
 1. Core functionality boundaries
@@ -67,34 +64,25 @@ Analyze as a senior architect:
 3. Potential risk points
 4. Questions needing clarification
 
-Output format: PLANS.md Chapter 1",
-  cd: "${PROJECT_DIR}",
-  sandbox: "read-only"
-})
+Output format: PLANS.md Chapter 1'")
 ```
 
 ### Step 2: Codebase Exploration
 
 ```
-mcp__codex__codex({
-  PROMPT: "Based on requirement, explore codebase:
+Skill(skill="tpd:codex-cli", args="--role architect --session ${SESSION_ID} --prompt 'Based on requirement, explore codebase:
 1. Related modules and files
 2. Existing architecture patterns
 3. Data flow
 4. Integration points
 
-Output: Codebase context summary",
-  cd: "${PROJECT_DIR}",
-  sandbox: "read-only",
-  SESSION_ID: "${SESSION_ID}"
-})
+Output: Codebase context summary'")
 ```
 
 ### Step 3: Architecture Solution Design
 
 ```
-mcp__codex__codex({
-  PROMPT: "Based on exploration, design architecture:
+Skill(skill="tpd:codex-cli", args="--role architect --session ${SESSION_ID} --prompt 'Based on exploration, design architecture:
 
 ## Solution A: [Name]
 - Pros / Cons / Risks / Effort
@@ -103,18 +91,13 @@ mcp__codex__codex({
 - Pros / Cons / Risks / Effort
 
 ## Recommended Solution
-- Choice and Rationale",
-  cd: "${PROJECT_DIR}",
-  sandbox: "read-only",
-  SESSION_ID: "${SESSION_ID}"
-})
+- Choice and Rationale'")
 ```
 
 ### Step 4: Technical Specs
 
 ```
-mcp__codex__codex({
-  PROMPT: "Generate technical specs for recommended solution:
+Skill(skill="tpd:codex-cli", args="--role architect --session ${SESSION_ID} --prompt 'Generate technical specs for recommended solution:
 
 ### API Design
 - Endpoints, Request/Response, Errors
@@ -126,11 +109,7 @@ mcp__codex__codex({
 - Auth, Validation, Sensitive data
 
 ### Performance
-- Caching, DB optimization, Concurrency",
-  cd: "${PROJECT_DIR}",
-  sandbox: "read-only",
-  SESSION_ID: "${SESSION_ID}"
-})
+- Caching, DB optimization, Concurrency'")
 ```
 
 ### Step 5: Output PLANS.md
@@ -193,7 +172,7 @@ Write to `${run_dir}/codex-plan.md`:
 
 ## Quality Gates
 
-- [ ] Used `sandbox: read-only` in all Codex calls
+- [ ] Used Skill(skill="tpd:codex-cli") for all Codex calls
 - [ ] Output is PLANS.md format
 - [ ] Contains multi-solution comparison
 - [ ] No executable code generated

@@ -4,9 +4,8 @@ description: "Security and performance audit using Codex"
 tools:
   - Read
   - Write
-  - mcp__codex__codex
-  - mcp__sequential-thinking__sequentialthinking
-model: sonnet
+  - Skill
+model: opus
 color: purple
 ---
 
@@ -25,8 +24,8 @@ Use Codex to audit code changes for security vulnerabilities and performance iss
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  🔒 Codex Security/Performance Audit                             │
-│     ✅ Required: mcp__codex__codex with sandbox: read-only       │
-│     ✅ Required: mcp__sequential-thinking__sequentialthinking    │
+│     ✅ Required: Skill(skill="tpd:codex-cli")                    │
+│     ✅ Use Claude ultra thinking for structured reasoning        │
 │     ❌ Prohibited: Modifying code                                │
 │     ❌ Prohibited: Skipping OWASP checks                         │
 └─────────────────────────────────────────────────────────────────┘
@@ -43,14 +42,13 @@ Use Codex to audit code changes for security vulnerabilities and performance iss
 
 ### Step 0: Plan Audit Strategy
 
-```
-mcp__sequential-thinking__sequentialthinking({
-  thought: "Planning code audit. Need: 1) Read changes 2) Identify critical paths 3) Check security 4) Check performance 5) Generate report",
-  thoughtNumber: 1,
-  totalThoughts: 5,
-  nextThoughtNeeded: true
-})
-```
+Use Claude's internal reasoning to plan:
+
+1. Read changes
+2. Identify critical paths
+3. Check security
+4. Check performance
+5. Generate report
 
 ### Step 1: Read Changes
 
@@ -61,42 +59,27 @@ Read("${run_dir}/changes.md")
 ### Step 2: Execute Audit
 
 ```
-mcp__codex__codex({
-  PROMPT: "Review code changes for security and performance.
+Skill(skill="tpd:codex-cli", args="--role auditor --prompt 'Review code changes for security and performance.
 
 Change list: ${run_dir}/changes.md
 
 ## Security Review (OWASP Top 10)
-- SQL Injection
-- XSS
-- CSRF
-- Broken Authentication
-- Sensitive Data Exposure
-- Broken Access Control
-- Security Misconfiguration
-- Insecure Deserialization
+- SQL Injection, XSS, CSRF, Broken Authentication
+- Sensitive Data Exposure, Broken Access Control
+- Security Misconfiguration, Insecure Deserialization
 - Using Components with Known Vulnerabilities
 - Insufficient Logging & Monitoring
 
 ## Performance Review
-- N+1 query problems
-- Memory leaks
-- Unoptimized database queries
-- Missing caching
-- Concurrency issues
-- Resource cleanup
+- N+1 query problems, Memory leaks
+- Unoptimized database queries, Missing caching
+- Concurrency issues, Resource cleanup
 
 ## Edge Cases
-- Null/undefined handling
-- Boundary conditions
-- Error scenarios
+- Null/undefined handling, Boundary conditions, Error scenarios
 
 Output: Issue list (Critical > Major > Minor) with fix recommendations and overall score (1-5).
-
-Recommendation: APPROVE / REQUEST_CHANGES / COMMENT",
-  cd: "${PROJECT_DIR}",
-  sandbox: "read-only"
-})
+Recommendation: APPROVE / REQUEST_CHANGES / COMMENT'")
 ```
 
 ### Step 3: Output Report
@@ -155,7 +138,7 @@ Write to `${run_dir}/audit-codex.md`:
 
 ## Quality Gates
 
-- [ ] Used `sandbox: read-only`
+- [ ] Used `--sandbox read-only`
 - [ ] Checked OWASP Top 10
 - [ ] Produced audit-codex.md
 - [ ] Contains actionable recommendations

@@ -4,9 +4,8 @@ description: "Use Codex for technical constraint and risk analysis"
 tools:
   - Read
   - Write
-  - mcp__codex__codex
-  - mcp__sequential-thinking__sequentialthinking
-model: sonnet
+  - Skill
+model: opus
 color: yellow
 ---
 
@@ -25,8 +24,8 @@ Use Codex to analyze technical constraints, risks, and implementation considerat
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  🤖 Codex Constraint Analysis                                    │
-│     ✅ Required: mcp__codex__codex                               │
-│     ✅ Required: mcp__sequential-thinking__sequentialthinking    │
+│     ✅ Required: Skill(skill="tpd:codex-cli")                    │
+│     ✅ Use Claude ultra thinking for structured reasoning        │
 │     ❌ Prohibited: Making architecture decisions                 │
 │     ❌ Prohibited: Generating code patches                       │
 └─────────────────────────────────────────────────────────────────┘
@@ -43,14 +42,13 @@ Use Codex to analyze technical constraints, risks, and implementation considerat
 
 ### Step 0: Plan Analysis Strategy
 
-```
-mcp__sequential-thinking__sequentialthinking({
-  thought: "Planning Codex constraint analysis. Need: 1) Read question 2) Build prompt 3) Execute Codex 4) Parse output 5) Format constraints",
-  thoughtNumber: 1,
-  totalThoughts: 5,
-  nextThoughtNeeded: true
-})
-```
+Use Claude's internal reasoning to plan:
+
+1. Read question
+2. Build prompt
+3. Execute Codex
+4. Parse output
+5. Format constraints
 
 ### Step 1: Read Input
 
@@ -63,8 +61,7 @@ Read("${run_dir}/input.md")
 **Low Level:**
 
 ```
-mcp__codex__codex({
-  PROMPT: "You are a senior technical expert. Analyze the following question for constraints only:
+Skill(skill="tpd:codex-cli", args="--role constraint-analyst --prompt 'You are a senior technical expert. Analyze the following question for constraints only:
 
 Question: ${QUESTION}
 
@@ -76,17 +73,13 @@ Analyze:
 3. Dependency constraints
 4. Security considerations
 
-Show reasoning process with confidence assessment.",
-  cd: "${PROJECT_DIR}",
-  sandbox: "read-only"
-})
+Show reasoning process with confidence assessment.'")
 ```
 
 **High Level:**
 
 ```
-mcp__codex__codex({
-  PROMPT: "You are a top-tier system architect. Comprehensively analyze constraints for:
+Skill(skill="tpd:codex-cli", args="--role constraint-analyst --prompt 'You are a top-tier system architect. Comprehensively analyze constraints for:
 
 Question: ${QUESTION}
 
@@ -111,10 +104,7 @@ Only output constraint analysis, no code patches or architecture decisions.
 - Verifiable outcomes
 - Acceptance conditions
 
-Show complete reasoning chain.",
-  cd: "${PROJECT_DIR}",
-  sandbox: "read-only"
-})
+Show complete reasoning chain.'")
 ```
 
 ### Step 3: Format Output
@@ -161,7 +151,7 @@ session_id: { SESSION_ID }
 
 ## Quality Gates
 
-- [ ] Called `mcp__codex__codex`
+- [ ] Used Skill(skill="tpd:codex-cli") for all Codex calls
 - [ ] Output contains constraints, not architecture decisions
 - [ ] Contains confidence assessment
 - [ ] Did not generate code patches

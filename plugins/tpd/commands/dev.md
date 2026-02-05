@@ -20,7 +20,7 @@ The dev phase strictly aligns with OpenSpec Implementation: **only implement the
 
 ---
 
-## 🚨🚨🚨 Mandatory Execution Rules 🚨🚨🚨
+## Core Rules
 
 - ✅ Must first `openspec view` and confirm `proposal_id`
 - ✅ Must first `/openspec:apply <proposal_id>`
@@ -39,219 +39,187 @@ The dev phase strictly aligns with OpenSpec Implementation: **only implement the
 
 ---
 
-## Phase 0: OpenSpec Status Check
+## Actions
 
-1. Execute (OpenSpec Dashboard detection consistent with official workflow):
+0. **Step 0: OpenSpec Status Check**
+   - Execute OpenSpec Dashboard detection:
+     ```bash
+     openspec view 2>/dev/null || openspec list 2>/dev/null || ls -la openspec 2>/dev/null || echo "OpenSpec not initialized"
+     ```
+   - Parse `proposal_id` priority:
+     1. `--proposal-id` argument
+     2. If `openspec view` has only 1 Active Change → auto-select
+     3. Otherwise user selects from `openspec view` output
+   - If OpenSpec not initialized → prompt to execute `/tpd:init` first
+   - Apply proposal:
+     ```
+     /openspec:apply ${PROPOSAL_ID}
+     ```
 
-```bash
-openspec view 2>/dev/null || openspec list 2>/dev/null || ls -la openspec 2>/dev/null || echo "OpenSpec not initialized"
-```
+1. **Step 1: Initialization & Minimal Scope Selection**
+   - Parse arguments:
+     - TASK_TYPE: fullstack (default) | frontend | backend
+     - FEATURE: Optional; if omitted, extract from plan/proposal
+     - PROPOSAL_ID: Confirmed from Step 0
+   - Generate run directory:
+     ```bash
+     DEV_DIR="openspec/changes/${PROPOSAL_ID}/artifacts/dev"
+     mkdir -p "${DEV_DIR}"
+     ```
+   - Locate and copy task file:
+     ```bash
+     TASKS_FILE="openspec/changes/${PROPOSAL_ID}/tasks.md"
+     cp "${TASKS_FILE}" "${DEV_DIR}/tasks.md"
+     ```
+   - Select **minimal verifiable phase** (1~3 tasks, able to form closed-loop verification)
+   - Write scope to `${DEV_DIR}/tasks-scope.md`
+   - **⏸️ Hard Stop**: Use AskUserQuestion to display task scope, continue after confirmation
 
-2. proposal_id parsing priority:
-   - `--proposal-id` argument
-   - If `openspec view` has only 1 Active Change → auto-select
-   - Otherwise user selects from `openspec view` output
+2. **Step 2: Parallel Context & Analysis**
+   - Launch concurrent agents for context retrieval and analysis.
+   - **Task for context-retriever:** "Retrieve implementation context for selected tasks"
+   - **Task for codex-implementer (analyze mode):** "Analyze implementation approach"
+   - **At most 2 agents in parallel!**
+   - JUST RUN AND WAIT!
 
-3. Not initialized OpenSpec → prompt to execute `/tpd:init` before continuing
+   ```
+   Skill(skill="tpd:context-retriever", args="run_dir=${DEV_DIR}")
 
----
+   Task(subagent_type="tpd:execution:codex-implementer", description="Codex analysis", prompt="Execute implementation analysis. run_dir=${DEV_DIR} mode=analyze")
+   ```
 
-## Phase 1: Initialization
+   - **Verify**: `${DEV_DIR}/context.md` and `${DEV_DIR}/analysis-codex.md` exist
+   - **⏸️ Hard Stop**: Display analysis summary, continue after confirming approach
 
-1. Parse arguments:
-   - TASK_TYPE: fullstack (default) | frontend | backend
-   - FEATURE: Optional; if omitted, extract from plan/proposal
-   - PROPOSAL_ID: Must be confirmed (--proposal-id or select from OpenSpec Active Change)
+3. **Step 3: Parallel Prototype Generation**
+   - Launch concurrent prototype generation agents.
+   - **Task for codex-implementer (prototype mode):** "Generate backend prototype as unified diff"
+   - **Task for gemini-implementer (prototype mode):** "Generate frontend prototype as unified diff"
+   - **At most 2 prototype agents!**
+   - JUST RUN AND WAIT!
 
-2. Generate run directory path (fixed path, under OpenSpec):
-   - DEV_DIR: `openspec/changes/${PROPOSAL_ID}/artifacts/dev`
+   ```
+   Task(subagent_type="tpd:execution:codex-implementer", description="Codex prototype", prompt="Execute prototype generation. run_dir=${DEV_DIR} mode=prototype")
 
-```bash
-mkdir -p "${DEV_DIR}"
-```
+   Task(subagent_type="tpd:execution:gemini-implementer", description="Gemini prototype", prompt="Execute prototype generation. run_dir=${DEV_DIR} mode=prototype")
+   ```
 
-3. If FEATURE not provided: generate input summary from proposal.md / tasks.md
+   - **Verify**: `${DEV_DIR}/prototype-codex.diff` and/or `${DEV_DIR}/prototype-gemini.diff` exist
 
----
+4. **Step 4: Refactor & Side-effect Review**
+   - Execute refactor implementation:
+     ```
+     Skill(skill="tpd:code-implementer", args="run_dir=${DEV_DIR}")
+     ```
+   - **Verify**: `${DEV_DIR}/changes.md` exists
+   - **Mandatory Side-effect Review**: Check if all changes are strictly limited to `tasks-scope.md`:
+     - Were unauthorized files added/modified?
+     - Were unapproved dependencies introduced?
+     - Were existing interface contracts broken?
+   - If issues found → return to Step 3 for correction
 
-## Phase 2: Apply OpenSpec
+5. **Step 5: Parallel Multi-Model Audit**
+   - Launch concurrent audit agents.
+   - **Task for codex-auditor:** "Security and performance audit"
+   - **Task for gemini-auditor:** "UX and accessibility audit"
+   - **At most 2 audit agents!**
+   - JUST RUN AND WAIT!
 
-Execute:
+   ```
+   Task(subagent_type="tpd:execution:codex-auditor", description="Codex audit", prompt="Execute code audit. run_dir=${DEV_DIR} focus=security,performance")
 
-```
-/openspec:apply ${PROPOSAL_ID}
-```
+   Task(subagent_type="tpd:execution:gemini-auditor", description="Gemini audit", prompt="Execute code audit. run_dir=${DEV_DIR} focus=ux,accessibility")
+   ```
 
-And locate task file:
+   - **Verify**: `${DEV_DIR}/audit-codex.md` and `${DEV_DIR}/audit-gemini.md` exist
+   - **⏸️ Hard Stop**: Must fix if Critical issues exist
 
-```
-TASKS_FILE="openspec/changes/${PROPOSAL_ID}/tasks.md"
-```
+6. **Step 6: Task Completion & Iteration**
+   - Mark completed tasks in `openspec/changes/${PROPOSAL_ID}/tasks.md` as `- [x]`
+   - Copy synced tasks.md back to `${DEV_DIR}/tasks.md`
+   - **⏸️ Hard Stop**: Use AskUserQuestion to ask whether to proceed to next phase
+   - If continuing → repeat Step 1~6 with next task scope
 
-Copy tasks.md to `${DEV_DIR}/tasks.md` as this phase's work list (**source file remains in openspec/**).
+7. **Step 7: Finalization**
+   - When all tasks in tasks.md are complete:
+     ```
+     /openspec:archive
+     ```
+   - Output completion summary:
 
----
+     ```
+     🎉 Development Complete!
 
-## Phase 3: Minimal Verifiable Phase Selection (Required)
+     📋 Proposal: ${PROPOSAL_ID}
+     🔀 Type: ${TASK_TYPE}
 
-1. Read `${DEV_DIR}/tasks.md`
-2. Select **minimal verifiable phase** (1~3 tasks, able to form closed-loop verification)
-3. Write to `${DEV_DIR}/tasks-scope.md`
+     📁 Artifacts:
+       ${DEV_DIR}/
+       ├── input.md
+       ├── context.md
+       ├── tasks.md
+       ├── tasks-scope.md
+       ├── analysis-codex.md
+       ├── prototype-codex.diff
+       ├── prototype-gemini.diff
+       ├── changes.md
+       ├── audit-codex.md
+       └── audit-gemini.md
 
-**⏸️ Hard Stop**: AskUserQuestion to display this task scope, continue after confirmation
-
----
-
-## Phase 4: Context Retrieval
-
-**If current run directory already provides context.md, can skip; otherwise must execute:**
-
-```
-Skill(skill="tpd:context-retriever", args="run_dir=${DEV_DIR}")
-```
-
-**Verify**: Confirm `${DEV_DIR}/context.md` is generated
-
----
-
-## Phase 5: Task Analysis (Multi-Model Parallel)
-
-**Launch both implementer agents in analysis mode:**
-
-```
-Task(
-  subagent_type="general-purpose",
-  description="Codex analysis",
-  prompt="You are the codex-implementer agent. Read plugins/tpd/agents/execution/codex-implementer.md to understand your role. Execute with: run_dir=${DEV_DIR} mode=analyze",
-  run_in_background=true
-)
-
-Task(
-  subagent_type="general-purpose",
-  description="Gemini analysis",
-  prompt="You are the gemini-implementer agent. Read plugins/tpd/agents/execution/gemini-implementer.md to understand your role. Execute with: run_dir=${DEV_DIR} mode=analyze",
-  run_in_background=true
-)
-```
-
-**Verify**: `analysis-codex.md` / `analysis-gemini.md`
-
-**⏸️ Hard Stop**: Display analysis summary, continue after confirming approach
-
----
-
-## Phase 6: Prototype Generation (Multi-Model Parallel)
-
-**Launch both implementer agents in prototype mode:**
-
-```
-Task(
-  subagent_type="general-purpose",
-  description="Codex prototype",
-  prompt="You are the codex-implementer agent. Read plugins/tpd/agents/execution/codex-implementer.md to understand your role. Execute with: run_dir=${DEV_DIR} mode=prototype",
-  run_in_background=true
-)
-
-Task(
-  subagent_type="general-purpose",
-  description="Gemini prototype",
-  prompt="You are the gemini-implementer agent. Read plugins/tpd/agents/execution/gemini-implementer.md to understand your role. Execute with: run_dir=${DEV_DIR} mode=prototype",
-  run_in_background=true
-)
-```
-
-**Verify**: `prototype-codex.diff` / `prototype-gemini.diff`
-
----
-
-## Phase 7: Refactor Implementation (Multi-Model Parallel)
-
-```
-Skill(skill="tpd:code-implementer", args="run_dir=${DEV_DIR} model=codex focus=backend,api,logic")
-Skill(skill="tpd:code-implementer", args="run_dir=${DEV_DIR} model=gemini focus=frontend,ui,styles")
-```
-
-**Verify**: `changes-codex.md` / `changes-gemini.md` / `changes.md`
+     ✅ All tasks completed and archived!
+     ```
 
 ---
 
-## Phase 8: Side-effect Review (Required)
+## Parallel Constraints Summary
 
-Check if all changes are strictly limited to `tasks-scope.md`, forbidden to affect unrelated modules:
-
-- Were unauthorized files added/modified?
-- Were unapproved dependencies introduced?
-- Were existing interface contracts broken?
-
-If issues found, must return to Phase 7 for correction.
+| Step   | Max Agents | Agent Types                                                           |
+| ------ | ---------- | --------------------------------------------------------------------- |
+| Step 2 | **2**      | `tpd:context-retriever`, `tpd:execution:codex-implementer`            |
+| Step 3 | **2**      | `tpd:execution:codex-implementer`, `tpd:execution:gemini-implementer` |
+| Step 5 | **2**      | `tpd:execution:codex-auditor`, `tpd:execution:gemini-auditor`         |
 
 ---
 
-## Phase 9: Multi-Model Audit Verification (Parallel)
+## Error Handling
 
-**Launch both auditor agents in a single message for parallel execution:**
-
-```
-Task(
-  subagent_type="general-purpose",
-  description="Codex audit",
-  prompt="You are the codex-auditor agent. Read plugins/tpd/agents/execution/codex-auditor.md to understand your role. Execute with: run_dir=${DEV_DIR} focus=security,performance",
-  run_in_background=true
-)
-
-Task(
-  subagent_type="general-purpose",
-  description="Gemini audit",
-  prompt="You are the gemini-auditor agent. Read plugins/tpd/agents/execution/gemini-auditor.md to understand your role. Execute with: run_dir=${DEV_DIR} focus=ux,accessibility",
-  run_in_background=true
-)
-```
-
-**Verify**: `audit-codex.md` / `audit-gemini.md`
-
-**⏸️ Hard Stop**: Must fix if Critical issues exist
-
----
-
-## Phase 10: Task Checkbox and Phase Wrap-up
-
-1. Mark completed tasks in `openspec/changes/${PROPOSAL_ID}/tasks.md` as `- [x]`
-2. Copy synced tasks.md back to `${DEV_DIR}/tasks.md`
-
-**⏸️ Hard Stop**: Ask whether to proceed to next phase (if continuing, repeat Phase 3~10)
-
----
-
-## Phase 11: OpenSpec Archive
-
-When all tasks in tasks.md are complete:
+### Audit Critical Issues
 
 ```
-/openspec:archive
+⚠️ Critical Issues Found
+
+Issues:
+${CRITICAL_ISSUES}
+
+Actions Required:
+1. Fix all critical issues before proceeding
+2. Re-run audit after fixes
+3. Cannot proceed to next phase until resolved
 ```
 
----
-
-## Phase 12: Delivery
+### Side-effect Violation
 
 ```
-🎉 Development Phase Complete!
+⚠️ Side-effect Review Failed
 
-📋 Proposal: ${PROPOSAL_ID}
-🔀 Type: ${TASK_TYPE}
-📁 Artifacts:
-  ${DEV_DIR}/
-  ├── input.md
-  ├── context.md
-  ├── tasks.md
-  ├── tasks-scope.md
-  ├── analysis-codex.md
-  ├── analysis-gemini.md
-  ├── prototype-codex.diff
-  ├── prototype-gemini.diff
-  ├── changes-codex.md
-  ├── changes-gemini.md
-  ├── changes.md
-  ├── audit-codex.md
-  └── audit-gemini.md
+Violations:
+- ${VIOLATION_1}
+- ${VIOLATION_2}
+
+Actions Required:
+1. Revert unauthorized changes
+2. Return to Step 3 for correction
+3. Re-run side-effect review
+```
+
+### Model Call Failure
+
+```
+⚠️ ${MODEL} Implementation Failed
+
+Error: ${ERROR_MESSAGE}
+
+Handling:
+- Continue with available model results
+- Mark missing perspective in changes.md
 ```

@@ -7,7 +7,6 @@ description: |
 allowed-tools:
   - Read
   - Write
-  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -27,16 +26,12 @@ arguments:
 
 | MCP Tool              | Purpose                     | Trigger              |
 | --------------------- | --------------------------- | -------------------- |
-| `sequential-thinking` | Structured plan integration | 🚨 Required per exec |
 
 ## Execution Flow
 
-### Step 0: Structured Integration Planning (sequential-thinking)
 
-🚨 **Must first use sequential-thinking to plan integration strategy**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Planning plan integration strategy. Need: 1) Read all artifacts 2) Extract key summaries 3) Verify consistency 4) Generate executive summary 5) Build roadmap",
   thoughtNumber: 1,
   totalThoughts: 5,

@@ -5,11 +5,9 @@ description: |
   [Output] Outputs ${run_dir}/conclusion.md containing complete reasoning chain and final conclusion
   [Skip] None
   [Ask First] No need to ask, automatically executes
-  [🚨 Mandatory] Must use sequential-thinking MCP to build reasoning chain
 allowed-tools:
   - Read
   - Write
-  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -23,7 +21,6 @@ arguments:
 
 | MCP Tool              | Purpose                                    | Trigger     |
 | --------------------- | ------------------------------------------ | ----------- |
-| `sequential-thinking` | Build reasoning chain, generate conclusion | 🚨 Required |
 
 ## Responsibility Boundary
 
@@ -40,7 +37,6 @@ Generate final conclusion and complete reasoning chain based on thought synthesi
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  🎯 Conclusion Generation                                        │
-│     ✅ Required: mcp__sequential-thinking__sequentialthinking   │
 │     ❌ Prohibited: Output conclusion without reasoning,         │
 │        skip confidence annotation                                │
 └─────────────────────────────────────────────────────────────────┘
@@ -50,12 +46,9 @@ Generate final conclusion and complete reasoning chain based on thought synthesi
 
 ## Execution Flow
 
-### Step 0: Structured Conclusion Planning (sequential-thinking)
 
-🚨 **Must first use sequential-thinking to plan conclusion generation strategy**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Planning conclusion generation strategy. Need: 1) Read synthesis 2) Review original question 3) Organize key evidence 4) Identify key assumptions 5) Build reasoning steps 6) Form core conclusion 7) Evaluate confidence 8) Identify limitations",
   thoughtNumber: 1,
   totalThoughts: 8,
@@ -83,52 +76,44 @@ Read("${run_dir}/input.md")  # Original question
 
 ### Step 2: Build Reasoning Chain
 
-**Use sequential-thinking to build complete reasoning chain**:
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 1: Review original question. Clarify what user really wants to solve, identify core requirements.",
   thoughtNumber: 2,
   totalThoughts: 8,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 2: Organize key evidence. From multi-model thinking and synthesis, extract key evidence and analysis supporting conclusion.",
   thoughtNumber: 3,
   totalThoughts: 8,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 3: Identify key assumptions. List implicit assumptions in reasoning, evaluate reliability of these assumptions.",
   thoughtNumber: 4,
   totalThoughts: 8,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 4: Build reasoning steps. Arrange reasoning steps in logical order, ensure each step has basis.",
   thoughtNumber: 5,
   totalThoughts: 8,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 5: Form core conclusion. Based on reasoning chain, distill core conclusion, ensure it directly answers original question.",
   thoughtNumber: 6,
   totalThoughts: 8,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 6: Evaluate confidence. Consider evidence strength, assumption reliability, model consensus to give overall confidence.",
   thoughtNumber: 7,
   totalThoughts: 8,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 7: Identify limitations. List conclusion limitations, scope of applicability, and potential improvement directions.",
   thoughtNumber: 8,
   totalThoughts: 8,
@@ -287,7 +272,6 @@ reasoning_steps: { step count }
 
 ### Tool Usage Verification
 
-- [ ] Called `mcp__sequential-thinking__sequentialthinking` at least 8 times
 - [ ] Read synthesis.md and input.md files
 - [ ] Produced conclusion.md file
 
@@ -325,7 +309,6 @@ On success, return:
 
 ## Constraints
 
-- Must use sequential-thinking to build reasoning chain
 - Conclusion must directly answer original question
 - Must annotate confidence and assumptions
 - Each reasoning step must have basis

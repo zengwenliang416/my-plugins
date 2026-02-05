@@ -8,7 +8,6 @@ allowed-tools:
   - Read
   - Write
   - Skill
-  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -28,16 +27,12 @@ arguments:
 
 | MCP Tool              | Purpose                                         | Trigger              |
 | --------------------- | ----------------------------------------------- | -------------------- |
-| `sequential-thinking` | Structured risk analysis, ensure OWASP complete | 🚨 Required per exec |
 
 ## Execution Flow
 
-### Step 0: Structured Risk Analysis Planning (sequential-thinking)
 
-🚨 **Must first use sequential-thinking to plan analysis strategy**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Planning risk assessment strategy. Need: 1) Identify risk categories 2) Apply OWASP scoring 3) Calculate Likelihood 4) Calculate Impact 5) Develop mitigation strategies",
   thoughtNumber: 1,
   totalThoughts: 6,

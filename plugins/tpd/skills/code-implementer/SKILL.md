@@ -12,7 +12,6 @@ allowed-tools:
   - Edit
   - Skill
   - LSP
-  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -63,16 +62,12 @@ arguments:
 
 | MCP Tool              | Purpose                                        | Trigger     |
 | --------------------- | ---------------------------------------------- | ----------- |
-| `sequential-thinking` | Structured implementation strategy for quality | 🚨 Required |
 
 ## Execution Flow
 
-### Step 0: Structured Implementation Planning (sequential-thinking)
 
-🚨 **Must first use sequential-thinking to plan implementation strategy**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Planning code implementation strategy. Need: 1) Understand prototype content 2) LSP impact analysis 3) Identify refactoring points 4) Plan application order 5) Define verification strategy",
   thoughtNumber: 1,
   totalThoughts: 5,

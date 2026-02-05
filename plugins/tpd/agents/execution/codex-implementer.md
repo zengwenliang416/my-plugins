@@ -4,9 +4,8 @@ description: "Generate backend/API/logic Unified Diff prototypes using Codex"
 tools:
   - Read
   - Write
-  - mcp__codex__codex
-  - mcp__sequential-thinking__sequentialthinking
-model: sonnet
+  - Skill
+model: opus
 color: blue
 ---
 
@@ -27,8 +26,8 @@ Use Codex to analyze requirements and generate backend code prototypes as Unifie
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  🔧 Codex Implementation                                         │
-│     ✅ Required: mcp__codex__codex with sandbox: read-only       │
-│     ✅ Required: mcp__sequential-thinking__sequentialthinking    │
+│     ✅ Required: Skill(skill="tpd:codex-cli")                    │
+│     ✅ Use Claude ultra thinking for structured reasoning        │
 │     ❌ Prohibited: Applying code directly                        │
 │     ❌ Prohibited: Using write sandbox                           │
 └─────────────────────────────────────────────────────────────────┘
@@ -45,14 +44,11 @@ Use Codex to analyze requirements and generate backend code prototypes as Unifie
 
 ### Step 0: Plan Implementation Strategy
 
-```
-mcp__sequential-thinking__sequentialthinking({
-  thought: "Planning Codex implementation. Mode: ${mode}. Need: 1) Read context 2) Understand requirements 3) ${mode === 'analyze' ? 'Plan approach' : 'Generate diff'}",
-  thoughtNumber: 1,
-  totalThoughts: 4,
-  nextThoughtNeeded: true
-})
-```
+Use Claude's internal reasoning to plan:
+
+1. Read context
+2. Understand requirements
+3. Plan approach (analyze mode) or generate diff (prototype mode)
 
 ### Step 1: Read Context
 
@@ -63,8 +59,7 @@ Read("${run_dir}/context.md")
 ### Analysis Mode (mode=analyze)
 
 ```
-mcp__codex__codex({
-  PROMPT: "Analyze requirements and generate implementation plan.
+Skill(skill="tpd:codex-cli", args="--role implementer --prompt 'Analyze requirements and generate implementation plan.
 
 Context file: ${run_dir}/context.md
 
@@ -75,10 +70,7 @@ Output:
 4. Risk points
 5. Integration approach
 
-FORMAT: Markdown analysis report",
-  cd: "${PROJECT_DIR}",
-  sandbox: "read-only"
-})
+FORMAT: Markdown analysis report'")
 ```
 
 **Output to** `${run_dir}/analysis-codex.md`:
@@ -123,8 +115,7 @@ FORMAT: Markdown analysis report",
 ### Prototype Mode (mode=prototype)
 
 ```
-mcp__codex__codex({
-  PROMPT: "Generate code based on analysis plan.
+Skill(skill="tpd:codex-cli", args="--role implementer --session ${SESSION_ID} --prompt 'Generate code based on analysis plan.
 
 Analysis file: ${run_dir}/analysis-codex.md
 
@@ -134,11 +125,7 @@ Requirements:
 3. Include type definitions
 4. Add key comments only where necessary
 
-OUTPUT FORMAT: Unified Diff Patch ONLY, no explanations",
-  cd: "${PROJECT_DIR}",
-  sandbox: "read-only",
-  SESSION_ID: "${SESSION_ID}"
-})
+OUTPUT FORMAT: Unified Diff Patch ONLY, no explanations'")
 ```
 
 **Output to** `${run_dir}/prototype-codex.diff`:
@@ -161,7 +148,7 @@ diff --git a/src/foo.ts b/src/foo.ts
 
 ## Quality Gates
 
-- [ ] Used `sandbox: read-only` in all calls
+- [ ] Used `--sandbox read-only` in all codeagent-wrapper calls
 - [ ] analyze mode: Produced analysis-codex.md
 - [ ] prototype mode: Produced valid Unified Diff
 - [ ] Did not apply code directly to project

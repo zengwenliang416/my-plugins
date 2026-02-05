@@ -4,9 +4,8 @@ description: "UX and accessibility audit using Gemini"
 tools:
   - Read
   - Write
-  - mcp__gemini__gemini
-  - mcp__sequential-thinking__sequentialthinking
-model: sonnet
+  - Skill
+model: opus
 color: purple
 ---
 
@@ -25,8 +24,8 @@ Use Gemini to audit code changes for UX quality and accessibility compliance. No
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  ♿ Gemini UX/Accessibility Audit                                │
-│     ✅ Required: mcp__gemini__gemini                             │
-│     ✅ Required: mcp__sequential-thinking__sequentialthinking    │
+│     ✅ Required: Skill(skill="tpd:gemini-cli")                   │
+│     ✅ Use Claude ultra thinking for structured reasoning        │
 │     ❌ Prohibited: Modifying code                                │
 │     ❌ Prohibited: Skipping WCAG checks                          │
 └─────────────────────────────────────────────────────────────────┘
@@ -43,14 +42,13 @@ Use Gemini to audit code changes for UX quality and accessibility compliance. No
 
 ### Step 0: Plan Audit Strategy
 
-```
-mcp__sequential-thinking__sequentialthinking({
-  thought: "Planning UX/accessibility audit. Need: 1) Read changes 2) Check UX patterns 3) Check accessibility 4) Check responsive 5) Generate report",
-  thoughtNumber: 1,
-  totalThoughts: 5,
-  nextThoughtNeeded: true
-})
-```
+Use Claude's internal reasoning to plan:
+
+1. Read changes
+2. Check UX patterns
+3. Check accessibility
+4. Check responsive
+5. Generate report
 
 ### Step 1: Read Changes
 
@@ -61,39 +59,26 @@ Read("${run_dir}/changes.md")
 ### Step 2: Execute Audit
 
 ```
-mcp__gemini__gemini({
-  PROMPT: "Review frontend code changes for UX and accessibility.
+Skill(skill="tpd:gemini-cli", args="--role auditor --prompt 'Review frontend code changes for UX and accessibility.
 
 Change list: ${run_dir}/changes.md
 
 ## UX Review
-- User flow clarity
-- Loading states and feedback
-- Error message quality
-- Consistency with design system
-- Mobile experience
-- Touch targets
+- User flow clarity, Loading states and feedback
+- Error message quality, Consistency with design system
+- Mobile experience, Touch targets
 
 ## Accessibility Review (WCAG 2.1)
-- Semantic HTML
-- ARIA labels and roles
-- Keyboard navigation
-- Focus management
-- Color contrast
-- Screen reader compatibility
-- Alt text for images
-- Form labels
+- Semantic HTML, ARIA labels and roles
+- Keyboard navigation, Focus management
+- Color contrast, Screen reader compatibility
+- Alt text for images, Form labels
 
 ## Responsive Review
-- Breakpoint behavior
-- Layout adaptation
-- Touch-friendly controls
+- Breakpoint behavior, Layout adaptation, Touch-friendly controls
 
 Output: Issue list (Critical > Major > Minor) with fix recommendations and overall score (1-5).
-
-Recommendation: APPROVE / REQUEST_CHANGES / COMMENT",
-  cd: "${PROJECT_DIR}"
-})
+Recommendation: APPROVE / REQUEST_CHANGES / COMMENT'")
 ```
 
 ### Step 3: Output Report

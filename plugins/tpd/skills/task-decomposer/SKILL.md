@@ -8,7 +8,6 @@ allowed-tools:
   - Read
   - Write
   - Skill
-  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -28,16 +27,12 @@ arguments:
 
 | MCP Tool              | Purpose                       | Trigger              |
 | --------------------- | ----------------------------- | -------------------- |
-| `sequential-thinking` | Structured task decomposition | 🚨 Required per exec |
 
 ## Execution Flow
 
-### Step 0: Structured Decomposition Planning (sequential-thinking)
 
-🚨 **Must first use sequential-thinking to plan decomposition strategy**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Planning task decomposition strategy. Need to determine: 1) WBS hierarchy structure 2) Task granularity 3) Dependencies 4) Critical path 5) Parallelization opportunities",
   thoughtNumber: 1,
   totalThoughts: 6,

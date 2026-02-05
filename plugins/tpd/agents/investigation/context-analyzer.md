@@ -5,8 +5,7 @@ tools:
   - Read
   - Write
   - mcp__auggie-mcp__codebase-retrieval
-  - mcp__sequential-thinking__sequentialthinking
-model: sonnet
+model: opus
 color: cyan
 ---
 
@@ -26,7 +25,7 @@ Analyze codebase to identify project structure, architecture patterns, and integ
 ┌─────────────────────────────────────────────────────────────────┐
 │  🔍 Context Analysis                                             │
 │     ✅ Required: mcp__auggie-mcp__codebase-retrieval             │
-│     ✅ Required: mcp__sequential-thinking__sequentialthinking    │
+│     ✅ Use Claude ultra thinking for structured reasoning        │
 │     ❌ Prohibited: Guessing without retrieval                    │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -61,14 +60,12 @@ Analyze codebase to identify project structure, architecture patterns, and integ
 
 ### Step 0: Plan Analysis Strategy
 
-```
-mcp__sequential-thinking__sequentialthinking({
-  thought: "Planning context analysis. Need: 1) Scan project structure 2) Identify patterns 3) Map integration points 4) Document tech stack",
-  thoughtNumber: 1,
-  totalThoughts: 4,
-  nextThoughtNeeded: true
-})
-```
+Use Claude's internal reasoning to plan:
+
+1. Scan project structure
+2. Identify patterns
+3. Map integration points
+4. Document tech stack
 
 ### Step 1: Semantic Retrieval for Structure
 

@@ -4,9 +4,8 @@ description: "Generate frontend/UI/styles Unified Diff prototypes using Gemini"
 tools:
   - Read
   - Write
-  - mcp__gemini__gemini
-  - mcp__sequential-thinking__sequentialthinking
-model: sonnet
+  - Skill
+model: opus
 color: blue
 ---
 
@@ -27,8 +26,8 @@ Use Gemini to analyze requirements and generate frontend code prototypes as Unif
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  🎨 Gemini Implementation                                        │
-│     ✅ Required: mcp__gemini__gemini                             │
-│     ✅ Required: mcp__sequential-thinking__sequentialthinking    │
+│     ✅ Required: Skill(skill="tpd:gemini-cli")                   │
+│     ✅ Use Claude ultra thinking for structured reasoning        │
 │     ❌ Prohibited: Applying code directly                        │
 │     ❌ Prohibited: Exceeding 32k context                         │
 └─────────────────────────────────────────────────────────────────┘
@@ -54,14 +53,11 @@ Use Gemini to analyze requirements and generate frontend code prototypes as Unif
 
 ### Step 0: Plan Implementation Strategy
 
-```
-mcp__sequential-thinking__sequentialthinking({
-  thought: "Planning Gemini implementation. Mode: ${mode}. Need: 1) Read context 2) Understand UI requirements 3) ${mode === 'analyze' ? 'Plan approach' : 'Generate diff'}",
-  thoughtNumber: 1,
-  totalThoughts: 4,
-  nextThoughtNeeded: true
-})
-```
+Use Claude's internal reasoning to plan:
+
+1. Read context
+2. Understand UI requirements
+3. Plan approach (analyze mode) or generate diff (prototype mode)
 
 ### Step 1: Read Context
 
@@ -72,8 +68,7 @@ Read("${run_dir}/context.md")
 ### Analysis Mode (mode=analyze)
 
 ```
-mcp__gemini__gemini({
-  PROMPT: "Analyze frontend requirements and generate UI implementation plan.
+Skill(skill="tpd:gemini-cli", args="--role implementer --prompt 'Analyze frontend requirements and generate UI implementation plan.
 
 Context file: ${run_dir}/context.md
 
@@ -84,9 +79,7 @@ Output:
 4. User interaction flow
 5. Accessibility considerations
 
-FORMAT: Markdown analysis report",
-  cd: "${PROJECT_DIR}"
-})
+FORMAT: Markdown analysis report'")
 ```
 
 **Output to** `${run_dir}/analysis-gemini.md`:
@@ -133,8 +126,7 @@ FORMAT: Markdown analysis report",
 ### Prototype Mode (mode=prototype)
 
 ```
-mcp__gemini__gemini({
-  PROMPT: "Generate frontend code based on analysis plan.
+Skill(skill="tpd:gemini-cli", args="--role implementer --session ${SESSION_ID} --prompt 'Generate frontend code based on analysis plan.
 
 Analysis file: ${run_dir}/analysis-gemini.md
 
@@ -144,10 +136,7 @@ Requirements:
 3. Responsive design
 4. Accessibility (ARIA, keyboard)
 
-OUTPUT FORMAT: Unified Diff Patch ONLY, no explanations",
-  cd: "${PROJECT_DIR}",
-  SESSION_ID: "${SESSION_ID}"
-})
+OUTPUT FORMAT: Unified Diff Patch ONLY, no explanations'")
 ```
 
 **Output to** `${run_dir}/prototype-gemini.diff`:

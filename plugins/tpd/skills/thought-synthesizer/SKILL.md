@@ -5,11 +5,9 @@ description: |
   [Output] Outputs ${run_dir}/synthesis.md containing constraints/risks/dependencies/success criteria and open questions
   [Skip] When no exploration artifacts (can downgrade to light summary)
   [Ask First] No need to ask, automatically executes
-  [🚨 Mandatory] Must use sequential-thinking MCP for structured synthesis
 allowed-tools:
   - Read
   - Write
-  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -27,7 +25,6 @@ arguments:
 
 | MCP Tool              | Purpose                                       | Trigger     |
 | --------------------- | --------------------------------------------- | ----------- |
-| `sequential-thinking` | Structured multi-source synthesis, constraint | 🚨 Required |
 
 ## Responsibility Boundary
 
@@ -44,7 +41,6 @@ Synthesize exploration results from multiple context boundaries to form unified 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  🔄 Thought Synthesis                                            │
-│     ✅ Required: mcp__sequential-thinking__sequentialthinking   │
 │     ❌ Prohibited: Simple concatenation of boundary outputs,    │
 │        skip structured synthesis                                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -54,12 +50,9 @@ Synthesize exploration results from multiple context boundaries to form unified 
 
 ## Execution Flow
 
-### Step 0: Structured Synthesis Planning (sequential-thinking)
 
-🚨 **Must first use sequential-thinking to plan synthesis strategy**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Planning constraint synthesis strategy. Need: 1) Read explore JSONs 2) Aggregate hard/soft constraints 3) Extract multi-model supplemental constraints 4) Merge dependencies and risks 5) Aggregate success criteria hints 6) Identify open questions 7) Generate structured synthesis.md",
   thoughtNumber: 1,
   totalThoughts: 7,
@@ -93,45 +86,38 @@ Read("${run_dir}/gemini-thought.md")
 
 ### Step 2: Structured Synthesis Analysis
 
-**Use sequential-thinking for 6-step synthesis**:
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 1: Merge all constraints_discovered from explore-*.json, distinguish hard/soft constraints.",
   thoughtNumber: 2,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 2: Extract supplemental constraints and risks from codex-thought.md / gemini-thought.md (if exist), annotate source.",
   thoughtNumber: 3,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 3: Merge dependencies and risks, deduplicate and annotate source.",
   thoughtNumber: 4,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 4: Aggregate success_criteria_hints, organize into verifiable criteria.",
   thoughtNumber: 5,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 5: Aggregate open_questions, sort by priority.",
   thoughtNumber: 6,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 6: Generate comprehensive synthesis output, form handoff-ready constraint set summary.",
   thoughtNumber: 7,
   totalThoughts: 7,
@@ -252,7 +238,6 @@ depth: light
 
 ### Tool Usage Verification
 
-- [ ] Called `mcp__sequential-thinking__sequentialthinking` at least 7 times
 - [ ] Read all available explore-\*.json files
 - [ ] If codex/gemini thought files exist, extracted supplemental constraints
 - [ ] Produced synthesis.md file
@@ -291,7 +276,6 @@ On success, return:
 
 ## Constraints
 
-- Must use sequential-thinking for structured synthesis
 - No simple concatenation, must truly analyze and synthesize
 - Clearly annotate hard/soft constraints and open questions
 - Dependencies and risks need deduplication with source annotation

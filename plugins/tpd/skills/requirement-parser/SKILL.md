@@ -10,7 +10,6 @@ allowed-tools:
   - Write
   - AskUserQuestion
   - mcp__auggie-mcp__codebase-retrieval
-  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -30,17 +29,13 @@ arguments:
 
 | MCP Tool              | Purpose                                        | Trigger                                   |
 | --------------------- | ---------------------------------------------- | ----------------------------------------- |
-| `sequential-thinking` | Structured requirement analysis                | 🚨 Required per exec                      |
 | `auggie-mcp`          | Retrieve existing code, understand constraints | When requirement involves existing system |
 
 ## Execution Flow
 
-### Step 0: Structured Requirement Analysis Planning (sequential-thinking)
 
-🚨 **Must first use sequential-thinking to plan analysis strategy**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Analyzing user requirements. Need to identify: 1) Functional requirements 2) Non-functional requirements 3) UI/UX requirements 4) Constraints 5) Task type",
   thoughtNumber: 1,
   totalThoughts: 5,

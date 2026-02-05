@@ -14,7 +14,6 @@ allowed-tools:
   - LSP
   - Skill
   - mcp__auggie-mcp__codebase-retrieval
-  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -34,18 +33,14 @@ arguments:
 
 | MCP Tool              | Purpose                           | Trigger                            |
 | --------------------- | --------------------------------- | ---------------------------------- |
-| `sequential-thinking` | Structured retrieval strategy     | 🚨 Required per exec               |
 | `auggie-mcp`          | Semantic retrieval (first choice) | 🚨 Must use first                  |
 | `LSP`                 | Symbol-level precise operations   | Deep analysis of retrieval results |
 
 ## Execution Flow
 
-### Step 0: Structured Retrieval Planning (sequential-thinking)
 
-🚨 **Must first use sequential-thinking to plan retrieval strategy**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Planning context retrieval strategy. Need: 1) Analyze requirement keywords 2) Determine retrieval scope 3) Select retrieval methods 4) Plan evidence collection",
   thoughtNumber: 1,
   totalThoughts: 5,

@@ -2,32 +2,47 @@
 description: "OpenSpec Planning Workflow: OpenSpec selection → Context retrieval → Multi-model analysis → Ambiguity resolution → PBT properties → Plan integration → Validation"
 argument-hint: "[proposal_id] [--task-type=frontend|backend|fullstack] [--loop]"
 allowed-tools:
+  - EnterPlanMode
+  - ExitPlanMode
   - Skill
   - AskUserQuestion
   - Read
   - Write
   - Task
   - Bash
+  - Glob
+  - Grep
+  - mcp__auggie-mcp__codebase-retrieval
   - mcp__codex__codex
   - mcp__gemini__gemini
 ---
 
 # /tpd:plan - OpenSpec Planning Workflow Command
 
+## ⚠️ MANDATORY: Enter Plan Mode First
+
+**CRITICAL INSTRUCTION**: Upon invoking this command, you MUST immediately call `EnterPlanMode` to enter Claude Code's native plan mode. This is non-negotiable.
+
+```
+EnterPlanMode()
+```
+
+After entering plan mode, proceed with the workflow below. All exploration and planning happens IN plan mode. Only call `ExitPlanMode` when the final plan is ready for user approval.
+
+---
+
 ## Overview
 
 The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision executable plan** and produce verifiable PBT properties. This phase must be combined with OpenSpec, and all key constraints must be explicitly recorded.
 
-**Supports no-argument invocation**: When executing `/tpd:plan` directly, it automatically selects a proposal from `openspec view` to enter planning (consistent with gudaspec behavior).
+**Supports no-argument invocation**: When executing `/tpd:plan` directly, it automatically selects a proposal from `openspec view` to enter planning.
 
 ---
 
-## 🚨🚨🚨 Mandatory Execution Rules 🚨🚨🚨
-
-**Hard requirements aligned with GudaSpec Plan:**
+## Core Rules
 
 - ✅ Must first `openspec view` and let user confirm `proposal_id`
-- ✅ Must use both `mcp__codex__codex` and `mcp__gemini__gemini` for multi-model analysis
+- ✅ Must use both Codex and Gemini for multi-model analysis
 - ✅ Must complete "ambiguity resolution audit", all decision points must be converted to explicit constraints
 - ✅ Must extract PBT properties (invariants + falsification strategies)
 - ✅ Must execute `openspec validate <proposal_id> --strict`
@@ -40,258 +55,364 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
 - ❌ Entering dev without validation
 - ❌ Writing to OpenSpec without confirmation
 
-**OpenSpec Rules:**
+---
 
-- thinking phase has already written directly to `openspec/`, plan phase no longer imports drafts
-- Any phase must reference `openspec/AGENTS.md` (if missing, first run `openspec update`)
+## 🚨 Mandatory Execution Rules
+
+### Step Execution Policy
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  🔴 CRITICAL: You MUST NOT skip any step!                       │
+│                                                                 │
+│  Before proceeding to next step, you MUST:                      │
+│  1. Execute the required Skill/Task call                        │
+│  2. Verify output file exists (🔒 Checkpoint)                   │
+│  3. Update state.json with current step                         │
+│                                                                 │
+│  If verification fails → STOP and report error                  │
+│  DO NOT proceed with "shortcut" or "direct execution"           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Anti-Patterns (FORBIDDEN)
+
+| ❌ Forbidden Behavior                    | ✅ Correct Approach                                 |
+| ---------------------------------------- | --------------------------------------------------- |
+| Skip context retrieval                   | Always call context-analyzer AND requirement-parser |
+| Only do single-model architecture        | Must run both codex-architect AND gemini-architect  |
+| Skip ambiguity resolution                | Must complete ambiguity audit and get confirmations |
+| Proceed without verifying artifacts      | Check file exists at EVERY checkpoint               |
+| Exit plan mode before final verification | Verify ALL 12 artifacts before ExitPlanMode         |
+| Skip validation                          | Always run `openspec validate --strict`             |
 
 ---
 
-## Phase 0: OpenSpec Status Check (Supports Auto-Chaining)
+## Actions
 
-1. Execute (OpenSpec Dashboard detection consistent with official workflow):
+0. **Step 0: OpenSpec Status Check**
+   - Execute OpenSpec Dashboard detection:
+     ```bash
+     openspec view 2>/dev/null || openspec list 2>/dev/null || ls -la openspec 2>/dev/null || echo "OpenSpec not initialized"
+     ```
+   - If project has not initialized OpenSpec → prompt to execute `/tpd:init` first
+   - Parse `proposal_id` priority:
+     1. Explicitly passed as argument
+     2. If `openspec view` has only 1 Active Change → auto-select
+     3. Otherwise let user select from `openspec view` output
+   - **When invoked without arguments**: Do not error, enter auto-selection flow
 
-```bash
-openspec view 2>/dev/null || openspec list 2>/dev/null || ls -la openspec 2>/dev/null || echo "OpenSpec not initialized"
-```
+1. **Step 1: Initialization**
+   - Parse arguments:
+     - TASK_TYPE: fullstack (default) | frontend | backend
+     - LOOP_MODE: Whether to auto-chain to dev (--loop argument)
+     - PROPOSAL_ID: Confirmed from Step 0
+   - Generate run directory:
+     ```bash
+     PLAN_DIR="openspec/changes/${PROPOSAL_ID}/artifacts/plan"
+     mkdir -p "${PLAN_DIR}"
+     ```
+   - **Initialize State Machine** - Write `${PLAN_DIR}/state.json`:
+     ```json
+     {
+       "proposal_id": "${PROPOSAL_ID}",
+       "current_step": 1,
+       "status": "initialized",
+       "task_type": "${TASK_TYPE}",
+       "artifacts": {
+         "proposal": false,
+         "context": false,
+         "requirements": false,
+         "codex_plan": false,
+         "gemini_plan": false,
+         "ambiguities": false,
+         "constraints": false,
+         "pbt": false,
+         "architecture": false,
+         "tasks": false,
+         "risks": false,
+         "plan": false
+       },
+       "timestamps": {
+         "started": "${ISO_TIMESTAMP}",
+         "step_1": "${ISO_TIMESTAMP}"
+       }
+     }
+     ```
+   - Write `${PLAN_DIR}/input.md`
+   - Load proposal content via `/openspec:proposal ${PROPOSAL_ID}`
+   - Write proposal content to `${PLAN_DIR}/proposal.md`
+   - **🔒 Checkpoint**:
+     ```bash
+     test -f "${PLAN_DIR}/state.json" || { echo "❌ Step 1 FAILED: state.json not created"; exit 1; }
+     test -f "${PLAN_DIR}/proposal.md" || { echo "❌ Step 1 FAILED: proposal.md not found"; exit 1; }
+     ```
+     Update state.json: `artifacts.proposal=true`
 
-2. If project has not initialized OpenSpec:
-   - Immediately prompt to execute `/tpd:init`
-   - Continue this phase after completion
+2. **Step 2: Parallel Context & Requirements Retrieval**
+   - Launch concurrent retrieval agents.
+   - **Task for plan-context-retriever:** "Retrieve codebase context relevant to proposal"
+   - **Task for requirement-parser:** "Parse and structure requirements from proposal"
+   - **At most 2 agents in parallel!**
+   - JUST RUN AND WAIT!
 
-3. proposal_id parsing priority:
-   - proposal_id explicitly passed as argument
-   - If `openspec view` has only 1 Active Change → auto-select
-   - Otherwise let user select from `openspec view` output
+   ```
+   Task(subagent_type="tpd:investigation:context-analyzer", description="Retrieve plan context", prompt="Execute context retrieval. run_dir=${PLAN_DIR}")
 
-4. **When invoked without arguments**: Do not error, directly enter the auto-selection flow above.
+   Skill(skill="tpd:requirement-parser", args="run_dir=${PLAN_DIR}")
+   ```
+
+   - **🔒 Checkpoint**:
+     ```bash
+     test -f "${PLAN_DIR}/context.md" || { echo "❌ Step 2 FAILED: context.md not found"; exit 1; }
+     test -f "${PLAN_DIR}/requirements.md" || { echo "❌ Step 2 FAILED: requirements.md not found"; exit 1; }
+     ```
+     Update state.json: `current_step=2`, `artifacts.context=true`, `artifacts.requirements=true`, `timestamps.step_2="${ISO_TIMESTAMP}"`
+
+3. **Step 3: Parallel Multi-Model Architecture Planning**
+   - In parallel, launch dedicated architect agents to create architecture plans.
+   - **Task for codex-architect:** "Create backend architecture plan. Analyze codebase patterns, design API contracts, define data models."
+   - **Task for gemini-architect:** "Create frontend architecture plan. Analyze component structure, design state management, plan responsive layout."
+   - **At most 2 architect agents!**
+   - JUST RUN AND WAIT!
+
+   ```
+   Task(subagent_type="tpd:planning:codex-architect", description="Codex backend planning", prompt="Execute architecture planning. run_dir=${PLAN_DIR} focus=backend,api,data")
+
+   Task(subagent_type="tpd:planning:gemini-architect", description="Gemini frontend planning", prompt="Execute architecture planning. run_dir=${PLAN_DIR} focus=frontend,components,ux")
+   ```
+
+   - **🔒 Checkpoint**:
+
+     ```bash
+     test -f "${PLAN_DIR}/codex-plan.md" || { echo "❌ Step 3 FAILED: codex-plan.md not found"; exit 1; }
+     test -f "${PLAN_DIR}/gemini-plan.md" || { echo "❌ Step 3 FAILED: gemini-plan.md not found"; exit 1; }
+     ```
+
+     Update state.json: `current_step=3`, `artifacts.codex_plan=true`, `artifacts.gemini_plan=true`, `timestamps.step_3="${ISO_TIMESTAMP}"`
+
+   - **⏸️ Hard Stop**: Use AskUserQuestion to display core differences and recommendations
+
+4. **Step 4: Ambiguity Resolution & PBT Extraction**
+   - Call MCP tools directly for ambiguity audit:
+
+     ```
+     mcp__codex__codex: "Review proposal ${PROPOSAL_ID} for unspecified decision points. List: [AMBIGUITY] <description> → [REQUIRED CONSTRAINT] <what must be decided>."
+
+     mcp__gemini__gemini: "Identify implicit assumptions in proposal ${PROPOSAL_ID}. List: [ASSUMPTION] <description> → [EXPLICIT CONSTRAINT NEEDED] <concrete specification>."
+     ```
+
+   - Write output to `${PLAN_DIR}/ambiguities.md`
+   - **⏸️ Hard Stop**: Use AskUserQuestion to confirm each ambiguity item
+   - Write conclusions to `${PLAN_DIR}/constraints.md`
+   - Extract PBT properties via MCP tools:
+
+     ```
+     mcp__codex__codex: "Extract PBT properties. For each requirement: [INVARIANT] <property> → [FALSIFICATION STRATEGY] <counterexample generation>."
+
+     mcp__gemini__gemini: "Define system properties: [PROPERTY] <name> | [DEFINITION] <formal description> | [BOUNDARY CONDITIONS] <edge cases>."
+     ```
+
+   - Write output to `${PLAN_DIR}/pbt.md`
+   - **🔒 Checkpoint**:
+     ```bash
+     test -f "${PLAN_DIR}/ambiguities.md" || { echo "❌ Step 4 FAILED: ambiguities.md not found"; exit 1; }
+     test -f "${PLAN_DIR}/constraints.md" || { echo "❌ Step 4 FAILED: constraints.md not found"; exit 1; }
+     test -f "${PLAN_DIR}/pbt.md" || { echo "❌ Step 4 FAILED: pbt.md not found"; exit 1; }
+     ```
+     Update state.json: `current_step=4`, `artifacts.ambiguities=true`, `artifacts.constraints=true`, `artifacts.pbt=true`, `timestamps.step_4="${ISO_TIMESTAMP}"`
+
+5. **Step 5: Sequential Integration**
+   - Execute in sequence:
+
+     ```
+     Skill(skill="tpd:architecture-analyzer", args="run_dir=${PLAN_DIR} task_type=${TASK_TYPE}")
+     ```
+
+     **🔒 Checkpoint**:
+
+     ```bash
+     test -f "${PLAN_DIR}/architecture.md" || { echo "❌ Step 5a FAILED: architecture.md not found"; exit 1; }
+     ```
+
+     Update state.json: `artifacts.architecture=true`
+
+     ```
+     Skill(skill="tpd:task-decomposer", args="run_dir=${PLAN_DIR}")
+     ```
+
+     **🔒 Checkpoint**:
+
+     ```bash
+     test -f "${PLAN_DIR}/tasks.md" || { echo "❌ Step 5b FAILED: tasks.md not found"; exit 1; }
+     ```
+
+     Update state.json: `artifacts.tasks=true`
+
+     ```
+     Skill(skill="tpd:risk-assessor", args="run_dir=${PLAN_DIR}")
+     ```
+
+     **🔒 Checkpoint**:
+
+     ```bash
+     test -f "${PLAN_DIR}/risks.md" || { echo "❌ Step 5c FAILED: risks.md not found"; exit 1; }
+     ```
+
+     Update state.json: `artifacts.risks=true`
+
+     ```
+     Skill(skill="tpd:plan-synthesizer", args="run_dir=${PLAN_DIR}")
+     ```
+
+     **🔒 Checkpoint**:
+
+     ```bash
+     test -f "${PLAN_DIR}/plan.md" || { echo "❌ Step 5d FAILED: plan.md not found"; exit 1; }
+     ```
+
+     Update state.json: `current_step=5`, `artifacts.plan=true`, `timestamps.step_5="${ISO_TIMESTAMP}"`
+
+   - **⏸️ Hard Stop**: Use AskUserQuestion to get plan approval
+
+6. **Step 6: Validation & Delivery**
+   - **🔒 Final Checkpoint - Verify ALL Artifacts**:
+
+     ```bash
+     MISSING=""
+     test -f "${PLAN_DIR}/proposal.md" || MISSING="${MISSING} proposal.md"
+     test -f "${PLAN_DIR}/context.md" || MISSING="${MISSING} context.md"
+     test -f "${PLAN_DIR}/requirements.md" || MISSING="${MISSING} requirements.md"
+     test -f "${PLAN_DIR}/codex-plan.md" || MISSING="${MISSING} codex-plan.md"
+     test -f "${PLAN_DIR}/gemini-plan.md" || MISSING="${MISSING} gemini-plan.md"
+     test -f "${PLAN_DIR}/ambiguities.md" || MISSING="${MISSING} ambiguities.md"
+     test -f "${PLAN_DIR}/constraints.md" || MISSING="${MISSING} constraints.md"
+     test -f "${PLAN_DIR}/pbt.md" || MISSING="${MISSING} pbt.md"
+     test -f "${PLAN_DIR}/architecture.md" || MISSING="${MISSING} architecture.md"
+     test -f "${PLAN_DIR}/tasks.md" || MISSING="${MISSING} tasks.md"
+     test -f "${PLAN_DIR}/risks.md" || MISSING="${MISSING} risks.md"
+     test -f "${PLAN_DIR}/plan.md" || MISSING="${MISSING} plan.md"
+
+     if [ -n "$MISSING" ]; then
+       echo "❌ CRITICAL: Missing artifacts before ExitPlanMode:${MISSING}"
+       echo "Cannot proceed. Workflow incomplete."
+       exit 1
+     fi
+     echo "✅ All 12 artifacts verified"
+     ```
+
+   - Execute OpenSpec validation:
+     ```bash
+     openspec validate ${PROPOSAL_ID} --strict
+     ```
+   - If failed, show details:
+
+     ```bash
+     openspec show ${PROPOSAL_ID} --json --deltas-only
+     ```
+
+   - Update state.json: `status="completed"`, `timestamps.completed="${ISO_TIMESTAMP}"`
+
+   - Output completion summary:
+
+     ```
+     🎉 Planning Complete!
+
+     📋 Proposal: ${PROPOSAL_ID}
+     🔀 Type: ${TASK_TYPE}
+
+     📁 Artifacts:
+       ${PLAN_DIR}/
+       ├── input.md
+       ├── proposal.md
+       ├── requirements.md
+       ├── context.md
+       ├── codex-plan.md
+       ├── gemini-plan.md
+       ├── ambiguities.md
+       ├── constraints.md
+       ├── pbt.md
+       ├── architecture.md
+       ├── tasks.md
+       ├── risks.md
+       └── plan.md
+
+     🚀 Next Action: /tpd:dev --proposal-id=${PROPOSAL_ID}
+     ```
+
+   - **Exit Plan Mode** (ONLY after all artifacts verified):
+
+     ```
+     ExitPlanMode()
+     ```
+
+     This triggers Claude Code's native plan approval flow. The user can review the plan in `${PLAN_DIR}/plan.md` and approve or request changes.
+
+   - **Loop Mode (--loop)**: After user approval, automatically chain to `/tpd:dev --proposal-id=${PROPOSAL_ID}`
 
 ---
 
-## Phase 1: Initialization
+## Parallel Constraints Summary
 
-1. Parse arguments:
-   - TASK_TYPE: fullstack (default) | frontend | backend
-   - LOOP_MODE: Whether to auto-chain to dev (--loop argument)
-   - PROPOSAL_ID: Confirmed proposal_id (from Phase 0)
-
-2. Generate run directory path (fixed path, under OpenSpec):
-   - PLAN_DIR: `openspec/changes/${PROPOSAL_ID}/artifacts/plan`
-
-```bash
-mkdir -p "${PLAN_DIR}"
-```
-
-3. Write `${PLAN_DIR}/state.json` and `${PLAN_DIR}/input.md`
-   - If no explicit feature description: extract summary from proposal.md to write to input.md
-   - Write proposal_id for /tpd:dev auto-chaining
+| Step   | Max Agents | Agent Types                                                     |
+| ------ | ---------- | --------------------------------------------------------------- |
+| Step 2 | **2**      | `tpd:investigation:context-analyzer`, `tpd:requirement-parser`  |
+| Step 3 | **2**      | `tpd:planning:codex-architect`, `tpd:planning:gemini-architect` |
 
 ---
 
-## Phase 2: Load OpenSpec Proposal
+## Checkpoint Summary
 
-1. thinking phase has already written directly to openspec/; plan phase only executes based on OpenSpec official content.
-
-2. Read proposal:
-
-```
-/openspec:proposal ${PROPOSAL_ID}
-```
-
-3. Write proposal content to `${PLAN_DIR}/proposal.md` (for subsequent aggregation)
-
----
-
-## Phase 3: Requirement Parsing (Optional but Recommended)
-
-**Call Skill tool immediately:**
-
-```
-Skill(skill="tpd:requirement-parser", args="run_dir=${PLAN_DIR}")
-```
-
-**Verify**: Confirm `${PLAN_DIR}/requirements.md` is generated
+| Step | Checkpoint | Artifacts Verified                     | State Update                                               |
+| ---- | ---------- | -------------------------------------- | ---------------------------------------------------------- |
+| 1    | 🔒         | state.json, proposal.md                | artifacts.proposal=true                                    |
+| 2    | 🔒         | context.md, requirements.md            | current_step=2, artifacts.context/requirements=true        |
+| 3    | 🔒         | codex-plan.md, gemini-plan.md          | current_step=3, artifacts.codex_plan/gemini_plan=true      |
+| 4    | 🔒         | ambiguities.md, constraints.md, pbt.md | current_step=4, artifacts.ambiguities/constraints/pbt=true |
+| 5a   | 🔒         | architecture.md                        | artifacts.architecture=true                                |
+| 5b   | 🔒         | tasks.md                               | artifacts.tasks=true                                       |
+| 5c   | 🔒         | risks.md                               | artifacts.risks=true                                       |
+| 5d   | 🔒         | plan.md                                | current_step=5, artifacts.plan=true                        |
+| 6    | 🔒         | ALL 12 artifacts                       | status="completed"                                         |
 
 ---
 
-## Phase 4: Context Retrieval
+## Error Handling
 
-**Call Skill tool immediately:**
-
-```
-Skill(skill="tpd:plan-context-retriever", args="run_dir=${PLAN_DIR}")
-```
-
-**Verify**: Confirm `${PLAN_DIR}/context.md` is generated
-
----
-
-## Phase 5: Multi-Model Implementation Analysis (Required)
-
-**Call MCP in parallel:**
+### Validation Failure
 
 ```
-mcp__codex__codex: "Analyze proposal ${PROPOSAL_ID}: Provide implementation approach, identify technical risks, and suggest alternative architectures. Focus on edge cases and failure modes."
+⚠️ OpenSpec Validation Failed
 
-mcp__gemini__gemini: "Analyze proposal ${PROPOSAL_ID}: Evaluate from maintainability, scalability, and integration perspectives. Highlight potential conflicts with existing systems."
+Details: ${VALIDATION_ERRORS}
+
+Suggestions:
+1. Review constraints.md for missing decisions
+2. Check pbt.md for incomplete properties
+3. Return to Step 4 for ambiguity resolution
 ```
 
-**Output**:
-
-- `${PLAN_DIR}/analysis-codex.md`
-- `${PLAN_DIR}/analysis-gemini.md`
-
-**⏸️ Hard Stop**: AskUserQuestion to display core differences and recommendations, continue after confirmation
-
----
-
-## Phase 6: Multi-Model Ambiguity Resolution Audit (Required)
-
-**Call MCP in parallel:**
+### Model Call Failure
 
 ```
-mcp__codex__codex: "Review proposal ${PROPOSAL_ID} for decision points that remain unspecified. List each as: [AMBIGUITY] <description> → [REQUIRED CONSTRAINT] <what must be decided>."
+⚠️ ${MODEL} Planning Failed
 
-mcp__gemini__gemini: "Identify implicit assumptions in proposal ${PROPOSAL_ID}. For each assumption, specify: [ASSUMPTION] <description> → [EXPLICIT CONSTRAINT NEEDED] <concrete specification>."
+Error: ${ERROR_MESSAGE}
+
+Handling:
+- Continue with available model results
+- Mark missing perspective in plan.md
 ```
 
-**Output**: `${PLAN_DIR}/ambiguities.md`
-
-**⏸️ Hard Stop**: Must use AskUserQuestion to confirm each item, write conclusions to `${PLAN_DIR}/constraints.md`
-
-**If ambiguity cannot be resolved**: Return to /tpd:thinking or terminate
-
----
-
-## Phase 7: Multi-Model PBT Property Extraction (Required)
-
-**Call MCP in parallel:**
+### Checkpoint Failure
 
 ```
-mcp__codex__codex: "Extract Property-Based Testing properties from proposal ${PROPOSAL_ID}. For each requirement, identify: [INVARIANT] <property> → [FALSIFICATION STRATEGY] <how to generate counterexamples>."
+❌ Checkpoint Failed at Step ${STEP}
 
-mcp__gemini__gemini: "Analyze proposal ${PROPOSAL_ID} for system properties. Define: [PROPERTY] <name> | [DEFINITION] <formal description> | [BOUNDARY CONDITIONS] <edge cases> | [COUNTEREXAMPLE GENERATION] <approach>."
-```
+Missing: ${ARTIFACT_NAME}
 
-**Output**: `${PLAN_DIR}/pbt.md`
-
----
-
-## Phase 8: Multi-Model Planning Refinement (Parallel)
-
-**Launch both architect agents in a single message for parallel execution:**
-
-```
-Task(
-  subagent_type="general-purpose",
-  description="Codex backend planning",
-  prompt="You are the codex-architect agent. Read plugins/tpd/agents/planning/codex-architect.md to understand your role. Execute with: run_dir=${PLAN_DIR} focus=architecture",
-  run_in_background=true
-)
-
-Task(
-  subagent_type="general-purpose",
-  description="Gemini frontend planning",
-  prompt="You are the gemini-architect agent. Read plugins/tpd/agents/planning/gemini-architect.md to understand your role. Execute with: run_dir=${PLAN_DIR} focus=components",
-  run_in_background=true
-)
-```
-
-**Verify**: `codex-plan.md` / `gemini-plan.md`
-
----
-
-## Phase 9: Architecture Integration
-
-```
-Skill(skill="tpd:architecture-analyzer", args="run_dir=${PLAN_DIR} task_type=${TASK_TYPE}")
-```
-
-**Verify**: `architecture.md`
-
----
-
-## Phase 10: Task Decomposition
-
-```
-Skill(skill="tpd:task-decomposer", args="run_dir=${PLAN_DIR}")
-```
-
-**Verify**: `tasks.md`
-
----
-
-## Phase 11: Risk Assessment
-
-```
-Skill(skill="tpd:risk-assessor", args="run_dir=${PLAN_DIR}")
-```
-
-**Verify**: `risks.md`
-
----
-
-## Phase 12: Plan Integration
-
-```
-Skill(skill="tpd:plan-synthesizer", args="run_dir=${PLAN_DIR}")
-```
-
-**Verify**: `plan.md`
-
-**⏸️ Hard Stop**: AskUserQuestion to get plan approval
-
----
-
-## Phase 13: OpenSpec Validation
-
-```bash
-openspec validate ${PROPOSAL_ID} --strict
-```
-
-If failed:
-
-```bash
-openspec show ${PROPOSAL_ID} --json --deltas-only
-```
-
----
-
-## Phase 14: Delivery / Chaining
-
-Output completion summary:
-
-```
-🎉 Planning Task Complete!
-
-📋 Proposal: ${PROPOSAL_ID}
-🔀 Type: ${TASK_TYPE}
-📁 Artifacts:
-  ${PLAN_DIR}/
-  ├── input.md
-  ├── proposal.md
-  ├── requirements.md
-  ├── context.md
-  ├── analysis-codex.md
-  ├── analysis-gemini.md
-  ├── ambiguities.md
-  ├── constraints.md
-  ├── pbt.md
-  ├── codex-plan.md
-  ├── gemini-plan.md
-  ├── architecture.md
-  ├── tasks.md
-  ├── risks.md
-  └── plan.md
-
-🚀 Next Actions:
-/tpd:dev --proposal-id=${PROPOSAL_ID}
-```
-
-### Loop Mode (--loop)
-
-After user approval **automatically chain** to /tpd:dev:
-
-```
-/tpd:dev --proposal-id=${PROPOSAL_ID}
+Recovery:
+1. Check if the previous Skill/Task completed successfully
+2. Re-run the failed step
+3. If issue persists, check state.json for last successful step
 ```

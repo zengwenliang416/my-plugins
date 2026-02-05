@@ -5,11 +5,9 @@ description: |
   [Output] Outputs ${run_dir}/complexity-analysis.md containing complexity score and recommended depth
   [Skip] When user has explicitly specified --depth parameter
   [Ask First] No need to ask, automatically analyzes
-  [🚨 Mandatory] Must use sequential-thinking MCP for structured analysis
 allowed-tools:
   - Read
   - Write
-  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -23,7 +21,6 @@ arguments:
 
 | MCP Tool              | Purpose                                     | Trigger     |
 | --------------------- | ------------------------------------------- | ----------- |
-| `sequential-thinking` | Structured complexity evaluation, multi-dim | 🚨 Required |
 
 ## Responsibility Boundary
 
@@ -38,7 +35,6 @@ arguments:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  📋 Complexity Analysis                                          │
-│     ✅ Required: mcp__sequential-thinking__sequentialthinking   │
 │     ❌ Prohibited: Giving scores directly, skipping structured  │
 │        analysis                                                  │
 └─────────────────────────────────────────────────────────────────┘
@@ -48,12 +44,9 @@ arguments:
 
 ## Execution Flow
 
-### Step 0: Structured Evaluation Planning (sequential-thinking)
 
-🚨 **Must first use sequential-thinking to plan evaluation strategy**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Planning complexity evaluation strategy. Need: 1) Read question 2) Analyze structural complexity 3) Evaluate domain depth 4) Estimate reasoning steps 5) Detect ambiguity level 6) Synthesize score",
   thoughtNumber: 1,
   totalThoughts: 6,
@@ -78,38 +71,32 @@ Read("${run_dir}/input.md")
 
 ### Step 2: Structured Complexity Analysis
 
-**Use sequential-thinking for 5-step analysis**:
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 1: Analyze question length and structure. Question content: '${QUESTION}'. Evaluate: question length (word count), nested sub-questions, sentence complexity.",
   thoughtNumber: 1,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 2: Identify question type and domain depth. Determine: factual query, reasoning analysis, design decision, or composite problem? What domains are involved?",
   thoughtNumber: 2,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 3: Evaluate reasoning step count. How many steps needed for complete answer? Intermediate reasoning required? Hypothesis verification needed?",
   thoughtNumber: 3,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 4: Detect ambiguity level. Multiple interpretations possible? Need to clarify premises? Implicit assumptions exist?",
   thoughtNumber: 4,
   totalThoughts: 5,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 5: Synthesize score and recommendation. Based on above analysis, give 1-10 complexity score and recommend thinking depth (light/deep/ultra).",
   thoughtNumber: 5,
   totalThoughts: 5,
@@ -221,7 +208,6 @@ else:
 
 ### Tool Usage Verification
 
-- [ ] Called `mcp__sequential-thinking__sequentialthinking` at least 5 times
 - [ ] Each evaluation dimension has explicit score
 - [ ] Produced complexity-analysis.md file
 
@@ -263,7 +249,6 @@ On success, return:
 
 ## Constraints
 
-- Must use sequential-thinking for structured analysis
 - Must output complete complexity-analysis.md
 - Keyword detection takes priority over scoring
 - Score must be integer or one decimal between 1-10

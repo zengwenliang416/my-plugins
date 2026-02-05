@@ -10,7 +10,6 @@ allowed-tools:
   - Read
   - Write
   - Bash
-  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -24,7 +23,6 @@ arguments:
 
 | MCP Tool              | Purpose                          | Trigger     |
 | --------------------- | -------------------------------- | ----------- |
-| `sequential-thinking` | Structured extraction of handoff | 🚨 Required |
 
 ## Responsibility Boundary
 
@@ -42,7 +40,6 @@ Transform thinking conclusions and synthesis results into handoff-ready **constr
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  🤝 Handoff Artifacts                                            │
-│     ✅ Required: mcp__sequential-thinking__sequentialthinking   │
 │     ❌ Prohibited: Output conclusion without extracting         │
 │        handoff elements                                          │
 └─────────────────────────────────────────────────────────────────┘
@@ -52,12 +49,9 @@ Transform thinking conclusions and synthesis results into handoff-ready **constr
 
 ## Execution Flow
 
-### Step 0: Structured Extraction Planning (sequential-thinking)
 
-🚨 **Must first use sequential-thinking to plan extraction strategy**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Planning handoff extraction strategy. Need: 1) Read input and conclusion 2) Extract constraints 3) Clarify non-goals 4) Generate success criteria 5) Define acceptance criteria 6) Generate English task name and proposal_id 7) Generate OpenSpec specification and write to openspec/ (don't modify business code)",
   thoughtNumber: 1,
   totalThoughts: 7,
@@ -77,52 +71,44 @@ Read("${run_dir}/explore-<boundary>.json")
 Read("${run_dir}/clarifications.md")
 ```
 
-### Step 2: Extract Handoff Elements (sequential-thinking)
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 1: Extract [Constraints] and their sources (hard/soft) from explore-*.json and synthesis.",
   thoughtNumber: 2,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 2: Identify [Non-Goals] and explicit exclusions to prevent scope creep in subsequent phases.",
   thoughtNumber: 3,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 3: Form [Success Criteria] (observable outcomes), emphasize verifiability.",
   thoughtNumber: 4,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 4: Define [Acceptance Criteria] (executable checks), distinguish from success criteria.",
   thoughtNumber: 5,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 5: Add open questions and risks (if any), keep concise.",
   thoughtNumber: 6,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 6: Generate or reuse English task name and proposal_id (verb prefix, kebab-case). If state.json already has proposal_id, verify and reuse.",
   thoughtNumber: 7,
   totalThoughts: 7,
   nextThoughtNeeded: true
 })
 
-mcp__sequential-thinking__sequentialthinking({
   thought: "Step 7: Generate OpenSpec specification and write to openspec/changes (don't modify business code).",
   thoughtNumber: 7,
   totalThoughts: 7,
@@ -230,7 +216,6 @@ jq --arg proposal_id "$proposal_id" '.proposal_id=$proposal_id' "${run_dir}/stat
 
 ### Tool Usage Verification
 
-- [ ] Called `mcp__sequential-thinking__sequentialthinking` at least 7 times
 - [ ] Read input/synthesis/conclusion/state four files
 - [ ] Produced handoff.md and handoff.json
 - [ ] index.json updated latest pointer

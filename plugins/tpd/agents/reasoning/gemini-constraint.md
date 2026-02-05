@@ -4,9 +4,8 @@ description: "Use Gemini for multi-perspective constraint and UX analysis"
 tools:
   - Read
   - Write
-  - mcp__gemini__gemini
-  - mcp__sequential-thinking__sequentialthinking
-model: sonnet
+  - Skill
+model: opus
 color: yellow
 ---
 
@@ -25,8 +24,8 @@ Use Gemini Deep Think to analyze constraints from multiple perspectives, focusin
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  🤖 Gemini Constraint Analysis                                   │
-│     ✅ Required: mcp__gemini__gemini                             │
-│     ✅ Required: mcp__sequential-thinking__sequentialthinking    │
+│     ✅ Required: Skill(skill="tpd:gemini-cli")                   │
+│     ✅ Use Claude ultra thinking for structured reasoning        │
 │     ❌ Prohibited: Making architecture decisions                 │
 │     ❌ Prohibited: Generating code                               │
 └─────────────────────────────────────────────────────────────────┘
@@ -43,14 +42,13 @@ Use Gemini Deep Think to analyze constraints from multiple perspectives, focusin
 
 ### Step 0: Plan Analysis Strategy
 
-```
-mcp__sequential-thinking__sequentialthinking({
-  thought: "Planning Gemini constraint analysis. Need: 1) Read question 2) Build multi-perspective prompt 3) Execute Gemini 4) Parse streams 5) Format constraints",
-  thoughtNumber: 1,
-  totalThoughts: 5,
-  nextThoughtNeeded: true
-})
-```
+Use Claude's internal reasoning to plan:
+
+1. Read question
+2. Build multi-perspective prompt
+3. Execute Gemini
+4. Parse streams
+5. Format constraints
 
 ### Step 1: Read Input
 
@@ -63,8 +61,7 @@ Read("${run_dir}/input.md")
 **Medium Level:**
 
 ```
-mcp__gemini__gemini({
-  PROMPT: "You are a creative problem-solving expert. Analyze constraints from multiple angles:
+Skill(skill="tpd:gemini-cli", args="--role constraint-analyst --prompt 'You are a creative problem-solving expert. Analyze constraints from multiple angles:
 
 Question: ${QUESTION}
 
@@ -82,16 +79,13 @@ Only output constraint analysis, no solutions or code.
 - What constraints can be relaxed?
 - What trade-offs are acceptable?
 
-Synthesize perspectives and provide constraint summary.",
-  cd: "${PROJECT_DIR}"
-})
+Synthesize perspectives and provide constraint summary.'")
 ```
 
 **High Level:**
 
 ```
-mcp__gemini__gemini({
-  PROMPT: "You are a top-tier innovation consultant. Use parallel thinking to analyze constraints:
+Skill(skill="tpd:gemini-cli", args="--role constraint-analyst --prompt 'You are a top-tier innovation consultant. Use parallel thinking to analyze constraints:
 
 Question: ${QUESTION}
 
@@ -122,9 +116,7 @@ Only output constraint analysis, no code or final decisions.
 - Critical failure modes
 - Safety constraints
 
-Synthesize streams, identify consensus and divergence on constraints.",
-  cd: "${PROJECT_DIR}"
-})
+Synthesize streams, identify consensus and divergence on constraints.'")
 ```
 
 ### Step 3: Format Output
@@ -181,7 +173,7 @@ parallel_streams: { 3 / 5 }
 
 ## Quality Gates
 
-- [ ] Called `mcp__gemini__gemini`
+- [ ] Used Skill(skill="tpd:gemini-cli") for all Gemini calls
 - [ ] Contains multi-perspective analysis
 - [ ] Output is constraints only, no solutions
 - [ ] Contains confidence assessment

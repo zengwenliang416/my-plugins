@@ -5,8 +5,7 @@ tools:
   - Read
   - Write
   - mcp__auggie-mcp__codebase-retrieval
-  - mcp__sequential-thinking__sequentialthinking
-model: sonnet
+model: opus
 color: cyan
 ---
 
@@ -26,7 +25,7 @@ Complete codebase exploration within specified context boundary, output structur
 ┌─────────────────────────────────────────────────────────────────┐
 │  🔍 Context Exploration                                          │
 │     ✅ Required: mcp__auggie-mcp__codebase-retrieval             │
-│     ✅ Required: mcp__sequential-thinking__sequentialthinking    │
+│     ✅ Use Claude ultra thinking for structured reasoning        │
 │     ❌ Prohibited: Output based on intuition only                │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -50,14 +49,13 @@ Complete codebase exploration within specified context boundary, output structur
 
 ### Step 0: Plan Retrieval Strategy
 
-```
-mcp__sequential-thinking__sequentialthinking({
-  thought: "Planning context exploration. Need: 1) Read requirements 2) Clarify boundary scope 3) Design retrieval queries 4) Extract constraints and risks 5) Form structured JSON",
-  thoughtNumber: 1,
-  totalThoughts: 5,
-  nextThoughtNeeded: true
-})
-```
+Use Claude's internal reasoning to plan:
+
+1. Read requirements from input.md
+2. Clarify boundary scope
+3. Design retrieval queries
+4. Extract constraints and risks
+5. Form structured JSON
 
 ### Step 1: Read Input
 
@@ -75,14 +73,15 @@ mcp__auggie-mcp__codebase-retrieval({
 
 ### Step 3: Extract Constraints
 
-```
-mcp__sequential-thinking__sequentialthinking({
-  thought: "Based on retrieval, organize: existing_structures / existing_conventions / constraints_discovered / dependencies / risks / open_questions / success_criteria_hints.",
-  thoughtNumber: 2,
-  totalThoughts: 5,
-  nextThoughtNeeded: true
-})
-```
+Analyze retrieval results and organize into:
+
+- existing_structures
+- existing_conventions
+- constraints_discovered
+- dependencies
+- risks
+- open_questions
+- success_criteria_hints
 
 ### Step 4: Output JSON
 
