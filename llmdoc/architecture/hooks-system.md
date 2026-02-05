@@ -2,51 +2,58 @@
 
 ## 1. Identity
 
-- **What it is:** A lifecycle interception system that executes custom scripts at defined points during Claude Code operations.
-- **Purpose:** Provides extensible automation for security enforcement, optimization, logging, and permission management.
+- **What it is:** A lifecycle interception system that executes shell scripts at 5 hook points during Claude Code's tool execution flow.
+- **Purpose:** Provides cross-cutting automation for security, optimization, logging, and evaluation without modifying core tool behavior.
 
 ## 2. Core Components
 
-- `plugins/hooks/hooks/hooks.json` (`hooks`): Master configuration defining all hook points, matchers, and command bindings.
-- `plugins/hooks/scripts/security/*.sh` (`privacy-firewall`, `db-guard`, `killshell-guard`): Security validators blocking sensitive data and dangerous operations.
-- `plugins/hooks/scripts/optimization/read-limit.sh` (`updatedInput`): Pre-processor injecting limits for large file reads.
-- `plugins/hooks/scripts/quality/auto-format.sh`: Post-processor running formatters after file modifications.
-- `plugins/hooks/scripts/permission/*.sh` (`auto-approve`, `file-permission`): Permission decision handlers.
-- `plugins/hooks/scripts/logging/*.sh` (`auto-backup`, `mcp-logger`): Async auditors for backup and logging.
+- `plugins/hooks/hooks/hooks.json:1-122` (Master Configuration): Defines all 11 hooks with trigger points, matchers, timeouts, and async flags. Uses `${CLAUDE_PLUGIN_ROOT}` for portable paths.
+- `plugins/hooks/scripts/security/privacy-firewall.sh:36-72` (`pattern_regexes`): Detects 9 types of sensitive data via regex patterns.
+- `plugins/hooks/scripts/security/killshell-guard.sh:39-54` (`TASK_REGISTRY`): Protects codeagent-wrapper processes via task registry lookup.
+- `plugins/hooks/scripts/optimization/read-limit.sh:153-184` (`updatedInput`): Auto-injects limit parameter for large files.
+- `plugins/hooks/scripts/evaluation/unified-eval.sh:19-82` (`collect_plugin_catalog`): Dynamically collects enabled plugin metadata for routing.
+- `plugins/hooks/scripts/logging/auto-backup.sh:51-79`: Implements cleanup strategies (7-day retention, max 500 backups).
 
-## 3. Execution Flow (LLM Retrieval Map)
+## 3. Hook Lifecycle Points
 
-### Hook Points (5 total)
+| Hook Point          | Trigger                 | Scripts                                                                       | Async              |
+| ------------------- | ----------------------- | ----------------------------------------------------------------------------- | ------------------ |
+| `UserPromptSubmit`  | Before prompt to LLM    | privacy-firewall.sh (3s), unified-eval.sh (10s)                               | No                 |
+| `PreToolUse`        | Before tool execution   | read-limit.sh, db-guard.sh, killshell-guard.sh, auto-backup.sh, mcp-logger.sh | backup/logger: Yes |
+| `PostToolUse`       | After tool execution    | auto-format.sh (30s)                                                          | No                 |
+| `PermissionRequest` | Permission prompt shown | auto-approve.sh (3s), file-permission.sh (3s)                                 | No                 |
+| `Notification`      | Workflow events         | smart-notify.sh (5s)                                                          | No                 |
 
-| Hook Point            | Trigger                   | Primary Use Cases                        |
-| --------------------- | ------------------------- | ---------------------------------------- |
-| **UserPromptSubmit**  | Before prompt sent to LLM | Privacy filtering, intent evaluation     |
-| **PreToolUse**        | Before tool execution     | Validation, parameter injection, logging |
-| **PostToolUse**       | After tool execution      | Auto-formatting, checks                  |
-| **PermissionRequest** | Permission prompt shown   | Auto-approve safe commands               |
-| **Notification**      | Workflow events           | Smart notifications                      |
+## 4. Execution Flow (LLM Retrieval Map)
 
-### Execution Order
+- **1. Registration:** Claude Code loads `plugins/hooks/hooks/hooks.json` at startup.
+- **2. Matcher Evaluation:** Regex patterns (`Write|Edit|MultiEdit`, `mcp__.*`, `*`) evaluated against tool name.
+- **3. Script Execution:** JSON passed via stdin with `tool_name`, `tool_input`, and context.
+- **4. Response Processing:** Hook outputs JSON to stdout with `hookSpecificOutput` structure.
+- **5. Timeout Enforcement:** Configurable 3-30s per hook. Exceeding kills the script.
 
-- **1. UserPromptSubmit:** `privacy-firewall.sh` -> `unified-eval.sh` (sequential, matcher: `*`)
-- **2. PreToolUse:** Matcher-specific hooks (Read -> `read-limit.sh`, Bash -> `db-guard.sh`, Write -> `auto-backup.sh` async)
-- **3. PostToolUse:** `auto-format.sh` (matcher: `Write|Edit|MultiEdit`)
-- **4. PermissionRequest:** `auto-approve.sh` (Bash), `file-permission.sh` (Write|Edit)
-- **5. Notification:** `smart-notify.sh` (matcher: `*`)
+## 5. JSON Protocol
 
-### Hook Type Classification
+**Input (stdin):**
 
-| Type                    | Purpose                 | Example                                       |
-| ----------------------- | ----------------------- | --------------------------------------------- |
-| **Validators**          | Block unsafe operations | `privacy-firewall.sh`, `db-guard.sh`          |
-| **Pre-processors**      | Modify tool inputs      | `read-limit.sh` (uses `updatedInput`)         |
-| **Post-processors**     | Process tool outputs    | `auto-format.sh`                              |
-| **Permission Handlers** | Auto-approve/deny       | `auto-approve.sh` (uses `permissionDecision`) |
-| **Auditors**            | Async logging/backup    | `auto-backup.sh`, `mcp-logger.sh`             |
+```json
+{ "tool_name": "Read", "tool_input": { "file_path": "/path" }, "prompt": "..." }
+```
 
-## 4. Design Rationale
+**Output Types:**
 
-- **Multi-layered defense:** Security hooks at prompt level (privacy), command level (db-guard), and shell level (killshell).
-- **Non-blocking async:** Backup and logging hooks run with `async: true` to avoid blocking tool execution.
-- **Matcher patterns:** Regex-based matchers (`Write|Edit|MultiEdit`, `mcp__.*`) enable precise hook targeting.
-- **Timeout enforcement:** All hooks have configurable timeouts (default 3-30s) to prevent blocking.
+- **Block:** `{"decision": "block", "reason": "..."}` - `privacy-firewall.sh:88`
+- **Allow + Modify:** `{"hookSpecificOutput": {"updatedInput": {...}, "additionalContext": "..."}}` - `read-limit.sh:174-184`
+- **Permission:** `{"hookSpecificOutput": {"decision": {"behavior": "allow"}}}` - `auto-approve.sh:137-146`
+- **Pass-through:** Exit 0 with no output
+
+## 6. Async vs Sync Execution
+
+- **Sync (default):** Block tool execution until complete. Used for guards and modifiers.
+- **Async (`async: true`):** Run in background. Used for `auto-backup.sh` and `mcp-logger.sh` to avoid blocking writes and MCP calls.
+
+## 7. Design Rationale
+
+- **Multi-layered defense:** Security at prompt level (privacy-firewall), command level (db-guard), shell level (killshell-guard).
+- **Matcher patterns:** Fine-grained tool targeting via regex prevents unnecessary hook execution.
+- **Environment config:** `CC_READ_LINES_THRESHOLD`, `CC_READ_MAX_LINES` for user customization without code changes.

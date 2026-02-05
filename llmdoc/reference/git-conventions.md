@@ -2,50 +2,56 @@
 
 ## 1. Core Summary
 
-This project uses **Conventional Commits** with emoji prefixes. Commits follow the pattern `type(scope): emoji message`. The main branch is `main`, with feature branches named `feat/*` or `docs/*`.
+All commits follow the format `type(scope): emoji description` with Chinese descriptions. Branch names follow `<type>/<scope>-<description>` pattern. Emojis are mandatory and mapped to specific commit types.
 
-## 2. Branch Strategy
+## 2. Commit Message Format
 
-| Branch Type | Pattern               | Purpose               |
-| ----------- | --------------------- | --------------------- |
-| Main        | `main`                | Production-ready code |
-| Feature     | `feat/<feature-name>` | New features          |
-| Docs        | `docs/<topic>`        | Documentation updates |
+**Pattern:** `type(scope): emoji description`
 
-## 3. Commit Message Format
+**Example:** `feat(components): ✨ 新增 Button 组件`
 
-```
-type(scope): emoji message
-```
+**Breaking Change:** `feat(api)!: ✨ breaking change`
 
-- **type**: Category of change (see below)
-- **scope**: Plugin or module name (e.g., `commit`, `brainstorm`, `scripts`)
-- **emoji**: Visual indicator matching the type
-- **message**: Concise description in lowercase
+**Constraints:**
 
-## 4. Commit Types and Emojis
+- Title must be ≤72 characters
+- Description must be in Chinese
+- Emoji is mandatory
 
-| Type       | Emoji | Usage                        |
-| ---------- | ----- | ---------------------------- |
-| `feat`     | ✨    | New features or capabilities |
-| `fix`      | 🐛    | Bug fixes                    |
-| `docs`     | 📝    | Documentation changes        |
-| `refactor` | ♻️    | Code refactoring             |
-| `style`    | 💄    | Formatting, styling          |
-| `test`     | ✅    | Adding or updating tests     |
-| `chore`    | 🔧    | Maintenance tasks            |
+## 3. Type-Emoji Mappings
+
+| Type     | Emoji | Description       |
+| -------- | ----- | ----------------- |
+| feat     | ✨    | New feature       |
+| fix      | 🐛    | Bug fix           |
+| docs     | 📝    | Documentation     |
+| style    | 💄    | Code style/format |
+| refactor | ♻️    | Code refactoring  |
+| perf     | ⚡    | Performance       |
+| test     | ✅    | Tests             |
+| build    | 📦    | Build system      |
+| ci       | 👷    | CI configuration  |
+| chore    | 🔧    | Maintenance tasks |
+| revert   | ⏪    | Revert changes    |
+
+## 4. Branch Naming Convention
+
+**Pattern:** `<type>/<scope>-<description>`
+
+**Examples:**
+
+- `feat/auth-add-login`
+- `fix/button-style-issue`
+- `docs/readme-update-guide`
+
+**Rules:**
+
+- Lowercase only
+- Use hyphens as separators
+- Maximum 50 characters
+- Alphanumeric characters only
 
 ## 5. Source of Truth
 
-- **Commit History:** `git log --oneline -30` - View recent commits to match style
-- **Branch List:** `git branch -a` - Check existing branch patterns
-
-## 6. Real Examples
-
-```
-feat(commit): ✨ upgrade workflow to v2.0 with parallel analysis
-docs(commit): 📝 add CLAUDE.md example for skill integration
-feat(grok-search): ✨ 新增 grok-search 搜索技能
-fix(hooks): 🐛 移除通知钩子的 async 属性
-feat(scripts): ✨ sync-plugins 新增交互选择和 dry-run 模式
-```
+- **Commit Format:** `plugins/commit/skills/message-generator/SKILL.md`
+- **Branch Naming:** `plugins/commit/skills/branch-creator/SKILL.md`

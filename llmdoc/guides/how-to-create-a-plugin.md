@@ -1,59 +1,67 @@
 # How to Create a Plugin
 
-A step-by-step guide for creating a new Claude Code workflow plugin.
+A step-by-step guide to creating a new Claude Code workflow plugin.
 
-1. **Create Plugin Directory:** Create `plugins/{plugin-name}/` with required subdirectories.
+1. **Create the plugin directory structure:**
 
-   ```bash
-   mkdir -p plugins/my-plugin/.claude-plugin plugins/my-plugin/commands plugins/my-plugin/skills
+   ```
+   plugins/<plugin-name>/
+   ├── .claude-plugin/
+   │   └── plugin.json        # Required: Plugin metadata
+   ├── commands/              # Optional: Slash command definitions
+   │   └── <command>.md
+   ├── agents/                # Optional: Sub-task workers
+   │   └── <agent>.md
+   ├── skills/                # Optional: Atomic skill definitions
+   │   └── <skill-name>/
+   │       └── SKILL.md
+   └── hooks/                 # Optional: Lifecycle hooks
+       └── hooks.json
    ```
 
-2. **Define Plugin Metadata:** Create `plugins/{plugin-name}/.claude-plugin/plugin.json` with:
+2. **Create plugin.json metadata:** `plugins/<name>/.claude-plugin/plugin.json`
 
    ```json
    {
-     "name": "my-plugin",
-     "description": "Brief workflow description",
+     "name": "<plugin-name>",
+     "description": "Brief description of the plugin",
      "version": "1.0.0"
    }
    ```
 
-3. **Create a Command:** Add `plugins/{plugin-name}/commands/{command}.md` with frontmatter:
+3. **Create command files:** `plugins/<name>/commands/<command>.md`
+   - Frontmatter: `description`, `argument-hint`, `allowed-tools`
+   - Define workflow phases with hard stops at user decision points
+   - Reference: `plugins/commit/commands/commit.md:1-5`
 
-   ```yaml
-   ---
-   description: "What this command does"
-   argument-hint: "[--flag] <arg>"
-   allowed-tools: [Task, Skill, Read, Bash, AskUserQuestion]
-   ---
-   ```
+4. **Create SKILL.md files:** `plugins/<name>/skills/<skill>/SKILL.md`
+   - Required frontmatter: `name`, `description`, `arguments`
+   - Description format (4-part): `【触发条件】`, `【核心产出】`, `【不触发】`, `【先问什么】`
+   - Max 500 lines per SKILL.md
+   - Optional subdirs: `references/`, `assets/`, `scripts/`
+   - Reference: `plugins/commit/skills/change-collector/SKILL.md:1-13`
 
-   Define phases with explicit flow and hard stops for user confirmation.
+5. **Create hooks.json (if needed):** `plugins/<name>/hooks/hooks.json`
+   - 5 lifecycle points: `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PermissionRequest`, `Notification`
+   - Use regex matchers (e.g., `Write|Edit|MultiEdit`, `mcp__.*`)
+   - Configure timeouts (3-30s) and `async: true` for non-blocking hooks
+   - Reference: `plugins/hooks/hooks/hooks.json:1-122`
 
-4. **Add Skills (optional):** Create `plugins/{plugin-name}/skills/{skill}/SKILL.md`:
-   - Define `name`, `description`, `allowed-tools`, `arguments` in frontmatter.
-   - Add `references/` for configuration JSON/MD files.
-   - Add `assets/` for output templates.
-
-5. **Add Agents (optional):** For complex workflows, create `plugins/{plugin-name}/agents/{agent}.md`:
-   - Define `name`, `description`, `tools`, `model`, `color` in frontmatter.
-   - Invoke from commands via `Task(prompt="Read plugins/{plugin}/agents/{agent}.md...")`.
-
-6. **Register in Marketplace:** Add entry to `.claude-plugin/marketplace.json`:
+6. **Register in marketplace:** `.claude-plugin/marketplace.json`
 
    ```json
    {
-     "name": "my-plugin",
+     "name": "<plugin-name>",
      "description": "...",
-     "source": "./plugins/my-plugin",
+     "source": "./plugins/<plugin-name>",
      "version": "1.0.0"
    }
    ```
 
-7. **Verify:** Run `scripts/sync-plugins.sh` and test with `claude plugin install my-plugin@ccg-workflows`.
+7. **Validate and install:**
+   ```bash
+   ./scripts/validate-skills.sh      # Check SKILL.md frontmatter & structure
+   ./scripts/sync-plugins.sh -i      # Sync to cache and install
+   ```
 
-**Key Patterns:**
-
-- Use `${RUN_DIR}` for artifact isolation: `.claude/{plugin}/runs/{timestamp}/`
-- Use `run_in_background=true` for parallel agent execution.
-- Define hard stops with `AskUserQuestion` at critical decision points.
+**Verification:** Run `./scripts/sync-plugins.sh -l` to confirm plugin appears with correct counts.
