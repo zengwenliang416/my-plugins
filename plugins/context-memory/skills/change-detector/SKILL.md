@@ -8,7 +8,6 @@ description: |
     - 分析变更影响范围
     - 识别受影响的父模块
     - 确定更新策略
-  【强制工具】auggie-mcp, LSP, sequential-thinking
   【不触发】全量更新（用 module-discovery）
 allowed-tools:
   - Bash
@@ -64,15 +63,12 @@ src/auth/handlers/login.ts
 
 | MCP 工具              | 用途                   | 触发条件        |
 | --------------------- | ---------------------- | --------------- |
-| `sequential-thinking` | 结构化变更检测策略     | 🚨 每次执行必用 |
 | `auggie-mcp`          | 语义分析变更影响范围   | 🚨 必须使用     |
 | `LSP`                 | 获取变更文件的符号结构 | 代码文件变更时  |
 
 ## 执行流程
 
 ```
-Step 0: sequential-thinking 规划
-│   mcp__sequential-thinking__sequentialthinking({
 │     thought: "规划变更检测策略：
 │       1) git diff 获取变更文件列表
 │       2) auggie-mcp 分析变更文件的模块归属
@@ -223,7 +219,6 @@ Error: Not a git repository or no commits yet
 
 ## 验证清单
 
-- [ ] sequential-thinking 规划已执行
 - [ ] git diff 命令执行成功
 - [ ] auggie-mcp 分析了影响范围
 - [ ] LSP 获取了符号结构（如适用）

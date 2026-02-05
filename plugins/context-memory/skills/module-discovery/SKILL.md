@@ -8,7 +8,6 @@ description: |
     - 计算模块 depth
     - 智能过滤（tests/build/config）
     - 按 Layer 分组（3→2→1）
-  【强制工具】auggie-mcp, sequential-thinking
   【不触发】增量更新（用 change-detector）
 allowed-tools:
   - Bash
@@ -52,14 +51,11 @@ arguments:
 
 | MCP 工具              | 用途                 | 触发条件        |
 | --------------------- | -------------------- | --------------- |
-| `sequential-thinking` | 结构化目录扫描策略   | 🚨 每次执行必用 |
 | `auggie-mcp`          | 语义检索识别模块类型 | 智能过滤时      |
 
 ## 执行流程
 
 ```
-Step 0: sequential-thinking 规划
-│   mcp__sequential-thinking__sequentialthinking({
 │     thought: "规划目录扫描策略：
 │       1) 使用 Glob 扫描目录树
 │       2) 计算每个目录的 depth
@@ -204,7 +200,6 @@ Skill("context-memory:module-discovery",
 
 ## 验证清单
 
-- [ ] sequential-thinking 规划已执行
 - [ ] auggie-mcp 识别了项目类型
 - [ ] 所有目录都计算了 depth
 - [ ] 模块类型分类准确
