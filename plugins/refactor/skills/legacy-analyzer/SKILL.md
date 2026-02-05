@@ -14,7 +14,6 @@ allowed-tools:
   - Grep
   - AskUserQuestion
   - mcp__auggie-mcp__codebase-retrieval
-  - mcp__sequential-thinking__sequentialthinking
   - mcp__context7__resolve-library-id
   - mcp__context7__query-docs
 arguments:
@@ -44,7 +43,6 @@ arguments:
 │     ❌ 禁止: Claude 自己猜测架构                                  │
 │                                                                  │
 │  📋 策略生成                                                     │
-│     ✅ 必须使用 sequential-thinking 规划迁移策略                 │
 │     ✅ 必须使用 context7 查询目标技术栈文档                      │
 │                                                                  │
 │  ⚠️  必须通过多模型协作分析，确保方案全面！                      │
@@ -57,7 +55,6 @@ arguments:
 
 | MCP 工具              | 用途                         | 触发条件        |
 | --------------------- | ---------------------------- | --------------- |
-| `sequential-thinking` | 结构化迁移策略规划           | 🚨 每次执行必用 |
 | `auggie-mcp`          | 语义级架构分析               | 🚨 每次执行必用 |
 | `context7`            | 查询目标技术栈文档和最佳实践 | 🚨 每次执行必用 |
 
@@ -102,12 +99,9 @@ AskUserQuestion(
 
 ## 执行流程
 
-### Step 0: 结构化策略规划（sequential-thinking）
 
-🚨 **MUST: 首先使用 sequential-thinking 规划分析策略**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "规划遗留系统分析策略。源栈：${source_stack}，目标栈：${target_stack}。需要：1) 识别架构边界 2) 评估技术债务 3) 设计迁移路径 4) 评估风险 5) 制定时间线",
   thoughtNumber: 1,
   totalThoughts: 6,
@@ -430,7 +424,6 @@ gantt
 
 ### 工具使用验证
 
-- [ ] 调用了 `mcp__sequential-thinking__sequentialthinking` 规划策略
 - [ ] 调用了 `mcp__auggie-mcp__codebase-retrieval` 分析架构
 - [ ] 调用了 codex-cli skill 分析后端
 - [ ] 调用了 gemini-cli skill 分析前端

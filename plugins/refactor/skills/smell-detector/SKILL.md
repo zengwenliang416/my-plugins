@@ -14,7 +14,6 @@ allowed-tools:
   - Skill
   - Read
   - mcp__auggie-mcp__codebase-retrieval
-  - mcp__sequential-thinking__sequentialthinking
   - mcp__context7__resolve-library-id
   - mcp__context7__query-docs
 arguments:
@@ -56,17 +55,13 @@ arguments:
 
 | MCP 工具              | 用途                             | 触发条件        |
 | --------------------- | -------------------------------- | --------------- |
-| `sequential-thinking` | 结构化检测策略，确保覆盖所有气味 | 🚨 每次执行必用 |
 | `auggie-mcp`          | 语义分析代码结构和依赖关系       | 🚨 必须首先使用 |
 
 ## 执行流程
 
-### Step 0: 结构化检测规划（sequential-thinking）
 
-🚨 **必须首先使用 sequential-thinking 规划检测策略**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "规划代码气味检测策略。需要：1) 分析目标范围 2) 确定检测维度 3) 设定阈值标准 4) 规划符号分析 5) 规划报告结构",
   thoughtNumber: 1,
   totalThoughts: 5,

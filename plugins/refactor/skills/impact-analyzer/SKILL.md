@@ -12,7 +12,6 @@ allowed-tools:
   - LSP
   - Glob
   - mcp__auggie-mcp__codebase-retrieval
-  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -44,7 +43,6 @@ arguments:
 
 | MCP 工具              | 用途                         | 触发条件        |
 | --------------------- | ---------------------------- | --------------- |
-| `sequential-thinking` | 结构化影响评估，确保分析完整 | 🚨 每次执行必用 |
 | `auggie-mcp`          | 分析模块依赖关系和架构影响   | 🚨 必须使用     |
 
 ## 前置检查
@@ -54,12 +52,9 @@ arguments:
 
 ## 执行流程
 
-### Step 0: 结构化影响评估规划（sequential-thinking）
 
-🚨 **必须首先使用 sequential-thinking 规划评估策略**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "规划影响范围分析策略。需要：1) 解析重构建议 2) 追踪符号引用 3) 分析测试覆盖 4) 评估风险等级 5) 生成影响报告",
   thoughtNumber: 1,
   totalThoughts: 5,

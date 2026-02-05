@@ -13,7 +13,6 @@ allowed-tools:
   - Skill
   - AskUserQuestion
   - mcp__auggie-mcp__codebase-retrieval
-  - mcp__sequential-thinking__sequentialthinking
 arguments:
   - name: run_dir
     type: string
@@ -51,7 +50,6 @@ arguments:
 
 | MCP 工具              | 用途                         | 触发条件        |
 | --------------------- | ---------------------------- | --------------- |
-| `sequential-thinking` | 结构化执行计划，确保安全顺序 | 🚨 每次执行必用 |
 | `auggie-mcp`          | 验证重构结果，确保语义正确   | 🚨 每次执行必用 |
 
 ## 前置检查
@@ -72,12 +70,9 @@ arguments:
 
 ## 执行流程
 
-### Step 0: 结构化执行规划（sequential-thinking）
 
-🚨 **必须首先使用 sequential-thinking 规划执行策略**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "规划重构执行策略。需要：1) 按风险排序 2) 制定执行顺序 3) 设定回滚点 4) 规划验证步骤 5) 处理依赖关系",
   thoughtNumber: 1,
   totalThoughts: 5,

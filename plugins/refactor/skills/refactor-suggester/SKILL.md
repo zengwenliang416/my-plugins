@@ -12,7 +12,6 @@ allowed-tools:
   - Read
   - Skill
   - mcp__auggie-mcp__codebase-retrieval
-  - mcp__sequential-thinking__sequentialthinking
   - mcp__context7__resolve-library-id
   - mcp__context7__query-docs
 arguments:
@@ -51,7 +50,6 @@ arguments:
 
 | MCP 工具              | 用途                           | 触发条件        |
 | --------------------- | ------------------------------ | --------------- |
-| `sequential-thinking` | 结构化建议策略，确保方案完整   | 🚨 每次执行必用 |
 | `auggie-mcp`          | 分析代码上下文，验证建议可行性 | 🚨 必须使用     |
 
 ## 前置检查
@@ -61,12 +59,9 @@ arguments:
 
 ## 执行流程
 
-### Step 0: 结构化建议规划（sequential-thinking）
 
-🚨 **必须首先使用 sequential-thinking 规划建议策略**
 
 ```
-mcp__sequential-thinking__sequentialthinking({
   thought: "规划重构建议策略。需要：1) 分析气味类型 2) 匹配重构模式 3) 评估可行性 4) 排序优先级 5) 生成执行计划",
   thoughtNumber: 1,
   totalThoughts: 5,
