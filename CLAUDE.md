@@ -19,3 +19,41 @@ Use `@/openspec/AGENTS.md` to learn:
 Keep this managed block so 'openspec update' can refresh the instructions.
 
 <!-- OPENSPEC:END -->
+
+## Multi-Phase Workflow Design Rules
+
+When designing or modifying multi-phase workflows (e.g., TPD: thinking → plan → dev), **MUST ensure data continuity between phases**:
+
+### Mandatory Checks
+
+1. **Every phase MUST check for previous phase artifacts** before starting work
+2. **Copy relevant artifacts** with prefixed names (e.g., `thinking-synthesis.md`, `plan-constraints.md`)
+3. **Skip redundant operations** when prior data exists
+4. **Only ask NEW questions** not already answered in previous phases
+
+### Data Flow Pattern
+
+```
+THINKING → handoff.json, synthesis.md, clarifications.md, boundaries.json
+    ↓ (PLAN must read these)
+PLAN → architecture.md, constraints.md, pbt.md, risks.md, context.md, tasks.md
+    ↓ (DEV must read these)
+DEV → implements using all above artifacts
+```
+
+### Anti-Pattern Checklist
+
+Before completing any workflow phase design, verify:
+
+- [ ] Does the phase check for `${PREV_PHASE_DIR}/` existence?
+- [ ] Does it load prior constraints/clarifications?
+- [ ] Does it skip re-asking questions already answered?
+- [ ] Is `handoff.json` actually consumed by next phase?
+
+### Task Splitting Rule
+
+When a task modifies/generates **>3 files**, MUST split into sub-tasks with:
+
+- Maximum 3 files per sub-task
+- Explicit `[TEST]` section with test requirements
+- Clear success criteria

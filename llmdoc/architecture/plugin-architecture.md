@@ -75,11 +75,18 @@ allowed-tools: [Task, Skill, AskUserQuestion, Read, Bash]
 ---
 name: agent-name
 description: "Agent purpose"
-tools: Read, Bash, mcp__auggie-mcp__codebase-retrieval
+tools:
+  - Read
+  - Bash
+  - mcp__auggie-mcp__codebase-retrieval
+memory: project # user | project
 model: sonnet
 color: cyan
 ---
 ```
+
+- `memory: user` — Cross-project reusable knowledge (standards, patterns, heuristics)
+- `memory: project` — Project-specific knowledge (codebase structure, conventions, decisions)
 
 ### Skill Frontmatter
 
@@ -99,7 +106,7 @@ arguments:
 
 ## 6. Hooks System
 
-5 lifecycle hook points defined in `plugins/hooks/hooks/hooks.json`:
+7 lifecycle hook points defined in `plugins/hooks/hooks/hooks.json`:
 
 | Hook              | Timing        | Example Use Case               |
 | ----------------- | ------------- | ------------------------------ |
@@ -108,6 +115,8 @@ arguments:
 | PostToolUse       | After tool    | Auto-formatting                |
 | PermissionRequest | On permission | Auto-approve safe commands     |
 | Notification      | On events     | Smart notifications            |
+| TeammateIdle      | Agent idle    | Orchestration event logging    |
+| TaskCompleted     | Task done     | Completion tracking            |
 
 ## 7. Design Rationale
 
