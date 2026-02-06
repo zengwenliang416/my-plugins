@@ -1,7 +1,11 @@
 ---
 name: commit-worker
 description: "Execute git commit operations safely. Handles staging, committing, and error recovery."
-tools: Bash, Read, Write
+tools:
+  - Bash
+  - Read
+  - Write
+memory: project
 model: sonnet
 color: green
 ---

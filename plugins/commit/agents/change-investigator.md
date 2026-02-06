@@ -1,7 +1,12 @@
 ---
 name: change-investigator
 description: "Rapid git change investigation and preliminary analysis. Outputs structured change summary for parallel analyzers."
-tools: Read, Glob, Grep, Bash
+tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash
+memory: project
 model: sonnet
 color: cyan
 ---

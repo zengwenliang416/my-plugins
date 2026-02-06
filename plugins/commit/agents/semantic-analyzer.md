@@ -1,7 +1,10 @@
 ---
 name: semantic-analyzer
 description: "Semantic analysis of code changes using auggie-mcp. Runs in parallel with symbol-analyzer."
-tools: Read, mcp__auggie-mcp__codebase-retrieval
+tools:
+  - Read
+  - mcp__auggie-mcp__codebase-retrieval
+memory: project
 model: sonnet
 color: magenta
 ---

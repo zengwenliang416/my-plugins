@@ -1,7 +1,10 @@
 ---
 name: symbol-analyzer
 description: "Symbol-level analysis of code changes using LSP. Runs in parallel with semantic-analyzer."
-tools: Read, LSP
+tools:
+  - Read
+  - LSP
+memory: project
 model: sonnet
 color: yellow
 ---

@@ -197,3 +197,18 @@ Task(
 | ----------- | -------------------- |
 | No staged   | Suggest `git add`    |
 | Hook failed | Fix or `--no-verify` |
+
+---
+
+## Agent Type Restrictions
+
+This command ONLY uses the following agent types via the `Task` tool:
+
+| Agent Type                   | Usage                                     |
+| ---------------------------- | ----------------------------------------- |
+| `commit:change-investigator` | Phase 2: Rapid git change investigation   |
+| `commit:semantic-analyzer`   | Phase 3: Semantic analysis (parallel)     |
+| `commit:symbol-analyzer`     | Phase 3: Symbol-level analysis (parallel) |
+| `commit:commit-worker`       | Phase 9: Execute git commit               |
+
+Any other `subagent_type` values are **forbidden** in this command.
