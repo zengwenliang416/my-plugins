@@ -1,0 +1,39 @@
+{
+  "boundaries": [
+    {
+      "id": "agent-definitions",
+      "label": "Agent Definition Layer",
+      "scope": "All agent .md files across plugins - frontmatter patterns, tools fields, and memory integration points",
+      "paths": ["plugins/*/agents/*.md", "plugins/*/agents/**/*.md"],
+      "features": ["memory frontmatter", "Task(agent_type) restrictions"]
+    },
+    {
+      "id": "hook-system",
+      "label": "Hook Lifecycle System",
+      "scope": "hooks.json structure, hook scripts, lifecycle event patterns - TeammateIdle/TaskCompleted integration",
+      "paths": [
+        "plugins/hooks/hooks/hooks.json",
+        "plugins/hooks/scripts/**/*.sh"
+      ],
+      "features": ["TeammateIdle hook", "TaskCompleted hook"]
+    },
+    {
+      "id": "workflow-orchestration",
+      "label": "Workflow Orchestration Layer",
+      "scope": "Command .md files that orchestrate multi-agent workflows - Agent Teams migration patterns",
+      "paths": ["plugins/*/commands/*.md"],
+      "features": ["Agent Teams", "parallel agent coordination"]
+    },
+    {
+      "id": "memory-system",
+      "label": "Memory & Persistence Layer",
+      "scope": "Existing workflow-memory, session-compactor, context-loader skills - native agent memory interaction",
+      "paths": [
+        "plugins/context-memory/skills/workflow-memory/",
+        "plugins/context-memory/skills/session-compactor/",
+        "plugins/context-memory/skills/context-loader/"
+      ],
+      "features": ["agent memory vs workflow-memory coexistence"]
+    }
+  ]
+}

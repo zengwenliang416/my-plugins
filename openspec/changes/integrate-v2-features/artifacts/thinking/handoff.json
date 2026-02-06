@@ -1,0 +1,128 @@
+{
+  "source": "thinking",
+  "proposal_id": "integrate-v2-features",
+  "summary": "通过 5 阶段增量计划将 Claude Code v2.1.32-33 的 4 项新功能集成到 ccg-workflows: Phase 0 UI-Design frontmatter 迁移 → Phase 1 并行基础（memory + restrictions + hooks）→ Phase 2 memory 共存文档 → Phase 3 tpd:dev Agent Teams → Phase 4 延后扩展",
+  "summary_en": "integrate v2.1.32-33 features via 5-phase additive plan: UI-Design frontmatter migration, parallel foundation (memory + restrictions + hooks), memory coexistence docs, Agent Teams for tpd:dev, deferred expansion",
+  "constraints": {
+    "hard": [
+      "HC-1: UI-Design 9 agents lack YAML frontmatter; Phase 0 prerequisite",
+      "HC-2: Unknown frontmatter fields must be silently ignored by old CLI",
+      "HC-3: thinking.md NEVER background constraint; incompatible with Agent Teams",
+      "HC-4: Dual-model diversity must be preserved; no cross-model mailbox sharing",
+      "HC-5: Filesystem run_dir remains sole source of truth for artifacts",
+      "HC-6: hooks.json is single registration point; never in plugin.json",
+      "HC-7: Agent names must be globally unique (native memory directory key)",
+      "HC-8: 200-line MEMORY.md system prompt limit; compaction strategy needed",
+      "HC-9: Task(agent_type) applies at command level, not agent level (all leaf agents)",
+      "HC-10: TeammateIdle/TaskCompleted schemas unknown; defensive parsing required",
+      "HC-11: Agent Teams requires experimental flag; conditional fallback mandatory",
+      "HC-12: 50+ existing skills backward compatibility non-negotiable"
+    ],
+    "soft": [
+      "SC-1: Per-command incremental migration",
+      "SC-2: Skip Agent Teams for commit (atomic fast-path)",
+      "SC-3: Skip Agent Teams for brainstorm/refactor (zero Task() calls)",
+      "SC-4: New hook scripts follow bash+jq convention",
+      "SC-5: New scripts/orchestration/ directory for agent-lifecycle hooks",
+      "SC-6: Memory scope: 8 agents user, 15 agents project",
+      "SC-7: Normalize tools format to YAML array",
+      "SC-8: Explicit per-agent applicability criteria",
+      "SC-9: Users never configure two memory systems for basic workflows",
+      "SC-10: Agent Teams artifacts in run_dir match current output format"
+    ]
+  },
+  "non_goals": [
+    "Do not replace workflow-memory skill with native agent memory",
+    "Do not convert brainstorm/refactor to Agent Teams (no Task() calls)",
+    "Do not convert commit to Agent Teams (atomic fast-path)",
+    "Do not introduce Agent Teams to thinking phase (NEVER background)",
+    "Do not modify any existing skill/hook behavior",
+    "Do not resolve Agent Teams documentation gaps"
+  ],
+  "success_criteria": [
+    "All 23 agent files have YAML frontmatter with memory field",
+    "5 command files have Task(agent_type) restrictions",
+    "hooks.json contains TeammateIdle and TaskCompleted top-level keys",
+    "All 7 command workflows execute identically to pre-integration baseline",
+    "Zero behavioral change when CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is unset",
+    "tpd:dev with Agent Teams shows reduced audit-fix round-trips",
+    "Agent names verified unique across all 23 agents",
+    "UI-Design frontmatter preserves exact tool declarations (diff-verified)",
+    "Memory system has clear documented ownership boundaries",
+    "No modification to plugin.json for hooks"
+  ],
+  "acceptance_criteria": [
+    "grep -r '^memory:' plugins/*/agents/**/*.md count = 23",
+    "5 command files contain Task() restriction declarations",
+    "jq '.hooks | keys' hooks.json includes TeammateIdle and TaskCompleted",
+    "UI-Design 9 agent tools fields match pre-migration informal declarations",
+    "All workflows execute without errors when env var is unset",
+    "scripts/orchestration/ contains at least 2 .sh files"
+  ],
+  "open_questions": [
+    "OQ-1 (P0): Does old CLI ignore unknown frontmatter fields?",
+    "OQ-2 (P0): TeammateIdle exact input JSON schema?",
+    "OQ-3 (P0): TaskCompleted exact input JSON schema?",
+    "OQ-4 (P1): Does Agent Teams support typed subagent_type?",
+    "OQ-5 (P1): How does Agent Teams handle synchronous execution?",
+    "OQ-6 (P2): MEMORY.md 200-line overflow behavior?"
+  ],
+  "risks": [
+    "R-1 (HIGH): UI-Design frontmatter migration breaks agent behavior",
+    "R-2 (HIGH): Dual-model diversity loss via Agent Teams",
+    "R-3 (HIGH): Agent Teams breaks backward compat when flag unset",
+    "R-4 (MEDIUM): MEMORY.md 200-line overflow",
+    "R-5 (MEDIUM): Dual persistence confusion",
+    "R-6 (MEDIUM): Hook event schema changes in future versions"
+  ],
+  "implementation_phases": [
+    {
+      "phase": 0,
+      "name": "UI-Design YAML frontmatter migration",
+      "files": 9,
+      "blocked_by": [],
+      "parallelizable": false
+    },
+    {
+      "phase": "1a",
+      "name": "Add memory field to all 23 agents",
+      "files": 23,
+      "blocked_by": ["Phase 0"],
+      "parallelizable": true
+    },
+    {
+      "phase": "1b",
+      "name": "Add Task(agent_type) restrictions to 5 commands",
+      "files": 5,
+      "blocked_by": ["Phase 0"],
+      "parallelizable": true
+    },
+    {
+      "phase": "1c",
+      "name": "Add TeammateIdle/TaskCompleted to hooks",
+      "files": 3,
+      "blocked_by": [],
+      "parallelizable": true
+    },
+    {
+      "phase": 2,
+      "name": "Document memory system coexistence strategy",
+      "files": 2,
+      "blocked_by": ["Phase 1a"],
+      "parallelizable": false
+    },
+    {
+      "phase": 3,
+      "name": "Agent Teams for tpd:dev (behind experimental flag)",
+      "files": 2,
+      "blocked_by": ["Phase 0", "Phase 1a", "Phase 1b", "Phase 1c", "Phase 2"],
+      "parallelizable": false
+    }
+  ],
+  "paths": {
+    "openspec_root": "openspec",
+    "openspec_proposal": "openspec/changes/integrate-v2-features/proposal.md",
+    "openspec_tasks": "openspec/changes/integrate-v2-features/tasks.md",
+    "openspec_spec": "openspec/changes/integrate-v2-features/specs/integrate-v2-features/spec.md"
+  }
+}

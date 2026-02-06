@@ -1,0 +1,588 @@
+{
+  "module_name": "agent-definitions",
+  "existing_structures": [
+    "TPD plugin: 10 agents in plugins/tpd/agents/ organized into 4 subdirs: investigation/ (2), reasoning/ (2), planning/ (2), execution/ (4). ALL use standard YAML frontmatter.",
+    "Commit plugin: 4 agents in plugins/commit/agents/ (flat dir). ALL use standard YAML frontmatter.",
+    "UI-Design plugin: 9 agents in plugins/ui-design/agents/ organized into 4 subdirs: analysis/ (3), design/ (2), validation/ (2), generation/ (2). NONE use YAML frontmatter -- all use informal markdown headers instead.",
+    "Brainstorm plugin: NO agents directory. Uses skills-only architecture (codex-cli, gemini-cli, topic-researcher, idea-generator, idea-evaluator, report-generator).",
+    "Refactor plugin: NO agents directory. Uses skills-only architecture (codex-cli, gemini-cli, smell-detector, refactoring-suggester, impact-analyzer).",
+    "Context-Memory plugin: NO agents directory. Uses skills-only architecture (context-loader, session-compactor, code-map-generator, workflow-memory, claude-updater, etc.).",
+    "Hooks plugin: NO agents. Scripts-only (shell scripts for lifecycle hooks).",
+    "Standard agent frontmatter schema: { name: string, description: string, tools: string|array, model: 'opus'|'sonnet'|'haiku', color: string }",
+    "Plugin architecture doc (llmdoc/architecture/plugin-architecture.md) defines canonical agent frontmatter spec at Section 5."
+  ],
+  "existing_conventions": [
+    "CONVENTION-1: TPD and commit agents use standard YAML frontmatter with exactly 5 fields: name, description, tools, model, color.",
+    "CONVENTION-2: UI-Design agents use INFORMAL markdown format ('# Agent Name' + '## Overview' + '## Required Tools' bullet list) with NO YAML frontmatter block at all.",
+    "CONVENTION-3: TPD agents list tools as YAML array (- Read\\n- Write\\n- Skill). Commit agents list tools as comma-separated string ('Read, Glob, Grep, Bash').",
+    "CONVENTION-4: TPD agent model is always 'opus'. Commit agent model is always 'sonnet'.",
+    "CONVENTION-5: Agent color encodes category -- TPD: cyan=investigation, yellow=reasoning, green=planning, blue=implementation, purple=audit. Commit: cyan=investigation, magenta=semantic, yellow=symbol, green=execution.",
+    "CONVENTION-6: Agents are invoked via Task() tool from commands. Pattern: Task(prompt='Read plugins/{plugin}/agents/{agent}.md...').",
+    "CONVENTION-7: Agents write ONLY to run_dir. Strict write-scope isolation.",
+    "CONVENTION-8: Some TPD agents use Skill tool to invoke codex-cli/gemini-cli skills. Investigation agents use mcp__auggie-mcp__codebase-retrieval directly."
+  ],
+  "constraints_discovered": [
+    "CONSTRAINT-1 (FORMAT SPLIT): 14 agents have YAML frontmatter (tpd:10, commit:4), 9 agents do NOT (ui-design:9). Adding 'memory' field to ui-design agents requires first adding YAML frontmatter blocks to all 9 files -- a prerequisite migration.",
+    "CONSTRAINT-2 (NO NEW FIELDS YET): No existing agent has a 'memory' field or Task(agent_type) restriction in tools. These are entirely new field additions.",
+    "CONSTRAINT-3 (TOOLS FORMAT INCONSISTENCY): TPD uses YAML array for tools, commit uses comma-separated string. New Task(agent_type) syntax in tools must work with both formats.",
+    "CONSTRAINT-4 (SCOPE AFFECTS STORAGE PATH): memory scope 'user' stores at ~/.claude/agent-memory/<name>/, 'project' stores at .claude/agent-memory/<name>/, 'local' is ephemeral per-run. Wrong scope choice causes data leakage across projects or data loss between sessions.",
+    "CONSTRAINT-5 (AGENT NAME UNIQUENESS): memory scope uses agent name as directory key. Agent names MUST be globally unique across all plugins. Current names appear unique but no enforcement exists.",
+    "CONSTRAINT-6 (BACKWARD COMPATIBILITY): Adding frontmatter fields must not break Claude Code versions < v2.1.32 that do not recognize 'memory' field. Unknown fields should be silently ignored by older versions (to verify).",
+    "CONSTRAINT-7 (TASK RESTRICTION SCOPE): Task(agent_type) restricts which sub-agents can be spawned. Most agents do NOT spawn sub-agents (only commands do via Task). Only agents that have 'Skill' or 'Task' in their tools field would benefit from Task() restrictions.",
+    "CONSTRAINT-8 (UI-DESIGN AGENT INVOCATION): UI-design agents are invoked from ui-design.md command via Task(), but the command references agent files by path, not by frontmatter name. Adding frontmatter does not change invocation pattern but enables memory/restriction features."
+  ],
+  "open_questions": [
+    "Q1: Does Claude Code v2.1.32+ silently ignore unknown frontmatter fields? If not, adding 'memory' would break older CLI versions.",
+    "Q2: Should ui-design agents be migrated to standard YAML frontmatter as a prerequisite, or can 'memory' work without frontmatter?",
+    "Q3: For ui-design agents that are invoked by path rather than name, does the 'memory' frontmatter field still activate? Or does it require the agent to be registered by name?",
+    "Q4: Can Task(agent_type) restrictions reference agents from OTHER plugins (cross-plugin restriction), or only same-plugin agents?",
+    "Q5: How does native agent memory (v2.1.32) interact with the existing context-memory plugin's workflow-memory and session-compactor skills? Risk of dual-write or conflicting state.",
+    "Q6: Should brainstorm/refactor/context-memory plugins create agent definitions to leverage memory, or remain skills-only?",
+    "Q7: What is the maximum memory storage size per agent? Large agents like context-analyzer could accumulate significant project context."
+  ],
+  "dependencies": [
+    "DEP-1: Claude Code v2.1.32+ runtime required for 'memory' frontmatter support.",
+    "DEP-2: Claude Code v2.1.33+ required for Task(agent_type) restriction syntax.",
+    "DEP-3: llmdoc/architecture/plugin-architecture.md Section 5 (Agent Frontmatter spec) must be updated to document new fields.",
+    "DEP-4: llmdoc/reference/tpd-agents.md agent registry table must be updated with new fields.",
+    "DEP-5: UI-design agents require frontmatter migration before memory/restriction features can be added.",
+    "DEP-6: context-memory plugin's workflow-memory skill may need coordination with native agent memory to avoid conflicts.",
+    "DEP-7: CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 environment variable needed if Agent Teams features are combined with memory."
+  ],
+  "risks": [
+    "RISK-1 (HIGH): UI-Design frontmatter migration. 9 files need YAML frontmatter added. If model/tools fields are not set correctly, agent behavior could change. Must map informal '## Required Tools' lists to exact YAML tools arrays.",
+    "RISK-2 (MEDIUM): Memory scope misassignment. If a project-scoped agent is given 'user' scope, its memory leaks across unrelated projects. If a cross-project agent gets 'project' scope, it loses learned patterns when switching projects.",
+    "RISK-3 (MEDIUM): Agent name collision. Two agents named identically across plugins would share memory storage, causing data corruption. Current names are unique but future additions could collide.",
+    "RISK-4 (LOW): Task() restriction over-constraining. If restrictions are too tight, legitimate agent spawning patterns break. TPD agents that use Skill tool to invoke codex-cli/gemini-cli are NOT spawning agents -- Skill != Task. Restrictions only apply to Task() calls.",
+    "RISK-5 (LOW): Performance impact of persistent memory. Agents with 'project' or 'user' memory load persisted context on every invocation. For high-frequency agents (commit pipeline), this adds latency.",
+    "RISK-6 (MEDIUM): Dual memory systems. context-memory plugin already manages project memory via workflow-memory skill. Native agent memory creates a parallel persistence layer, risking inconsistent state and confusing which system to query."
+  ],
+  "success_criteria_hints": [
+    "All 23 agent .md files (10 tpd + 4 commit + 9 ui-design) have valid YAML frontmatter with 'memory' field.",
+    "Each agent's memory scope is documented with rationale (user/project/local).",
+    "UI-Design agents have YAML frontmatter that exactly matches their current informal tool declarations.",
+    "Task(agent_type) restrictions are added to command-level orchestrators (thinking.md, plan.md, dev.md, commit.md, ui-design.md) -- NOT to leaf agents.",
+    "No behavioral regression: all existing workflows execute identically after field additions.",
+    "Architecture docs (plugin-architecture.md, tpd-agents.md) updated with new field specifications.",
+    "Agent names verified unique across all plugins."
+  ],
+  "agent_catalog": {
+    "tpd": {
+      "agent_count": 10,
+      "frontmatter_format": "standard_yaml",
+      "agents": [
+        {
+          "name": "boundary-explorer",
+          "file": "plugins/tpd/agents/investigation/boundary-explorer.md",
+          "category": "investigation",
+          "frontmatter": {
+            "name": "boundary-explorer",
+            "description": "Explore codebase within specified context boundary, output structured constraint set",
+            "tools": ["Read", "Write", "mcp__auggie-mcp__codebase-retrieval"],
+            "model": "opus",
+            "color": "cyan"
+          },
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Accumulates boundary exploration knowledge specific to a project's codebase structure. Not useful across projects.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Leaf agent. Does not spawn sub-agents via Task()."
+        },
+        {
+          "name": "context-analyzer",
+          "file": "plugins/tpd/agents/investigation/context-analyzer.md",
+          "category": "investigation",
+          "frontmatter": {
+            "name": "context-analyzer",
+            "description": "Analyze codebase context for project structure and patterns",
+            "tools": ["Read", "Write", "mcp__auggie-mcp__codebase-retrieval"],
+            "model": "opus",
+            "color": "cyan"
+          },
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Project structure, patterns, and integration points are project-specific. Memory accelerates repeated analysis of the same project.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Leaf agent. Does not spawn sub-agents via Task()."
+        },
+        {
+          "name": "codex-constraint",
+          "file": "plugins/tpd/agents/reasoning/codex-constraint.md",
+          "category": "reasoning",
+          "frontmatter": {
+            "name": "codex-constraint",
+            "description": "Use Codex for technical constraint and risk analysis",
+            "tools": ["Read", "Write", "Skill"],
+            "model": "opus",
+            "color": "yellow"
+          },
+          "recommended_memory_scope": "user",
+          "memory_rationale": "Technical constraint patterns (security, performance, scalability) are transferable across projects. User-level memory lets this agent learn from all projects the user works on.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Uses Skill (not Task) to invoke codex-cli. Skill invocations are not affected by Task() restrictions."
+        },
+        {
+          "name": "gemini-constraint",
+          "file": "plugins/tpd/agents/reasoning/gemini-constraint.md",
+          "category": "reasoning",
+          "frontmatter": {
+            "name": "gemini-constraint",
+            "description": "Use Gemini for multi-perspective constraint and UX analysis",
+            "tools": ["Read", "Write", "Skill"],
+            "model": "opus",
+            "color": "yellow"
+          },
+          "recommended_memory_scope": "user",
+          "memory_rationale": "UX and maintainability patterns are transferable across projects. User-level memory lets this agent accumulate design heuristics.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Uses Skill (not Task) to invoke gemini-cli. Skill invocations are not affected by Task() restrictions."
+        },
+        {
+          "name": "codex-architect",
+          "file": "plugins/tpd/agents/planning/codex-architect.md",
+          "category": "planning",
+          "frontmatter": {
+            "name": "codex-architect",
+            "description": "Backend architecture planning expert using Codex",
+            "tools": ["Read", "Write", "Skill"],
+            "model": "opus",
+            "color": "green"
+          },
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Architecture plans are project-specific (API design, data models, service boundaries). Memory of prior architectural decisions within the same project prevents contradictory plans.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Uses Skill (not Task) to invoke codex-cli. No sub-agent spawning."
+        },
+        {
+          "name": "gemini-architect",
+          "file": "plugins/tpd/agents/planning/gemini-architect.md",
+          "category": "planning",
+          "frontmatter": {
+            "name": "gemini-architect",
+            "description": "Frontend architecture planning expert using Gemini",
+            "tools": ["Read", "Write", "Skill"],
+            "model": "opus",
+            "color": "green"
+          },
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Frontend architecture (component hierarchy, state management, routing) is project-specific. Memory prevents re-analyzing known component structures.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Uses Skill (not Task) to invoke gemini-cli. No sub-agent spawning."
+        },
+        {
+          "name": "codex-implementer",
+          "file": "plugins/tpd/agents/execution/codex-implementer.md",
+          "category": "execution",
+          "frontmatter": {
+            "name": "codex-implementer",
+            "description": "Generate backend/API/logic Unified Diff prototypes using Codex",
+            "tools": ["Read", "Write", "Skill"],
+            "model": "opus",
+            "color": "blue"
+          },
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Implementation patterns (code style, naming conventions, project-specific APIs) are project-bound. Memory helps maintain consistency across dev phases.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Uses Skill (not Task) to invoke codex-cli. No sub-agent spawning."
+        },
+        {
+          "name": "gemini-implementer",
+          "file": "plugins/tpd/agents/execution/gemini-implementer.md",
+          "category": "execution",
+          "frontmatter": {
+            "name": "gemini-implementer",
+            "description": "Generate frontend/UI/styles Unified Diff prototypes using Gemini",
+            "tools": ["Read", "Write", "Skill"],
+            "model": "opus",
+            "color": "blue"
+          },
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Frontend implementation patterns (component style, Tailwind conventions, design tokens) are project-specific.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Uses Skill (not Task) to invoke gemini-cli. No sub-agent spawning."
+        },
+        {
+          "name": "codex-auditor",
+          "file": "plugins/tpd/agents/execution/codex-auditor.md",
+          "category": "execution",
+          "frontmatter": {
+            "name": "codex-auditor",
+            "description": "Security and performance audit using Codex",
+            "tools": ["Read", "Write", "Skill"],
+            "model": "opus",
+            "color": "purple"
+          },
+          "recommended_memory_scope": "user",
+          "memory_rationale": "Security and performance audit patterns (common vulnerabilities, performance anti-patterns) are transferable across projects. User-scope memory builds a richer audit knowledge base.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Uses Skill (not Task) to invoke codex-cli. No sub-agent spawning."
+        },
+        {
+          "name": "gemini-auditor",
+          "file": "plugins/tpd/agents/execution/gemini-auditor.md",
+          "category": "execution",
+          "frontmatter": {
+            "name": "gemini-auditor",
+            "description": "UX and accessibility audit using Gemini",
+            "tools": ["Read", "Write", "Skill"],
+            "model": "opus",
+            "color": "purple"
+          },
+          "recommended_memory_scope": "user",
+          "memory_rationale": "UX and accessibility audit standards (WCAG, ARIA patterns) are universal. User-scope memory accumulates audit expertise across all projects.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Uses Skill (not Task) to invoke gemini-cli. No sub-agent spawning."
+        }
+      ]
+    },
+    "commit": {
+      "agent_count": 4,
+      "frontmatter_format": "standard_yaml",
+      "agents": [
+        {
+          "name": "change-investigator",
+          "file": "plugins/commit/agents/change-investigator.md",
+          "category": "investigation",
+          "frontmatter": {
+            "name": "change-investigator",
+            "description": "Rapid git change investigation and preliminary analysis. Outputs structured change summary for parallel analyzers.",
+            "tools": "Read, Glob, Grep, Bash",
+            "model": "sonnet",
+            "color": "cyan"
+          },
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Git investigation patterns (branch conventions, commit history, file organization) are project-specific.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Leaf agent. No Task() calls."
+        },
+        {
+          "name": "semantic-analyzer",
+          "file": "plugins/commit/agents/semantic-analyzer.md",
+          "category": "analysis",
+          "frontmatter": {
+            "name": "semantic-analyzer",
+            "description": "Semantic analysis of code changes using auggie-mcp. Runs in parallel with symbol-analyzer.",
+            "tools": "Read, mcp__auggie-mcp__codebase-retrieval",
+            "model": "sonnet",
+            "color": "magenta"
+          },
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Semantic grouping of code changes depends on project module boundaries and feature areas. Project-scoped memory improves grouping accuracy over time.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Leaf agent. No Task() calls."
+        },
+        {
+          "name": "symbol-analyzer",
+          "file": "plugins/commit/agents/symbol-analyzer.md",
+          "category": "analysis",
+          "frontmatter": {
+            "name": "symbol-analyzer",
+            "description": "Symbol-level analysis of code changes using LSP. Runs in parallel with semantic-analyzer.",
+            "tools": "Read, LSP",
+            "model": "sonnet",
+            "color": "yellow"
+          },
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Symbol hierarchies and scope derivation rules are project-specific (class naming conventions, module boundaries).",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Leaf agent. No Task() calls."
+        },
+        {
+          "name": "commit-worker",
+          "file": "plugins/commit/agents/commit-worker.md",
+          "category": "execution",
+          "frontmatter": {
+            "name": "commit-worker",
+            "description": "Execute git commit operations safely. Handles staging, committing, and error recovery.",
+            "tools": "Bash, Read, Write",
+            "model": "sonnet",
+            "color": "green"
+          },
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Commit execution patterns (pre-commit hook behavior, branch naming, error recovery) are project-specific.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Leaf agent. No Task() calls."
+        }
+      ]
+    },
+    "ui-design": {
+      "agent_count": 9,
+      "frontmatter_format": "NONE_informal_markdown",
+      "prerequisite": "Must add YAML frontmatter to all 9 agents before memory/restriction fields can be used",
+      "agents": [
+        {
+          "name": "image-analyzer",
+          "file": "plugins/ui-design/agents/analysis/image-analyzer.md",
+          "category": "analysis",
+          "frontmatter": null,
+          "informal_tools": [
+            "mcp__gemini__gemini",
+            "Read",
+            "Write",
+            "Bash",
+            "TaskOutput"
+          ],
+          "recommended_memory_scope": "user",
+          "memory_rationale": "Image analysis heuristics (design system recognition, color extraction patterns) are transferable across projects and design tasks.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Uses background tasks for parallel Gemini calls, but these are Bash-based CLI calls, not Task() agent spawning."
+        },
+        {
+          "name": "requirement-analyzer",
+          "file": "plugins/ui-design/agents/analysis/requirement-analyzer.md",
+          "category": "analysis",
+          "frontmatter": null,
+          "informal_tools": [
+            "mcp__auggie-mcp__codebase-retrieval",
+            "mcp__gemini__gemini",
+            "LSP",
+            "Read",
+            "Write",
+            "Bash",
+            "AskUserQuestion"
+          ],
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Requirement patterns (product type, target users, design preferences) are project-specific and accumulate across design iterations.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Leaf agent. Uses tools directly, no Task() calls."
+        },
+        {
+          "name": "existing-code-analyzer",
+          "file": "plugins/ui-design/agents/analysis/existing-code-analyzer.md",
+          "category": "analysis",
+          "frontmatter": null,
+          "informal_tools": [
+            "mcp__auggie-mcp__codebase-retrieval",
+            "LSP",
+            "Read",
+            "Grep",
+            "Glob",
+            "AskUserQuestion"
+          ],
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Existing code structure knowledge (component hierarchy, styling approach, dependencies) is project-specific.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Leaf agent. No Task() calls."
+        },
+        {
+          "name": "style-recommender",
+          "file": "plugins/ui-design/agents/design/style-recommender.md",
+          "category": "design",
+          "frontmatter": null,
+          "informal_tools": [
+            "mcp__gemini__gemini",
+            "mcp__auggie-mcp__codebase-retrieval",
+            "LSP",
+            "Read",
+            "Write",
+            "Bash"
+          ],
+          "recommended_memory_scope": "user",
+          "memory_rationale": "Style recommendation knowledge (design trends, color theory, typography matching) is transferable across projects. User-scope memory builds a richer style palette.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Leaf agent. No Task() calls."
+        },
+        {
+          "name": "design-variant-generator",
+          "file": "plugins/ui-design/agents/design/design-variant-generator.md",
+          "category": "design",
+          "frontmatter": null,
+          "informal_tools": [
+            "mcp__gemini__gemini",
+            "mcp__auggie-mcp__codebase-retrieval",
+            "LSP",
+            "Read",
+            "Write"
+          ],
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Design variant details (component catalog, color mapping, typography specs) are project-specific. Memory preserves design decisions across iterations.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Leaf agent. No Task() calls. Parallel-safe by design (independent output files)."
+        },
+        {
+          "name": "ux-guideline-checker",
+          "file": "plugins/ui-design/agents/validation/ux-guideline-checker.md",
+          "category": "validation",
+          "frontmatter": null,
+          "informal_tools": [
+            "mcp__gemini__gemini",
+            "mcp__auggie-mcp__codebase-retrieval",
+            "LSP",
+            "Read",
+            "Write"
+          ],
+          "recommended_memory_scope": "user",
+          "memory_rationale": "UX guidelines (accessibility rules, usability heuristics, responsive patterns) are universal standards. User-scope memory accumulates validation expertise.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Leaf agent. No Task() calls."
+        },
+        {
+          "name": "quality-validator",
+          "file": "plugins/ui-design/agents/validation/quality-validator.md",
+          "category": "validation",
+          "frontmatter": null,
+          "informal_tools": [
+            "mcp__gemini__gemini",
+            "mcp__auggie-mcp__codebase-retrieval",
+            "LSP",
+            "Read",
+            "Glob",
+            "Grep",
+            "Bash"
+          ],
+          "recommended_memory_scope": "user",
+          "memory_rationale": "Code quality standards (naming, SRP, reusability patterns) are universal. User-scope memory builds quality assessment expertise.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Leaf agent. No Task() calls."
+        },
+        {
+          "name": "gemini-prototype-generator",
+          "file": "plugins/ui-design/agents/generation/gemini-prototype-generator.md",
+          "category": "generation",
+          "frontmatter": null,
+          "informal_tools": [
+            "mcp__gemini__gemini",
+            "mcp__auggie-mcp__codebase-retrieval",
+            "LSP",
+            "Read",
+            "Write",
+            "Bash"
+          ],
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Prototype generation patterns (tech stack specifics, component structure, Tailwind configuration) are project-bound.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Leaf agent. No Task() calls."
+        },
+        {
+          "name": "claude-code-refactor",
+          "file": "plugins/ui-design/agents/generation/claude-code-refactor.md",
+          "category": "generation",
+          "frontmatter": null,
+          "informal_tools": [
+            "Read",
+            "Write",
+            "Edit",
+            "mcp__auggie-mcp__codebase-retrieval",
+            "LSP",
+            "Bash"
+          ],
+          "recommended_memory_scope": "project",
+          "memory_rationale": "Refactoring patterns (project code style, naming conventions, type system) are project-specific. Memory ensures consistent refactoring across iterations.",
+          "task_restriction_needed": false,
+          "task_restriction_rationale": "Leaf agent. No Task() calls."
+        }
+      ]
+    },
+    "plugins_without_agents": {
+      "brainstorm": {
+        "has_agents_dir": false,
+        "architecture": "skills-only",
+        "note": "Uses commands + skills pattern. Skills invoke codex-cli/gemini-cli via Bash. No formal agent definitions to add memory to."
+      },
+      "refactor": {
+        "has_agents_dir": false,
+        "architecture": "skills-only",
+        "note": "Uses commands + skills pattern. Skills invoke codex-cli/gemini-cli via Bash. No formal agent definitions to add memory to."
+      },
+      "context-memory": {
+        "has_agents_dir": false,
+        "architecture": "skills-only",
+        "note": "Uses commands + skills pattern. Has 22+ skills including workflow-memory and session-compactor which overlap with native agent memory functionality."
+      },
+      "hooks": {
+        "has_agents_dir": false,
+        "architecture": "scripts-only",
+        "note": "Shell scripts for lifecycle hooks. No agent definitions."
+      }
+    }
+  },
+  "task_restriction_analysis": {
+    "summary": "Task(agent_type) restrictions should be applied at the COMMAND level (orchestrators), not at the agent level. All 23 agents are leaf agents that do not spawn sub-agents via Task(). The commands that orchestrate them should have restrictions.",
+    "command_orchestrators_needing_restrictions": [
+      {
+        "command": "plugins/tpd/commands/thinking.md",
+        "should_restrict_to": [
+          "tpd:investigation:boundary-explorer",
+          "tpd:investigation:context-analyzer",
+          "tpd:reasoning:codex-constraint",
+          "tpd:reasoning:gemini-constraint"
+        ],
+        "rationale": "Thinking phase should only spawn investigation and reasoning agents."
+      },
+      {
+        "command": "plugins/tpd/commands/plan.md",
+        "should_restrict_to": [
+          "tpd:investigation:context-analyzer",
+          "tpd:planning:codex-architect",
+          "tpd:planning:gemini-architect"
+        ],
+        "rationale": "Plan phase should only spawn context and planning agents."
+      },
+      {
+        "command": "plugins/tpd/commands/dev.md",
+        "should_restrict_to": [
+          "tpd:execution:codex-implementer",
+          "tpd:execution:gemini-implementer",
+          "tpd:execution:codex-auditor",
+          "tpd:execution:gemini-auditor"
+        ],
+        "rationale": "Dev phase should only spawn execution agents."
+      },
+      {
+        "command": "plugins/commit/commands/commit.md",
+        "should_restrict_to": [
+          "commit:change-investigator",
+          "commit:semantic-analyzer",
+          "commit:symbol-analyzer",
+          "commit:commit-worker"
+        ],
+        "rationale": "Commit workflow has fixed agent pipeline."
+      },
+      {
+        "command": "plugins/ui-design/commands/ui-design.md",
+        "should_restrict_to": [
+          "ui-design:analysis:image-analyzer",
+          "ui-design:analysis:requirement-analyzer",
+          "ui-design:analysis:existing-code-analyzer",
+          "ui-design:design:style-recommender",
+          "ui-design:design:design-variant-generator",
+          "ui-design:validation:ux-guideline-checker",
+          "ui-design:validation:quality-validator",
+          "ui-design:generation:gemini-prototype-generator",
+          "ui-design:generation:claude-code-refactor"
+        ],
+        "rationale": "UI-design workflow should only spawn its own 9 agents."
+      }
+    ],
+    "note": "Commands use allowed-tools frontmatter, not agent frontmatter. Task(agent_type) restriction syntax needs to be added to command allowed-tools, not agent tools."
+  },
+  "memory_scope_summary": {
+    "user_scope_agents": [
+      "codex-constraint (tpd) -- transferable technical constraint patterns",
+      "gemini-constraint (tpd) -- transferable UX/design constraint patterns",
+      "codex-auditor (tpd) -- transferable security/performance audit knowledge",
+      "gemini-auditor (tpd) -- transferable UX/accessibility audit standards",
+      "image-analyzer (ui-design) -- transferable design system recognition",
+      "style-recommender (ui-design) -- transferable style/typography knowledge",
+      "ux-guideline-checker (ui-design) -- transferable UX standards knowledge",
+      "quality-validator (ui-design) -- transferable code quality standards"
+    ],
+    "project_scope_agents": [
+      "boundary-explorer (tpd) -- project-specific codebase boundary knowledge",
+      "context-analyzer (tpd) -- project-specific structure and patterns",
+      "codex-architect (tpd) -- project-specific backend architecture decisions",
+      "gemini-architect (tpd) -- project-specific frontend architecture decisions",
+      "codex-implementer (tpd) -- project-specific implementation patterns",
+      "gemini-implementer (tpd) -- project-specific frontend implementation patterns",
+      "change-investigator (commit) -- project-specific git patterns",
+      "semantic-analyzer (commit) -- project-specific module boundaries",
+      "symbol-analyzer (commit) -- project-specific symbol hierarchies",
+      "commit-worker (commit) -- project-specific commit conventions",
+      "requirement-analyzer (ui-design) -- project-specific requirements",
+      "existing-code-analyzer (ui-design) -- project-specific code structure",
+      "design-variant-generator (ui-design) -- project-specific design decisions",
+      "gemini-prototype-generator (ui-design) -- project-specific tech stack",
+      "claude-code-refactor (ui-design) -- project-specific code style"
+    ],
+    "local_scope_agents": [],
+    "rationale": "No agents recommended for 'local' scope. All agents benefit from persistence either at user level (transferable knowledge) or project level (project-specific context). Local scope would negate the memory feature's value."
+  }
+}

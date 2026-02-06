@@ -1,0 +1,146 @@
+{
+  "module_name": "workflow-orchestration",
+  "existing_structures": [
+    "THREE distinct orchestration patterns across 7 commands:",
+    "  Pattern A - Typed subagent: Task(subagent_type='tpd:investigation:boundary-explorer') - used by TPD thinking/plan/dev",
+    "  Pattern B - General-purpose subagent: Task(subagent_type='general-purpose', prompt='Read agents/xxx.md...') - used by commit, ui-design",
+    "  Pattern C - Skill-only: Skill(skill='xxx', args='...') with NO Task() calls - used by brainstorm, refactor",
+    "PARALLEL execution mechanisms (two approaches):",
+    "  1. Foreground parallel: multiple Task() calls in same message, 'JUST RUN AND WAIT' (TPD thinking/plan/dev)",
+    "  2. Background parallel: Task(run_in_background=true) + TaskOutput polling (commit Phase 3, ui-design Phase 6)",
+    "BASH-LEVEL parallelism inside skills: codeagent-wrapper codex ... & codeagent-wrapper gemini ... & wait (brainstorm:idea-generator Step 4)",
+    "STATE MACHINE pattern: state.json tracks current_step + artifacts booleans + timestamps (TPD thinking/plan/dev)",
+    "CHECKPOINT pattern: 'test -f ${artifact} || exit 1' after every step (all TPD commands)",
+    "HARD STOP pattern: AskUserQuestion at decision points (all commands except refactor Phase 5)",
+    "ARTIFACT HANDOFF pattern: filesystem-based via shared run_dir, agents write to ${run_dir}/explore-*.json etc.",
+    "DUAL-MODEL pattern: codex for backend/technical + gemini for frontend/UX, intentionally independent perspectives",
+    "4-LAYER architecture: Command -> Agent -> Skill -> Hook, with Command as orchestrator"
+  ],
+  "existing_conventions": [
+    "Max parallel agents per step: 2 (plan, dev, commit) to 4 (thinking boundary-explorers)",
+    "Agent output via filesystem only: agents write to ${run_dir}/<artifact-name>, never return data directly",
+    "Typed agents use YAML frontmatter: name, description, tools, model, color",
+    "General-purpose agents embed instructions via prompt: 'Read plugins/xxx/agents/yyy.md for instructions'",
+    "Sequential phase flow with checkpoint verification between steps",
+    "Previous phase artifact reuse: cp ${THINKING_DIR}/handoff.json ${PLAN_DIR}/thinking-handoff.json",
+    "Error handling: continue with available model results, mark missing perspectives",
+    "Run directory isolation: .claude/{plugin}/runs/{timestamp}/ or openspec/changes/{id}/artifacts/{phase}/",
+    "External model invocation via ~/.claude/bin/codeagent-wrapper CLI (codex, gemini)",
+    "MCP tools for model access: mcp__codex__codex, mcp__gemini__gemini (plan.md Step 4 direct calls)"
+  ],
+  "constraints_discovered": [
+    "CRITICAL: thinking.md line 157 explicitly says 'NEVER RUN boundary-explorer background, NEVER USE get task output, JUST RUN AND WAIT' - this is a deliberate design choice against async patterns",
+    "CRITICAL: commit.md mandates 'Launch BOTH agents in a SINGLE message with TWO Task tool calls' for Phase 3 parallel analysis - tight coupling to current Task() API",
+    "CRITICAL: brainstorm.md and refactor.md use ZERO Task() calls, only Skill() calls - Agent Teams has no integration point without fundamental redesign",
+    "CRITICAL: ui-design.md uses subagent_type='general-purpose' for ALL agents - not compatible with typed agent team definitions without migration to typed agents first",
+    "STRUCTURAL: Agents communicate ONLY through filesystem (shared run_dir), never directly between agents. Agent Teams direct messaging would be a paradigm shift",
+    "STRUCTURAL: Dual-model pattern (codex vs gemini) is intentionally independent for perspective diversity. Agent Teams inter-communication could compromise this design principle if teammates share partial results",
+    "STRUCTURAL: image-analyzer.md uses 8 parallel Gemini calls via bash commands INSIDE the agent, not at orchestration level. Agent Teams operates at orchestration level only",
+    "DEPENDENCY: Agent Teams requires CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 - all 7 commands need conditional branching for backward compatibility",
+    "DEPENDENCY: ui-design uses TaskOutput tool for background task result polling - interaction with Agent Teams mailbox system unclear",
+    "OPERATIONAL: commit.md is designed as atomic fast-path (Phases 1-5 without stopping). Agent Teams overhead must not degrade this."
+  ],
+  "open_questions": [
+    "Q1: Does Agent Teams support typed subagent_type (like 'tpd:investigation:boundary-explorer') or only general-purpose teammates? This determines migration path for TPD commands.",
+    "Q2: Can Agent Teams teammates invoke Skill() tool? Current pattern has agents calling Skills internally.",
+    "Q3: How does Agent Teams handle synchronous 'JUST RUN AND WAIT' vs async background execution? thinking.md explicitly forbids background mode.",
+    "Q4: Does Agent Teams' shared task list replace or supplement the filesystem-based artifact handoff pattern?",
+    "Q5: Can team lead observe real-time teammate progress (like TaskOutput polling) or only receive final results?",
+    "Q6: What is the performance overhead of Agent Teams vs raw Task() for simple fire-and-forget patterns like commit's parallel analyzers?",
+    "Q7: How does the mailbox direct-messaging system interact with the current checkpoint/state-machine pattern?",
+    "Q8: If CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is not set, does Task() still work as before? Is there an automatic fallback?",
+    "Q9: Can Agent Teams be incrementally adopted per-command, or must all commands migrate simultaneously?",
+    "Q10: How does Agent Teams interact with the hooks system? Do TeammateIdle/TaskCompleted hooks fire for both Task() and Agent Teams patterns?"
+  ],
+  "dependencies": [
+    "Task() tool: core primitive for subagent spawning (used by thinking.md, plan.md, dev.md, commit.md, ui-design.md)",
+    "Skill() tool: atomic operation execution (used by ALL 7 commands)",
+    "TaskOutput tool: async result retrieval (used by commit.md, ui-design.md)",
+    "run_in_background parameter: parallel execution flag on Task() calls",
+    "Agent YAML frontmatter: name, tools, model, color fields",
+    "codeagent-wrapper CLI: external model invocation for codex/gemini",
+    "MCP tools: mcp__codex__codex, mcp__gemini__gemini, mcp__auggie-mcp__codebase-retrieval",
+    "openspec CLI: proposal management for TPD workflow phases",
+    "AskUserQuestion tool: user confirmation at hard stops",
+    "EnterPlanMode/ExitPlanMode: Claude Code native plan mode (plan.md only)",
+    "Filesystem shared run_dir: sole inter-agent communication mechanism",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS environment variable: feature gate"
+  ],
+  "risks": [
+    "HIGH - Backward compatibility: If Agent Teams replaces Task(), existing workflows break when env var is unset. Must have conditional branching.",
+    "HIGH - Dual-model diversity loss: If codex/gemini teammates share partial results via mailbox, the independent-perspective design principle is compromised.",
+    "HIGH - brainstorm + refactor have zero Task() calls. Claiming Agent Teams benefit for these requires fundamental redesign, which is disproportionate effort.",
+    "MEDIUM - ui-design uses 'general-purpose' subagent_type for all 8+ agents. Needs intermediate migration to typed agents before Agent Teams adoption.",
+    "MEDIUM - Performance regression: commit workflow is atomic fast-path. Agent Teams orchestration overhead could degrade speed for a workflow that should complete in seconds.",
+    "MEDIUM - image-analyzer 8-parallel-Gemini pattern is bash-level inside agent, invisible to Agent Teams. No benefit without redesigning the agent itself.",
+    "LOW - thinking.md explicit 'NEVER RUN background' constraint conflicts with Agent Teams async-first design. Needs careful reconciliation.",
+    "LOW - State machine pattern (state.json) in TPD commands may conflict with Agent Teams' own task tracking. Dual state management risk."
+  ],
+  "per_command_analysis": {
+    "tpd_thinking": {
+      "file": "plugins/tpd/commands/thinking.md",
+      "current_pattern": "Step 2: 4 boundary-explorer agents via typed Task(subagent_type='tpd:investigation:boundary-explorer'), foreground synchronous. Step 3: 2 constraint agents (codex-constraint, gemini-constraint), also foreground synchronous. Total: up to 6 subagents.",
+      "parallel_mechanism": "Multiple synchronous Task() calls in same message. Explicitly forbidden: run_in_background, TaskOutput.",
+      "agent_teams_benefit": "LOW-MEDIUM. Boundary explorers are independent (each explores separate boundary, writes to separate file). No inter-agent communication needed. Constraint agents are also independent. Agent Teams adds overhead without clear benefit. Only benefit: team lead could detect cross-boundary dependency and redirect explorers.",
+      "migration_complexity": "MEDIUM. Would restructure from synchronous Task() pattern to team lead + 4 teammates. The 'JUST RUN AND WAIT' instruction needs reconciliation with Agent Teams async model.",
+      "backward_compatibility": "Conditional: if AGENT_TEAMS=1, use team pattern; else fall back to current 4x Task() pattern. Both paths must produce same explore-*.json artifacts."
+    },
+    "tpd_plan": {
+      "file": "plugins/tpd/commands/plan.md",
+      "current_pattern": "Step 2: 1 Task(context-analyzer) + 1 Skill(requirement-parser), max 2 parallel. Step 3: 2 architect Tasks (codex-architect, gemini-architect), max 2 parallel. Step 4: Direct MCP calls (not subagents). Step 5: Sequential Skill chain.",
+      "parallel_mechanism": "Foreground synchronous Task() calls. MCP direct calls for codex/gemini in Step 4.",
+      "agent_teams_benefit": "LOW. Architects intentionally produce independent analyses for diversity. Communication between them would reduce perspective breadth. Context-analyzer and requirement-parser are different tool types (Task vs Skill). No iterative feedback loop.",
+      "migration_complexity": "LOW-MEDIUM. Only Steps 2-3 use Task(). Architects could become teammates but benefit is questionable. MCP calls in Step 4 are not agent-level.",
+      "backward_compatibility": "Straightforward conditional branching. Plan artifacts (codex-plan.md, gemini-plan.md) must be identical regardless of orchestration method."
+    },
+    "tpd_dev": {
+      "file": "plugins/tpd/commands/dev.md",
+      "current_pattern": "Step 2: 1 Skill + 1 Task (codex-implementer analyze). Step 3: 2 prototype Tasks (codex-implementer, gemini-implementer). Step 5: 2 audit Tasks (codex-auditor, gemini-auditor). Steps 1-6 repeat iteratively for each task scope.",
+      "parallel_mechanism": "Foreground synchronous Task() calls with 'JUST RUN AND WAIT'.",
+      "agent_teams_benefit": "HIGH - BEST CANDIDATE. Iterative cycle (prototype -> refactor -> audit -> fix -> re-audit) is the natural use case for Agent Teams. Auditors could directly message implementers about issues instead of going through orchestrator. Team lead manages task assignment and iteration. Direct communication reduces round-trip through filesystem.",
+      "migration_complexity": "HIGH. Iterative loop structure (Steps 1-6 repeat) needs restructuring. Team lead would manage prototype-audit-fix cycle. Needs careful design of teammate roles and communication protocol.",
+      "backward_compatibility": "Complex: iterative behavior must match in both modes. Audit results, constraint compliance checks, and task completion tracking must work identically."
+    },
+    "brainstorm": {
+      "file": "plugins/brainstorm/commands/brainstorm.md",
+      "current_pattern": "4 sequential Skill() calls: topic-researcher -> idea-generator -> idea-evaluator -> report-synthesizer. ZERO Task() calls. Parallelism is INSIDE idea-generator skill via bash background processes.",
+      "parallel_mechanism": "Bash-level only: codeagent-wrapper codex ... & codeagent-wrapper gemini ... & wait (inside idea-generator SKILL.md).",
+      "agent_teams_benefit": "VERY LOW. No Task() calls to convert. Skill-based sequential workflow. Internal bash parallelism is invisible to Agent Teams. Would need complete architecture change from Skill-based to Agent-based to benefit.",
+      "migration_complexity": "VERY HIGH for marginal benefit. Would require converting Skills to Agents, then coordinating as team. Disproportionate effort.",
+      "backward_compatibility": "N/A - no migration recommended. Current pattern works well for this use case."
+    },
+    "ui_design": {
+      "file": "plugins/ui-design/commands/ui-design.md",
+      "current_pattern": "10 phases with extensive Task(subagent_type='general-purpose') usage. Phase 6: 3 parallel design-variant-generators (run_in_background=true). Phase 7: UX checker with retry loop. Phase 8: Sequential dual-model (gemini-prototype -> claude-refactor). Uses TaskOutput.",
+      "parallel_mechanism": "Background parallel: Task(run_in_background=true) + TaskOutput for Phase 6 (3 variants) and Phase 2.5 (image analysis).",
+      "agent_teams_benefit": "MEDIUM-HIGH. Phase 6->7->8 cycle (generate -> check -> retry -> codegen) benefits from direct agent communication. UX checker could notify generator of failures directly. Dual-model codegen could collaborate. Image-analyzer's 8-parallel-Gemini is internal and unaffected.",
+      "migration_complexity": "HIGH. All agents use 'general-purpose' subagent_type with prompt-embedded instructions. Needs intermediate step: migrate to typed agents first. TaskOutput pattern needs mapping to Agent Teams mailbox. 10-phase workflow is complex.",
+      "backward_compatibility": "Requires dual-path implementation. TaskOutput and run_in_background must continue working when Agent Teams is off."
+    },
+    "commit": {
+      "file": "plugins/commit/commands/commit.md",
+      "current_pattern": "Phase 2: 1 foreground Task (change-investigator). Phase 3: 2 background Tasks (semantic-analyzer + symbol-analyzer), mandatory parallel in single message. Phase 9: 1 foreground Task (commit-worker). Phases 1-5 are atomic (no stopping).",
+      "parallel_mechanism": "Background parallel: 2 Tasks with run_in_background=true in Phase 3, explicit 'Launch BOTH in SINGLE message'.",
+      "agent_teams_benefit": "VERY LOW. Analyzers are independent fire-and-forget. No inter-communication needed. Results synthesized by Skill in Phase 4. Atomic fast-path design - Agent Teams overhead is unwanted.",
+      "migration_complexity": "LOW. Only 3 Task() calls to potentially migrate. But minimal benefit.",
+      "backward_compatibility": "Simple conditional. Current pattern is already well-optimized for this use case."
+    },
+    "refactor": {
+      "file": "plugins/refactor/commands/refactor.md",
+      "current_pattern": "5-6 sequential Skill() calls: legacy-analyzer -> smell-detector -> refactor-suggester -> impact-analyzer -> refactor-executor. ZERO Task() calls. Strictly sequential, each phase depends on previous output.",
+      "parallel_mechanism": "NONE. Entirely sequential.",
+      "agent_teams_benefit": "NONE. No Task() calls. No parallelism. Each phase produces input for the next. Agent Teams is fundamentally about multi-agent collaboration, which is not present here.",
+      "migration_complexity": "N/A. No migration path without complete redesign.",
+      "backward_compatibility": "N/A - no migration recommended."
+    }
+  },
+  "success_criteria_hints": [
+    "All 7 commands continue to function correctly when CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS is NOT set (backward compatibility)",
+    "TPD dev phase shows reduced iteration cycles (audit->fix->re-audit) when Agent Teams is enabled",
+    "No performance regression for commit workflow atomic fast-path",
+    "Migration is incremental: each command can be migrated independently",
+    "Agent Teams teammates produce identical filesystem artifacts as current Task() agents (same explore-*.json, codex-plan.md etc.)",
+    "Dual-model independence principle is preserved: codex and gemini teammates do NOT share partial work unless explicitly designed to do so",
+    "Priority ordering validated: P1=tpd:dev (high benefit), P2=ui-design (medium-high, needs typed agents first), P3=tpd:thinking (low-medium), SKIP=brainstorm/refactor/commit (no benefit)"
+  ]
+}

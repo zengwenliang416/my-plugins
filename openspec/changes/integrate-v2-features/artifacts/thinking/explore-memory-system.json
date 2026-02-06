@@ -1,0 +1,82 @@
+{
+  "module_name": "memory-system",
+  "existing_structures": [
+    "context-memory plugin: commands+skills only (no agents defined), 22 skills, 1 command (memory.md)",
+    "plugin.json at plugins/context-memory/.claude-plugin/plugin.json - no agents array, pure skill/command plugin",
+    "workflow-memory skill: .claude/memory/workflows/{id}.json + MCP core_memory dual storage. Operations: save/load/list/clean. Structured JSON with phases[], artifacts{}, context{}, errors[], metadata{}",
+    "session-compactor skill: Markdown snapshots stored via MCP core_memory (key: session_{timestamp}) + local backup at .claude/memory/sessions/{id}.md. Returns Recovery ID (SNAP-YYYYMMDD-HASH)",
+    "context-loader skill: On-demand task-specific retrieval via auggie-mcp + codex-cli/gemini-cli parallel analysis. Output: ${run_dir}/context.json. NOT persistent memory - ephemeral per-task context",
+    "style-memory skill: .claude/memory/styles/{package}.json - design token persistence (colors, typography, spacing, components)",
+    "skill-indexer skill: .claude/skills/index.json - skill metadata index with hash-based incremental updates",
+    "code-map-generator skill: .claude/skills/codemap-{feature}/ - Mermaid flow diagrams (architecture, function calls, data flow, conditional paths)",
+    "module-discovery skill: scans project directories, classifies modules by 3-Layer depth system (Layer 3 deepest, Layer 1 top)",
+    "change-detector skill: git diff + auggie-mcp impact analysis to identify changed modules",
+    "claude-updater skill: orchestrates gemini-cli/codex-cli + MCP tools to generate per-module CLAUDE.md files",
+    "tech-rules-generator skill: .claude/rules/{stack}.md - technology-specific coding rules",
+    "REFACTOR-PLAN.md documents ongoing architecture evolution: 7-step plan for MCP tool integration"
+  ],
+  "existing_conventions": [
+    "Storage namespace: .claude/memory/ for persistent data (workflows/, sessions/, styles/, docs/)",
+    "Storage namespace: .claude/skills/ for generated knowledge (index.json, codemap-*/)",
+    "Storage namespace: .claude/rules/ for tech rules",
+    "Dual persistence pattern: local file + MCP core_memory with sync strategy (write both, read MCP-first, MCP wins on conflict)",
+    "Degradation pattern: all skills implement fallback chains (MCP unavailable -> local only, gemini -> codex, auggie-mcp -> grep+glob)",
+    "Skill frontmatter uses allowed-tools array + arguments array with name/type/required/default/description",
+    "Command routing: memory.md as single entry point, routes to skills via Skill() calls based on subcommand",
+    "Auto-save triggers: phase completion, error occurrence, session end, manual /memory compact",
+    "Workflow ID format: WFS-{YYYYMMDD}-{seq} with type prefixes (WFS standard, WFD debug, WFT test)",
+    "Recovery ID format: SNAP-{YYYYMMDD}-{HASH}",
+    "Cleanup policies: completed workflows expire after 7d, failed after 3d, abandoned after 1d"
+  ],
+  "constraints_discovered": [
+    "C1: context-memory plugin has NO agents - the memory frontmatter field (agent-level feature) cannot be applied to context-memory itself, only to agents in other plugins that consume context-memory skills",
+    "C2: Existing storage uses .claude/memory/ namespace; native agent memory uses .claude/agent-memory/<name>/MEMORY.md - no path collision, but two separate persistence mechanisms coexist",
+    "C3: MCP core_memory is an external dependency (may be unavailable); native agent memory uses native Read/Write/Edit tools (always available) - different reliability profiles",
+    "C4: Native MEMORY.md has 200-line system prompt inclusion limit; existing workflow-memory JSON can be arbitrarily large - native memory unsuitable for detailed workflow state",
+    "C5: Native agent memory is per-agent isolated; existing workflow-memory is shared across all skills/commands - different sharing semantics",
+    "C6: Native agent memory is auto-maintained (agent writes during normal operation); existing skills are explicitly triggered (/memory compact, /memory workflow save) - different lifecycle models",
+    "C7: session-compactor stores structured recovery snapshots with task lists, file manifests, key decisions; native memory stores freeform learnings - structurally incompatible for direct replacement",
+    "C8: context-loader is purely ephemeral (retrieves per-task, no persistence); native memory is persistent - they operate in different temporal domains and complement each other",
+    "C9: The memory.md command entry point supports --tool (gemini|codex), --regenerate, --mode (full|partial) parameters - any integration must preserve this interface",
+    "C10: REFACTOR-PLAN.md shows active architecture evolution (7-step plan for MCP integration) - new native memory integration must not conflict with this in-progress refactoring"
+  ],
+  "open_questions": [
+    "Q1: Should agents from other plugins (tpd, commit, refactor) that currently invoke context-memory skills use native memory to cache frequently-needed context, reducing repeated /memory load calls?",
+    "Q2: Could native agent memory serve as a 'hot cache' layer above the existing cold storage (.claude/memory/ files + MCP core_memory)?",
+    "Q3: Should session-compactor be enhanced to write a summary to the calling agent's native MEMORY.md in addition to the existing MCP/file storage?",
+    "Q4: Is MCP core_memory still justified when native agent memory provides a simpler persistence path? What is MCP core_memory's unique value (cross-agent sharing, server-side persistence)?",
+    "Q5: How should the 200-line MEMORY.md limit be managed for agents that accumulate significant workflow learnings over time? Is there a rotation/compaction strategy needed?",
+    "Q6: Does the existing cleanup policy (7d/3d/1d expiry) need to extend to native MEMORY.md content, or is native memory intended to be permanent?",
+    "Q7: When context-memory skills are invoked by an agent that HAS native memory, should the skill output be automatically summarized into the agent's MEMORY.md?",
+    "Q8: The REFACTOR-PLAN.md 7-step plan is in progress - should native memory integration be sequenced AFTER that refactoring completes, or can they proceed in parallel?"
+  ],
+  "dependencies": [
+    "MCP core_memory (store/retrieve) - used by workflow-memory and session-compactor for persistent key-value storage",
+    "mcp__auggie-mcp__codebase-retrieval - used by context-loader, module-discovery, change-detector, claude-updater for semantic code search",
+    "Skill('memory:codex-cli') and Skill('memory:gemini-cli') - external model CLIs used by context-loader, code-map-generator, claude-updater",
+    "Write/Read/Glob/Grep tools - used by all skills for file operations in .claude/ namespace",
+    "LSP tool - used by claude-updater and change-detector for symbol-level code analysis",
+    "AskUserQuestion tool - used by memory.md command for interactive subcommand selection",
+    "Native Read/Write/Edit tools - used by native agent memory auto-maintenance (always available, no external dependency)",
+    "Git CLI (via Bash) - used by change-detector for git diff analysis",
+    "Agents from other plugins (tpd: 10 agents, brainstorm, ui-design: 9 agents, commit: 4 agents) - consumers of context-memory skills that would gain native memory"
+  ],
+  "risks": [
+    "R1 (Medium): Dual persistence confusion - developers/agents may be unclear whether to persist learnings via native MEMORY.md or via /memory workflow save, leading to fragmented state",
+    "R2 (Low): Storage namespace proximity - .claude/memory/ vs .claude/agent-memory/ are close in path hierarchy; while no collision exists today, future tools/scripts scanning .claude/ may conflate them",
+    "R3 (Medium): MCP core_memory value erosion - if native memory covers enough use cases, the MCP core_memory dependency becomes technical debt without clear justification",
+    "R4 (High): 200-line MEMORY.md overflow for busy agents - agents handling many workflows may exceed the 200-line system prompt inclusion limit, causing silent information loss",
+    "R5 (Low): REFACTOR-PLAN conflict - the 7-step refactoring plan for context-memory is in progress; adding native memory integration creates a second concurrent change vector",
+    "R6 (Medium): No cross-agent memory sharing in native memory - workflow-memory currently allows any skill to access any workflow state; native memory is agent-siloed, breaking shared-state patterns",
+    "R7 (Low): Backward compatibility for /memory commands - all existing subcommands (load, compact, workflow, style, code-map, etc.) must continue working unchanged"
+  ],
+  "success_criteria_hints": [
+    "SC1: All existing /memory subcommands continue to function identically (zero regression)",
+    "SC2: Agents from other plugins that receive memory: frontmatter can accumulate useful learnings across sessions without explicit /memory commands",
+    "SC3: Native agent memory and existing context-memory skills have clearly documented complementary roles: native = auto-maintained per-agent learnings, skills = explicit structured operations",
+    "SC4: No duplicate persistence paths for the same data - clear ownership: workflow state -> workflow-memory skill, session recovery -> session-compactor skill, agent learnings -> native MEMORY.md",
+    "SC5: A documented strategy exists for MEMORY.md content rotation/compaction when approaching the 200-line limit",
+    "SC6: The memory.md command entry point MAY gain a new subcommand to interact with native agent memory (e.g., /memory agent-summary) but this is optional",
+    "SC7: Migration guidance exists for any skills whose functionality partially overlaps with native memory (primarily session-compactor)"
+  ]
+}
