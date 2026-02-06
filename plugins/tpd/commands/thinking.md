@@ -317,3 +317,17 @@ Suggestions:
 2. Simplify the question
 3. Think step by step
 ```
+
+---
+
+## Agent Type Restrictions
+
+This command ONLY uses the following agent types via the `Task` tool:
+
+| Agent Type                            | Usage                                   |
+| ------------------------------------- | --------------------------------------- |
+| `tpd:investigation:boundary-explorer` | Step 2: Parallel boundary exploration   |
+| `tpd:reasoning:codex-constraint`      | Step 3: Technical constraint analysis   |
+| `tpd:reasoning:gemini-constraint`     | Step 3: UX/frontend constraint analysis |
+
+Any other `subagent_type` values are **forbidden** in this command.

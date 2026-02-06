@@ -2,8 +2,6 @@
 description: "OpenSpec Planning Workflow: OpenSpec selection → Context retrieval → Multi-model analysis → Ambiguity resolution → PBT properties → Plan integration → Validation"
 argument-hint: "[proposal_id] [--task-type=frontend|backend|fullstack] [--loop]"
 allowed-tools:
-  - EnterPlanMode
-  - ExitPlanMode
   - Skill
   - AskUserQuestion
   - Read
@@ -19,18 +17,6 @@ allowed-tools:
 
 # /tpd:plan - OpenSpec Planning Workflow Command
 
-## ⚠️ MANDATORY: Enter Plan Mode First
-
-**CRITICAL INSTRUCTION**: Upon invoking this command, you MUST immediately call `EnterPlanMode` to enter Claude Code's native plan mode. This is non-negotiable.
-
-```
-EnterPlanMode()
-```
-
-After entering plan mode, proceed with the workflow below. All exploration and planning happens IN plan mode. Only call `ExitPlanMode` when the final plan is ready for user approval.
-
----
-
 ## Overview
 
 The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision executable plan** and produce verifiable PBT properties. This phase must be combined with OpenSpec, and all key constraints must be explicitly recorded.
@@ -42,11 +28,14 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
 ## Core Rules
 
 - ✅ Must first `openspec view` and let user confirm `proposal_id`
+- ✅ **Must check for thinking phase artifacts** and reuse `handoff.json`, `synthesis.md`, `clarifications.md` if available
 - ✅ Must use both Codex and Gemini for multi-model analysis
 - ✅ Must complete "ambiguity resolution audit", all decision points must be converted to explicit constraints
+- ✅ **Must NOT re-ask questions already answered in thinking phase** (check `thinking-clarifications.md`)
 - ✅ Must extract PBT properties (invariants + falsification strategies)
 - ✅ Must execute `openspec validate <proposal_id> --strict`
 - ✅ Only after explicit user approval can proceed to /tpd:dev
+- ✅ **Task Splitting Rule**: When a task involves modifying or generating **more than 3 files**, it MUST be split into sub-tasks, and each sub-task MUST include test requirements
 
 **Forbidden Actions:**
 
@@ -77,14 +66,16 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
 
 ### Anti-Patterns (FORBIDDEN)
 
-| ❌ Forbidden Behavior                    | ✅ Correct Approach                                 |
-| ---------------------------------------- | --------------------------------------------------- |
-| Skip context retrieval                   | Always call context-analyzer AND requirement-parser |
-| Only do single-model architecture        | Must run both codex-architect AND gemini-architect  |
-| Skip ambiguity resolution                | Must complete ambiguity audit and get confirmations |
-| Proceed without verifying artifacts      | Check file exists at EVERY checkpoint               |
-| Exit plan mode before final verification | Verify ALL 12 artifacts before ExitPlanMode         |
-| Skip validation                          | Always run `openspec validate --strict`             |
+| ❌ Forbidden Behavior                | ✅ Correct Approach                                            |
+| ------------------------------------ | -------------------------------------------------------------- |
+| **Ignore thinking phase artifacts**  | Check `${THINKING_DIR}/handoff.json` and reuse if exists       |
+| **Re-ask clarified questions**       | Read `thinking-clarifications.md`, only ask NEW ambiguities    |
+| Skip context retrieval               | Always call context-analyzer AND requirement-parser            |
+| Only do single-model architecture    | Must run both codex-architect AND gemini-architect             |
+| Skip ambiguity resolution            | Must complete ambiguity audit and get confirmations            |
+| Proceed without verifying artifacts  | Check file exists at EVERY checkpoint                          |
+| Skip validation                      | Always run `openspec validate --strict`                        |
+| Task with >3 files without splitting | Split into sub-tasks, each with test requirements and ≤3 files |
 
 ---
 
@@ -102,16 +93,43 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
      3. Otherwise let user select from `openspec view` output
    - **When invoked without arguments**: Do not error, enter auto-selection flow
 
-1. **Step 1: Initialization**
+1. **Step 1: Initialization & Thinking Phase Integration**
    - Parse arguments:
      - TASK_TYPE: fullstack (default) | frontend | backend
      - LOOP_MODE: Whether to auto-chain to dev (--loop argument)
      - PROPOSAL_ID: Confirmed from Step 0
    - Generate run directory:
+
      ```bash
      PLAN_DIR="openspec/changes/${PROPOSAL_ID}/artifacts/plan"
+     THINKING_DIR="openspec/changes/${PROPOSAL_ID}/artifacts/thinking"
      mkdir -p "${PLAN_DIR}"
      ```
+
+   - **🔗 Thinking Phase Integration** - Check and load thinking artifacts:
+
+     ```bash
+     # Check if thinking phase was completed
+     if [ -f "${THINKING_DIR}/handoff.json" ]; then
+       echo "✅ Thinking phase detected - loading handoff artifacts"
+       THINKING_COMPLETED=true
+     else
+       echo "⚠️ No thinking phase found - proceeding with full analysis"
+       THINKING_COMPLETED=false
+     fi
+     ```
+
+   - **If thinking phase exists**, copy and integrate:
+
+     ```bash
+     # Copy key artifacts for reference
+     cp "${THINKING_DIR}/handoff.md" "${PLAN_DIR}/thinking-handoff.md" 2>/dev/null || true
+     cp "${THINKING_DIR}/handoff.json" "${PLAN_DIR}/thinking-handoff.json" 2>/dev/null || true
+     cp "${THINKING_DIR}/synthesis.md" "${PLAN_DIR}/thinking-synthesis.md" 2>/dev/null || true
+     cp "${THINKING_DIR}/boundaries.json" "${PLAN_DIR}/thinking-boundaries.json" 2>/dev/null || true
+     cp "${THINKING_DIR}/clarifications.md" "${PLAN_DIR}/thinking-clarifications.md" 2>/dev/null || true
+     ```
+
    - **Initialize State Machine** - Write `${PLAN_DIR}/state.json`:
      ```json
      {
@@ -119,8 +137,10 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
        "current_step": 1,
        "status": "initialized",
        "task_type": "${TASK_TYPE}",
+       "thinking_integrated": "${THINKING_COMPLETED}",
        "artifacts": {
          "proposal": false,
+         "thinking_handoff": "${THINKING_COMPLETED}",
          "context": false,
          "requirements": false,
          "codex_plan": false,
@@ -149,17 +169,30 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
      ```
      Update state.json: `artifacts.proposal=true`
 
-2. **Step 2: Parallel Context & Requirements Retrieval**
-   - Launch concurrent retrieval agents.
-   - **Task for plan-context-retriever:** "Retrieve codebase context relevant to proposal"
-   - **Task for requirement-parser:** "Parse and structure requirements from proposal"
+2. **Step 2: Parallel Context & Requirements Retrieval (with Thinking Reuse)**
+   - **🔗 If thinking phase exists** (`THINKING_COMPLETED=true`):
+     - Read `thinking-handoff.json` to extract pre-analyzed context boundaries
+     - Read `thinking-boundaries.json` to reuse boundary definitions
+     - **Skip redundant boundary exploration** - focus on plan-specific details only
+
+     ```bash
+     # Reuse thinking boundaries if available
+     if [ -f "${PLAN_DIR}/thinking-boundaries.json" ]; then
+       echo "📥 Reusing boundaries from thinking phase"
+       # Context retriever should reference thinking-boundaries.json
+     fi
+     ```
+
+   - Launch concurrent retrieval agents with thinking context:
+   - **Task for plan-context-retriever:** "Retrieve codebase context, referencing thinking-handoff.json if exists"
+   - **Task for requirement-parser:** "Parse requirements, incorporating thinking-synthesis.md constraints"
    - **At most 2 agents in parallel!**
    - JUST RUN AND WAIT!
 
    ```
-   Task(subagent_type="tpd:investigation:context-analyzer", description="Retrieve plan context", prompt="Execute context retrieval. run_dir=${PLAN_DIR}")
+   Task(subagent_type="tpd:investigation:context-analyzer", description="Retrieve plan context", prompt="Execute context retrieval. run_dir=${PLAN_DIR} thinking_dir=${THINKING_DIR} reuse_thinking=${THINKING_COMPLETED}")
 
-   Skill(skill="tpd:requirement-parser", args="run_dir=${PLAN_DIR}")
+   Skill(skill="tpd:requirement-parser", args="run_dir=${PLAN_DIR} thinking_synthesis=${PLAN_DIR}/thinking-synthesis.md")
    ```
 
    - **🔒 Checkpoint**:
@@ -193,18 +226,33 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
 
    - **⏸️ Hard Stop**: Use AskUserQuestion to display core differences and recommendations
 
-4. **Step 4: Ambiguity Resolution & PBT Extraction**
-   - Call MCP tools directly for ambiguity audit:
+4. **Step 4: Ambiguity Resolution & PBT Extraction (with Thinking Reuse)**
+   - **🔗 If thinking phase exists** (`THINKING_COMPLETED=true`):
+     - Read `thinking-synthesis.md` for pre-resolved constraints
+     - Read `thinking-clarifications.md` for user's previous answers
+     - **Only ask about NEW ambiguities** not covered in thinking phase
+
+     ```bash
+     # Check for pre-resolved clarifications
+     if [ -f "${PLAN_DIR}/thinking-clarifications.md" ]; then
+       echo "📥 Loading ${CLARIFICATION_COUNT} pre-resolved clarifications from thinking phase"
+       # Extract already-answered questions to avoid re-asking
+     fi
+     ```
+
+   - Call MCP tools for **incremental** ambiguity audit (exclude thinking-resolved items):
 
      ```
-     mcp__codex__codex: "Review proposal ${PROPOSAL_ID} for unspecified decision points. List: [AMBIGUITY] <description> → [REQUIRED CONSTRAINT] <what must be decided>."
+     mcp__codex__codex: "Review proposal ${PROPOSAL_ID} for unspecified decision points. Reference thinking-synthesis.md to skip already-resolved constraints. List only NEW: [AMBIGUITY] <description> → [REQUIRED CONSTRAINT] <what must be decided>."
 
-     mcp__gemini__gemini: "Identify implicit assumptions in proposal ${PROPOSAL_ID}. List: [ASSUMPTION] <description> → [EXPLICIT CONSTRAINT NEEDED] <concrete specification>."
+     mcp__gemini__gemini: "Identify implicit assumptions in proposal ${PROPOSAL_ID}. Reference thinking-clarifications.md to skip already-answered questions. List only NEW: [ASSUMPTION] <description> → [EXPLICIT CONSTRAINT NEEDED] <concrete specification>."
      ```
 
    - Write output to `${PLAN_DIR}/ambiguities.md`
-   - **⏸️ Hard Stop**: Use AskUserQuestion to confirm each ambiguity item
-   - Write conclusions to `${PLAN_DIR}/constraints.md`
+   - **⏸️ Conditional Hard Stop**:
+     - If `THINKING_COMPLETED=true` AND no new ambiguities → **Skip user confirmation**
+     - If new ambiguities exist → Use AskUserQuestion to confirm **only new items**
+   - Merge thinking constraints + new constraints into `${PLAN_DIR}/constraints.md`
    - Extract PBT properties via MCP tools:
 
      ```
@@ -239,6 +287,24 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
 
      ```
      Skill(skill="tpd:task-decomposer", args="run_dir=${PLAN_DIR}")
+     ```
+
+     **🔒 Task Splitting Validation**:
+
+     After task decomposition, verify the "3-file rule":
+     - For each task in `tasks.md`, count the files to be modified/generated
+     - If any task involves **> 3 files**, it MUST be split into sub-tasks
+     - Each sub-task MUST explicitly include:
+       - `[TEST]` section with test requirements
+       - Maximum 3 files scope
+       - Clear success criteria
+
+     ```bash
+     # Validate task splitting rule
+     if grep -E "Files:\s*[4-9]|Files:\s*[1-9][0-9]" "${PLAN_DIR}/tasks.md" >/dev/null 2>&1; then
+       echo "❌ Step 5b FAILED: Task exceeds 3-file limit. Must split into sub-tasks with test requirements."
+       exit 1
+     fi
      ```
 
      **🔒 Checkpoint**:
@@ -340,15 +406,41 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
      🚀 Next Action: /tpd:dev --proposal-id=${PROPOSAL_ID}
      ```
 
-   - **Exit Plan Mode** (ONLY after all artifacts verified):
-
-     ```
-     ExitPlanMode()
-     ```
-
-     This triggers Claude Code's native plan approval flow. The user can review the plan in `${PLAN_DIR}/plan.md` and approve or request changes.
+   - **⏸️ Hard Stop**: Use AskUserQuestion to present plan summary and get user approval before proceeding
 
    - **Loop Mode (--loop)**: After user approval, automatically chain to `/tpd:dev --proposal-id=${PROPOSAL_ID}`
+
+---
+
+## Thinking Phase Integration
+
+When `/tpd:thinking` was executed before `/tpd:plan`, the following artifacts are reused:
+
+| Thinking Artifact   | Plan Usage                         | Benefit                            |
+| ------------------- | ---------------------------------- | ---------------------------------- |
+| `handoff.json`      | Step 1: Load constraint summary    | Skip redundant analysis            |
+| `boundaries.json`   | Step 2: Reuse context boundaries   | Faster context retrieval           |
+| `synthesis.md`      | Step 4: Pre-resolved constraints   | Skip resolved ambiguities          |
+| `clarifications.md` | Step 4: User's previous answers    | **Avoid re-asking same questions** |
+| `explore-*.json`    | Step 2: Reference boundary details | Deeper context understanding       |
+
+### Data Flow
+
+```
+THINKING_DIR/                          PLAN_DIR/
+├── handoff.json      ────────────►   ├── thinking-handoff.json
+├── handoff.md        ────────────►   ├── thinking-handoff.md
+├── synthesis.md      ────────────►   ├── thinking-synthesis.md
+├── boundaries.json   ────────────►   ├── thinking-boundaries.json
+└── clarifications.md ────────────►   └── thinking-clarifications.md
+```
+
+### Conditional Logic
+
+| Condition                  | Step 2 Behavior                         | Step 4 Behavior           |
+| -------------------------- | --------------------------------------- | ------------------------- |
+| `THINKING_COMPLETED=true`  | Reuse boundaries, incremental retrieval | Only ask NEW ambiguities  |
+| `THINKING_COMPLETED=false` | Full context retrieval                  | Full ambiguity resolution |
 
 ---
 
@@ -416,3 +508,17 @@ Recovery:
 2. Re-run the failed step
 3. If issue persists, check state.json for last successful step
 ```
+
+---
+
+## Agent Type Restrictions
+
+This command ONLY uses the following agent types via the `Task` tool:
+
+| Agent Type                           | Usage                                  |
+| ------------------------------------ | -------------------------------------- |
+| `tpd:investigation:context-analyzer` | Step 2: Codebase context retrieval     |
+| `tpd:planning:codex-architect`       | Step 3: Backend architecture planning  |
+| `tpd:planning:gemini-architect`      | Step 3: Frontend architecture planning |
+
+Any other `subagent_type` values are **forbidden** in this command.
