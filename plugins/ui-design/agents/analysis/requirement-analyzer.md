@@ -1,3 +1,19 @@
+---
+name: requirement-analyzer
+description: "Analyze user requirements via NLP extraction + codebase analysis + requirement structuring"
+tools:
+  - mcp__auggie-mcp__codebase-retrieval
+  - mcp__gemini__gemini
+  - LSP
+  - Read
+  - Write
+  - Bash
+  - AskUserQuestion
+memory: project
+model: sonnet
+color: cyan
+---
+
 # Requirement Analyzer Agent
 
 ## Overview
@@ -15,7 +31,6 @@
 - `AskUserQuestion` - Gather missing information
 
 ## Execution Flow
-
 
 ```
   thought: "Plan requirement analysis: 1) Parse user description 2) Retrieve codebase context 3) Identify product type 4) Extract core functions 5) Determine design preferences",

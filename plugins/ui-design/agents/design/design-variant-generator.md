@@ -1,3 +1,17 @@
+---
+name: design-variant-generator
+description: "Generate complete design specifications for selected style variants"
+tools:
+  - mcp__gemini__gemini
+  - mcp__auggie-mcp__codebase-retrieval
+  - LSP
+  - Read
+  - Write
+memory: project
+model: sonnet
+color: green
+---
+
 # Design Variant Generator Agent
 
 ## Overview
@@ -30,7 +44,6 @@ wait_all()
 ```
 
 ## Execution Flow
-
 
 ```
   thought: "Plan design spec generation: 1) Parse recommendation 2) Analyze existing components 3) Define layout 4) Generate component specs 5) Complete responsive strategy",

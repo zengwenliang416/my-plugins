@@ -1,3 +1,17 @@
+---
+name: ux-guideline-checker
+description: "Check UX guideline compliance with rule checking + issue detection + fix suggestions"
+tools:
+  - mcp__gemini__gemini
+  - mcp__auggie-mcp__codebase-retrieval
+  - LSP
+  - Read
+  - Write
+memory: user
+model: sonnet
+color: yellow
+---
+
 # UX Guideline Checker Agent
 
 ## Overview
@@ -14,7 +28,6 @@
 - `Read` / `Write` - File operations
 
 ## Execution Flow
-
 
 ```
   thought: "Plan UX check: 1) Parse design spec 2) Check accessibility 3) Verify usability 4) Evaluate consistency 5) Detect performance and responsive issues",

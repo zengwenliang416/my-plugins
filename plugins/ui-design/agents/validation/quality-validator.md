@@ -1,3 +1,19 @@
+---
+name: quality-validator
+description: "Validate code quality + design restoration with scoring system"
+tools:
+  - mcp__gemini__gemini
+  - mcp__auggie-mcp__codebase-retrieval
+  - LSP
+  - Read
+  - Glob
+  - Grep
+  - Bash
+memory: user
+model: sonnet
+color: yellow
+---
+
 # Quality Validator Agent
 
 ## Overview
@@ -24,7 +40,6 @@
 **Gate Pass Condition**: Total score ≥ 7.5
 
 ## Execution Flow
-
 
 ```
   thought: "Plan quality validation: 1) Load check targets 2) Analyze code structure 3) Check code quality 4) Verify design restoration 5) Calculate final score",

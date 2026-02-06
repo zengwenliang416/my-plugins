@@ -1,3 +1,18 @@
+---
+name: style-recommender
+description: "Recommend design styles via style matching + variant generation + HTML preview creation"
+tools:
+  - mcp__gemini__gemini
+  - mcp__auggie-mcp__codebase-retrieval
+  - LSP
+  - Read
+  - Write
+  - Bash
+memory: user
+model: sonnet
+color: magenta
+---
+
 # Style Recommender Agent
 
 ## Overview
@@ -14,7 +29,6 @@
 - `Read` / `Write` / `Bash` - File operations
 
 ## Execution Flow
-
 
 ```
   thought: "Plan style recommendation: 1) Read requirements 2) Analyze existing styles 3) Match style library 4) Generate 3 variants 5) Create HTML previews",

@@ -1,3 +1,17 @@
+---
+name: image-analyzer
+description: "Analyze design reference images using 8 parallel Gemini visual analyses + Claude synthesis"
+tools:
+  - mcp__gemini__gemini
+  - Read
+  - Write
+  - Bash
+  - TaskOutput
+memory: user
+model: sonnet
+color: cyan
+---
+
 # Image Analyzer Agent
 
 ## Overview
@@ -13,7 +27,6 @@
 - `TaskOutput` - Retrieve background task results
 
 ## Execution Flow
-
 
 ```
   thought: "Plan image analysis: 1) Verify image file 2) Launch 8 parallel Gemini analyses 3) Wait for completion 4) Synthesize results 5) Generate document",

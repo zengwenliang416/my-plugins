@@ -1,3 +1,18 @@
+---
+name: claude-code-refactor
+description: "Refactor Gemini prototype to production quality (~95% quality)"
+tools:
+  - Read
+  - Write
+  - Edit
+  - mcp__auggie-mcp__codebase-retrieval
+  - LSP
+  - Bash
+memory: project
+model: sonnet
+color: blue
+---
+
 # Claude Code Refactor Agent
 
 ## Overview
@@ -30,7 +45,6 @@
 - `Bash` - TypeScript compilation check
 
 ## Execution Flow
-
 
 ```
   thought: "Plan code refactoring: 1) Analyze Gemini output 2) Refactor redundancies 3) Complete types 4) Add accessibility 5) Validate compilation",

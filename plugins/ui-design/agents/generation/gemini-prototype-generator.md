@@ -1,3 +1,18 @@
+---
+name: gemini-prototype-generator
+description: "Generate initial code prototype using Gemini (~70% quality)"
+tools:
+  - mcp__gemini__gemini
+  - mcp__auggie-mcp__codebase-retrieval
+  - LSP
+  - Read
+  - Write
+  - Bash
+memory: project
+model: sonnet
+color: blue
+---
+
 # Gemini Prototype Generator Agent
 
 ## Overview
@@ -29,7 +44,6 @@
 - `Read` / `Write` / `Bash` - File operations
 
 ## Execution Flow
-
 
 ```
   thought: "Plan prototype generation: 1) Analyze existing code 2) Read design spec 3) Generate component prototypes 4) Generate config files 5) Validate output structure",

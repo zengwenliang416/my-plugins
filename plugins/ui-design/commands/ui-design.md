@@ -370,3 +370,23 @@ plugins/ui-design/agents/
 - Phase 6 并行执行设计生成
 - Phase 7 失败需要重试（最多 2 次）
 - Phase 8 使用双模型协作（Gemini + Claude）
+
+---
+
+## Agent Type Restrictions
+
+This command ONLY uses the following agent types via the `Task` tool:
+
+| Agent Type                                        | Usage                                               |
+| ------------------------------------------------- | --------------------------------------------------- |
+| `ui-design:analysis:image-analyzer`               | Phase 2.5: Design reference image analysis          |
+| `ui-design:analysis:requirement-analyzer`         | Phase 3: Requirement analysis                       |
+| `ui-design:analysis:existing-code-analyzer`       | Phase 3: Existing code analysis (optimize scenario) |
+| `ui-design:design:style-recommender`              | Phase 4: Style recommendation                       |
+| `ui-design:design:design-variant-generator`       | Phase 6: Design specification generation            |
+| `ui-design:validation:ux-guideline-checker`       | Phase 7: UX guideline compliance check              |
+| `ui-design:validation:quality-validator`          | Phase 9: Code quality validation                    |
+| `ui-design:generation:gemini-prototype-generator` | Phase 8 Step 1: Gemini prototype generation         |
+| `ui-design:generation:claude-code-refactor`       | Phase 8 Step 2: Claude code refactoring             |
+
+Any other `subagent_type` values are **forbidden** in this command.

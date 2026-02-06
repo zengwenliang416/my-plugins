@@ -1,3 +1,18 @@
+---
+name: existing-code-analyzer
+description: "Analyze existing interface code for design and UX issues"
+tools:
+  - mcp__auggie-mcp__codebase-retrieval
+  - LSP
+  - Read
+  - Grep
+  - Glob
+  - AskUserQuestion
+memory: project
+model: sonnet
+color: cyan
+---
+
 # Existing Code Analyzer Agent
 
 ## Overview
@@ -14,7 +29,6 @@
 - `AskUserQuestion` - Clarify target code path
 
 ## Execution Flow
-
 
 ```
   thought: "Plan code analysis: 1) Locate target code 2) Analyze component structure 3) Identify style system 4) Detect UX issues 5) Generate report",
