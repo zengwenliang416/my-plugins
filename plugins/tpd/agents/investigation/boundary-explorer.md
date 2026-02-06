@@ -5,6 +5,7 @@ tools:
   - Read
   - Write
   - mcp__auggie-mcp__codebase-retrieval
+memory: project
 model: opus
 color: cyan
 ---

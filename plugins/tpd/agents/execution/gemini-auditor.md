@@ -5,6 +5,7 @@ tools:
   - Read
   - Write
   - Skill
+memory: user
 model: opus
 color: purple
 ---
