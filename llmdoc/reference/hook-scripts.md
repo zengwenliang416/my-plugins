@@ -2,7 +2,7 @@
 
 ## 1. Core Summary
 
-The hooks plugin provides 11 shell scripts executed at 5 lifecycle points. Scripts receive JSON via stdin and output JSON responses. Organized into 6 categories: security (3), optimization (1), quality (1), logging (2), permission (2), evaluation (1), notification (1).
+The hooks plugin provides 14 shell scripts executed at 7 lifecycle points. Scripts receive JSON via stdin and output JSON responses. Organized into 8 categories: security (4), optimization (1), quality (1), logging (2), permission (2), evaluation (1), notification (1), orchestration (2).
 
 ## 2. Source of Truth
 
@@ -14,11 +14,12 @@ The hooks plugin provides 11 shell scripts executed at 5 lifecycle points. Scrip
 
 ### Security (UserPromptSubmit, PreToolUse)
 
-| Script                                 | Hook Point       | Matcher     | Timeout | Key Feature                                                |
-| -------------------------------------- | ---------------- | ----------- | ------- | ---------------------------------------------------------- |
-| `scripts/security/privacy-firewall.sh` | UserPromptSubmit | `*`         | 3s      | Detects 9 sensitive patterns (API keys, SSN, credit cards) |
-| `scripts/security/db-guard.sh`         | PreToolUse       | `Bash`      | 3s      | Blocks DROP, TRUNCATE, unsafe DELETE                       |
-| `scripts/security/killshell-guard.sh`  | PreToolUse       | `KillShell` | 5s      | Protects codeagent-wrapper via task registry               |
+| Script                                   | Hook Point       | Matcher     | Timeout | Key Feature                                                |
+| ---------------------------------------- | ---------------- | ----------- | ------- | ---------------------------------------------------------- |
+| `scripts/security/privacy-firewall.sh`   | UserPromptSubmit | `*`         | 3s      | Detects 9 sensitive patterns (API keys, SSN, credit cards) |
+| `scripts/security/db-guard.sh`           | PreToolUse       | `Bash`      | 3s      | Blocks DROP, TRUNCATE, unsafe DELETE                       |
+| `scripts/security/git-conflict-guard.sh` | PreToolUse       | `Bash`      | 5s      | Blocks commits with unresolved conflict markers            |
+| `scripts/security/killshell-guard.sh`    | PreToolUse       | `KillShell` | 5s      | Protects codeagent-wrapper via task registry               |
 
 ### Optimization (PreToolUse)
 
@@ -57,3 +58,10 @@ The hooks plugin provides 11 shell scripts executed at 5 lifecycle points. Scrip
 | Script                                 | Hook Point   | Matcher | Timeout | Key Feature                  |
 | -------------------------------------- | ------------ | ------- | ------- | ---------------------------- |
 | `scripts/notification/smart-notify.sh` | Notification | `*`     | 5s      | Workflow event notifications |
+
+### Orchestration (TeammateIdle, TaskCompleted)
+
+| Script                                    | Hook Point    | Matcher | Timeout | Key Feature                                       |
+| ----------------------------------------- | ------------- | ------- | ------- | ------------------------------------------------- |
+| `scripts/orchestration/teammate-idle.sh`  | TeammateIdle  | `*`     | 5s      | Logs idle events, outputs orchestration directive |
+| `scripts/orchestration/task-completed.sh` | TaskCompleted | `*`     | 5s      | Logs task completion, outputs metrics             |

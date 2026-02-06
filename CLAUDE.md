@@ -57,3 +57,10 @@ When a task modifies/generates **>3 files**, MUST split into sub-tasks with:
 - Maximum 3 files per sub-task
 - Explicit `[TEST]` section with test requirements
 - Clear success criteria
+
+### Memory Ownership Boundaries
+
+- **`CLAUDE.md`** is managed by the context-memory plugin
+- **`MEMORY.md`** is managed by Auto Memory (platform)
+- **`.claude/rules/`** is exclusively owned by Auto Memory
+- **`.claude/memory/rules/`** is the output path for `tech-rules-generator`

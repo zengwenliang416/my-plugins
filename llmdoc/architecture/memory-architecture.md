@@ -7,7 +7,9 @@ ccg-workflows uses a three-layer memory architecture to avoid conflicts between 
 | Layer | System                    | Storage                               | Lifecycle                 | Path                                                               |
 | ----- | ------------------------- | ------------------------------------- | ------------------------- | ------------------------------------------------------------------ |
 | Hot   | Native agent `memory`     | Agent-learned patterns and heuristics | Persistent (200-line cap) | `~/.claude/agent-memory/<name>/` or `.claude/agent-memory/<name>/` |
+| Hot   | Auto Memory               | Auto-generated rules and knowledge    | Persistent                | `.claude/rules/` (exclusive), `MEMORY.md`                          |
 | Warm  | `workflow-memory` skill   | Workflow phase state and handoffs     | Session-level, 7d expiry  | `.claude/memory/workflows/`                                        |
+| Warm  | `tech-rules-generator`    | Generated tech stack rules            | On-demand regeneration    | `.claude/memory/rules/`                                            |
 | Cold  | `session-compactor` skill | Session recovery snapshots            | Time-limited              | `.claude/memory/sessions/` via MCP                                 |
 
 ## Layer Responsibilities
@@ -24,6 +26,24 @@ Configured via `memory` field in agent YAML frontmatter:
   - Stored in `.claude/agent-memory/<name>/`
 
 Native agent memory is automatic — agents learn and recall without explicit commands.
+
+### Hot Layer: Auto Memory
+
+Auto Memory is a Claude Code platform feature that automatically manages:
+
+- **`MEMORY.md`** — Auto-generated knowledge file (200-line cap per HC-5; use linked topic files for overflow)
+- **`.claude/rules/`** — Auto-generated rules directory (exclusively owned by Auto Memory per HC-1)
+
+**Path migration note**: `tech-rules-generator` previously wrote to `.claude/rules/`. As of this update, its output path is `.claude/memory/rules/` to avoid collision with Auto Memory.
+
+### Ownership Boundaries (HC-8)
+
+| Path                    | Owner                | System         |
+| ----------------------- | -------------------- | -------------- |
+| `CLAUDE.md`             | context-memory       | Plugin-managed |
+| `MEMORY.md`             | Auto Memory          | Platform       |
+| `.claude/rules/`        | Auto Memory          | Platform       |
+| `.claude/memory/rules/` | tech-rules-generator | Plugin-managed |
 
 ### Warm Layer: Workflow Memory
 

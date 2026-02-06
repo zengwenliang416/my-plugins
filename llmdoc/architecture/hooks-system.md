@@ -2,12 +2,12 @@
 
 ## 1. Identity
 
-- **What it is:** A lifecycle interception system that executes shell scripts at 5 hook points during Claude Code's tool execution flow.
+- **What it is:** A lifecycle interception system that executes shell scripts at 7 hook points during Claude Code's tool execution flow.
 - **Purpose:** Provides cross-cutting automation for security, optimization, logging, and evaluation without modifying core tool behavior.
 
 ## 2. Core Components
 
-- `plugins/hooks/hooks/hooks.json:1-122` (Master Configuration): Defines all 11 hooks with trigger points, matchers, timeouts, and async flags. Uses `${CLAUDE_PLUGIN_ROOT}` for portable paths.
+- `plugins/hooks/hooks/hooks.json:1-152` (Master Configuration): Defines all 14 hooks across 7 lifecycle events with trigger points, matchers, timeouts, and async flags. Uses `${CLAUDE_PLUGIN_ROOT}` for portable paths.
 - `plugins/hooks/scripts/security/privacy-firewall.sh:36-72` (`pattern_regexes`): Detects 9 types of sensitive data via regex patterns.
 - `plugins/hooks/scripts/security/killshell-guard.sh:39-54` (`TASK_REGISTRY`): Protects codeagent-wrapper processes via task registry lookup.
 - `plugins/hooks/scripts/optimization/read-limit.sh:153-184` (`updatedInput`): Auto-injects limit parameter for large files.
@@ -16,13 +16,15 @@
 
 ## 3. Hook Lifecycle Points
 
-| Hook Point          | Trigger                 | Scripts                                                                       | Async              |
-| ------------------- | ----------------------- | ----------------------------------------------------------------------------- | ------------------ |
-| `UserPromptSubmit`  | Before prompt to LLM    | privacy-firewall.sh (3s), unified-eval.sh (10s)                               | No                 |
-| `PreToolUse`        | Before tool execution   | read-limit.sh, db-guard.sh, killshell-guard.sh, auto-backup.sh, mcp-logger.sh | backup/logger: Yes |
-| `PostToolUse`       | After tool execution    | auto-format.sh (30s)                                                          | No                 |
-| `PermissionRequest` | Permission prompt shown | auto-approve.sh (3s), file-permission.sh (3s)                                 | No                 |
-| `Notification`      | Workflow events         | smart-notify.sh (5s)                                                          | No                 |
+| Hook Point          | Trigger                 | Scripts                                                                                              | Async              |
+| ------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------- | ------------------ |
+| `UserPromptSubmit`  | Before prompt to LLM    | privacy-firewall.sh (3s), unified-eval.sh (10s)                                                      | No                 |
+| `PreToolUse`        | Before tool execution   | read-limit.sh, db-guard.sh, git-conflict-guard.sh, killshell-guard.sh, auto-backup.sh, mcp-logger.sh | backup/logger: Yes |
+| `PostToolUse`       | After tool execution    | auto-format.sh (30s)                                                                                 | No                 |
+| `PermissionRequest` | Permission prompt shown | auto-approve.sh (3s), file-permission.sh (3s)                                                        | No                 |
+| `Notification`      | Workflow events         | smart-notify.sh (5s)                                                                                 | No                 |
+| `TeammateIdle`      | Agent idle in team mode | teammate-idle.sh (5s)                                                                                | No                 |
+| `TaskCompleted`     | Agent task completed    | task-completed.sh (5s)                                                                               | No                 |
 
 ## 4. Execution Flow (LLM Retrieval Map)
 

@@ -2,7 +2,7 @@
 name: tech-rules-generator
 description: |
   【触发条件】/memory tech-rules <stack> 或需要生成技术规则时
-  【核心产出】.claude/rules/{stack}.md - 技术栈专属规则文件
+  【核心产出】.claude/memory/rules/{stack}.md - 技术栈专属规则文件
   【专属用途】
     - 搜索最佳实践 (exa)
     - 分析项目现有规范
@@ -61,7 +61,7 @@ arguments:
    - 结构化 Markdown
        │
        ▼
-5. 输出到 .claude/rules/
+5. 输出到 .claude/memory/rules/
 ```
 
 ## 技术栈映射
@@ -123,7 +123,7 @@ fastapi    → FastAPI + Python
 
 ## 输出格式
 
-### .claude/rules/{stack}.md
+### .claude/memory/rules/{stack}.md
 
 ```markdown
 ---
@@ -331,7 +331,7 @@ const [users, roles] = await Promise.all([fetchUsers(), fetchRoles()]);
 ## 输出位置
 
 ```
-.claude/rules/
+.claude/memory/rules/
 ├── typescript.md
 ├── react.md
 ├── nestjs.md
@@ -341,7 +341,7 @@ const [users, roles] = await Promise.all([fetchUsers(), fetchRoles()]);
 ## 规则索引
 
 ```json
-// .claude/rules/index.json
+// .claude/memory/rules/index.json
 {
   "rules": [
     {

@@ -87,6 +87,18 @@ dev ──────────→ 最小可验证相位实现
 | Execution     | codex-implementer, gemini-implementer |
 |               | codex-auditor, gemini-auditor         |
 
+## Agent Teams (Experimental)
+
+The dev phase supports an optional Agent Teams mode for iterative prototype-audit cycles.
+
+- **Env var**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
+- **Scope**: Only affects `/tpd:dev` Steps 3 and 5
+- **Iteration limit**: Fixed at 2 (HC-10)
+- **Fallback**: Automatically reverts to standard mode on failure or iteration exhaustion
+- **Default**: Disabled. Standard mode behavior is unchanged when env var is unset
+
+See `plugins/tpd/commands/dev.md` Agent Teams section for the full state machine specification.
+
 ---
 
 ## Recommended CLAUDE.md Configuration

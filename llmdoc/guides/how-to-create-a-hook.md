@@ -8,6 +8,8 @@ A step-by-step guide to creating and registering a new hook script in the ccg-wo
    - Logging: `scripts/logging/` - Async auditors for backup/logging
    - Permission: `scripts/permission/` - Auto-approve handlers
    - Evaluation: `scripts/evaluation/` - Context injectors
+   - Notification: `scripts/notification/` - Workflow event notifiers
+   - Orchestration: `scripts/orchestration/` - Agent Teams coordination (TeammateIdle, TaskCompleted)
 
 2. **Implement JSON input parsing** using jq. Every hook receives JSON via stdin:
 
@@ -54,9 +56,45 @@ A step-by-step guide to creating and registering a new hook script in the ccg-wo
 
 ## Output API Reference
 
-| API Field            | Hook Points       | Purpose                  |
-| -------------------- | ----------------- | ------------------------ |
-| `updatedInput`       | PreToolUse        | Modify tool parameters   |
-| `permissionDecision` | PreToolUse        | `allow`/`deny` decision  |
-| `additionalContext`  | PreToolUse        | Inject context message   |
-| `decision.behavior`  | PermissionRequest | `allow` for auto-approve |
+| API Field                | Hook Points                 | Purpose                             |
+| ------------------------ | --------------------------- | ----------------------------------- |
+| `updatedInput`           | PreToolUse                  | Modify tool parameters              |
+| `permissionDecision`     | PreToolUse                  | `allow`/`deny` decision             |
+| `additionalContext`      | PreToolUse                  | Inject context message              |
+| `decision.behavior`      | PermissionRequest           | `allow` for auto-approve            |
+| `orchestrationDirective` | TeammateIdle, TaskCompleted | Coordination signal for Agent Teams |
+
+## Orchestration Hooks
+
+TeammateIdle and TaskCompleted are lifecycle events fired during Agent Teams mode. They use wildcard matcher (`*`) and do not filter by tool name.
+
+**Template for orchestration hooks:**
+
+```bash
+#!/bin/bash
+# Hook: your-orchestration-hook
+# Lifecycle: TeammateIdle | TaskCompleted
+# Description: What this hook does
+set -euo pipefail
+
+input=$(cat)
+
+# Validate JSON input
+if ! echo "$input" | jq empty 2>/dev/null; then
+  echo '{}'
+  exit 0
+fi
+
+hook_event=$(echo "$input" | jq -r '.hook_event_name // empty')
+
+# Your orchestration logic here
+
+# Output with orchestration directive
+echo "{\"hookSpecificOutput\": {\"orchestrationDirective\": \"continue\", \"metrics\": {}}}"
+```
+
+**Key differences from PreToolUse hooks:**
+
+- Matcher is always `*` (no tool-specific filtering)
+- Input payload contains `hook_event_name` instead of `tool_name` (field names are best-effort; schemas may evolve)
+- Output uses `orchestrationDirective` field for coordination signals

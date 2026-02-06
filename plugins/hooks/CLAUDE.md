@@ -9,15 +9,22 @@ Add the following to your project's `.claude/CLAUDE.md` for optimal Hooks integr
 
 <available-hooks>
 
-| Hook               | Lifecycle        | Description                        |
-| ------------------ | ---------------- | ---------------------------------- |
-| intent-evaluator   | UserPromptSubmit | 意图评估，强制工具优先级           |
-| unified-eval       | UserPromptSubmit | 智能插件路由系统                   |
-| privacy-firewall   | PreToolUse       | 敏感信息检测，阻止泄露             |
-| db-guard           | PreToolUse       | 危险 SQL 检测，阻止破坏性操作      |
-| git-conflict-guard | PreToolUse       | Git 冲突标记检测，阻止提交冲突代码 |
-| auto-format        | PostToolUse      | 代码自动格式化（写入后）           |
-| mcp-logger         | PostToolUse      | MCP 调用日志记录                   |
+| Hook               | Lifecycle         | Description                        |
+| ------------------ | ----------------- | ---------------------------------- |
+| privacy-firewall   | UserPromptSubmit  | 敏感信息检测，阻止泄露             |
+| unified-eval       | UserPromptSubmit  | 智能插件路由系统                   |
+| read-limit         | PreToolUse        | 大文件自动注入 limit 参数          |
+| db-guard           | PreToolUse        | 危险 SQL 检测，阻止破坏性操作      |
+| git-conflict-guard | PreToolUse        | Git 冲突标记检测，阻止提交冲突代码 |
+| killshell-guard    | PreToolUse        | 保护 codeagent-wrapper 进程        |
+| auto-backup        | PreToolUse        | 写入前自动备份（异步）             |
+| mcp-logger         | PreToolUse        | MCP 调用日志记录（异步）           |
+| auto-format        | PostToolUse       | 代码自动格式化（写入后）           |
+| auto-approve       | PermissionRequest | 安全命令自动审批                   |
+| file-permission    | PermissionRequest | 文件写入权限管理                   |
+| smart-notify       | Notification      | 工作流事件通知                     |
+| teammate-idle      | TeammateIdle      | Agent Teams 空闲事件协调           |
+| task-completed     | TaskCompleted     | Agent Teams 任务完成事件协调       |
 
 </available-hooks>
 
@@ -65,12 +72,20 @@ The `git-conflict-guard` hook automatically detects conflict markers before `git
 
 ## Hook Categories
 
-| Category | Hooks                                          | Purpose      |
-| -------- | ---------------------------------------------- | ------------ |
-| Security | privacy-firewall, db-guard, git-conflict-guard | 阻止危险操作 |
-| Quality  | auto-format                                    | 代码质量保障 |
-| Logging  | mcp-logger                                     | 调试和审计   |
-| Routing  | intent-evaluator, unified-eval                 | 智能意图路由 |
+| Category      | Hooks                                                           | Purpose          |
+| ------------- | --------------------------------------------------------------- | ---------------- |
+| Security      | privacy-firewall, db-guard, git-conflict-guard, killshell-guard | 阻止危险操作     |
+| Optimization  | read-limit                                                      | 输入预处理优化   |
+| Quality       | auto-format                                                     | 代码质量保障     |
+| Logging       | auto-backup, mcp-logger                                         | 调试和审计       |
+| Permission    | auto-approve, file-permission                                   | 权限自动化       |
+| Evaluation    | unified-eval                                                    | 智能插件路由     |
+| Notification  | smart-notify                                                    | 工作流事件通知   |
+| Orchestration | teammate-idle, task-completed                                   | Agent Teams 协调 |
+
+## Agent Teams Integration
+
+The orchestration hooks (`teammate-idle`, `task-completed`) fire automatically during Agent Teams mode when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set. They provide structured logging and orchestration directives for team coordination. These hooks are passive observers and do not block execution.
 
 ## Customization
 
@@ -99,11 +114,16 @@ Example registration:
 ```bash
 #!/bin/bash
 # Hook: your-hook-name
-# Lifecycle: PreToolUse | PostToolUse | UserPromptSubmit
+# Lifecycle: PreToolUse | PostToolUse | UserPromptSubmit | PermissionRequest | Notification | TeammateIdle | TaskCompleted
 # Description: What this hook does
+set -euo pipefail
 
-# Read input from stdin
+# Read and validate input
 INPUT=$(cat)
+if ! echo "$INPUT" | jq empty 2>/dev/null; then
+  echo '{}'
+  exit 0
+fi
 
 # Parse tool input (for PreToolUse/PostToolUse)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')

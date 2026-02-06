@@ -88,6 +88,10 @@ color: cyan
 - `memory: user` — Cross-project reusable knowledge (standards, patterns, heuristics)
 - `memory: project` — Project-specific knowledge (codebase structure, conventions, decisions)
 
+**Scope distribution**: 15 agents use `project` scope, 8 agents use `user` scope, 0 use `local`.
+
+**Auto Memory**: Claude Code's Auto Memory system manages `MEMORY.md` (200-line cap) and `.claude/rules/` independently. Plugin-generated rules use `.claude/memory/rules/` to avoid path collision.
+
 ### Skill Frontmatter
 
 ```yaml

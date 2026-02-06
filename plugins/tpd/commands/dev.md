@@ -350,7 +350,7 @@ Any other `subagent_type` values are **forbidden** in this command.
 
 ## Agent Teams Mode (Experimental)
 
-When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set, Steps 3 and 5 are replaced with an iterative team cycle.
+When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set, Steps 3 and 5 are replaced with an iterative team cycle managed by a 7-state state machine.
 
 ### Activation Check
 
@@ -362,24 +362,82 @@ else
 fi
 ```
 
-### Team Cycle (replaces Step 3 + Step 5)
-
-When `TEAM_MODE=true`:
+### State Machine (7 States)
 
 ```
-Team: codex-implementer + gemini-implementer + codex-auditor + gemini-auditor
-Cycle (max 2 iterations):
-  1. Prototype: codex-implementer + gemini-implementer (parallel)
-  2. Audit: codex-auditor + gemini-auditor (parallel)
-  3. If audit passes → proceed to Step 4 (refactor)
-  4. If audit fails → fix issues and re-prototype (iteration++)
+DETECT ──→ INIT_TEAM ──→ PROTOTYPE ──→ AUDIT ──→ COMPLETE
+  │            │                         │
+  │ (unset)    │ (init fail)             │ (fail, iter < 2)
+  ▼            ▼                         ▼
+FALLBACK   FALLBACK                   ITERATE ──→ PROTOTYPE
+                                         │
+                                         │ (iter >= 2)
+                                         ▼
+                                      FALLBACK
 ```
 
-**Constraints**:
+| State       | Description                                         | Next States                 |
+| ----------- | --------------------------------------------------- | --------------------------- |
+| `DETECT`    | Check `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` env    | INIT_TEAM, FALLBACK         |
+| `INIT_TEAM` | Initialize team with 4 agents                       | PROTOTYPE, FALLBACK         |
+| `PROTOTYPE` | codex-implementer + gemini-implementer (parallel)   | AUDIT                       |
+| `AUDIT`     | codex-auditor + gemini-auditor (parallel)           | COMPLETE, ITERATE, FALLBACK |
+| `ITERATE`   | Increment counter, feed audit findings to prototype | PROTOTYPE, FALLBACK         |
+| `COMPLETE`  | All audits passed, proceed to Step 4 (refactor)     | _(terminal)_                |
+| `FALLBACK`  | Revert to standard mode Steps 3+5                   | _(terminal)_                |
 
-- Codex and Gemini operate on independent tracks — cross-model mailbox is **forbidden**
-- Maximum 2 iterations before falling back to manual review
+### team-state.json Schema
+
+Stored at `${DEV_DIR}/team-state.json`, tracks team cycle progress:
+
+```json
+{
+  "mode": "team",
+  "state": "PROTOTYPE",
+  "iteration": 1,
+  "max_iterations": 2,
+  "agents": [
+    "codex-implementer",
+    "gemini-implementer",
+    "codex-auditor",
+    "gemini-auditor"
+  ],
+  "history": [
+    { "state": "DETECT", "timestamp": "...", "result": "activated" },
+    { "state": "INIT_TEAM", "timestamp": "...", "result": "success" }
+  ],
+  "fallback_reason": null
+}
+```
+
+### Fallback Triggers
+
+The system falls back to standard mode (Steps 3+5) when any of these occur:
+
+1. **Env var unset**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` not set or not `"1"`
+2. **Iteration limit exceeded**: iteration count > 2 (HC-10: hardcoded at max_iterations=2)
+3. **Agent init failure**: any agent in the team fails to initialize
+4. **API error**: unrecoverable error during prototype or audit phase
+
+### UX Messaging
+
+```
+🔄 [DETECT]    Agent Teams mode detected (CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1)
+🚀 [INIT_TEAM] Initializing team: codex-implementer, gemini-implementer, codex-auditor, gemini-auditor
+🔨 [PROTOTYPE] Iteration 1/2: generating prototypes...
+🔍 [AUDIT]     Iteration 1/2: running audits...
+✅ [COMPLETE]   All audits passed, proceeding to refactor (Step 4)
+⚠️ [ITERATE]   Audit issues found, re-prototyping (iteration 2/2)...
+🔙 [FALLBACK]  Reverting to standard mode: ${FALLBACK_REASON}
+```
+
+### Constraints
+
+- Codex and Gemini operate on independent tracks — cross-model mailbox is **forbidden** (HC-6)
+- Maximum 2 iterations before falling back to manual review (HC-10)
 - Each model's output is isolated; synthesis happens only in the refactor step (Step 4)
+- Agent Teams API syntax is TBD pending official documentation (SC-8)
+- TeammateIdle and TaskCompleted hooks fire during team mode for orchestration awareness
 
 ### Default Mode (no env var)
 
