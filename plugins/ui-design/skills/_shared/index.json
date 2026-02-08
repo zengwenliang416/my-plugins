@@ -3,7 +3,7 @@
   "last_updated": "2026-01-13",
   "total_count": {
     "styles": 23,
-    "colors": 17,
+    "colors": 19,
     "typography": 11,
     "ux_guidelines": 5
   },
@@ -775,6 +775,28 @@
       "category": "responsive",
       "priority": "高",
       "guideline_count": 20
+    },
+    {
+      "id": "color-claude-cli-tui",
+      "domain": "color",
+      "name": "Claude CLI TUI",
+      "industry": "SaaS",
+      "file_path": "colors/saas-tech/claude-cli-tui.yaml",
+      "keywords": ["CLI", "Terminal", "TUI", "Ink", "Dark", "Claude"],
+      "description": "Color scheme for Claude Code Plugin Installer TUI, optimized for ANSI 256-color terminals.",
+      "use_cases": ["CLI Tools", "Terminal UI", "Plugin Installers"],
+      "primary": "#5B5BDD"
+    },
+    {
+      "id": "color-claude-cli-tui-light",
+      "domain": "color",
+      "name": "Claude CLI TUI Light",
+      "industry": "SaaS",
+      "file_path": "colors/saas-tech/claude-cli-tui-light.yaml",
+      "keywords": ["CLI", "Terminal", "TUI", "Ink", "Light", "Claude"],
+      "description": "Light mode color scheme for Claude Code Plugin Installer TUI.",
+      "use_cases": ["CLI Tools", "Terminal UI", "Light Mode"],
+      "primary": "#4F46E5"
     }
   ]
 }

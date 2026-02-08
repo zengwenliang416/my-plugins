@@ -2,11 +2,12 @@
 name: design-variant-generator
 description: "Generate complete design specifications for selected style variants"
 tools:
-  - mcp__gemini__gemini
+  - Bash
   - mcp__auggie-mcp__codebase-retrieval
   - LSP
   - Read
   - Write
+  - SendMessage
 memory: project
 model: sonnet
 color: green
@@ -22,7 +23,7 @@ color: green
 
 ## Required Tools
 
-- `mcp__gemini__gemini` - Design specification generation (MANDATORY)
+- `Bash` - Gemini CLI via `codeagent-wrapper gemini` (MANDATORY for design spec generation)
 - `mcp__auggie-mcp__codebase-retrieval` - Analyze existing component structure
 - `LSP` - Component symbol and props analysis
 - `Read` / `Write` - File operations
@@ -129,6 +130,62 @@ for fix in fix_items:
     elif fix.type == "spacing":
         adjust_spacing(fix.value, round_to_4px(fix.value))
 ```
+
+### Step 4.5: Team Mode — Inline Fix Handler
+
+**When running in Team mode** (team `ui-design-pipeline`), designer receives structured fix requests from reviewer via SendMessage.
+
+#### Receive UX_FIX_REQUEST
+
+Message format from reviewer:
+
+```json
+{
+  "type": "UX_FIX_REQUEST",
+  "variant_id": "A",
+  "round": 1,
+  "fixes": [
+    {
+      "rule_id": "UI-A-001",
+      "issue_type": "color_contrast",
+      "current_value": "3.8:1",
+      "target_value": "4.5:1",
+      "action": "Darken text color to #1F2937"
+    }
+  ]
+}
+```
+
+#### Apply Fixes
+
+1. Read `${run_dir}/design-${variant_id}.md`
+2. Parse each fix item and apply:
+   - `color_contrast` → update color token value
+   - `font_size` → update typography spec
+   - `spacing` → round to 4px grid and update
+   - `click_area` → update component min-height/min-width
+3. Write updated `${run_dir}/design-${variant_id}.md`
+
+#### Send UX_FIX_APPLIED
+
+Reply to reviewer via SendMessage:
+
+```json
+{
+  "type": "UX_FIX_APPLIED",
+  "variant_id": "A",
+  "round": 1,
+  "changes": [
+    {
+      "rule_id": "UI-A-001",
+      "applied_change": "Updated text-primary color",
+      "new_value": "#1F2937"
+    }
+  ]
+}
+```
+
+After sending, continue checking TaskList for next available work.
 
 ### Step 5: Generate Design Document
 

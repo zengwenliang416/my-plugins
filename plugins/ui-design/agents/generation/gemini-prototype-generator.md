@@ -184,6 +184,36 @@ ls -la ${run_dir}/code/gemini-raw/
 - Preserve gemini-raw/ for debugging comparison
 - Output treated as "dirty prototype" - will be refined by Claude
 
+## Team Mode: UX-Aware Variant Selection
+
+**When running in Team mode** (team `ui-design-pipeline`):
+
+### Read UX Reports
+
+Before generating code, read all available UX reports to select the best variant:
+
+```
+for variant in ["A", "B", "C"]:
+    report = Read("${run_dir}/ux-check-${variant}.md")
+    if report exists:
+        extract pass_rate, high_priority_issues
+        variants_scores[variant] = pass_rate
+```
+
+Select `BEST_VARIANT` = variant with highest pass_rate and 0 high-priority issues.
+
+### Completion Notification
+
+After code prototype is generated, notify coder readiness:
+
+```
+SendMessage(type="message", recipient="coder",
+  content="CODE_READY: Gemini prototype generated at ${run_dir}/code/gemini-raw/. Best variant: ${BEST_VARIANT}.",
+  summary="Gemini prototype ready")
+```
+
+If running as coder agent itself, proceed directly to write output.
+
 ## Error Handling
 
 If Gemini call fails:

@@ -1,132 +1,200 @@
 ---
 name: image-analyzer
-description: "Analyze design reference images using 8 parallel Gemini visual analyses + Claude synthesis"
+description: "Design Reference Analysis Team coordinator: 3 specialist agents + cross-validation + weighted synthesis"
 tools:
-  - mcp__gemini__gemini
+  - TeamCreate
+  - TeamDelete
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
+  - TaskGet
+  - SendMessage
   - Read
   - Write
   - Bash
+  - Task
   - TaskOutput
 memory: user
 model: sonnet
 color: cyan
 ---
 
-# Image Analyzer Agent
+# Design Reference Analysis Coordinator
 
 ## Overview
 
-**Trigger**: When user provides `--image=<path>` parameter for design reference
-**Output**: `${run_dir}/image-analysis.md` with design specifications extracted from image
-**Core Capability**: 8 parallel Gemini visual analysis + Claude synthesis
+**Trigger**: When design reference is provided (`--image=<path>`, `--ref=<path>`, or text description)
+**Output**: `${run_dir}/design-reference-analysis.md` — unified design spec for downstream phases
+**Core Capability**: 3-specialist team + cross-validation + weighted vote synthesis
 
-## Required Tools
+## Input Types
 
-- `mcp__gemini__gemini` - Primary tool for image analysis (8 parallel calls)
-- `Read` / `Write` / `Bash` - File operations
-- `TaskOutput` - Retrieve background task results
+| Parameter        | Input Type  | Source                                  |
+| ---------------- | ----------- | --------------------------------------- |
+| `--image=<path>` | Image       | Screenshot, Figma export, design mockup |
+| `--ref=<path>`   | Document    | Markdown spec, PDF design doc           |
+| (no flag)        | Description | Text from `${run_dir}/input.md`         |
 
 ## Execution Flow
 
+### Step 1: Prepare Input
+
 ```
-  thought: "Plan image analysis: 1) Verify image file 2) Launch 8 parallel Gemini analyses 3) Wait for completion 4) Synthesize results 5) Generate document",
-  thoughtNumber: 1,
-  totalThoughts: 5,
-  nextThoughtNeeded: true
-})
-```
-
-### Step 1: Verify Image File
-
-```bash
-if [ ! -f "${image_path}" ]; then
-    echo "Error: Image file not found: ${image_path}"
-    exit 1
-fi
-cp "${image_path}" "${run_dir}/reference-image.$(basename ${image_path##*.})"
-```
-
-### Step 2: Launch 8 Parallel Gemini Analysis Tasks
-
-**MUST use `run_in_background=true` for all 8 tasks in a single message**:
-
-| Task | Dimension              | Prompt Focus                                             |
-| ---- | ---------------------- | -------------------------------------------------------- |
-| 1    | Overall Style + Layout | Design style, grid system, visual hierarchy              |
-| 2    | Color System           | Primary, secondary, accent, semantic colors (HEX values) |
-| 3    | Typography System      | Font families, sizes, weights, line-height               |
-| 4    | Spacing System         | Padding, margins, gaps (identify base unit)              |
-| 5    | UI Components          | Button, card, input, modal styles                        |
-| 6    | Interaction States     | Hover, active, focus, disabled states                    |
-| 7    | Icon System            | Icon style, size, stroke width                           |
-| 8    | Detail System          | Border-radius, shadows, borders                          |
-
-**Command format**:
-
-```bash
-~/.claude/bin/codeagent-wrapper gemini --file "${image_path}" --prompt "${prompt_N}"
+if image_path provided:
+    input_type = "image"
+    cp "${image_path}" "${run_dir}/reference-image.${ext}"
+    message_payload = "input_type: image\nimage_path: ${run_dir}/reference-image.${ext}"
+elif ref_path provided:
+    input_type = "document"
+    content = Read(ref_path)
+    message_payload = "input_type: document\ncontent:\n${content}"
+else:
+    input_type = "description"
+    content = Read("${run_dir}/input.md")
+    message_payload = "input_type: description\ndescription:\n${content}"
 ```
 
-### Step 3: Wait for All Tasks
+### Step 2: Create Team & Tasks
 
-Use `TaskOutput` to retrieve results from all 8 background tasks.
+```
+TeamCreate(team_name="ui-ref-analysis", description="Design reference multi-perspective analysis")
+```
 
-### Step 4: Claude Synthesis
+Create 6 tasks with dependencies:
 
-Based on 8 Gemini analysis results:
+```
+# Phase A: Independent analysis (parallel)
+TaskCreate(subject="Visual layout analysis", description="...", activeForm="Analyzing layout")       # Task 1
+TaskCreate(subject="Color system analysis", description="...", activeForm="Analyzing colors")        # Task 2
+TaskCreate(subject="Component catalog analysis", description="...", activeForm="Analyzing components") # Task 3
 
-1. Validate consistency across analyses
-2. Convert descriptions to Tailwind/CSS values
-3. Identify reusable design patterns
-4. Recommend matching icon library
+# Phase B: Cross-validation (parallel, blocked by Phase A)
+TaskCreate(subject="Cross-validate visual perspective", description="...", activeForm="Cross-validating layout")     # Task 4
+TaskUpdate(taskId="4", addBlockedBy=["1", "2", "3"])
+TaskCreate(subject="Cross-validate color perspective", description="...", activeForm="Cross-validating colors")      # Task 5
+TaskUpdate(taskId="5", addBlockedBy=["1", "2", "3"])
+TaskCreate(subject="Cross-validate component perspective", description="...", activeForm="Cross-validating components") # Task 6
+TaskUpdate(taskId="6", addBlockedBy=["1", "2", "3"])
+```
 
-### Step 5: Generate Analysis Document
+### Step 3: Spawn 3 Specialist Agents
 
-**Output**: `${run_dir}/image-analysis.md`
+```
+Task(subagent_type="general-purpose", name="visual-analyst", team_name="ui-ref-analysis",
+  prompt="You are visual-analyst on team ui-ref-analysis.
+  Read plugins/ui-design/agents/analysis/visual-analyst.md for your instructions.
+  run_dir=${RUN_DIR}. ${message_payload}
+  Phase A: Claim task 1, do independent analysis, write ref-analysis-visual.md, mark completed.
+  Phase B: When task 4 unblocks, claim it, read the other 2 reports, write cross-validation-visual.md, mark completed.",
+  run_in_background=true)
 
-Document structure:
+Task(subagent_type="general-purpose", name="color-analyst", team_name="ui-ref-analysis",
+  prompt="You are color-analyst on team ui-ref-analysis.
+  Read plugins/ui-design/agents/analysis/color-analyst.md for your instructions.
+  run_dir=${RUN_DIR}. ${message_payload}
+  Phase A: Claim task 2, do independent analysis, write ref-analysis-color.md, mark completed.
+  Phase B: When task 5 unblocks, claim it, read the other 2 reports, write cross-validation-color.md, mark completed.",
+  run_in_background=true)
 
-- Design Style Summary
-- Color System (HEX + Tailwind equivalents)
-- Typography System (font-family, sizes in px/rem)
-- Spacing System (base unit identified)
-- Component Catalog
-- Interaction States
-- Icon System
-- Detail System (radius, shadows, borders)
-- Raw Gemini Analysis Records (all 8)
+Task(subagent_type="general-purpose", name="component-analyst", team_name="ui-ref-analysis",
+  prompt="You are component-analyst on team ui-ref-analysis.
+  Read plugins/ui-design/agents/analysis/component-analyst.md for your instructions.
+  run_dir=${RUN_DIR}. ${message_payload}
+  Phase A: Claim task 3, do independent analysis, write ref-analysis-component.md, mark completed.
+  Phase B: When task 6 unblocks, claim it, read the other 2 reports, write cross-validation-component.md, mark completed.",
+  run_in_background=true)
+```
+
+### Step 4: Monitor & Wait
+
+Wait for all 6 tasks to complete. If any agent stalls > 3 minutes, send a reminder message.
+
+### Step 5: Weighted Vote Synthesis (Lead)
+
+Read all 6 reports and synthesize `${run_dir}/design-reference-analysis.md`.
+
+**Conflict Resolution Rules**:
+
+1. 2/3 analysts agree → adopt majority opinion
+2. Domain expert gets 2x vote weight on domain conflicts:
+   - Color conflict → color-analyst weight 2x
+   - Layout conflict → visual-analyst weight 2x
+   - Component conflict → component-analyst weight 2x
+3. Quantifiable data (contrast ratios, pixel values) → adopt calculated value
+4. Subjective disagreement → mark `[CONTESTED, recommend manual review]`
+
+### Step 6: Generate Unified Report
+
+Write `${run_dir}/design-reference-analysis.md`:
+
+```markdown
+# Design Reference Analysis
+
+## Input Type: image | document | description
+
+## Color System
+
+- Primary: #xxx, Secondary: #xxx, Accent: #xxx
+- Semantic: Error #xxx, Warning #xxx, Success #xxx
+- Contrast Ratios: [table]
+
+## Typography System
+
+- Font families, sizes (px/rem), weights, line-height
+- Heading scale, body text, caption
+
+## Layout & Grid
+
+- Grid system (columns, gaps, breakpoints)
+- Spacing base unit, scale
+- Visual hierarchy levels
+
+## Component Catalog
+
+- [Component Name]: description, variants, states
+- Interaction states: hover, active, focus, disabled
+
+## Icon System
+
+- Style, size, stroke width, recommended library
+
+## Detail System
+
+- Border-radius, shadows, borders, backgrounds
+
+## Cross-Validation Results
+
+- [CONFIRMED] items (agreed by 2+ analysts)
+- [CHALLENGED] items (with resolution)
+- [CONTESTED] items (manual review recommended)
+```
+
+### Step 7: Shutdown Team
+
+```
+SendMessage(type="shutdown_request", recipient="visual-analyst", content="Analysis complete")
+SendMessage(type="shutdown_request", recipient="color-analyst", content="Analysis complete")
+SendMessage(type="shutdown_request", recipient="component-analyst", content="Analysis complete")
+TeamDelete()
+```
 
 ## Return Value
 
 ```json
 {
   "status": "success",
-  "output_file": "${run_dir}/image-analysis.md",
-  "analysis_rounds": 8,
-  "extracted_info": {
-    "style_type": "Modern SaaS Dashboard",
-    "color_count": 5,
-    "component_count": 12,
-    "font_family": "Inter",
-    "layout_type": "Sidebar + Content",
-    "icon_library": "Lucide"
-  }
+  "input_type": "image|document|description",
+  "output_file": "${run_dir}/design-reference-analysis.md",
+  "confirmed_items": 15,
+  "challenged_items": 3,
+  "contested_items": 1,
+  "analysts": ["visual-analyst", "color-analyst", "component-analyst"]
 }
 ```
 
 ## Constraints
 
-- **MUST** use Gemini for image analysis (no guessing)
-- **MUST** launch all 8 tasks in parallel
-- **MUST** save all Gemini raw responses
-- Convert colors to HEX format
-- Convert font sizes to px or rem
-
-## Validation Checklist
-
-- [ ] All 8 Gemini background tasks completed
-- [ ] `${run_dir}/image-analysis.md` generated
-- [ ] Document contains color system table
-- [ ] Document contains spacing system
-- [ ] Document contains component catalog
-- [ ] Document contains all 8 Gemini raw records
+- **MUST** spawn all 3 analysts (never skip)
+- **MUST** complete cross-validation before synthesis
+- Synthesis uses weighted voting, not simple merge
+- `[CONTESTED]` items must be flagged for user review

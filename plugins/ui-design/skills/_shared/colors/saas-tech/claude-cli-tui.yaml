@@ -1,0 +1,36 @@
+name: Claude CLI TUI
+# [INFERRED] Derived from user description for Claude Code Plugin Installer TUI
+industry: SaaS
+keywords: [CLI, Terminal, TUI, Ink, Dark, Claude]
+description: Color scheme for Claude Code Plugin Installer TUI, optimized for ANSI 256-color terminals.
+palette:
+  primary: "#5B5BDD"
+  secondary: "#22C55E"
+  accent: "#3B82F6"
+  background: "#1E1E1E"
+  surface: "#252526"
+  selection: "#37373D"
+  text: "#FFFFFF"
+  text-secondary: "#CCCCCC"
+  text-muted: "#858585"
+  text-link: "#4DAAF2"
+  border: "#454545"
+  success: "#22C55E"
+  error: "#EF4444"
+  warning: "#EAB308"
+  info: "#3B82F6"
+  deprecated: "#F97316"
+  disabled: "#6B7280"
+  search-highlight: "#264F78"
+  progress-filled: "#22C55E"
+  progress-empty: "#404040"
+gradients: []
+适用场景: [CLI Tools, Terminal UI, Plugin Installers]
+参考: Claude Code
+ansi_map:
+  primary: "blue"
+  secondary: "green"
+  error: "red"
+  warning: "yellow"
+  text: "white"
+  text-muted: "gray"

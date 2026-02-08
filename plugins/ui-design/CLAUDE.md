@@ -1,122 +1,115 @@
-# UI-Design Plugin Usage Guide
+# UI-Design Plugin Usage Guide v3.0
 
-Always answer in 简体中文
+Always answer in Chinese (Simplified).
 
 ## Available Skills
 
-| Skill                  | Trigger              | Description           |
-| ---------------------- | -------------------- | --------------------- |
-| `/ui-design:ui-design` | "设计", "UI", "界面" | 完整 UI/UX 设计工作流 |
+| Skill                  | Trigger        | Description                              |
+| ---------------------- | -------------- | ---------------------------------------- |
+| `/ui-design:ui-design` | "design", "UI" | Full UI/UX design workflow (Native Team) |
 
 ## Quick Start
 
 ```bash
-# 从零开始设计
-/ui-design 设计一个 SaaS 仪表盘页面
+# Design from scratch
+/ui-design Design a SaaS analytics dashboard
 
-# 带参考图片
-/ui-design --image=./reference.png 设计登录页面
+# With reference image
+/ui-design --image=./reference.png Design a login page matching this style
 
-# 优化现有界面
-/ui-design --scenario=optimize 优化用户设置页面
+# With design document
+/ui-design --ref=./design-spec.md Implement this design spec
 
-# 指定技术栈
-/ui-design --tech-stack=vue 设计电商首页
+# Optimize existing UI
+/ui-design --scenario=optimize Optimize the user settings page
+
+# Specify tech stack
+/ui-design --tech-stack=vue Design an e-commerce homepage
 ```
 
-## Workflow Phases
+## Architecture
 
-10 个阶段的完整工作流：
+Hybrid architecture with two Team phases + Task/Lead mode:
 
 ```
-1. 初始化        → 创建运行目录
-2. 场景确认      → 询问设计场景和技术栈 (⏸️ Hard Stop)
-2.5 图片分析    → 8 并行 Gemini 视觉分析（可选）
-3. 需求分析      → auggie-mcp + Gemini 需求解析
-4. 样式推荐      → 生成 3 套设计方案 + HTML 预览
-5. 变体选择      → 用户选择方案 (⏸️ Hard Stop)
-6. 设计生成      → 并行生成设计规格
-7. UX 检查       → UX 准则验证（失败重试）
-8. 代码生成      → Gemini 原型 + Claude 重构
-9. 质量验证      → 代码质量 + 设计还原度
-10. 交付总结     → 完成报告
+Phase 1:   Init (Lead)              — mkdir, parse args
+Phase 2:   Scenario Confirm (Lead)  — AskUserQuestion [HARD STOP]
+Phase 2.5: Design Ref Analysis Team — 3 specialists + cross-validate + synthesis
+Phase 3:   Requirements (Task)      — Task(requirement-analyzer)
+Phase 4:   Style Recommend (Task)   — Task(style-recommender)
+Phase 5:   Variant Selection (Lead) — AskUserQuestion [HARD STOP]
+Phase 6-9: Design Pipeline Team     — designer + reviewer + coder pipeline
+Phase 10:  Delivery (Lead)          — summary output
+```
+
+## Team 1: Design Reference Analysis (Phase 2.5)
+
+Multi-perspective cross-validation supporting three input types:
+
+| Input       | Parameter        | Confidence           |
+| ----------- | ---------------- | -------------------- |
+| Image       | `--image=<path>` | [EXTRACTED] High     |
+| Document    | `--ref=<path>`   | [PARSED] Medium-High |
+| Description | (no flag)        | [INFERRED] Medium    |
+
+3 specialist analysts → independent analysis → cross-validation → weighted-vote synthesis
+
+## Team 2: Design Pipeline (Phase 6-9)
+
+Pipeline parallelism + structured fix loop:
+
+```
+designer builds A → reviewer reviews A (designer continues B in parallel)
+reviewer finds issue → UX_FIX_REQUEST → designer fixes → UX_FIX_APPLIED → targeted re-check
+all pass → coder generates code → reviewer validates quality
 ```
 
 ## Agent Types
 
-| Category   | Agents                                                       | Description            |
-| ---------- | ------------------------------------------------------------ | ---------------------- |
-| Analysis   | image-analyzer, requirement-analyzer, existing-code-analyzer | 分析类 Agent           |
-| Design     | style-recommender, design-variant-generator                  | 设计类 Agent           |
-| Validation | ux-guideline-checker, quality-validator                      | 验证类 Agent           |
-| Generation | gemini-prototype-generator, claude-code-refactor             | 生成类 Agent（双模型） |
+| Category   | Agents                                                                                                                       | Description |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| Analysis   | image-analyzer (coordinator), visual-analyst, color-analyst, component-analyst, requirement-analyzer, existing-code-analyzer | Analysis    |
+| Design     | style-recommender, design-variant-generator                                                                                  | Design      |
+| Validation | ux-guideline-checker, quality-validator                                                                                      | Validation  |
+| Generation | gemini-prototype-generator, claude-code-refactor                                                                             | Generation  |
 
 ## Output Structure
 
 ```
 .claude/ui-design/runs/${RUN_ID}/
-├── requirements.md           # 需求分析
-├── style-recommendations.md  # 样式推荐
-├── previews/                 # HTML 预览
-│   ├── index.html
-│   ├── preview-A.html
-│   ├── preview-B.html
-│   └── preview-C.html
-├── design-A.md               # 设计规格 A
-├── design-B.md               # 设计规格 B
-├── design-C.md               # 设计规格 C
-├── ux-check-report.md        # UX 检查报告
-├── code/
-│   ├── gemini-raw/           # Gemini 原型
-│   └── react-tailwind/       # 最终代码
-└── quality-report.md         # 质量报告
-```
-
-## Dual-Model Collaboration
-
-Phase 8 使用双模型协作：
-
-```
-┌─────────────────────────────────────────┐
-│  Gemini Prototype  →  Claude Refactor  │
-│  (70% quality)        (95% quality)    │
-│       ↓                   ↓            │
-│  gemini-raw/          final/           │
-│  - 快速生成            - 移除冗余       │
-│  - 完整结构            - 类型补全       │
-│  - 基础类型            - 可访问性       │
-└─────────────────────────────────────────┘
+├── ref-analysis-{visual,color,component}.md  # Team 1 independent analysis
+├── cross-validation-{visual,color,component}.md  # Team 1 cross-validation
+├── design-reference-analysis.md              # Team 1 synthesis
+├── requirements.md
+├── style-recommendations.md
+├── previews/
+├── design-{A,B,C}.md                        # Team 2 designer
+├── ux-check-{A,B,C}.md                      # Team 2 reviewer
+├── code/{gemini-raw,${tech_stack}}/          # Team 2 coder
+└── quality-report.md                         # Team 2 reviewer
 ```
 
 ## Quality Gates
 
-| Phase   | Gate         | Threshold |
-| ------- | ------------ | --------- |
-| Phase 7 | UX 通过率    | ≥ 80%     |
-| Phase 7 | 高优先级问题 | = 0       |
-| Phase 9 | 质量评分     | ≥ 7.5/10  |
+| Phase   | Gate                 | Threshold |
+| ------- | -------------------- | --------- |
+| Phase 7 | UX pass rate         | >= 80%    |
+| Phase 7 | High-priority issues | = 0       |
+| Phase 7 | Fix round limit      | 2 rounds  |
+| Phase 9 | Quality score        | >= 7.5/10 |
 
 ## Resume Workflow
 
 ```bash
-# 使用 run-id 断点续传
 /ui-design --run-id=20260131T100000Z
 ```
-
-## MCP Tools Used
-
-| Tool                                           | Usage                            |
-| ---------------------------------------------- | -------------------------------- |
-| `mcp__gemini__gemini`                          | 图片分析、设计方案生成、代码原型 |
-| `mcp__auggie-mcp__codebase-retrieval`          | 现有代码分析、组件检索           |
-| `LSP`                                          | 组件符号分析、类型检查           |
 
 ## Shared Resources
 
 ```
 plugins/ui-design/skills/_shared/
-├── colors/           # 配色方案库
-├── styles/           # 样式模板库
-├── typography/       # 字体系统库
-└── ux-guidelines/    # UX 准则参考
+├── colors/           # Color scheme library
+├── styles/           # Style template library
+├── typography/       # Typography system library
+└── ux-guidelines/    # UX guideline references
 ```

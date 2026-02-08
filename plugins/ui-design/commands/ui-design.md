@@ -1,8 +1,15 @@
 ---
-description: "UI/UX 设计工作流 v2.0：需求分析 → 样式推荐 → 设计生成（并行 3 变体）→ UX 检查 → 代码生成（双模型协作）→ 质量验证"
-argument-hint: "[--image=<path>] [--scenario=from_scratch|optimize] [--tech-stack=react|vue] [--run-id=xxx] <设计描述>"
+description: "UI/UX design workflow v3.0: requirements → multi-perspective design ref analysis team → style recommendation → design pipeline team (designer + reviewer + coder) → delivery"
+argument-hint: "[--image=<path>] [--ref=<path>] [--scenario=from_scratch|optimize] [--tech-stack=react|vue] [--run-id=xxx] <design description>"
 allowed-tools:
   - Task
+  - TeamCreate
+  - TeamDelete
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
+  - TaskGet
+  - SendMessage
   - AskUserQuestion
   - Read
   - Write
@@ -10,56 +17,50 @@ allowed-tools:
   - TaskOutput
 ---
 
-# /ui-design - UI/UX 设计工作流命令 v2.0
+# /ui-design - UI/UX Design Workflow v3.0
 
-## 执行模型
+## Execution Model
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  自动执行（无需询问）    │  硬停止（必须询问）                  │
+│  Auto-execute (no prompt)     │  Hard Stop (must ask user)   │
 ├─────────────────────────────────────────────────────────────┤
-│  Phase 1 → Phase 2      │  ⏸️ Phase 2: 场景确认               │
-│  Phase 2.5（如有图片）  │  ⏸️ Phase 5: 方案选择               │
-│  Phase 3 → Phase 4      │                                      │
-│  Phase 6 → Phase 7      │                                      │
-│  Phase 7 → Phase 8      │                                      │
-│  Phase 8 → Phase 9      │                                      │
-│  Phase 9 → Phase 10     │                                      │
+│  Phase 1 → Phase 2           │  ⏸️ Phase 2: Scenario confirm │
+│  Phase 2.5 (Team 1)          │  ⏸️ Phase 5: Variant selection│
+│  Phase 3 → Phase 4           │                               │
+│  Phase 6-9 (Team 2)          │                               │
+│  Phase 10                    │                               │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## 阶段流程
+## Phase Overview
 
 ```
-Phase 1: 初始化        → 创建 RUN_DIR
-Phase 2: 场景确认      → AskUserQuestion（⏸️ 硬停止）
-Phase 2.5: 图片分析    → Task(image-analyzer)【仅当有 --image 参数时】
-Phase 3: 需求分析      → Task(requirement-analyzer) → 自动继续 ↓
-Phase 4: 样式推荐      → Task(style-recommender) → 自动继续 ↓
-Phase 5: 方案选择      → AskUserQuestion（⏸️ 硬停止）
-Phase 6: 设计生成      → Task(design-variant-generator) × 3 并行 → 自动继续 ↓
-Phase 7: UX 检查       → Task(ux-guideline-checker) → 自动继续 ↓
-                       ├─ 通过 → Phase 8
-                       └─ 失败 → 返回 Phase 6 重新生成
-Phase 8: 代码生成      → Task(gemini-prototype) → Task(claude-refactor) → 自动继续 ↓
-Phase 9: 质量验证      → Task(quality-validator) → 自动继续 ↓
-Phase 10: 交付         → 输出摘要
+Phase 1:   Init                    → Create RUN_DIR, parse args
+Phase 2:   Scenario Confirm        → AskUserQuestion (⏸️ Hard Stop)
+Phase 2.5: Design Ref Analysis Team → Team 1: 3 specialist analysts + cross-validation
+Phase 3:   Requirement Analysis    → Task(requirement-analyzer)
+Phase 4:   Style Recommendation    → Task(style-recommender) → auto-continue ↓
+Phase 5:   Variant Selection       → AskUserQuestion (⏸️ Hard Stop)
+Phase 6-9: Design Pipeline Team    → Team 2: designer + reviewer + coder pipeline
+Phase 10:  Delivery                → Output summary
 ```
 
 ---
 
-## Phase 1: 初始化
+## Phase 1: Init
 
-### 参数解析
+### Argument Parsing
 
-| 选项                 | 说明                             | 默认值       |
-| -------------------- | -------------------------------- | ------------ |
-| `--image=<path>`     | 参考图片路径（启用图片分析）     | -            |
-| `--scenario=value`   | 设计场景 (from_scratch/optimize) | from_scratch |
-| `--tech-stack=value` | 技术栈 (react/vue)               | react        |
-| `--run-id=<id>`      | 使用指定 run-id（断点续传）      | -            |
+| Option               | Description                             | Default      |
+| -------------------- | --------------------------------------- | ------------ |
+| `--image=<path>`     | Reference image path                    | -            |
+| `--ref=<path>`       | Design document path (Markdown/PDF)     | -            |
+| `--scenario=value`   | Design scenario (from_scratch/optimize) | from_scratch |
+| `--tech-stack=value` | Tech stack (react/vue)                  | react        |
+| `--run-id=<id>`      | Resume from specified run-id            | -            |
 
-### 运行目录创建
+### Run Directory Creation
 
 ```bash
 if [[ "$ARGUMENTS" =~ --run-id=([^ ]+) ]]; then
@@ -74,319 +75,475 @@ else
 fi
 ```
 
----
+### Save Input
 
-## Phase 2: 场景确认
-
-### ⏸️ 硬停止
-
-使用 AskUserQuestion 确认：
-
-- 设计场景（从零设计 / 优化现有）
-- 技术栈偏好（React + Tailwind / Vue + Tailwind）
+Write user description to `${RUN_DIR}/input.md`.
 
 ---
 
-## Phase 2.5: 图片分析（仅当有 --image 参数）
+## Phase 2: Scenario Confirm
 
-**触发条件**：用户提供了 `--image=<path>` 参数
+### ⏸️ Hard Stop
 
-### Agent 调用
+Use AskUserQuestion to confirm:
+
+- Design scenario (from scratch / optimize existing)
+- Tech stack preference (React + Tailwind / Vue + Tailwind)
+
+---
+
+## Phase 2.5: Design Reference Analysis (Team 1 — Lead Inline Orchestration)
+
+**ALWAYS executes** — input type detection determines analysis mode. Never skip this phase.
+
+**Lead executes all steps directly** (not delegated to a coordinator Task). This ensures every step is visible to the user.
+
+Reference: `plugins/ui-design/agents/analysis/image-analyzer.md` for conflict resolution rules and output format.
+
+### Step 1: Prepare Input
+
+```
+if --image provided:
+    input_type = "image"
+    cp "${image_path}" "${RUN_DIR}/reference-image.${ext}"
+    message_payload = "input_type: image\nimage_path: ${RUN_DIR}/reference-image.${ext}"
+elif --ref provided:
+    input_type = "document"
+    content = Read(ref_path)
+    message_payload = "input_type: document\ncontent:\n${content}"
+else:
+    input_type = "description"
+    content = Read("${RUN_DIR}/input.md")
+    message_payload = "input_type: description\ndescription:\n${content}"
+```
+
+### Step 2: Create Team & Tasks
+
+```
+TeamCreate(team_name="ui-ref-analysis", description="Design reference multi-perspective analysis")
+```
+
+Create 6 tasks with dependencies:
+
+```
+# Phase A: Independent analysis (parallel)
+TaskCreate(subject="Visual layout analysis", description="Analyze layout, grid, spacing, visual hierarchy. ${message_payload}", activeForm="Analyzing layout")       # 1
+TaskCreate(subject="Color system analysis", description="Analyze color palette, contrast, gradients. ${message_payload}", activeForm="Analyzing colors")               # 2
+TaskCreate(subject="Component catalog analysis", description="Analyze UI components, typography, icons. ${message_payload}", activeForm="Analyzing components")        # 3
+
+# Phase B: Cross-validation (blocked by all Phase A tasks)
+TaskCreate(subject="Cross-validate visual perspective", description="Review color + component reports from layout perspective", activeForm="Cross-validating layout")   # 4
+TaskUpdate(taskId="4", addBlockedBy=["1", "2", "3"])
+TaskCreate(subject="Cross-validate color perspective", description="Review visual + component reports from color perspective", activeForm="Cross-validating colors")    # 5
+TaskUpdate(taskId="5", addBlockedBy=["1", "2", "3"])
+TaskCreate(subject="Cross-validate component perspective", description="Review visual + color reports from component perspective", activeForm="Cross-validating components") # 6
+TaskUpdate(taskId="6", addBlockedBy=["1", "2", "3"])
+```
+
+### Step 3: Spawn 3 Specialist Agents (parallel, background)
+
+```
+Task(subagent_type="ui-design:analysis:visual-analyst", name="visual-analyst", team_name="ui-ref-analysis",
+  description="Visual layout analyst",
+  prompt="You are visual-analyst on team ui-ref-analysis.
+  Read plugins/ui-design/agents/analysis/visual-analyst.md for your full instructions.
+  run_dir=${RUN_DIR}. ${message_payload}
+  Phase A: Claim task 1, analyze using codeagent-wrapper gemini, write ref-analysis-visual.md, mark completed.
+  Phase B: When task 4 unblocks, claim it, read the other 2 reports, write cross-validation-visual.md, mark completed.",
+  run_in_background=true)
+
+Task(subagent_type="ui-design:analysis:color-analyst", name="color-analyst", team_name="ui-ref-analysis",
+  description="Color system analyst",
+  prompt="You are color-analyst on team ui-ref-analysis.
+  Read plugins/ui-design/agents/analysis/color-analyst.md for your full instructions.
+  run_dir=${RUN_DIR}. ${message_payload}
+  Phase A: Claim task 2, analyze using codeagent-wrapper gemini, write ref-analysis-color.md, mark completed.
+  Phase B: When task 5 unblocks, claim it, read the other 2 reports, write cross-validation-color.md, mark completed.",
+  run_in_background=true)
+
+Task(subagent_type="ui-design:analysis:component-analyst", name="component-analyst", team_name="ui-ref-analysis",
+  description="Component catalog analyst",
+  prompt="You are component-analyst on team ui-ref-analysis.
+  Read plugins/ui-design/agents/analysis/component-analyst.md for your full instructions.
+  run_dir=${RUN_DIR}. ${message_payload}
+  Phase A: Claim task 3, analyze using codeagent-wrapper gemini, write ref-analysis-component.md, mark completed.
+  Phase B: When task 6 unblocks, claim it, read the other 2 reports, write cross-validation-component.md, mark completed.",
+  run_in_background=true)
+```
+
+### Step 4: Wait for All Agents to Complete
+
+**MUST wait** — do NOT take over analyst work. Lead's only job here is waiting.
+
+```
+# Block-wait for all 3 background agents to finish (no timeout — Gemini calls may take long)
+TaskOutput(task_id=visual_analyst_id, block=true)
+TaskOutput(task_id=color_analyst_id, block=true)
+TaskOutput(task_id=component_analyst_id, block=true)
+```
+
+After all 3 return, verify via TaskList that all 6 tasks (Phase A + Phase B) are completed.
+
+**FORBIDDEN**: Lead must NOT perform analysis itself. If an agent fails, re-spawn it — do not replace it.
+
+### Step 5: Weighted Vote Synthesis (Lead)
+
+Read all 6 reports and synthesize `${RUN_DIR}/design-reference-analysis.md`.
+
+**Conflict Resolution Rules** (from image-analyzer.md):
+
+1. 2/3 analysts agree → adopt majority opinion
+2. Domain expert gets 2x vote weight on domain conflicts (color→color-analyst, layout→visual-analyst, component→component-analyst)
+3. Quantifiable data (contrast ratios, pixel values) → adopt calculated value
+4. Subjective disagreement → mark `[CONTESTED, recommend manual review]`
+
+### Step 6: Shutdown Team
+
+```
+SendMessage(type="shutdown_request", recipient="visual-analyst", content="Analysis complete")
+SendMessage(type="shutdown_request", recipient="color-analyst", content="Analysis complete")
+SendMessage(type="shutdown_request", recipient="component-analyst", content="Analysis complete")
+TeamDelete()
+```
+
+### Outputs
+
+- `${RUN_DIR}/ref-analysis-visual.md`
+- `${RUN_DIR}/ref-analysis-color.md`
+- `${RUN_DIR}/ref-analysis-component.md`
+- `${RUN_DIR}/cross-validation-{visual,color,component}.md`
+- `${RUN_DIR}/design-reference-analysis.md` (unified synthesis)
+
+---
+
+## Phase 3: Requirement Analysis
+
+### Agent Invocation
 
 ```
 Task(
-  subagent_type="general-purpose",
-  description="Analyze design image",
-  prompt="You are the image-analyzer agent. Read plugins/ui-design/agents/analysis/image-analyzer.md. Execute with: run_dir=${RUN_DIR} image_path=${IMAGE_PATH}",
-  run_in_background=true
-)
-```
-
-**产出**：`${run_dir}/image-analysis.md`
-
----
-
-## Phase 3: 需求分析
-
-### Agent 调用
-
-```
-Task(
-  subagent_type="general-purpose",
+  subagent_type="ui-design:analysis:requirement-analyzer",
   description="Analyze requirements",
-  prompt="You are the requirement-analyzer agent. Read plugins/ui-design/agents/analysis/requirement-analyzer.md. Execute with: run_dir=${RUN_DIR} description=${DESCRIPTION}",
+  prompt="You are the requirement-analyzer agent.
+  Read plugins/ui-design/agents/analysis/requirement-analyzer.md.
+  Execute with: run_dir=${RUN_DIR} description=${DESCRIPTION}",
   run_in_background=false
 )
 ```
 
-**产出**：`${run_dir}/requirements.md`
+**Output**: `${RUN_DIR}/requirements.md`
 
-**如果是 optimize 场景**，同时调用：
+**For optimize scenario**, also invoke:
 
 ```
 Task(
-  subagent_type="general-purpose",
+  subagent_type="ui-design:analysis:existing-code-analyzer",
   description="Analyze existing code",
-  prompt="You are the existing-code-analyzer agent. Read plugins/ui-design/agents/analysis/existing-code-analyzer.md. Execute with: run_dir=${RUN_DIR}",
+  prompt="You are the existing-code-analyzer agent.
+  Read plugins/ui-design/agents/analysis/existing-code-analyzer.md.
+  Execute with: run_dir=${RUN_DIR}",
   run_in_background=true
 )
 ```
 
 ---
 
-## Phase 4: 样式推荐
+## Phase 4: Style Recommendation
 
-### Agent 调用
+### Agent Invocation
 
 ```
 Task(
-  subagent_type="general-purpose",
+  subagent_type="ui-design:design:style-recommender",
   description="Generate style recommendations",
-  prompt="You are the style-recommender agent. Read plugins/ui-design/agents/design/style-recommender.md. Execute with: run_dir=${RUN_DIR}",
+  prompt="You are the style-recommender agent.
+  Read plugins/ui-design/agents/design/style-recommender.md.
+  Execute with: run_dir=${RUN_DIR}",
   run_in_background=false
 )
 ```
 
-**产出**：
+**Outputs**:
 
-- `${run_dir}/style-recommendations.md`
-- `${run_dir}/previews/index.html`
-- `${run_dir}/previews/preview-A.html`
-- `${run_dir}/previews/preview-B.html`
-- `${run_dir}/previews/preview-C.html`
+- `${RUN_DIR}/style-recommendations.md`
+- `${RUN_DIR}/previews/index.html`
+- `${RUN_DIR}/previews/preview-{A,B,C}.html`
 
 ---
 
-## Phase 5: 方案选择
+## Phase 5: Variant Selection
 
-### ⏸️ 硬停止
+### ⏸️ Hard Stop
 
-1. 提示用户打开 HTML 预览：
+1. Prompt user to open HTML preview:
 
 ```
-🎨 设计方案已生成！请在浏览器中预览：
+Design variants ready! Preview in browser:
    open ${RUN_DIR}/previews/index.html
 ```
 
-2. 使用 AskUserQuestion 询问选择：
-   - 生成全部 3 个方案（并行）（推荐）
-   - 仅生成方案 A
-   - 仅生成方案 B
-   - 仅生成方案 C
+2. Use AskUserQuestion to ask:
+   - Generate all 3 variants (Recommended)
+   - Generate variant A only
+   - Generate variant B only
+   - Generate variant C only
 
 ---
 
-## Phase 6: 设计生成（并行执行）
+## Phase 6-9: Design Pipeline (Team 2 — designer + reviewer + coder)
 
-### Agent 并行调用
-
-**如果用户选择"生成全部 3 个方案"**：
+### Step 1: Create Team
 
 ```
+TeamCreate(team_name="ui-design-pipeline", description="Design pipeline: generate → review → code")
+```
+
+### Step 2: Create Task List
+
+Create tasks based on user-selected variant_ids. Example for all 3 variants:
+
+```
+# Design generation (parallel)
+TaskCreate(subject="Design variant A", description="...", activeForm="Designing variant A")  # 1
+TaskCreate(subject="Design variant B", description="...", activeForm="Designing variant B")  # 2
+TaskCreate(subject="Design variant C", description="...", activeForm="Designing variant C")  # 3
+
+# UX review (blocked by corresponding design)
+TaskCreate(subject="UX review variant A", description="...", activeForm="Reviewing variant A")  # 4
+TaskUpdate(taskId="4", addBlockedBy=["1"])
+TaskCreate(subject="UX review variant B", description="...", activeForm="Reviewing variant B")  # 5
+TaskUpdate(taskId="5", addBlockedBy=["2"])
+TaskCreate(subject="UX review variant C", description="...", activeForm="Reviewing variant C")  # 6
+TaskUpdate(taskId="6", addBlockedBy=["3"])
+
+# Code generation (blocked by all reviews)
+TaskCreate(subject="Gemini prototype generation", description="...", activeForm="Generating prototype")  # 7
+TaskUpdate(taskId="7", addBlockedBy=["4", "5", "6"])
+TaskCreate(subject="Claude code refactor", description="...", activeForm="Refactoring code")  # 8
+TaskUpdate(taskId="8", addBlockedBy=["7"])
+
+# Quality validation (blocked by code refactor)
+TaskCreate(subject="Quality validation", description="...", activeForm="Validating quality")  # 9
+TaskUpdate(taskId="9", addBlockedBy=["8"])
+```
+
+Task dependency graph:
+
+```
+[1] Design A → [4] UX Review A ─┐
+[2] Design B → [5] UX Review B ─┼→ [7] Gemini Prototype → [8] Claude Refactor → [9] Quality
+[3] Design C → [6] UX Review C ─┘
+```
+
+### Step 3: Spawn 3 Teammates
+
+```
+# designer: design generation + inline fix
 Task(
   subagent_type="general-purpose",
-  description="Generate design variant A",
-  prompt="You are the design-variant-generator agent. Read plugins/ui-design/agents/design/design-variant-generator.md. Execute with: run_dir=${RUN_DIR} variant_id=A",
+  name="designer",
+  team_name="ui-design-pipeline",
+  description="Design variant generator",
+  prompt="You are the DESIGNER on team 'ui-design-pipeline'.
+
+Your role:
+1. Check TaskList for design tasks (#1-3), claim in order (A→B→C)
+2. For each: read plugins/ui-design/agents/design/design-variant-generator.md, execute, write design-{variant}.md
+3. If reviewer sends UX_FIX_REQUEST: parse JSON, apply fixes to design file, reply UX_FIX_APPLIED
+4. After all tasks done, go idle
+
+Working directory: run_dir=${RUN_DIR}
+Agent definition: plugins/ui-design/agents/design/design-variant-generator.md
+Style recommendations: ${RUN_DIR}/style-recommendations.md
+Requirements: ${RUN_DIR}/requirements.md
+Design reference: ${RUN_DIR}/design-reference-analysis.md (if exists)",
   run_in_background=true
 )
 
+# reviewer: UX review + quality validation
 Task(
   subagent_type="general-purpose",
-  description="Generate design variant B",
-  prompt="You are the design-variant-generator agent. Read plugins/ui-design/agents/design/design-variant-generator.md. Execute with: run_dir=${RUN_DIR} variant_id=B",
+  name="reviewer",
+  team_name="ui-design-pipeline",
+  description="UX reviewer and quality validator",
+  prompt="You are the REVIEWER on team 'ui-design-pipeline'.
+
+Your role:
+1. Check TaskList for review tasks (#4-6), they unblock as designs complete
+2. For each: read plugins/ui-design/agents/validation/ux-guideline-checker.md, execute UX check
+3. Pass: rate>=80% AND high_priority=0 → mark completed
+4. Fail: send UX_FIX_REQUEST (structured JSON) to designer, wait for UX_FIX_APPLIED, do targeted re-check
+5. Max 2 fix rounds per variant, then UX_ESCALATION to lead
+6. Also claim task #9 (quality validation) when unblocked
+
+Working directory: run_dir=${RUN_DIR}
+UX agent: plugins/ui-design/agents/validation/ux-guideline-checker.md
+Quality agent: plugins/ui-design/agents/validation/quality-validator.md",
   run_in_background=true
 )
 
+# coder: Gemini prototype + Claude refactor
 Task(
   subagent_type="general-purpose",
-  description="Generate design variant C",
-  prompt="You are the design-variant-generator agent. Read plugins/ui-design/agents/design/design-variant-generator.md. Execute with: run_dir=${RUN_DIR} variant_id=C",
+  name="coder",
+  team_name="ui-design-pipeline",
+  description="Code generator (Gemini prototype + Claude refactor)",
+  prompt="You are the CODER on team 'ui-design-pipeline'.
+
+Your role:
+1. Check TaskList for code tasks (#7-8), blocked by UX reviews
+2. Task #7: read plugins/ui-design/agents/generation/gemini-prototype-generator.md, generate prototype
+3. Task #8: read plugins/ui-design/agents/generation/claude-code-refactor.md, refactor code
+4. Read all ux-check-{variant}.md to select best variant for code generation
+
+Working directory: run_dir=${RUN_DIR}
+Tech stack: ${TECH_STACK}
+Gemini agent: plugins/ui-design/agents/generation/gemini-prototype-generator.md
+Refactor agent: plugins/ui-design/agents/generation/claude-code-refactor.md",
   run_in_background=true
 )
-
-# 使用 TaskOutput 等待所有任务完成
 ```
 
-**产出**：`${run_dir}/design-{A,B,C}.md`
+### Step 4: Monitor & Coordinate
+
+```
+while TaskList has incomplete tasks:
+  1. Check TaskList status
+  2. If UX_ESCALATION received → AskUserQuestion for user decision
+  3. If teammate idle with claimable tasks → SendMessage reminder
+  4. If deadlock detected → intervene
+```
+
+**Exit condition**: Task #9 (Quality Validation) completed
+
+### Step 5: Shutdown Team
+
+```
+SendMessage(type="shutdown_request", recipient="designer", content="All tasks completed")
+SendMessage(type="shutdown_request", recipient="reviewer", content="All tasks completed")
+SendMessage(type="shutdown_request", recipient="coder", content="All tasks completed")
+TeamDelete()
+```
 
 ---
 
-## Phase 7: UX 检查（带重试）
+## Phase 10: Delivery
 
-### Agent 调用
-
-对每个生成的设计变体：
+Output completion summary:
 
 ```
-Task(
-  subagent_type="general-purpose",
-  description="Check UX guidelines for variant ${variant}",
-  prompt="You are the ux-guideline-checker agent. Read plugins/ui-design/agents/validation/ux-guideline-checker.md. Execute with: run_dir=${RUN_DIR} variant_id=${variant}",
-  run_in_background=false
-)
-```
+UI/UX Design Complete!
 
-**判定条件**：
+Task: ${DESCRIPTION}
+Selected Variant: Variant ${FINAL_VARIANT}
+Tech Stack: ${TECH_STACK}
 
-- 通过率 ≥ 80% 且高优先级问题 = 0 → 通过
-- 否则 → 返回 Phase 6 重新生成（最多重试 2 次）
+Quality Metrics:
+- UX Pass Rate: ${UX_PASS_RATE}%
+- Quality Score: ${QUALITY_SCORE}/10
 
-**产出**：`${run_dir}/ux-check-report.md`
-
----
-
-## Phase 8: 代码生成（双模型协作）
-
-### Step 1: Gemini 原型生成
-
-```
-Task(
-  subagent_type="general-purpose",
-  description="Gemini prototype generation",
-  prompt="You are the gemini-prototype-generator agent. Read plugins/ui-design/agents/generation/gemini-prototype-generator.md. Execute with: run_dir=${RUN_DIR} variant_id=${FINAL_VARIANT} tech_stack=${TECH_STACK}",
-  run_in_background=false
-)
-```
-
-**产出**：`${run_dir}/code/gemini-raw/`
-
-### Step 2: Claude 重构精简
-
-```
-Task(
-  subagent_type="general-purpose",
-  description="Claude code refactor",
-  prompt="You are the claude-code-refactor agent. Read plugins/ui-design/agents/generation/claude-code-refactor.md. Execute with: run_dir=${RUN_DIR} tech_stack=${TECH_STACK}",
-  run_in_background=false
-)
-```
-
-**产出**：`${run_dir}/code/${tech_stack}/`
-
----
-
-## Phase 9: 质量验证
-
-### Agent 调用
-
-```
-Task(
-  subagent_type="general-purpose",
-  description="Validate code quality",
-  prompt="You are the quality-validator agent. Read plugins/ui-design/agents/validation/quality-validator.md. Execute with: run_dir=${RUN_DIR} variant_id=${FINAL_VARIANT} tech_stack=${TECH_STACK}",
-  run_in_background=false
-)
-```
-
-**判定条件**：总分 ≥ 7.5/10
-
-**产出**：`${run_dir}/quality-report.md`
-
----
-
-## Phase 10: 交付
-
-输出完成摘要：
-
-```
-🎉 UI/UX 设计完成！
-
-📋 任务: ${DESCRIPTION}
-🎨 选定方案: 方案 ${FINAL_VARIANT}
-🔧 技术栈: ${TECH_STACK}
-
-📊 质量指标:
-- UX 通过率: ${UX_PASS_RATE}%
-- 质量评分: ${QUALITY_SCORE}/10
-
-📁 产物:
+Artifacts:
   ${RUN_DIR}/
-  ├── requirements.md           # 需求分析
-  ├── style-recommendations.md  # 样式推荐
-  ├── design-${FINAL_VARIANT}.md  # 最终设计规格
-  ├── ux-check-report.md        # UX 检查报告
-  ├── code/${TECH_STACK}/       # 生成代码
-  └── quality-report.md         # 质量报告
+  ├── design-reference-analysis.md  # Design reference analysis (multi-perspective)
+  ├── requirements.md               # Requirements
+  ├── style-recommendations.md      # Style recommendations
+  ├── design-${FINAL_VARIANT}.md    # Final design spec
+  ├── ux-check-${FINAL_VARIANT}.md  # UX check report
+  ├── code/${TECH_STACK}/           # Generated code
+  └── quality-report.md             # Quality report
 
-🔄 后续:
-  - 断点续传: /ui-design --run-id=${RUN_ID}
-  - 安装依赖: cd ${RUN_DIR}/code/${TECH_STACK} && npm install
-  - 启动开发: npm run dev
+Next Steps:
+  - Resume: /ui-design --run-id=${RUN_ID}
+  - Install: cd ${RUN_DIR}/code/${TECH_STACK} && npm install
+  - Dev: npm run dev
 ```
 
 ---
 
-## 运行目录结构
+## Run Directory Structure
 
 ```
-.claude/ui-design/runs/20260115T100000Z/
-├── state.json                 # 工作流状态
-├── input.md                   # 原始输入
-├── requirements.md            # Phase 3 产出
-├── style-recommendations.md   # Phase 4 产出
-├── previews/                  # Phase 4 产出（HTML 预览）
+.claude/ui-design/runs/${RUN_ID}/
+├── state.json
+├── input.md
+├── ref-analysis-visual.md             # Team 1 Phase A
+├── ref-analysis-color.md              # Team 1 Phase A
+├── ref-analysis-component.md          # Team 1 Phase A
+├── cross-validation-visual.md         # Team 1 Phase B
+├── cross-validation-color.md          # Team 1 Phase B
+├── cross-validation-component.md      # Team 1 Phase B
+├── design-reference-analysis.md       # Team 1 Phase C (synthesis)
+├── requirements.md                    # Phase 3
+├── style-recommendations.md           # Phase 4
+├── previews/                          # Phase 4
 │   ├── index.html
 │   ├── preview-A.html
 │   ├── preview-B.html
 │   └── preview-C.html
-├── design-A.md                # Phase 6 产出（并行）
-├── design-B.md
-├── design-C.md
-├── ux-check-report.md         # Phase 7 产出
-├── code/                      # Phase 8 产出
-│   ├── gemini-raw/            # Gemini 原型（保留用于调试）
-│   └── ${tech_stack}/         # 最终代码
-└── quality-report.md          # Phase 9 产出
+├── design-{A,B,C}.md                 # Team 2 (designer)
+├── ux-check-{A,B,C}.md              # Team 2 (reviewer)
+├── code/                              # Team 2 (coder)
+│   ├── gemini-raw/
+│   └── ${tech_stack}/
+└── quality-report.md                  # Team 2 (reviewer)
 ```
 
 ---
 
-## Agent 目录结构
+## Agent Directory Structure
 
 ```
 plugins/ui-design/agents/
 ├── analysis/
-│   ├── image-analyzer.md         # 8 并行 Gemini 视觉分析
-│   ├── requirement-analyzer.md   # 需求解析 (auggie + Gemini)
-│   └── existing-code-analyzer.md # 现有代码分析
+│   ├── image-analyzer.md           # Design Reference Analysis — Lead reference doc (conflict resolution rules, output format)
+│   ├── visual-analyst.md           # Layout/grid/spacing specialist (NEW)
+│   ├── color-analyst.md            # Color palette/contrast specialist (NEW)
+│   ├── component-analyst.md        # Component/typography/icon specialist (NEW)
+│   ├── requirement-analyzer.md     # Requirement analysis
+│   └── existing-code-analyzer.md   # Existing code analysis
 ├── design/
-│   ├── style-recommender.md      # 3 变体样式推荐
-│   └── design-variant-generator.md # 设计规格生成
+│   ├── style-recommender.md        # 3-variant style recommendation
+│   └── design-variant-generator.md # Design spec generation + inline fix handler
 ├── validation/
-│   ├── ux-guideline-checker.md   # UX 准则检查
-│   └── quality-validator.md      # 代码质量验证
+│   ├── ux-guideline-checker.md     # UX guideline check + structured fix protocol
+│   └── quality-validator.md        # Code quality validation
 └── generation/
-    ├── gemini-prototype-generator.md # Gemini 原型生成 (70%)
-    └── claude-code-refactor.md       # Claude 重构精简 (95%)
+    ├── gemini-prototype-generator.md # Gemini prototype generation + UX-aware selection
+    └── claude-code-refactor.md       # Claude refactor to production quality
 ```
-
----
-
-## 约束
-
-- 不跳过任何 Phase
-- 每个 Phase 必须调用对应的 Agent（通过 Task 工具）
-- 硬停止点必须等待用户确认
-- Phase 6 并行执行设计生成
-- Phase 7 失败需要重试（最多 2 次）
-- Phase 8 使用双模型协作（Gemini + Claude）
 
 ---
 
 ## Agent Type Restrictions
 
-This command ONLY uses the following agent types via the `Task` tool:
+This command uses the following agent types:
 
-| Agent Type                                        | Usage                                               |
-| ------------------------------------------------- | --------------------------------------------------- |
-| `ui-design:analysis:image-analyzer`               | Phase 2.5: Design reference image analysis          |
-| `ui-design:analysis:requirement-analyzer`         | Phase 3: Requirement analysis                       |
-| `ui-design:analysis:existing-code-analyzer`       | Phase 3: Existing code analysis (optimize scenario) |
-| `ui-design:design:style-recommender`              | Phase 4: Style recommendation                       |
-| `ui-design:design:design-variant-generator`       | Phase 6: Design specification generation            |
-| `ui-design:validation:ux-guideline-checker`       | Phase 7: UX guideline compliance check              |
-| `ui-design:validation:quality-validator`          | Phase 9: Code quality validation                    |
-| `ui-design:generation:gemini-prototype-generator` | Phase 8 Step 1: Gemini prototype generation         |
-| `ui-design:generation:claude-code-refactor`       | Phase 8 Step 2: Claude code refactoring             |
+| Agent Type                                        | Usage                                           |
+| ------------------------------------------------- | ----------------------------------------------- |
+| `ui-design:analysis:visual-analyst`               | Phase 2.5: Layout/grid/spacing specialist       |
+| `ui-design:analysis:color-analyst`                | Phase 2.5: Color palette/contrast specialist    |
+| `ui-design:analysis:component-analyst`            | Phase 2.5: Component/typography/icon specialist |
+| `ui-design:analysis:requirement-analyzer`         | Phase 3: Requirement analysis                   |
+| `ui-design:analysis:existing-code-analyzer`       | Phase 3: Existing code analysis (optimize)      |
+| `ui-design:design:style-recommender`              | Phase 4: Style recommendation                   |
+| `ui-design:design:design-variant-generator`       | Phase 6: Design generation (via Team)           |
+| `ui-design:validation:ux-guideline-checker`       | Phase 7: UX review (via Team)                   |
+| `ui-design:validation:quality-validator`          | Phase 9: Quality validation (via Team)          |
+| `ui-design:generation:gemini-prototype-generator` | Phase 8 Step 1: Gemini prototype (via Team)     |
+| `ui-design:generation:claude-code-refactor`       | Phase 8 Step 2: Claude refactor (via Team)      |
 
-Any other `subagent_type` values are **forbidden** in this command.
+Phase 6-9 agents are invoked **within Team context** by teammates, not directly by Lead.
+
+---
+
+## Constraints
+
+- Never skip any Phase — Phase 2.5 ALWAYS executes regardless of input type
+- Phase 2.5 uses Team 1 (multi-perspective cross-validation), **Lead directly orchestrates** (not delegated to coordinator Task)
+- Phase 6-9 uses Team 2 (pipeline), managed directly by Lead
+- Hard stop points must wait for user confirmation
+- UX fix max 2 rounds per variant, then escalation to Lead → user
+- Code generation must wait for all UX reviews to pass
+- **MUST NOT** invoke any agent types outside the Agent Type Restrictions table — no ad-hoc Explore, investigator, or research agents
+- **MUST NOT** add improvised phases or steps not defined in this workflow
+- **MUST NOT** take over specialist agent work — Lead only orchestrates and synthesizes, never replaces analysts/designer/reviewer/coder

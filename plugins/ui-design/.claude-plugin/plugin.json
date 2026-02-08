@@ -1,5 +1,5 @@
 {
   "name": "ui-design",
-  "version": "2.0.0",
-  "description": "UI/UX 设计工作流 v2.0：需求分析 → 样式推荐 → 设计生成（并行 3 变体）→ UX 检查 → 代码生成（双模型协作）→ 质量验证"
+  "version": "3.0.0",
+  "description": "UI/UX design workflow v3.0: multi-perspective design reference analysis team + design pipeline team (designer + reviewer + coder)"
 }
