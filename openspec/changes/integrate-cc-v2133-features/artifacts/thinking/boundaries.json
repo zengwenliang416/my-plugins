@@ -1,0 +1,24 @@
+{
+  "boundaries": [
+    {
+      "id": "hooks-orchestration",
+      "scope": "plugins/hooks/ - orchestration hooks (TeammateIdle, TaskCompleted), hooks.json, all hook scripts",
+      "rationale": "Core hook system already has skeleton for new lifecycle events, needs enhancement"
+    },
+    {
+      "id": "agent-definitions",
+      "scope": "plugins/*/agents/**/*.md - all agent frontmatter YAML across all 7 plugins, memory field usage",
+      "rationale": "Agent memory frontmatter needs to be evaluated and assigned proper scope for each agent"
+    },
+    {
+      "id": "workflow-commands",
+      "scope": "plugins/*/commands/*.md - workflow entry points that orchestrate Task subagents, parallel execution patterns",
+      "rationale": "Evaluate which workflows could benefit from Agent Teams vs current Task subagent pattern"
+    },
+    {
+      "id": "memory-system",
+      "scope": "plugins/context-memory/ - memory management, CLAUDE.md generation, session compaction, workflow memory",
+      "rationale": "Context-memory plugin overlaps with Auto Memory, need to identify synergies and conflicts"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "module_name": "memory-system",
+  "scope": "plugins/context-memory/ - memory management, CLAUDE.md generation, session compaction, workflow memory, skill indexing",
+
+  "existing_structures": [
+    "Plugin entry: plugins/context-memory/commands/memory.md with 16+ subcommands routed to dedicated skills",
+    "Plugin metadata: plugins/context-memory/.claude-plugin/plugin.json (name: context-memory, v1.0.0)",
+    "Three-layer memory architecture documented in llmdoc/architecture/memory-architecture.md: Hot (native agent memory) / Warm (workflow-memory) / Cold (session-compactor)",
+    "CLAUDE.md generation pipeline: module-discovery (scan + layer grouping) -> claude-updater x N (gemini-cli/codex-cli + Claude review) -> per-module CLAUDE.md files",
+    "Incremental CLAUDE.md update pipeline: change-detector (git diff -> affected modules) -> claude-updater x N",
+    "Session compaction: session-compactor skill -> MCP core_memory storage + local .claude/memory/sessions/ backup -> Recovery ID for cross-session restore",
+    "Workflow memory: workflow-memory skill -> .claude/memory/workflows/{id}.json + MCP core_memory dual-write -> save/load/list/clean operations",
+    "Context loading: context-loader skill -> auggie-mcp semantic retrieval + codex/gemini deep analysis -> structured context.json",
+    "Code map generation: code-map-generator skill -> 3-phase codex-cli analysis -> Mermaid diagrams in .claude/skills/codemap-{feature}/",
+    "Skill indexing: skill-indexer skill -> scans SKILL.md files -> .claude/skills/index.json",
+    "Style memory: style-memory skill -> gemini-cli design token extraction -> .claude/memory/styles/{package}.json",
+    "Tech rules generation: tech-rules-generator skill -> exa search + codex-cli project analysis -> .claude/rules/{stack}.md with index.json",
+    "Document management suite: doc-planner -> doc-full-generator / doc-related-generator / doc-full-updater / doc-incremental-updater",
+    "Swagger generation: swagger-generator skill -> codex-cli API extraction -> openapi.yaml/json",
+    "Agent memory frontmatter already deployed: 8 agents with memory:user, 15 agents with memory:project across all 7 plugins",
+    "Storage hierarchy: .claude/memory/{workflows,sessions,styles,docs,swagger}/, .claude/rules/, .claude/skills/"
+  ],
+
+  "existing_conventions": [
+    "Skill YAML frontmatter pattern: name, description (with trigger/output/purpose/tools/not-trigger markers), allowed-tools, arguments",
+    "Layer-based CLAUDE.md generation order: Layer 3 (depth>=3, multi-layer) -> Layer 2 (depth 1-2, single-layer) -> Layer 1 (depth 0, single-layer), bottom-up",
+    "Multi-model fallback chain: gemini-cli -> codex-cli -> manual mode (consistent across claude-updater, doc generators, code-map)",
+    "Dual storage pattern: MCP core_memory (primary) + local file (fallback) for session-compactor and workflow-memory",
+    "Memory scope convention: memory:user for cross-project reusable knowledge (standards, patterns), memory:project for project-specific knowledge (structure, conventions)",
+    "MEMORY.md 200-line cap with auto-injection into agent system prompt (native Claude Code feature)",
+    "Hot/Warm/Cold layer separation: Hot=automatic agent learning, Warm=explicit workflow state, Cold=manual session snapshots",
+    "Module type classification: code (has source files) / navigation (only subdirectories) / skip (tests/config/build)",
+    "Change propagation: file change -> owning module -> parent module chain (bottom-up impact analysis)",
+    "Custom content preservation via <!-- CUSTOM --> / <!-- END-CUSTOM --> markers in generated docs",
+    "Hash-based change detection: source file SHA256 tracking in .claude/memory/docs/source-hashes.json",
+    "Interactive entry when no subcommand: AskUserQuestion with labeled options"
+  ],
+
+  "constraints_discovered": [
+    "CRITICAL PATH COLLISION: tech-rules-generator outputs to .claude/rules/{stack}.md which is the SAME directory Auto Memory uses for path-scoped rules (.claude/rules/*.md with frontmatter). Both systems write to .claude/rules/ with potentially conflicting ownership and content management strategies.",
+    "CLAUDE.md DUAL MANAGEMENT: context-memory explicitly generates per-module CLAUDE.md via analysis pipeline, while Auto Memory may auto-learn and record similar module knowledge. Need clear ownership boundary - who writes what and when.",
+    "SESSION COMPACTION OVERLAP: session-compactor manually compresses sessions into Recovery IDs stored via MCP core_memory. Auto Memory provides automatic memory persistence across sessions. These may overlap in purpose though differ in mechanism (explicit vs automatic).",
+    "MCP core_memory DEPENDENCY: Both session-compactor and workflow-memory depend on MCP core_memory for primary storage. This is an external dependency that may not always be available (fallback to local files exists but reduces functionality).",
+    "200-LINE MEMORY CAP: Agent MEMORY.md files are capped at 200 lines for system prompt injection. Context-memory agents that need to persist analysis results to their MEMORY.md must be highly selective about what to store.",
+    "THREE-LAYER ARCHITECTURE IS ALREADY DESIGNED: The memory-architecture.md explicitly defines layer boundaries to prevent conflicts. Any integration must respect these boundaries rather than blur them.",
+    "NO CONTEXT-MEMORY-SPECIFIC AGENTS: The context-memory plugin uses skills (not agents with memory frontmatter). Its skills are orchestrated by the /memory command. If we want context-memory skills to benefit from Agent Memory, we would need to either: (a) wrap skills in agents, or (b) find another mechanism.",
+    "WORKFLOW MEMORY 7-DAY EXPIRY: Warm layer has explicit 7-day expiry to prevent stale state. Auto Memory has no such expiry - it persists indefinitely (200-line cap is the only limit).",
+    "REFACTOR-PLAN.md EXISTS: plugins/context-memory/REFACTOR-PLAN.md documents an existing refactoring plan for the plugin, suggesting the plugin structure is still evolving."
+  ],
+
+  "open_questions": [
+    "Does Auto Memory actually write to .claude/rules/*.md automatically, or does it only use MEMORY.md? If it writes rules, the collision with tech-rules-generator is critical.",
+    "Does Auto Memory provide built-in session memory/compression that would make session-compactor partially redundant? Or is session-compactor's explicit snapshot + Recovery ID pattern complementary?",
+    "Should tech-rules-generator output be relocated from .claude/rules/ to .claude/memory/rules/ to avoid path collision with Auto Memory's rules system?",
+    "Can Agent Memory frontmatter be added to context-memory skills (which are currently not agents)? Or should certain skills be promoted to agents to leverage persistent memory?",
+    "Should workflow-memory migrate from MCP core_memory to Agent Memory's MEMORY.md for persistence, or are the use cases fundamentally different (structured state vs learned patterns)?",
+    "What happens when Auto Memory's learned rules contradict tech-rules-generator's generated rules in .claude/rules/? Is there a precedence order?",
+    "The memory-architecture.md defines the three-layer system. Should it be updated to explicitly address Auto Memory integration, or is Auto Memory already covered under the Hot Layer?",
+    "Could context-memory's claude-updater benefit from reading agent MEMORY.md files to avoid regenerating content that agents already know about?"
+  ],
+
+  "dependencies": [
+    "MCP core_memory: Used by session-compactor (store/retrieve snapshots) and workflow-memory (store/retrieve workflow state). Fallback to local files when unavailable.",
+    "auggie-mcp (mcp__auggie-mcp__codebase-retrieval): Used by context-loader (semantic code retrieval), module-discovery (project structure analysis), claude-updater (module code analysis).",
+    "gemini-cli: Primary generation tool for claude-updater, doc-full-generator, style-memory. Called via Skill('context-memory:gemini-cli').",
+    "codex-cli: Fallback for gemini-cli, primary for code-map-generator, doc analysis, swagger extraction. Called via Skill('context-memory:codex-cli').",
+    "exa: Used by tech-rules-generator for searching best practices and official documentation.",
+    "LSP: Used by claude-updater (symbol definitions/references) and change-detector (impact analysis).",
+    "Git: Used by change-detector (git diff for changed files), doc-incremental-updater (commit-based change detection).",
+    "Claude Code native agent memory system: Already integrated via memory:user/project frontmatter in 23 agents across all plugins. Three-layer architecture depends on this.",
+    ".claude/rules/ directory: Shared between tech-rules-generator output and Claude Code Auto Memory's rules system.",
+    "Skill system: context-memory uses Skill() calls for inter-skill communication (e.g., claude-updater calls gemini-cli skill)."
+  ],
+
+  "risks": [
+    "HIGH: .claude/rules/ ownership conflict. tech-rules-generator writes {stack}.md + index.json to .claude/rules/. Auto Memory may also write rules files here. No namespace separation exists. Could lead to overwritten content or inconsistent rule sets.",
+    "MEDIUM: CLAUDE.md content drift. If Auto Memory starts auto-recording module knowledge into MEMORY.md or rules, and context-memory separately generates CLAUDE.md for the same modules, the information could diverge over time.",
+    "MEDIUM: Session compactor obsolescence. If Auto Memory provides sufficient cross-session memory persistence, the manual compact + Recovery ID workflow may become unnecessary overhead. However, session-compactor's explicit snapshots serve a different use case (full session state vs learned patterns).",
+    "MEDIUM: Complexity of three-layer architecture. Adding Auto Memory integration adds a fourth dimension to an already complex system. Risk of cognitive overload for users and contributors.",
+    "LOW: MCP core_memory reliability. Both session-compactor and workflow-memory fall back to local files, so this is handled. But the dual-write pattern adds complexity.",
+    "LOW: REFACTOR-PLAN.md indicates the plugin is mid-refactor. Integration changes during an active refactor could cause merge conflicts or design inconsistencies.",
+    "LOW: Agent memory 200-line cap may be insufficient for context-memory agents that need to persist detailed analysis results (e.g., module structures, dependency graphs)."
+  ],
+
+  "success_criteria_hints": [
+    "Clear ownership boundary: document which system (Auto Memory vs context-memory) owns each output path (.claude/rules/, CLAUDE.md, .claude/memory/)",
+    "No .claude/rules/ conflicts: tech-rules-generator and Auto Memory rules coexist without overwriting each other (namespace separation or merge strategy)",
+    "Three-layer architecture updated: memory-architecture.md explicitly addresses Auto Memory integration and layer assignment",
+    "Session compactor and Auto Memory are complementary: each serves a distinct use case (explicit full-state snapshots vs automatic pattern learning)",
+    "Context-memory agents (if promoted from skills) use appropriate memory scope (user vs project) per the existing convention",
+    "Backward compatibility: existing /memory subcommands continue to work unchanged; integration is additive",
+    "REFACTOR-PLAN.md alignment: integration changes are compatible with the existing refactoring direction",
+    "Deduplication opportunities identified: where context-memory functionality can be simplified by leveraging Auto Memory (e.g., tech-rules could delegate to Auto Memory rules system)"
+  ]
+}

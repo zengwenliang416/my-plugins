@@ -1,0 +1,122 @@
+{
+  "source": "thinking",
+  "proposal_id": "integrate-cc-v2133-features",
+  "summary": "v2.1.33 integration is a 5-sub-task selective adoption: migrate tech-rules path, fix hook docs, enhance orchestration hooks, refine /tpd:dev Agent Teams, update memory architecture docs.",
+  "summary_en": "integrate claude code v2.1.33 features into all plugins",
+  "constraints": {
+    "hard": [
+      "HC-1: .claude/rules/ exclusively owned by Auto Memory. tech-rules-generator migrates to .claude/memory/rules/",
+      "HC-2: Skills cannot use memory frontmatter. 4 skills-only plugins excluded from agent memory features",
+      "HC-3: Agent Teams requires CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1. Must fallback to Task subagents when unset",
+      "HC-4: Hook scripts have 5s timeout ceiling. Use async background processes for heavy work",
+      "HC-5: Agent MEMORY.md capped at 200 lines. Use linked topic files for overflow",
+      "HC-6: Cross-model mailbox prohibited in /tpd:dev Agent Teams",
+      "HC-7: Backward compatibility non-negotiable. All 7 plugins must work without v2.1.33 features",
+      "HC-8: CLAUDE.md ownership singular. context-memory owns CLAUDE.md, Auto Memory owns MEMORY.md"
+    ],
+    "soft": [
+      "SC-1: Agent Teams targets /tpd:dev only. Fork-join workflows stay on Task subagents",
+      "SC-2: Do not convert skills-only plugins to agents solely for memory frontmatter",
+      "SC-3: Existing memory scope assignments (15 project, 8 user) are correct. No changes needed",
+      "SC-4: Auto Memory defers to context-memory where overlap exists",
+      "SC-5: Fix documentation drift BEFORE hook enhancement",
+      "SC-6: Hook enhancement logging-first, orchestration directives assume actionable with degradation"
+    ]
+  },
+  "non_goals": [
+    "Converting skills-only plugins to agent-based architecture",
+    "Enabling Agent Teams for fork-join workflows",
+    "Changing existing agent memory scope assignments",
+    "Adding memory: local scope to any agent",
+    "Modifying public command signatures",
+    "Making Agent Teams a hard dependency"
+  ],
+  "success_criteria": [
+    "Zero .claude/rules/ collisions between tech-rules-generator and Auto Memory",
+    "tech-rules-generator writes to .claude/memory/rules/",
+    "Hook documentation reflects 7 lifecycle events and 13+ scripts",
+    "TeammateIdle/TaskCompleted hooks produce structured output within 5s",
+    "/tpd:dev Agent Teams mode works with feature flag, falls back without it",
+    "All 7 plugins identical results with v2.1.33 env vars set and unset",
+    "memory-architecture.md updated for Auto Memory integration"
+  ],
+  "acceptance_criteria": [
+    "ls .claude/rules/ contains NO tech-rules-generator files",
+    "ls .claude/memory/rules/ contains tech-rules output",
+    "hooks-system.md references 7 lifecycle events and 13 scripts",
+    "/tpd:dev completes without errors when Agent Teams disabled",
+    "/tpd:dev enters Agent Teams mode when enabled",
+    "Hook scripts include set -euo pipefail and schema validation",
+    "No agent MEMORY.md exceeds 200 lines"
+  ],
+  "open_questions": [
+    "Exact JSON payload schema for TeammateIdle/TaskCompleted hooks (needs empirical verification)",
+    "What matcher field matches against for orchestration events",
+    "How Agent memory interacts with Agent Teams teammates"
+  ],
+  "risks": [
+    "HIGH: Hook return semantics may be observation-only (mitigate: design actionable with degradation)",
+    "HIGH: Agent Teams Research Preview instability (mitigate: feature flag + fallback)",
+    "MEDIUM: Hook timeout exceeded (mitigate: async background processes)",
+    "MEDIUM: CLAUDE.md content drift (mitigate: singular ownership)",
+    "MEDIUM: Documentation drift compounds (mitigate: fix docs first)"
+  ],
+  "sub_tasks": [
+    {
+      "id": "ST-1",
+      "name": "Migrate tech-rules-generator output path",
+      "files": [
+        "plugins/context-memory/skills/tech-rules-generator/SKILL.md",
+        "related consumers",
+        "memory-architecture.md"
+      ],
+      "depends_on": []
+    },
+    {
+      "id": "ST-2",
+      "name": "Reconcile hook documentation",
+      "files": [
+        "llmdoc/architecture/hooks-system.md",
+        "llmdoc/reference/hook-scripts.md",
+        "llmdoc/guides/how-to-create-a-hook.md"
+      ],
+      "depends_on": ["ST-1"]
+    },
+    {
+      "id": "ST-3",
+      "name": "Enhance hook scripts",
+      "files": [
+        "plugins/hooks/scripts/orchestration/teammate-idle.sh",
+        "plugins/hooks/scripts/orchestration/task-completed.sh",
+        "plugins/hooks/hooks/hooks.json"
+      ],
+      "depends_on": ["ST-2"]
+    },
+    {
+      "id": "ST-4",
+      "name": "Refine /tpd:dev Agent Teams section",
+      "files": [
+        "plugins/tpd/commands/dev.md",
+        "plugins/hooks/CLAUDE.md",
+        "state tracking"
+      ],
+      "depends_on": ["ST-2"]
+    },
+    {
+      "id": "ST-5",
+      "name": "Update memory architecture documentation",
+      "files": [
+        "llmdoc/architecture/memory-architecture.md",
+        "llmdoc/architecture/plugin-architecture.md",
+        "CLAUDE.md"
+      ],
+      "depends_on": ["ST-1", "ST-3", "ST-4"]
+    }
+  ],
+  "paths": {
+    "openspec_root": "openspec",
+    "openspec_proposal": "openspec/changes/integrate-cc-v2133-features/proposal.md",
+    "openspec_tasks": "openspec/changes/integrate-cc-v2133-features/tasks.md",
+    "openspec_spec": "openspec/changes/integrate-cc-v2133-features/specs/integrate-cc-v2133-features/spec.md"
+  }
+}

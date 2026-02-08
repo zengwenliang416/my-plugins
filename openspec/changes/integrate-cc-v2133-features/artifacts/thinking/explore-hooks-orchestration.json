@@ -1,0 +1,87 @@
+{
+  "module_name": "hooks-orchestration",
+  "scope": "plugins/hooks/ - orchestration hooks (TeammateIdle, TaskCompleted), hooks.json structure, all hook scripts, lifecycle event handling",
+
+  "existing_structures": [
+    "plugins/hooks/hooks/hooks.json - Master hook registry. Defines 7 lifecycle event types (UserPromptSubmit, PreToolUse, PostToolUse, PermissionRequest, Notification, TeammateIdle, TaskCompleted). Each event type maps to an array of matcher objects. Each matcher has: matcher (regex), hooks[] with type/command/timeout/async fields. Uses ${CLAUDE_PLUGIN_ROOT} for portable paths.",
+    "plugins/hooks/scripts/orchestration/teammate-idle.sh - Skeleton script (19 lines). Reads stdin via INPUT=$(cat), parses teammate_name and idle_since via jq, appends JSONL to ~/.claude/logs/hook-events/teammate-idle.jsonl, returns empty {}. No error handling (missing set -euo pipefail). No orchestration logic.",
+    "plugins/hooks/scripts/orchestration/task-completed.sh - Skeleton script (19 lines). Reads stdin via INPUT=$(cat), parses task_id and status via jq, appends JSONL to ~/.claude/logs/hook-events/task-completed.jsonl, returns empty {}. No error handling. No orchestration logic.",
+    "plugins/hooks/scripts/notification/smart-notify.sh - Mature multi-channel notification dispatch (189 lines). Supports desktop (macOS/Linux), Bark, ntfy, Telegram, Slack, Discord. Parses session_id, cwd, hook_event_name from stdin. Has set -euo pipefail. Channel selection via CLAUDE_NOTIFY_CHANNELS env var.",
+    "plugins/hooks/scripts/ organized by category: security/ (3 scripts), optimization/ (1), quality/ (1), logging/ (2), permission/ (2), evaluation/ (1), notification/ (1), orchestration/ (2). Total 13 scripts across 8 categories.",
+    "plugins/hooks/.claude-plugin/plugin.json - Plugin metadata: name=hooks, version=1.0.0.",
+    "plugins/hooks/CLAUDE.md - Hook usage guide with script template showing INPUT=$(cat) + jq parsing + JSON output pattern.",
+    "llmdoc/architecture/hooks-system.md - Architecture doc covering 5 lifecycle points (does NOT document TeammateIdle/TaskCompleted).",
+    "llmdoc/reference/hook-scripts.md - Reference doc listing 11 scripts across 6 categories (does NOT list orchestration scripts).",
+    "llmdoc/guides/how-to-create-a-hook.md - Guide listing 5 category directories (does NOT mention orchestration/ category)."
+  ],
+
+  "existing_conventions": [
+    "Hook script pattern: #!/bin/bash + set -euo pipefail + INPUT=$(cat) + jq parsing + stderr logging + JSON stdout output + exit 0",
+    "Log color coding: GREEN for info, YELLOW for warn, RED for error, BLUE for debug. Prefix format: [HOOK-NAME]",
+    "Log output to stderr (>&2), JSON response to stdout only",
+    "Timeout range: 3-30s. Security hooks: 3-5s. Optimization: 5s. Quality: 30s. Evaluation: 10s. Orchestration: 5s.",
+    "Async flag for non-blocking hooks (auto-backup, mcp-logger). Default is sync.",
+    "Matcher uses regex patterns: exact tool name, pipe-separated (Write|Edit|MultiEdit), prefix wildcard (mcp__.*), or catch-all (*)",
+    "JSON output types: Block ({decision:block,reason:...}), Allow+Modify ({hookSpecificOutput:{updatedInput:...,additionalContext:...}}), Permission ({hookSpecificOutput:{decision:{behavior:allow}}}), Pass-through (empty {} or no output)",
+    "JSONL format for event logs at ~/.claude/logs/hook-events/",
+    "Environment variables for user-configurable behavior (CC_READ_LINES_THRESHOLD, CLAUDE_NOTIFY_CHANNELS, BARK_KEY, etc.)",
+    "Comments in Chinese for hook descriptions, code-level comments in Chinese or English",
+    "${CLAUDE_PLUGIN_ROOT} used in all command paths for portability"
+  ],
+
+  "constraints_discovered": [
+    "C-1: Documentation says '5 lifecycle points' and '11 scripts' but hooks.json actually has 7 lifecycle events and 13 scripts. TeammateIdle and TaskCompleted are undocumented in architecture docs and reference docs. Any enhancement MUST also update llmdoc/architecture/hooks-system.md, llmdoc/reference/hook-scripts.md, and llmdoc/guides/how-to-create-a-hook.md.",
+    "C-2: Input JSON schema for TeammateIdle/TaskCompleted is UNVERIFIED against actual Claude Code v2.1.33 payloads. input.md claims TeammateIdle has {session_id, agent_id, agent_type, teammate_name} and TaskCompleted has {task_id, task_name, agent_id, team_id, timestamp}. But current scripts parse different subsets (teammate_name+idle_since and task_id+status respectively). Must verify against actual Claude Code hook event payloads.",
+    "C-3: Response protocol for TeammateIdle/TaskCompleted is UNKNOWN. Standard hooks can block, modify input, or pass-through. It is unclear whether orchestration hooks can return actionable responses (e.g., assign next task, trigger workflow) or are observation-only. Current implementations return {} (pass-through).",
+    "C-4: Agent Teams feature requires experimental env var CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 - this is a Research Preview feature. API surface may change.",
+    "C-5: 5s timeout on orchestration hooks constrains what actions can be performed. Network calls (notifications, API triggers) or complex orchestration logic may exceed this. smart-notify.sh uses background processes (& + disown) to work within timeouts.",
+    "C-6: Orchestration hooks are sync (no async:true flag). This means they block the agent's execution flow. For logging-only use, async would be better. For orchestration that needs to influence behavior, sync is needed but adds latency.",
+    "C-7: Skeleton scripts lack set -euo pipefail (safety convention used by all other mature hooks). Any enhancement must add this.",
+    "C-8: CLAUDE.md hook table does NOT list TeammateIdle/TaskCompleted hooks. This means Claude Code agents are currently unaware of orchestration hooks in their system prompt context.",
+    "C-9: The hooks.json matcher for TeammateIdle/TaskCompleted is '*' (catch-all). For TeammateIdle this would match all teammate names; for TaskCompleted all task IDs. If fine-grained orchestration is needed (e.g., only react to specific teammate types or task categories), the matcher pattern system needs to be understood for these new event types.",
+    "C-10: No existing mechanism for inter-hook communication. If task-completed.sh wants to trigger teammate-idle.sh or smart-notify.sh, there is no built-in hook chaining. The shared filesystem (~/.claude/logs/hook-events/) is the only implicit communication channel."
+  ],
+
+  "open_questions": [
+    "OQ-1: What is the exact JSON payload schema that Claude Code v2.1.33 sends to TeammateIdle and TaskCompleted hooks via stdin? The input.md description and skeleton script field names differ. Need authoritative source.",
+    "OQ-2: Can orchestration hooks return actionable responses? Specifically: can a TeammateIdle hook response cause Claude Code to assign a task to the idle teammate? Can a TaskCompleted hook response trigger the next dependent task? Or are these hooks purely observational?",
+    "OQ-3: What does the 'matcher' field match against for TeammateIdle/TaskCompleted events? For PreToolUse it matches tool_name. For orchestration events, does it match teammate_name, task_id, agent_type, or something else?",
+    "OQ-4: Should orchestration hooks be async or sync? Async for pure logging (current behavior) vs sync if they need to influence orchestration decisions.",
+    "OQ-5: How should the orchestration hooks integrate with the existing smart-notify.sh? Should task-completed.sh dispatch notifications, or should there be a separate orchestration-notify mechanism?",
+    "OQ-6: Is there a concept of task dependency graph that TaskCompleted hooks could use to trigger dependent tasks? Where would this graph be defined?",
+    "OQ-7: What happens if an orchestration hook exceeds its 5s timeout? Is the event simply dropped, or does it affect agent execution?",
+    "OQ-8: How do TeammateIdle/TaskCompleted hooks interact with the Agent Teams shared task list? Can hooks read or modify the shared task list?"
+  ],
+
+  "dependencies": [
+    "jq - Required for JSON parsing in all hook scripts. Used via $(echo $INPUT | jq -r '.field // empty')",
+    "Claude Code v2.1.33+ hook event system - TeammateIdle and TaskCompleted lifecycle events must be supported by the runtime",
+    "Agent Teams experimental feature (CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1) - Required for TeammateIdle/TaskCompleted events to fire",
+    "~/.claude/logs/hook-events/ directory - Shared log destination for orchestration event JSONL files",
+    "${CLAUDE_PLUGIN_ROOT} environment variable - Set by Claude Code plugin loader, resolves script paths",
+    "plugins/hooks/scripts/notification/smart-notify.sh - Potential reuse target for orchestration notifications (5 channels: desktop, Bark, ntfy, Telegram, Slack, Discord)",
+    "llmdoc/ documentation system - Must be updated when hooks are enhanced (architecture/hooks-system.md, reference/hook-scripts.md, guides/how-to-create-a-hook.md)",
+    "plugins/hooks/CLAUDE.md - Must be updated to include orchestration hooks in the available-hooks table"
+  ],
+
+  "risks": [
+    "R-1 (HIGH): Agent Teams is Research Preview - API instability. TeammateIdle/TaskCompleted event payloads may change in future Claude Code versions. Mitigation: defensive jq parsing with '// empty' fallbacks (already used), add schema version checking.",
+    "R-2 (HIGH): Unknown response protocol - If hooks cannot return actionable responses, the 'auto-assign tasks' and 'trigger dependent workflows' goals from the context description are fundamentally impossible via hooks alone. Alternative mechanism (e.g., writing to shared task list file) would be needed.",
+    "R-3 (MEDIUM): Timeout pressure - Complex orchestration logic (reading task graphs, making API calls, writing state files) may exceed 5s timeout. Mitigation: use async background processes like smart-notify.sh, or increase timeout.",
+    "R-4 (MEDIUM): Documentation drift - hooks.json already has 7 events but docs say 5. Enhancing orchestration hooks without updating docs will worsen this drift and confuse both human and AI consumers of the docs.",
+    "R-5 (MEDIUM): No input validation - Skeleton scripts do not validate that required fields exist in input JSON. Malformed or unexpected payloads will cause silent failures or jq errors.",
+    "R-6 (LOW): Log file growth - JSONL append-only logging in teammate-idle.jsonl and task-completed.jsonl has no rotation or retention policy (unlike auto-backup.sh which has 7-day retention and max 500). In active Agent Teams usage, these files could grow unbounded.",
+    "R-7 (LOW): Sync execution blocking - If orchestration hooks become non-trivial but remain sync, they add latency to every teammate idle and task completion event, potentially slowing down Agent Teams coordination."
+  ],
+
+  "success_criteria_hints": [
+    "SC-1: Enhanced orchestration scripts must follow the established hook script convention (set -euo pipefail, color-coded stderr logging, JSON stdout, jq parsing with // empty fallbacks)",
+    "SC-2: All 3 documentation files (hooks-system.md, hook-scripts.md, how-to-create-a-hook.md) and CLAUDE.md must reflect the actual 7 lifecycle events and 13+ scripts",
+    "SC-3: Input JSON field parsing must handle both the documented fields from input.md (session_id, agent_id, etc.) AND the fields currently in skeleton scripts (idle_since, status) gracefully",
+    "SC-4: Orchestration hooks should reuse smart-notify.sh patterns (background dispatch, env-var configuration) rather than inventing new patterns",
+    "SC-5: Log file management should include retention/rotation policy consistent with auto-backup.sh (7-day retention, max count)",
+    "SC-6: Hooks should remain functional even when Agent Teams is disabled (graceful degradation - no crash if events never fire)",
+    "SC-7: Any new environment variables for orchestration configuration should follow the existing naming convention (CC_* or CLAUDE_* prefix)",
+    "SC-8: The task splitting rule applies: if enhancement touches >3 files, split into sub-tasks with max 3 files each"
+  ]
+}

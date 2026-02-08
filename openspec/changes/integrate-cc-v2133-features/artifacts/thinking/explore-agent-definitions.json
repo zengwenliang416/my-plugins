@@ -1,0 +1,591 @@
+{
+  "module_name": "agent-definitions",
+  "existing_structures": [
+    "3 of 7 plugins have agents/ directories with agent .md files: tpd (10 agents), commit (4 agents), ui-design (9 agents) = 23 total agents",
+    "4 plugins have NO agents/ directory: brainstorm (skill-based), context-memory (skill-based), refactor (skill-based), hooks (infrastructure scripts)",
+    "tpd agents organized into 4 subcategories: investigation/, reasoning/, planning/, execution/",
+    "commit agents flat in agents/ directory (no subcategories)",
+    "ui-design agents organized into 4 subcategories: analysis/, design/, validation/, generation/",
+    "All 23 existing agents ALREADY have the `memory` frontmatter field set - none are missing it",
+    "Agent frontmatter schema: name, description, tools (array), memory (user|project), model (sonnet|opus), color",
+    "Agent invocation pattern: Task(subagent_type='plugin:category:agent-name', ...)"
+  ],
+  "existing_conventions": [
+    "memory: project = project-specific knowledge (codebase structure, conventions, decisions)",
+    "memory: user = cross-project reusable knowledge (standards, patterns, heuristics)",
+    "memory: local = personal workspace notes (NOT currently used by any agent)",
+    "Investigation/analysis agents that inspect project codebase use memory: project",
+    "Constraint/audit/validation agents that accumulate reusable patterns use memory: user",
+    "Design/style knowledge agents (style-recommender, image-analyzer) use memory: user",
+    "Implementation/generation agents that produce project-specific code use memory: project",
+    "tpd agents all use model: opus; commit and ui-design agents all use model: sonnet",
+    "Color coding convention: cyan=investigation/analysis, yellow=reasoning/validation, green=planning/design, blue=execution/generation, magenta=semantic, purple=audit"
+  ],
+  "constraints_discovered": [
+    "ALL 23 agents already have memory field - the integration task is about verifying correctness, NOT adding missing fields",
+    "4 plugins (brainstorm, context-memory, refactor, hooks) use skill-based architecture, not agents - they have NO agent .md files to modify",
+    "Agent memory creates a persistent directory per agent; first 200 lines of MEMORY.md auto-injected into agent system prompt",
+    "Read/Write/Edit tools are auto-enabled for memory management when memory field is set",
+    "No agent currently uses memory: local scope",
+    "Skill frontmatter does NOT support memory field - only agent frontmatter does",
+    "brainstorm, context-memory, refactor plugins would need NEW agent .md files created to benefit from agent memory (currently skills-only)",
+    "hooks plugin is infrastructure-only (shell scripts) - no concept of agent memory applies"
+  ],
+  "complete_agent_inventory": {
+    "tpd": {
+      "agent_count": 10,
+      "agents": [
+        {
+          "file": "plugins/tpd/agents/investigation/boundary-explorer.md",
+          "name": "boundary-explorer",
+          "memory": "project",
+          "model": "opus",
+          "color": "cyan",
+          "category": "investigation",
+          "description": "Explore codebase within specified context boundary, output structured constraint set",
+          "tools": ["Read", "Write", "mcp__auggie-mcp__codebase-retrieval"]
+        },
+        {
+          "file": "plugins/tpd/agents/investigation/context-analyzer.md",
+          "name": "context-analyzer",
+          "memory": "project",
+          "model": "opus",
+          "color": "cyan",
+          "category": "investigation",
+          "description": "Analyze codebase context for project structure and patterns",
+          "tools": ["Read", "Write", "mcp__auggie-mcp__codebase-retrieval"]
+        },
+        {
+          "file": "plugins/tpd/agents/reasoning/codex-constraint.md",
+          "name": "codex-constraint",
+          "memory": "user",
+          "model": "opus",
+          "color": "yellow",
+          "category": "reasoning",
+          "description": "Use Codex for technical constraint and risk analysis",
+          "tools": ["Read", "Write", "Skill"]
+        },
+        {
+          "file": "plugins/tpd/agents/reasoning/gemini-constraint.md",
+          "name": "gemini-constraint",
+          "memory": "user",
+          "model": "opus",
+          "color": "yellow",
+          "category": "reasoning",
+          "description": "Use Gemini for multi-perspective constraint and UX analysis",
+          "tools": ["Read", "Write", "Skill"]
+        },
+        {
+          "file": "plugins/tpd/agents/planning/codex-architect.md",
+          "name": "codex-architect",
+          "memory": "project",
+          "model": "opus",
+          "color": "green",
+          "category": "planning",
+          "description": "Backend architecture planning expert using Codex",
+          "tools": ["Read", "Write", "Skill"]
+        },
+        {
+          "file": "plugins/tpd/agents/planning/gemini-architect.md",
+          "name": "gemini-architect",
+          "memory": "project",
+          "model": "opus",
+          "color": "green",
+          "category": "planning",
+          "description": "Frontend architecture planning expert using Gemini",
+          "tools": ["Read", "Write", "Skill"]
+        },
+        {
+          "file": "plugins/tpd/agents/execution/codex-implementer.md",
+          "name": "codex-implementer",
+          "memory": "project",
+          "model": "opus",
+          "color": "blue",
+          "category": "execution",
+          "description": "Generate backend/API/logic Unified Diff prototypes using Codex",
+          "tools": ["Read", "Write", "Skill"]
+        },
+        {
+          "file": "plugins/tpd/agents/execution/gemini-implementer.md",
+          "name": "gemini-implementer",
+          "memory": "project",
+          "model": "opus",
+          "color": "blue",
+          "category": "execution",
+          "description": "Generate frontend/UI/styles Unified Diff prototypes using Gemini",
+          "tools": ["Read", "Write", "Skill"]
+        },
+        {
+          "file": "plugins/tpd/agents/execution/codex-auditor.md",
+          "name": "codex-auditor",
+          "memory": "user",
+          "model": "opus",
+          "color": "purple",
+          "category": "execution",
+          "description": "Security and performance audit using Codex",
+          "tools": ["Read", "Write", "Skill"]
+        },
+        {
+          "file": "plugins/tpd/agents/execution/gemini-auditor.md",
+          "name": "gemini-auditor",
+          "memory": "user",
+          "model": "opus",
+          "color": "purple",
+          "category": "execution",
+          "description": "UX and accessibility audit using Gemini",
+          "tools": ["Read", "Write", "Skill"]
+        }
+      ]
+    },
+    "commit": {
+      "agent_count": 4,
+      "agents": [
+        {
+          "file": "plugins/commit/agents/change-investigator.md",
+          "name": "change-investigator",
+          "memory": "project",
+          "model": "sonnet",
+          "color": "cyan",
+          "category": "investigation",
+          "description": "Rapid git change investigation and preliminary analysis",
+          "tools": ["Read", "Glob", "Grep", "Bash"]
+        },
+        {
+          "file": "plugins/commit/agents/semantic-analyzer.md",
+          "name": "semantic-analyzer",
+          "memory": "project",
+          "model": "sonnet",
+          "color": "magenta",
+          "category": "analysis",
+          "description": "Semantic analysis of code changes using auggie-mcp",
+          "tools": ["Read", "mcp__auggie-mcp__codebase-retrieval"]
+        },
+        {
+          "file": "plugins/commit/agents/symbol-analyzer.md",
+          "name": "symbol-analyzer",
+          "memory": "project",
+          "model": "sonnet",
+          "color": "yellow",
+          "category": "analysis",
+          "description": "Symbol-level analysis of code changes using LSP",
+          "tools": ["Read", "LSP"]
+        },
+        {
+          "file": "plugins/commit/agents/commit-worker.md",
+          "name": "commit-worker",
+          "memory": "project",
+          "model": "sonnet",
+          "color": "green",
+          "category": "execution",
+          "description": "Execute git commit operations safely",
+          "tools": ["Bash", "Read", "Write"]
+        }
+      ]
+    },
+    "ui-design": {
+      "agent_count": 9,
+      "agents": [
+        {
+          "file": "plugins/ui-design/agents/analysis/image-analyzer.md",
+          "name": "image-analyzer",
+          "memory": "user",
+          "model": "sonnet",
+          "color": "cyan",
+          "category": "analysis",
+          "description": "Analyze design reference images using 8 parallel Gemini visual analyses + Claude synthesis",
+          "tools": [
+            "mcp__gemini__gemini",
+            "Read",
+            "Write",
+            "Bash",
+            "TaskOutput"
+          ]
+        },
+        {
+          "file": "plugins/ui-design/agents/analysis/requirement-analyzer.md",
+          "name": "requirement-analyzer",
+          "memory": "project",
+          "model": "sonnet",
+          "color": "cyan",
+          "category": "analysis",
+          "description": "Analyze user requirements via NLP extraction + codebase analysis + requirement structuring",
+          "tools": [
+            "mcp__auggie-mcp__codebase-retrieval",
+            "mcp__gemini__gemini",
+            "LSP",
+            "Read",
+            "Write",
+            "Bash",
+            "AskUserQuestion"
+          ]
+        },
+        {
+          "file": "plugins/ui-design/agents/analysis/existing-code-analyzer.md",
+          "name": "existing-code-analyzer",
+          "memory": "project",
+          "model": "sonnet",
+          "color": "cyan",
+          "category": "analysis",
+          "description": "Analyze existing interface code for design and UX issues",
+          "tools": [
+            "mcp__auggie-mcp__codebase-retrieval",
+            "LSP",
+            "Read",
+            "Grep",
+            "Glob",
+            "AskUserQuestion"
+          ]
+        },
+        {
+          "file": "plugins/ui-design/agents/design/style-recommender.md",
+          "name": "style-recommender",
+          "memory": "user",
+          "model": "sonnet",
+          "color": "magenta",
+          "category": "design",
+          "description": "Recommend design styles via style matching + variant generation + HTML preview creation",
+          "tools": [
+            "mcp__gemini__gemini",
+            "mcp__auggie-mcp__codebase-retrieval",
+            "LSP",
+            "Read",
+            "Write",
+            "Bash"
+          ]
+        },
+        {
+          "file": "plugins/ui-design/agents/design/design-variant-generator.md",
+          "name": "design-variant-generator",
+          "memory": "project",
+          "model": "sonnet",
+          "color": "green",
+          "category": "design",
+          "description": "Generate complete design specifications for selected style variants",
+          "tools": [
+            "mcp__gemini__gemini",
+            "mcp__auggie-mcp__codebase-retrieval",
+            "LSP",
+            "Read",
+            "Write"
+          ]
+        },
+        {
+          "file": "plugins/ui-design/agents/validation/ux-guideline-checker.md",
+          "name": "ux-guideline-checker",
+          "memory": "user",
+          "model": "sonnet",
+          "color": "yellow",
+          "category": "validation",
+          "description": "Check UX guideline compliance with rule checking + issue detection + fix suggestions",
+          "tools": [
+            "mcp__gemini__gemini",
+            "mcp__auggie-mcp__codebase-retrieval",
+            "LSP",
+            "Read",
+            "Write"
+          ]
+        },
+        {
+          "file": "plugins/ui-design/agents/validation/quality-validator.md",
+          "name": "quality-validator",
+          "memory": "user",
+          "model": "sonnet",
+          "color": "yellow",
+          "category": "validation",
+          "description": "Validate code quality + design restoration with scoring system",
+          "tools": [
+            "mcp__gemini__gemini",
+            "mcp__auggie-mcp__codebase-retrieval",
+            "LSP",
+            "Read",
+            "Glob",
+            "Grep",
+            "Bash"
+          ]
+        },
+        {
+          "file": "plugins/ui-design/agents/generation/gemini-prototype-generator.md",
+          "name": "gemini-prototype-generator",
+          "memory": "project",
+          "model": "sonnet",
+          "color": "blue",
+          "category": "generation",
+          "description": "Generate initial code prototype using Gemini (~70% quality)",
+          "tools": [
+            "mcp__gemini__gemini",
+            "mcp__auggie-mcp__codebase-retrieval",
+            "LSP",
+            "Read",
+            "Write",
+            "Bash"
+          ]
+        },
+        {
+          "file": "plugins/ui-design/agents/generation/claude-code-refactor.md",
+          "name": "claude-code-refactor",
+          "memory": "project",
+          "model": "sonnet",
+          "color": "blue",
+          "category": "generation",
+          "description": "Refactor Gemini prototype to production quality (~95% quality)",
+          "tools": [
+            "Read",
+            "Write",
+            "Edit",
+            "mcp__auggie-mcp__codebase-retrieval",
+            "LSP",
+            "Bash"
+          ]
+        }
+      ]
+    },
+    "brainstorm": {
+      "agent_count": 0,
+      "note": "Skill-based architecture only. Uses skills: topic-researcher, idea-generator (codex-cli + gemini-cli), idea-evaluator, report-generator. No agent .md files exist."
+    },
+    "context-memory": {
+      "agent_count": 0,
+      "note": "Skill-based architecture only. Uses skills: module-discovery, claude-full-updater, claude-related-updater, doc-full-generator, doc-related-generator, code-map-generator, tech-rules-generator, codex-cli, gemini-cli. No agent .md files exist."
+    },
+    "refactor": {
+      "agent_count": 0,
+      "note": "Skill-based architecture only. Uses skills: smell-detector, refactor-suggester, impact-analyzer, refactor-executor, codex-cli, gemini-cli. No agent .md files exist."
+    },
+    "hooks": {
+      "agent_count": 0,
+      "note": "Infrastructure plugin with shell scripts only. Hook types: security (privacy-firewall, db-guard, git-conflict-guard), quality (auto-format), logging (mcp-logger), routing (intent-evaluator, unified-eval). No agent .md files exist."
+    }
+  },
+  "memory_scope_analysis": {
+    "current_distribution": {
+      "project_scope": {
+        "count": 15,
+        "agents": [
+          "tpd:boundary-explorer",
+          "tpd:context-analyzer",
+          "tpd:codex-architect",
+          "tpd:gemini-architect",
+          "tpd:codex-implementer",
+          "tpd:gemini-implementer",
+          "commit:change-investigator",
+          "commit:semantic-analyzer",
+          "commit:symbol-analyzer",
+          "commit:commit-worker",
+          "ui-design:requirement-analyzer",
+          "ui-design:existing-code-analyzer",
+          "ui-design:design-variant-generator",
+          "ui-design:gemini-prototype-generator",
+          "ui-design:claude-code-refactor"
+        ]
+      },
+      "user_scope": {
+        "count": 8,
+        "agents": [
+          "tpd:codex-constraint",
+          "tpd:gemini-constraint",
+          "tpd:codex-auditor",
+          "tpd:gemini-auditor",
+          "ui-design:image-analyzer",
+          "ui-design:style-recommender",
+          "ui-design:ux-guideline-checker",
+          "ui-design:quality-validator"
+        ]
+      },
+      "local_scope": {
+        "count": 0,
+        "agents": []
+      },
+      "missing_memory_field": {
+        "count": 0,
+        "agents": [],
+        "note": "ALL 23 existing agents already have memory field set"
+      }
+    },
+    "scope_correctness_assessment": {
+      "all_correct": true,
+      "rationale": "Current assignments follow a consistent pattern: project-specific context agents (investigation, implementation, generation) use 'project'; cross-project reusable knowledge agents (constraints, auditing, validation, design patterns) use 'user'. No corrections needed.",
+      "pattern_summary": {
+        "project_scope_pattern": "Agents that inspect/modify/generate project-specific artifacts (codebase, architecture, code)",
+        "user_scope_pattern": "Agents that accumulate reusable heuristics, standards, patterns, and guidelines across projects"
+      }
+    }
+  },
+  "agent_category_mapping": {
+    "investigation": [
+      "boundary-explorer (project)",
+      "context-analyzer (project)",
+      "change-investigator (project)"
+    ],
+    "reasoning": ["codex-constraint (user)", "gemini-constraint (user)"],
+    "analysis": [
+      "semantic-analyzer (project)",
+      "symbol-analyzer (project)",
+      "image-analyzer (user)",
+      "requirement-analyzer (project)",
+      "existing-code-analyzer (project)"
+    ],
+    "planning": ["codex-architect (project)", "gemini-architect (project)"],
+    "design": [
+      "style-recommender (user)",
+      "design-variant-generator (project)"
+    ],
+    "execution": [
+      "codex-implementer (project)",
+      "gemini-implementer (project)",
+      "commit-worker (project)"
+    ],
+    "validation": [
+      "ux-guideline-checker (user)",
+      "quality-validator (user)",
+      "codex-auditor (user)",
+      "gemini-auditor (user)"
+    ],
+    "generation": [
+      "gemini-prototype-generator (project)",
+      "claude-code-refactor (project)"
+    ]
+  },
+  "memory_benefit_ranking": {
+    "high_benefit": {
+      "description": "High-repetition agents that accumulate reusable patterns across invocations",
+      "agents": [
+        {
+          "name": "style-recommender",
+          "reason": "Learns design preferences, style trends, and aesthetic patterns reusable across UI projects"
+        },
+        {
+          "name": "ux-guideline-checker",
+          "reason": "Accumulates UX best practices, common violations, and fix patterns"
+        },
+        {
+          "name": "quality-validator",
+          "reason": "Learns quality benchmarks, common code smells, and design restoration patterns"
+        },
+        {
+          "name": "codex-constraint",
+          "reason": "Accumulates technical constraint analysis heuristics across diverse architectures"
+        },
+        {
+          "name": "gemini-constraint",
+          "reason": "Accumulates UX/maintainability constraint patterns"
+        },
+        {
+          "name": "codex-auditor",
+          "reason": "Learns recurring security vulnerabilities and performance anti-patterns"
+        },
+        {
+          "name": "gemini-auditor",
+          "reason": "Learns recurring UX/accessibility issues"
+        },
+        {
+          "name": "image-analyzer",
+          "reason": "Learns visual analysis patterns, design system recognition heuristics"
+        }
+      ]
+    },
+    "medium_benefit": {
+      "description": "Agents that benefit from project-specific accumulated knowledge within a single project",
+      "agents": [
+        {
+          "name": "boundary-explorer",
+          "reason": "Caches codebase boundary knowledge, avoids redundant exploration"
+        },
+        {
+          "name": "context-analyzer",
+          "reason": "Remembers project structure discoveries for faster subsequent analyses"
+        },
+        {
+          "name": "change-investigator",
+          "reason": "Learns project-specific change patterns and conventions"
+        },
+        {
+          "name": "semantic-analyzer",
+          "reason": "Learns project-specific module boundaries and semantic groupings"
+        },
+        {
+          "name": "codex-architect",
+          "reason": "Remembers architecture decisions for consistency across planning sessions"
+        },
+        {
+          "name": "gemini-architect",
+          "reason": "Remembers frontend architecture decisions for consistency"
+        }
+      ]
+    },
+    "low_benefit": {
+      "description": "One-shot or heavily context-dependent agents where prior memory adds limited value",
+      "agents": [
+        {
+          "name": "codex-implementer",
+          "reason": "Each implementation is highly task-specific; limited reuse of prior implementation memory"
+        },
+        {
+          "name": "gemini-implementer",
+          "reason": "Same as codex-implementer; task-specific"
+        },
+        {
+          "name": "commit-worker",
+          "reason": "Mechanical git operations; minimal learning opportunity"
+        },
+        {
+          "name": "symbol-analyzer",
+          "reason": "LSP-driven analysis is deterministic; memory adds little"
+        },
+        {
+          "name": "design-variant-generator",
+          "reason": "Generates from spec each time; prior variants rarely relevant"
+        },
+        {
+          "name": "gemini-prototype-generator",
+          "reason": "Generates fresh prototypes from design specs"
+        },
+        {
+          "name": "claude-code-refactor",
+          "reason": "Refactors based on current prototype input; limited cross-session learning"
+        },
+        {
+          "name": "requirement-analyzer",
+          "reason": "Requirements are unique per invocation"
+        },
+        {
+          "name": "existing-code-analyzer",
+          "reason": "Analysis is driven by current codebase state"
+        }
+      ]
+    }
+  },
+  "dependencies": [
+    "Claude Code v2.1.33 agent memory feature: memory field in agent YAML frontmatter (user|project|local)",
+    "Persistent memory directory created at .claude/agent-memory/{agent-name}/ (project scope) or ~/.claude/agent-memory/{agent-name}/ (user scope)",
+    "MEMORY.md first 200 lines auto-injected into agent system prompt",
+    "Read/Write/Edit tools auto-enabled when memory field is set",
+    "Plugin architecture: agents/ directory is optional per plugin (4 of 7 plugins don't have it)",
+    "Skill frontmatter does NOT support memory field - only agent frontmatter does",
+    "plugin-architecture.md documents the memory field spec and scope definitions"
+  ],
+  "risks": [
+    "MEMORY.md 200-line limit: agents with verbose memory may lose important information through truncation",
+    "Memory pollution: agents with user scope share memory across projects, risking project-specific assumptions leaking",
+    "No memory pruning mechanism: stale or incorrect memories persist until manually edited",
+    "4 skill-based plugins (brainstorm, context-memory, refactor, hooks) cannot benefit from agent memory without architecture changes to introduce agent .md files",
+    "Agent teams feature (experimental) may interact with memory in unexpected ways - memory scope unclear for teammate agents vs task subagents",
+    "Memory scope confusion: 'project' vs 'user' boundary may not be clear for agents that learn both project-specific and general patterns"
+  ],
+  "open_questions": [
+    "Should brainstorm, context-memory, and refactor plugins be refactored from skill-based to agent-based architecture to enable memory? Or is skill-based architecture intentionally different?",
+    "Is memory: local scope needed for any agents? No agent currently uses it. What use case justifies local over project?",
+    "Should the hooks plugin have any memory-enabled agents? Currently it's purely infrastructure scripts.",
+    "How does agent memory interact with the existing .claude/rules/*.md rule system? Are they complementary or overlapping?",
+    "For dual-model agent pairs (codex-constraint + gemini-constraint), should they share memory or keep separate memories?",
+    "What is the expected MEMORY.md content format? Should there be a template or schema for agent memories?",
+    "With Agent Teams feature, do teammate agents inherit or share memory? Or does each team member maintain independent memory?"
+  ],
+  "success_criteria_hints": [
+    "All 23 existing agents verified to have correct memory scope (project vs user) based on their role",
+    "Memory scope assignments follow documented convention: project=codebase-specific, user=cross-project reusable",
+    "No agent is missing the memory field (already 100% coverage)",
+    "Clear documentation of which 4 plugins lack agents and cannot benefit from agent memory without architecture changes",
+    "Memory benefit ranking provides actionable prioritization for future memory optimization work",
+    "Agent category mapping enables systematic analysis of memory scope patterns"
+  ]
+}
