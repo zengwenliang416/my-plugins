@@ -1,0 +1,5 @@
+{
+  "name": "database-design",
+  "version": "1.0.0",
+  "description": "Database design with Agent Team Debate pattern (schema-designer vs query-optimizer)"
+}

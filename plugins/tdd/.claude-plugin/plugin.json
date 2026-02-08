@@ -1,0 +1,5 @@
+{
+  "name": "tdd",
+  "version": "1.0.0",
+  "description": "Test-Driven Development pipeline with Agent Team (test-writer → implementer → coverage-validator)"
+}

@@ -1,0 +1,5 @@
+{
+  "name": "bug-investigation",
+  "version": "1.0.0",
+  "description": "Multi-angle bug investigation with Agent Team (Fan-Out: log-analyst + code-tracer + reproducer)"
+}

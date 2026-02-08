@@ -60,6 +60,7 @@ SYM_DOT="•"
 SYM_SYNC="⟳"
 SYM_PKG="📦"
 SYM_CMD="📋"
+SYM_AGENT="🤖"
 SYM_SKILL="⚡"
 SYM_HOOK="🪝"
 SYM_TIME="⏱"
@@ -235,22 +236,23 @@ ask_ynq() {
 show_plugin_preview() {
   local plugins=("$@")
 
-  echo -e "  ${BOLD}${WHITE}#   PLUGIN          CMDS  SKILLS  HOOKS${NC}"
-  echo -e "  ${DIM}$(printf '─%.0s' {1..45})${NC}"
+  echo -e "  ${BOLD}${WHITE}#   PLUGIN          CMDS  AGENTS  SKILLS  HOOKS${NC}"
+  echo -e "  ${DIM}$(printf '─%.0s' {1..55})${NC}"
 
   local i=1
   for plugin in "${plugins[@]}"; do
     local info=($(get_plugin_info "$plugin"))
     local cmd_count=${info[0]:-0}
-    local skill_count=${info[1]:-0}
-    local has_hooks=${info[2]:-no}
+    local agent_count=${info[1]:-0}
+    local skill_count=${info[2]:-0}
+    local has_hooks=${info[3]:-no}
 
     local hooks_icon="${DIM}─${NC}"
     [[ "$has_hooks" == "yes" ]] && hooks_icon="${YELLOW}${SYM_HOOK}${NC}"
 
     # Use %b for interpreting escape sequences
-    printf "  %b%2d%b  %b%-15s%b %4s   %4s    %b\n" \
-      "$CYAN" $i "$NC" "$GREEN" "$plugin" "$NC" "$cmd_count" "$skill_count" "$hooks_icon"
+    printf "  %b%2d%b  %b%-15s%b %4s   %6s   %4s    %b\n" \
+      "$CYAN" $i "$NC" "$GREEN" "$plugin" "$NC" "$cmd_count" "$agent_count" "$skill_count" "$hooks_icon"
     i=$((i + 1))
   done
   echo ""
@@ -283,11 +285,60 @@ get_plugin_description() {
   ' "$MARKETPLACE_JSON"
 }
 
+# Get plugin version from marketplace.json
+get_marketplace_version() {
+  local plugin="$1"
+  awk -v name="$plugin" '
+    /"name":/ && $0 ~ "\"" name "\"" { found=1; next }
+    found && /"version":/ {
+      gsub(/.*"version": *"/, "")
+      gsub(/".*/, "")
+      print
+      exit
+    }
+  ' "$MARKETPLACE_JSON"
+}
+
+# Get plugin version from plugin.json
+get_plugin_meta_version() {
+  local plugin="$1"
+  local meta_file="${SOURCE_DIR}/${plugin}/.claude-plugin/plugin.json"
+
+  [[ -f "$meta_file" ]] || return 0
+  awk -F'"' '/"version":/ { print $4; exit }' "$meta_file"
+}
+
+# Resolve plugin version (marketplace preferred, fallback to metadata)
+resolve_plugin_version() {
+  local plugin="$1"
+  local market_version
+  local meta_version
+  local version
+
+  market_version=$(get_marketplace_version "$plugin")
+  meta_version=$(get_plugin_meta_version "$plugin")
+
+  if [[ -n "$market_version" ]]; then
+    version="$market_version"
+  elif [[ -n "$meta_version" ]]; then
+    version="$meta_version"
+  else
+    version="1.0.0"
+  fi
+
+  if [[ -n "$market_version" && -n "$meta_version" && "$market_version" != "$meta_version" ]]; then
+    [[ "$QUIET_MODE" != true ]] && warn "Version mismatch for ${GREEN}$plugin${NC}: plugin.json=$meta_version, marketplace.json=$market_version"
+  fi
+
+  echo "$version"
+}
+
 # Get plugin info (commands, skills, hooks count)
 get_plugin_info() {
   local plugin="$1"
   local src="${SOURCE_DIR}/${plugin}"
   local cmd_count=0
+  local agent_count=0
   local skill_count=0
   local has_hooks="no"
 
@@ -295,15 +346,19 @@ get_plugin_info() {
     cmd_count=$(find "$src/commands" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
   fi
 
+  if [[ -d "$src/agents" ]]; then
+    agent_count=$(find "$src/agents" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+  fi
+
   if [[ -d "$src/skills" ]]; then
     skill_count=$(find "$src/skills" -maxdepth 2 -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
   fi
 
-  if [[ -f "$src/.claude-plugin/hooks.json" ]] || [[ -f "$src/hooks/hooks.json" ]]; then
+  if [[ -f "$src/.claude-plugin/hooks.json" ]] || [[ -f "$src/hooks/hooks.json" ]] || [[ -f "$src/hooks/hooks/hooks.json" ]]; then
     has_hooks="yes"
   fi
 
-  echo "$cmd_count $skill_count $has_hooks"
+  echo "$cmd_count $agent_count $skill_count $has_hooks"
 }
 
 # List all plugins with table format
@@ -316,15 +371,16 @@ list_plugins() {
   done < <(get_plugins)
 
   # Table header
-  printf "  %b%b%-15s %-8s %-8s %-6s %s%b\n" "$BOLD" "$WHITE" "NAME" "CMDS" "SKILLS" "HOOKS" "DESCRIPTION" "$NC"
-  echo -e "  ${DIM}$(printf '─%.0s' {1..70})${NC}"
+  printf "  %b%b%-15s %-6s %-7s %-7s %-6s %s%b\n" "$BOLD" "$WHITE" "NAME" "CMDS" "AGENTS" "SKILLS" "HOOKS" "DESCRIPTION" "$NC"
+  echo -e "  ${DIM}$(printf '─%.0s' {1..75})${NC}"
 
   for plugin in "${plugins[@]}"; do
     local desc=$(get_plugin_description "$plugin")
     local info=($(get_plugin_info "$plugin"))
     local cmd_count=${info[0]:-0}
-    local skill_count=${info[1]:-0}
-    local has_hooks=${info[2]:-no}
+    local agent_count=${info[1]:-0}
+    local skill_count=${info[2]:-0}
+    local has_hooks=${info[3]:-no}
 
     # Truncate description if too long
     if [[ ${#desc} -gt 35 ]]; then
@@ -334,8 +390,8 @@ list_plugins() {
     local hooks_icon="${DIM}─${NC}"
     [[ "$has_hooks" == "yes" ]] && hooks_icon="${YELLOW}${SYM_HOOK}${NC}"
 
-    printf "  %b%-15s%b %b%4s%b    %b%4s%b    %b   %s\n" \
-      "$GREEN" "$plugin" "$NC" "$CYAN" "$cmd_count" "$NC" "$MAGENTA" "$skill_count" "$NC" "$hooks_icon" "$desc"
+    printf "  %b%-15s%b %b%4s%b    %b%4s%b    %b%4s%b    %b   %s\n" \
+      "$GREEN" "$plugin" "$NC" "$CYAN" "$cmd_count" "$NC" "$BLUE" "$agent_count" "$NC" "$MAGENTA" "$skill_count" "$NC" "$hooks_icon" "$desc"
   done
 
   echo ""
@@ -396,7 +452,9 @@ select_plugins() {
 sync_plugin() {
   local plugin="$1"
   local src="${SOURCE_DIR}/${plugin}"
-  local dst="${CACHE_DIR}/${plugin}/1.0.0"
+  local version
+  version=$(resolve_plugin_version "$plugin")
+  local dst="${CACHE_DIR}/${plugin}/${version}"
 
   if [[ ! -d "$src" ]]; then
     error "Plugin not found: $plugin"
@@ -406,11 +464,12 @@ sync_plugin() {
 
   local info=($(get_plugin_info "$plugin"))
   local cmd_count=${info[0]:-0}
-  local skill_count=${info[1]:-0}
-  local has_hooks=${info[2]:-no}
+  local agent_count=${info[1]:-0}
+  local skill_count=${info[2]:-0}
+  local has_hooks=${info[3]:-no}
 
-  if [[ $cmd_count -eq 0 && $skill_count -eq 0 && "$has_hooks" == "no" ]]; then
-    warn "Skipped ${YELLOW}$plugin${NC} (no commands/skills/hooks)"
+  if [[ $cmd_count -eq 0 && $agent_count -eq 0 && $skill_count -eq 0 && "$has_hooks" == "no" ]]; then
+    warn "Skipped ${YELLOW}$plugin${NC} (no commands/agents/skills/hooks)"
     SKIP_COUNT=$((SKIP_COUNT + 1))
     return 0
   fi
@@ -431,6 +490,7 @@ sync_plugin() {
   # Build info string
   local info_str=""
   [[ $cmd_count -gt 0 ]] && info_str+="${SYM_CMD}${cmd_count} "
+  [[ $agent_count -gt 0 ]] && info_str+="${SYM_AGENT}${agent_count} "
   [[ $skill_count -gt 0 ]] && info_str+="${SYM_SKILL}${skill_count} "
   [[ "$has_hooks" == "yes" ]] && info_str+="${SYM_HOOK}"
 

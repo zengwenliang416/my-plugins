@@ -46,6 +46,54 @@
       "description": "代码重构工作流：模式识别 → 重构方案 → 安全验证 → 自动应用",
       "source": "./plugins/refactor",
       "version": "1.0.0"
+    },
+    {
+      "name": "code-review",
+      "description": "Multi-perspective parallel code review with Agent Team (Fan-Out/Fan-In + cross-validation)",
+      "source": "./plugins/code-review",
+      "version": "1.0.0"
+    },
+    {
+      "name": "security-audit",
+      "description": "Cross-layer security audit with Agent Team (Fan-Out/Fan-In + Debate pattern)",
+      "source": "./plugins/security-audit",
+      "version": "1.0.0"
+    },
+    {
+      "name": "feature-impl",
+      "description": "Feature implementation pipeline with Agent Team (planner + implementer + parallel validation)",
+      "source": "./plugins/feature-impl",
+      "version": "1.0.0"
+    },
+    {
+      "name": "tdd",
+      "description": "Test-Driven Development pipeline with Agent Team (test-writer → implementer → coverage-validator)",
+      "source": "./plugins/tdd",
+      "version": "1.0.0"
+    },
+    {
+      "name": "bug-investigation",
+      "description": "Multi-angle bug investigation with Agent Team (Fan-Out: log-analyst + code-tracer + reproducer)",
+      "source": "./plugins/bug-investigation",
+      "version": "1.0.0"
+    },
+    {
+      "name": "database-design",
+      "description": "Database design with Agent Team Debate pattern (schema-designer vs query-optimizer)",
+      "source": "./plugins/database-design",
+      "version": "1.0.0"
+    },
+    {
+      "name": "refactor-team",
+      "description": "Team-based refactoring pipeline (analyzer → refactorer → reviewer) with safety validation",
+      "source": "./plugins/refactor-team",
+      "version": "1.0.0"
+    },
+    {
+      "name": "plan-execute",
+      "description": "CSV-driven plan-execute pipeline with Agent Team (investigator → CSV contract → implementer + reviewer per-issue loop)",
+      "source": "./plugins/plan-execute",
+      "version": "1.0.0"
     }
   ]
 }

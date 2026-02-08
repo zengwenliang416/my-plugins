@@ -1,0 +1,5 @@
+{
+  "name": "refactor-team",
+  "version": "1.0.0",
+  "description": "Team-based refactoring pipeline (analyzer → refactorer → reviewer) with safety validation"
+}

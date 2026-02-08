@@ -1,0 +1,5 @@
+{
+  "name": "code-review",
+  "version": "1.0.0",
+  "description": "Multi-perspective parallel code review with Agent Team (Fan-Out/Fan-In + cross-validation)"
+}

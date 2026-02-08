@@ -1,0 +1,5 @@
+{
+  "name": "security-audit",
+  "version": "1.0.0",
+  "description": "Cross-layer security audit with Agent Team (Fan-Out/Fan-In + Debate pattern)"
+}

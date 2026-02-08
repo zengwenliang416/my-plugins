@@ -1,0 +1,5 @@
+{
+  "name": "feature-impl",
+  "version": "1.0.0",
+  "description": "Feature implementation pipeline with Agent Team (planner + implementer + parallel validation)"
+}
