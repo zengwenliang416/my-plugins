@@ -20,6 +20,11 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 <!-- OPENSPEC:END -->
 
+## Language Rules
+
+- **Plugin content** (agent definitions, commands, skill files, CLAUDE.md per plugin): **English only**
+- **User-facing conversation**: **Chinese (简体中文)**
+
 ## Multi-Phase Workflow Design Rules
 
 When designing or modifying multi-phase workflows (e.g., TPD: thinking → plan → dev), **MUST ensure data continuity between phases**:
