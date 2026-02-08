@@ -1,0 +1,5 @@
+{
+  "name": "plan-execute",
+  "version": "1.0.0",
+  "description": "CSV-driven plan-execute pipeline with Agent Team (investigator → CSV contract → implementer + reviewer per-issue loop)"
+}
