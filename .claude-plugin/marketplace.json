@@ -97,7 +97,7 @@
     },
     {
       "name": "docflow",
-      "description": "Documentation-first workflow: init llmdoc, clarify intent, investigate-first execution, and doc sync",
+      "description": "Documentation-first workflow with Agent Team: init llmdoc, clarify intent, investigate-first execution, and doc sync",
       "source": "./plugins/docflow",
       "version": "1.0.0"
     }

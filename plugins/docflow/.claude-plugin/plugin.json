@@ -1,5 +1,5 @@
 {
   "name": "docflow",
-  "description": "Documentation-first workflow plugin: init llmdoc, investigate-first execution, request clarification, and doc sync",
+  "description": "Documentation-first workflow plugin with Claude Code Agent Team orchestration: init llmdoc, investigate-first execution, request clarification, and doc sync",
   "version": "1.0.0"
 }

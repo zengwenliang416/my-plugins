@@ -4,7 +4,7 @@ This document provides a summary of all workflows in the ccg-workflows codebase.
 
 ## 1. Core Summary
 
-The codebase contains 7 workflow commands across 6 plugins. All workflows follow the phased execution model with run directory isolation, state tracking, and hard stops for user confirmation.
+The documented core workflows currently include 11 commands across 7 plugins. They combine phased execution, parallel agents, and Agent Team orchestration with explicit hand-off signals.
 
 ## 2. Source of Truth
 
@@ -56,6 +56,20 @@ The codebase contains 7 workflow commands across 6 plugins. All workflows follow
 - **Pattern:** Interactive router
 - **Function:** Dispatches to specialized skills based on user selection
 - **Run Dir:** `.claude/context-memory/runs/{timestamp}/`
+
+### Docflow Plugin (v1.0.0)
+
+- **Commands:**
+  - `plugins/docflow/commands/init-doc.md` - Initialize `llmdoc` via scout + recorder Agent Team
+  - `plugins/docflow/commands/with-scout.md` - Investigate-first execution via investigator + worker Agent Team
+  - `plugins/docflow/commands/what.md` - Clarify ambiguous requests and route to `/docflow:with-scout`
+- **Pattern:** Team-orchestrated investigation and execution with cross-check + fix-loop
+- **Agents:** scout, recorder, investigator, worker
+- **Team Signals (examples):**
+  - init-doc: `SCOUT_REPORT_READY`, `SCOUT_CROSSCHECK_RESULT`, `DOC_DRAFT_READY`
+  - with-scout: `INVESTIGATION_READY`, `INVESTIGATION_REVIEW_RESULT`, `EXECUTION_RESULT`, `EXECUTION_FIX_APPLIED`
+- **Retry Policy:** bounded repair loops (max 2 rounds), unresolved blockers escalate to user
+- **Run Dir:** no fixed run directory; uses task-scoped context and `llmdoc/agent/` artifacts where applicable
 
 ## 3. Related Architecture
 

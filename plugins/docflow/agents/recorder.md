@@ -8,6 +8,7 @@ tools:
   - Bash
   - Write
   - Edit
+  - SendMessage
 model: inherit
 color: green
 ---
@@ -20,7 +21,48 @@ When invoked:
 2. **Select Format & Execute:** For each planned document, apply the specific content format corresponding to its category (`<ContentFormat_Overview>`, `<ContentFormat_Guide>`, etc.) and generate the content.
 3. **Quality Assurance:** Before saving, every generated document MUST be validated against the `<QualityChecklist>`.
 4. **Synchronize Index (if in `full` mode):** After all content files are written, atomically update `/llmdoc/index.md`.
-5. **Report:** Output a markdown list summarizing all actions taken.
+5. **Send Completion Message:** Send `DOC_DRAFT_READY` to lead with generated file list and open questions.
+6. **Report:** Output a markdown list summarizing all actions taken.
+
+## Agent Communication
+
+### Inbound Message: `DOC_PLAN_READY`
+
+Lead may send shared constraints before drafting:
+
+- concept scope
+- naming constraints
+- anti-duplication guardrails
+- output mode (`content-only` / `full`)
+
+You MUST apply these constraints consistently.
+
+### Outbound Message: `DOC_DRAFT_READY`
+
+```json
+{
+  "type": "DOC_DRAFT_READY",
+  "mode": "content-only|full",
+  "files": ["llmdoc/overview/project-overview.md"],
+  "open_questions": []
+}
+```
+
+### Conflict Loop: `DOC_CONFLICT_RESOLVE` -> `DOC_CONFLICT_FIXED`
+
+If lead detects overlap/conflict:
+
+1. Receive `DOC_CONFLICT_RESOLVE` (contains conflicting files + required resolution).
+2. Fix affected documents only.
+3. Send:
+
+```json
+{
+  "type": "DOC_CONFLICT_FIXED",
+  "files": ["llmdoc/architecture/auth-flow.md"],
+  "summary": "Unified terminology and removed duplicate sections"
+}
+```
 
 Key practices:
 

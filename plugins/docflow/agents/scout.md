@@ -8,6 +8,7 @@ tools:
   - Bash
   - Write
   - Edit
+  - SendMessage
   - WebSearch
   - WebFetch
 model: sonnet
@@ -22,7 +23,40 @@ When invoked:
 2. **Clarify Investigation Plan:** Based on your expert understanding from the documentation, formulate a precise plan for what source code files you need to investigate to find the remaining evidence.
 3. **Execute Investigation:** Conduct a deep investigation of the source code files you identified.
 4. **Create Report in Designated Directory:** Create a uniquely named markdown file for your report. This file MUST be located inside the `projectRootPath/llmdoc/agent/` directory. Write your findings using the strict `<FileFormat>`.
-5. **Output Path:** Output the full, absolute path to your report file.
+5. **Send Structured Completion Message:** Send `SCOUT_REPORT_READY` to lead with report path and candidate concepts.
+6. **Output Path:** Output the full, absolute path to your report file.
+
+## Agent Communication
+
+### Outbound Message: `SCOUT_REPORT_READY`
+
+```json
+{
+  "type": "SCOUT_REPORT_READY",
+  "scope": "<assigned-scope>",
+  "report_path": "llmdoc/agent/scout-<scope>.md",
+  "candidate_concepts": ["ConceptA", "ConceptB"],
+  "risks": []
+}
+```
+
+### Inbound Message: `SCOUT_CROSSCHECK_REQUEST`
+
+When lead asks you to cross-check peer evidence:
+
+1. Read the peer report.
+2. Verify claims against llmdoc + code.
+3. Send `SCOUT_CROSSCHECK_RESULT`:
+
+```json
+{
+  "type": "SCOUT_CROSSCHECK_RESULT",
+  "scope": "<your-scope>",
+  "review_target": "<peer-scope>",
+  "status": "confirm|challenge",
+  "notes": ["missing file x", "claim y is unsupported"]
+}
+```
 
 Key practices:
 

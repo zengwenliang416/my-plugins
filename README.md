@@ -1,11 +1,11 @@
 # CCG Workflows
 
-面向 [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) 的本地插件市场与工作流集合。当前包含 **15 个插件**、**19 条命令**、**51 个 Agent**、**57 个 Skill**、**14 个 Hook 脚本（覆盖 7 个生命周期点）**，覆盖从深度思考、开发规划、实现到提交发布的完整开发生命周期。
+面向 [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) 的本地插件市场与工作流集合。当前包含 **16 个插件**、**22 条命令**、**57 个 Agent**、**89 个 Skill**、**14 个 Hook 脚本（覆盖 7 个生命周期点）**，覆盖从深度思考、开发规划、实现到提交发布的完整开发生命周期。
 
 ## 亮点
 
 - **4 层架构**: Commands → Agents → Skills → Hooks，职责分离、可组合
-- **Agent Team 协作**: 8 个插件使用 Agent Team 模式（Fan-Out/Fan-In、Pipeline、Debate）
+- **Agent Team 协作**: 9 个插件使用 Agent Team 模式（Fan-Out/Fan-In、Pipeline、Debate、Fix Loop）
 - **多模型协作**: Claude + Codex + Gemini 并行分析，Claude 保持最终代码主权
 - **OpenSpec 集成**: TPD 插件通过 OpenSpec 规范实现跨阶段数据交接
 - **CSV 状态机**: plan-execute 插件使用 CSV 作为合约驱动全量任务完成
@@ -85,6 +85,10 @@ claude plugin install feature-impl@ccg-workflows
 # 上下文管理
 /memory docs
 /memory code-map auth-flow
+
+# 文档优先协作（Agent Team）
+/docflow:with-scout "先调研再实现：重构认证中间件并补测试"
+/docflow:init-doc
 ```
 
 ## 文档与指南
@@ -116,6 +120,7 @@ claude plugin install feature-impl@ccg-workflows
 | **bug-investigation** | `/bug-investigation` | 3      | Fan-Out          | 多角度 Bug 调查（日志 + 代码追踪 + 复现）              |
 | **database-design**   | `/database-design`   | 2      | Debate           | 数据库设计：schema-designer vs query-optimizer 辩论    |
 | **refactor-team**     | `/refactor-team`     | 3      | Pipeline         | 团队重构：气味检测 → 安全重构 → 回归验证               |
+| **docflow**           | `/docflow:init-doc` `/docflow:with-scout` | 4 | Fan-Out/Fan-In + Pipeline + Fix Loop | 文档优先协作：并行调研 → 证据交叉验证 → 执行与修复闭环 |
 
 ### 辅助插件
 
@@ -151,10 +156,10 @@ claude plugin install feature-impl@ccg-workflows
 
 | 模式               | 说明                               | 使用插件                                       |
 | ------------------ | ---------------------------------- | ---------------------------------------------- |
-| **Fan-Out/Fan-In** | 并行派发 → 汇总合成                | code-review, security-audit, bug-investigation |
-| **Pipeline**       | 顺序执行 + 依赖链                  | feature-impl, tdd, refactor-team, plan-execute |
+| **Fan-Out/Fan-In** | 并行派发 → 汇总合成                | code-review, security-audit, bug-investigation, docflow |
+| **Pipeline**       | 顺序执行 + 依赖链                  | feature-impl, tdd, refactor-team, plan-execute, docflow |
 | **Debate**         | 多角色辩论 → 共识                  | database-design, security-audit                |
-| **Fix Loop**       | 审查 → 修复 → 重检（max 2 rounds） | feature-impl, plan-execute                     |
+| **Fix Loop**       | 审查 → 修复 → 重检（max 2 rounds） | feature-impl, plan-execute, docflow            |
 
 ## Hook 系统
 
@@ -175,7 +180,7 @@ claude plugin install feature-impl@ccg-workflows
 ```
 .
 ├── .claude-plugin/
-│   └── marketplace.json              # 本地插件市场定义（15 个插件）
+│   └── marketplace.json              # 本地插件市场定义（16 个插件）
 ├── plugins/
 │   ├── commit/                       # 规范提交（4 agents, 7 skills）
 │   ├── tpd/                          # TPD 工作流（10 agents, 14 skills）
@@ -191,6 +196,7 @@ claude plugin install feature-impl@ccg-workflows
 │   ├── brainstorm/                   # 头脑风暴（8 skills）
 │   ├── context-memory/               # 上下文管理（20 skills）
 │   ├── refactor/                     # 代码重构（7 skills）
+│   ├── docflow/                      # 文档优先协作（4 agents, 5 skills）
 │   └── hooks/                        # 通用钩子（14 hook scripts）
 ├── openspec/                         # OpenSpec 规范与变更提案
 ├── scripts/

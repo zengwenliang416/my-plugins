@@ -3,7 +3,7 @@
 ## 1. Identity
 
 - **What it is:** A local plugin marketplace and workflow collection for Claude Code CLI.
-- **Purpose:** Provides 7 specialized plugins that enable AI-assisted development workflows with multi-model collaboration, automated commit management, brainstorming, and code refactoring.
+- **Purpose:** Provides 8 core workflow plugins that enable AI-assisted development with multi-model collaboration, Agent Team orchestration, commit automation, brainstorming, refactoring, and documentation-first execution.
 
 ## 2. High-Level Description
 
@@ -20,6 +20,7 @@ CCG-Workflows is a plugin ecosystem designed for Claude Code users and plugin de
 | **context-memory** | 1.0.0   | `/memory`                                | Project memory management: context loading, session persistence, code mapping, CLAUDE.md updates                    |
 | **refactor**       | 1.0.0   | `/refactor`                              | Code refactoring workflow: smell detection, impact analysis, safe execution                                         |
 | **hooks**          | 1.0.0   | (passive)                                | Cross-cutting automation: security guards, logging, quality checks, intent evaluation                               |
+| **docflow**        | 1.0.0   | `/docflow:init-doc`, `/docflow:with-scout`, `/docflow:what` | Documentation-first workflow with Agent Team collaboration and structured inter-agent communication                  |
 
 ## 4. Tech Stack
 
@@ -41,6 +42,7 @@ graph TB
         MP --> P5[context-memory]
         MP --> P6[refactor]
         MP --> P7[hooks]
+        MP --> P8[docflow]
     end
 
     subgraph "4-Layer Pattern"
@@ -79,6 +81,12 @@ graph TB
 - **Role-Based Delegation:** Codex handles backend/architecture, Gemini handles frontend/UX
 - **Sandbox Enforcement:** All external models use `--sandbox read-only`, producing Unified Diff patches
 - **Code Sovereignty:** Claude reviews and refactors all external output before applying
+
+### Agent Team Collaboration
+
+- **Team Lifecycle:** Team-based workflows use `TeamCreate` → `TaskCreate`/`TaskOutput` → `TeamDelete`
+- **Structured Messaging:** Agents coordinate through explicit `SendMessage` contracts (status, review, fix-loop signals)
+- **Bounded Repair Loops:** Blocking issues are resolved with capped retry rounds before user escalation
 
 ### OpenSpec Integration (TPD Plugin)
 

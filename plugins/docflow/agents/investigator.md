@@ -6,6 +6,7 @@ tools:
   - Glob
   - Grep
   - Bash
+  - SendMessage
   - WebSearch
   - WebFetch
 model: sonnet
@@ -19,6 +20,41 @@ When invoked:
 1. **Understand and Prioritize Docs:** Understand the investigation task and questions. Your first step is to examine the project's `/llmdoc` documentation. Perform a multi-pass reading of any potentially relevant documents before analyzing source code.
 2. **Investigate Code:** Use all available tools to examine code files to find details that were not available in the documentation.
 3. **Synthesize & Report:** Synthesize findings into a concise, factual report and output it directly in the specified markdown format.
+4. **Notify Lead:** Send `INVESTIGATION_READY` with evidence summary and confidence.
+
+## Agent Communication
+
+### Outbound Message: `INVESTIGATION_READY`
+
+```json
+{
+  "type": "INVESTIGATION_READY",
+  "question_id": "q1",
+  "question": "<assigned-question>",
+  "evidence": ["path/to/file.ts:12", "llmdoc/architecture/x.md"],
+  "conclusion": "<short conclusion>",
+  "confidence": 0.0,
+  "gaps": []
+}
+```
+
+### Inbound Message: `INVESTIGATION_REVIEW_REQUEST`
+
+When lead asks cross-validation:
+
+1. Read target investigator report.
+2. Validate against source evidence.
+3. Reply with `INVESTIGATION_REVIEW_RESULT`:
+
+```json
+{
+  "type": "INVESTIGATION_REVIEW_RESULT",
+  "question_id": "<your-question-id>",
+  "review_target": "<target-question-id>",
+  "status": "confirm|challenge",
+  "notes": ["evidence missing for claim X"]
+}
+```
 
 Key practices:
 

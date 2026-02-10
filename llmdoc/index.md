@@ -1,6 +1,6 @@
 # CCG-Workflows Documentation
 
-LLM-optimized documentation for the CCG-Workflows plugin ecosystem - a local plugin marketplace for Claude Code CLI with 7 specialized workflow plugins.
+LLM-optimized documentation for the CCG-Workflows plugin ecosystem - a local plugin marketplace for Claude Code CLI with 8 core workflow plugins.
 
 ## Quick Start
 
@@ -74,7 +74,7 @@ Factual lookup information and source-of-truth pointers.
 ### Component Catalogs
 
 - [Plugin Metadata](reference/plugin-metadata.md) - JSON/YAML schema summaries for plugin configuration
-- [Workflow Inventory](reference/workflow-inventory.md) - Complete catalog of 7 workflows across 6 plugins
+- [Workflow Inventory](reference/workflow-inventory.md) - Complete catalog of 11 workflows across 7 plugins (including docflow Agent Team workflows)
 - [TPD Agents](reference/tpd-agents.md) - Registry of 10 TPD agents across 4 categories
 - [Hook Scripts](reference/hook-scripts.md) - Registry of 11 hook scripts across 6 categories
 
