@@ -94,6 +94,12 @@
       "description": "CSV-driven plan-execute pipeline with Agent Team (investigator → CSV contract → implementer + reviewer per-issue loop)",
       "source": "./plugins/plan-execute",
       "version": "1.0.0"
+    },
+    {
+      "name": "docflow",
+      "description": "Documentation-first workflow: init llmdoc, clarify intent, investigate-first execution, and doc sync",
+      "source": "./plugins/docflow",
+      "version": "1.0.0"
     }
   ]
 }
