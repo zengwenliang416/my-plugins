@@ -152,7 +152,7 @@ arguments: # 可选
 自动分类规则:
 ├── 路径包含 codex → category: codex
 ├── 路径包含 gemini → category: gemini
-├── 路径包含 exa → category: search
+├── 路径包含 search/grok → category: search
 ├── 路径包含 doc → category: documentation
 ├── 路径包含 memory → category: memory
 └── 其他 → category: general

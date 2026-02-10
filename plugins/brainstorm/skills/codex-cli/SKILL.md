@@ -136,7 +136,7 @@ Extract JSON idea list from Codex response.
 
 ## Collaboration
 
-1. **exa** provides research background
+1. **topic-researcher/grok-search** provides research background
 2. **codex-cli** generates technical ideas (current)
 3. **gemini-cli** generates user ideas
 4. Merge and dedupe -> ideas-pool.md

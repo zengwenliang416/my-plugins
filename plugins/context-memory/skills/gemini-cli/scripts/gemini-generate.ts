@@ -7,6 +7,9 @@
 import { readFile, writeFile, mkdir, readdir, stat } from "fs/promises";
 import { join, dirname, basename, extname } from "path";
 import { spawn } from "child_process";
+import { fileURLToPath } from "url";
+
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 
 type GenerationType =
   | "skill_index"
@@ -73,7 +76,7 @@ interface GenerationResult {
 }
 
 async function loadConfig(): Promise<GenerationConfig> {
-  const configPath = join(import.meta.dir, "../assets/gemini-config.json");
+  const configPath = join(SCRIPT_DIR, "../assets/gemini-config.json");
   const content = await readFile(configPath, "utf-8");
   return JSON.parse(content);
 }

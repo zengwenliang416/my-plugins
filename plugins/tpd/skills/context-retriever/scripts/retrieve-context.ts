@@ -203,7 +203,7 @@ function retrieveContext(
     timestamp: new Date().toISOString(),
     query,
     internalContext: finalContext,
-    externalContext, // 外部检索需要 exa/WebSearch
+    externalContext, // 外部检索使用 context7/WebSearch
     tokenEstimate: totalTokens,
   };
 }

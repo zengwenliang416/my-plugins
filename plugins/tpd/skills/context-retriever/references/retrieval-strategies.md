@@ -62,12 +62,12 @@
 
 ## 2. 外部文档搜索
 
-### 2.1 exa Skill 使用
+### 2.1 context7 / WebSearch 使用
 
 **搜索查询模板**:
 
 ```
-exa skill args="search [技术名] [具体问题] site:docs.* OR site:github.com"
+WebSearch(query="[技术名] [具体问题] site:docs.* OR site:github.com")
 ```
 
 **示例查询**:
@@ -270,7 +270,7 @@ token_usage:
 |------|------|
 | auggie-mcp 超时 | 降级到 Glob/Grep |
 | LSP 不可用 | 使用 Read 工具 |
-| exa 搜索失败 | 使用 WebSearch/WebFetch |
+| 外部检索失败 | 更换关键词并重试 WebSearch/WebFetch |
 
 ### 6.2 结果验证
 

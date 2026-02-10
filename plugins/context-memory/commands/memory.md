@@ -284,6 +284,6 @@ tech-rules <stack>   →  Skill("memory:tech-rules-generator", stack="$stack")
 | claude-full    | gemini-cli (降级: codex-cli) |
 | claude-related | gemini-cli (降级: codex-cli) |
 | docs-full      | codex-cli + gemini-cli       |
-| tech-rules     | exa + codex-cli              |
+| tech-rules     | context7/WebSearch + codex-cli |
 
 详见各 Skill 的 SKILL.md 文档。

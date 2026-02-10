@@ -1,6 +1,6 @@
 #!/usr/bin/env npx ts-node --esm
 /**
- * Execute Exa searches for topic research.
+ * Execute external searches for topic research.
  * Usage:
  *   npx ts-node --esm execute_search.ts --topic "topic" --mode basic|deep --output-dir ./output
  */
@@ -60,25 +60,25 @@ function parseArgs(argv: string[]): Args {
   return args;
 }
 
-function runExaSearch(exaScript: string, query: string): string {
+function runExternalSearch(searchScript: string, query: string): string {
   const npxCommand = process.platform === "win32" ? "npx.cmd" : "npx";
   return execFileSync(
     npxCommand,
-    ["tsx", exaScript, "search", query, "--content", "--limit", "5"],
+    ["tsx", searchScript, "search", query, "--max-results", "5"],
     { encoding: "utf-8" }
   );
 }
 
-function saveSearchResult(exaScript: string, outputDir: string, fileName: string, query: string): void {
-  const result = runExaSearch(exaScript, query);
+function saveSearchResult(searchScript: string, outputDir: string, fileName: string, query: string): void {
+  const result = runExternalSearch(searchScript, query);
   writeFileSync(join(outputDir, fileName), result, "utf-8");
 }
 
 function run(): void {
   const args = parseArgs(process.argv.slice(2));
-  const exaScript = resolve(__dirname, "../../exa/scripts/exa_exec.ts");
-  if (!existsSync(exaScript)) {
-    throw new Error(`Exa script not found: ${exaScript}`);
+  const searchScript = resolve(__dirname, "../../grok-search/scripts/grok-search.ts");
+  if (!existsSync(searchScript)) {
+    throw new Error(`Search script not found: ${searchScript}`);
   }
 
   const outputDir = resolve(args.outputDir);
@@ -89,11 +89,11 @@ function run(): void {
   console.log("");
 
   console.log("[1/3] Searching trends...");
-  saveSearchResult(exaScript, outputDir, "search-trends.json", `${args.topic} trends 2026`);
+  saveSearchResult(searchScript, outputDir, "search-trends.json", `${args.topic} trends 2026`);
 
   console.log("[2/3] Searching case studies...");
   saveSearchResult(
-    exaScript,
+    searchScript,
     outputDir,
     "search-cases.json",
     `${args.topic} case study success story`
@@ -101,7 +101,7 @@ function run(): void {
 
   console.log("[3/3] Searching cross-industry inspiration...");
   saveSearchResult(
-    exaScript,
+    searchScript,
     outputDir,
     "search-cross.json",
     `${args.topic} inspiration from other industries`
@@ -113,7 +113,7 @@ function run(): void {
 
     console.log("[4/5] Searching pain points...");
     saveSearchResult(
-      exaScript,
+      searchScript,
       outputDir,
       "search-problems.json",
       `${args.topic} challenges problems pain points`
@@ -121,7 +121,7 @@ function run(): void {
 
     console.log("[5/5] Searching opportunities...");
     saveSearchResult(
-      exaScript,
+      searchScript,
       outputDir,
       "search-opportunities.json",
       `${args.topic} opportunities innovations startups`

@@ -81,5 +81,5 @@ doc-full-generator
     │
     ├── 依赖 codex-cli → 预加载
     ├── 依赖 gemini-cli → 预加载
-    └── 可选 exa → 按需加载
+    └── 可选外部检索技能（如 grok-search）→ 按需加载
 ```

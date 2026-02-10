@@ -1,12 +1,11 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S npx tsx
 /**
  * Swagger/OpenAPI Generator Script
  * Analyzes API routes and generates OpenAPI specification
  */
 
-import { readFile, writeFile, mkdir, readdir } from "fs/promises";
+import { readFile, writeFile, mkdir, glob } from "node:fs/promises";
 import { join, dirname, basename, extname } from "path";
-import { Glob } from "bun";
 
 type HttpMethod = "get" | "post" | "put" | "patch" | "delete";
 
@@ -120,15 +119,17 @@ async function findRouteFiles(
     unknown: ["**/routes/**/*.{ts,js}", "**/controllers/**/*.{ts,js}"],
   };
 
-  const files: string[] = [];
+  const files = new Set<string>();
   for (const pattern of patterns[framework]) {
-    const glob = new Glob(pattern);
-    for await (const file of glob.scan(srcPath)) {
-      files.push(join(srcPath, file));
+    for await (const file of glob(pattern, {
+      cwd: srcPath,
+      exclude: ["**/node_modules/**", "**/.git/**"],
+    })) {
+      files.add(join(srcPath, String(file)));
     }
   }
 
-  return files;
+  return Array.from(files);
 }
 
 function extractRoutes(

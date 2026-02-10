@@ -3,7 +3,7 @@ name: plan-context-retriever
 description: |
   【触发条件】 Plan workflow Step 2: Retrieve code context related to requirements
   【核心产出】 Outputs ${run_dir}/context.md
-  [🚨 Mandatory Tool 🚨] auggie-mcp must be first choice! LSP symbol analysis! exa for external retrieval (new projects)
+  [🚨 Mandatory Tool 🚨] auggie-mcp must be first choice! LSP symbol analysis! context7/WebSearch for external retrieval (new projects)
   [Prohibited] Skipping auggie-mcp and using Grep/Glob directly
   【不触发】 Direct analysis (use architecture-analyzer)
   【先问什么】默认先确认输入范围、输出格式与约束条件
@@ -16,6 +16,10 @@ allowed-tools:
   - LSP
   - Skill
   - mcp__auggie-mcp__codebase-retrieval
+  - mcp__context7__resolve-library-id
+  - mcp__context7__query-docs
+  - WebSearch
+  - WebFetch
 arguments:
   - name: run_dir
     type: string
@@ -81,7 +85,7 @@ FILE_COUNT=$(find . -type f -name "*.ts" -o -name "*.js" -o -name "*.py" | wc -l
 
 | Status           | Criteria         | Retrieval Strategy                    |
 | ---------------- | ---------------- | ------------------------------------- |
-| New project      | Code files < 10  | Use exa for external retrieval        |
+| New project      | Code files < 10  | Use context7/WebSearch for external retrieval |
 | Existing project | Code files >= 10 | Use auggie-mcp for internal retrieval |
 
 ### Step 3: Internal Code Retrieval (Existing Project)
@@ -131,10 +135,10 @@ For key symbols in semantic retrieval results, use LSP for deep analysis:
 
 ### Step 5: External Documentation Retrieval (New Project or Best Practices Needed)
 
-Call exa skill to get external resources:
+Call context7/WebSearch to get external resources:
 
 ```
-Skill(skill="tpd:exa", args="query=<tech stack> best practices implementation")
+WebSearch(query="<tech stack> best practices implementation")
 ```
 
 Retrieval content:

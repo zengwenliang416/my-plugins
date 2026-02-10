@@ -98,19 +98,6 @@ case "$server" in
     esac
     ;;
 
-  exa)
-    case "$tool" in
-      web_search_exa)
-        query=$(echo "$input" | jq -r '.tool_input.query // empty' | head -c 50)
-        echo "🌐 Exa 搜索: ${query}..."
-        ;;
-      get_code_context_exa)
-        query=$(echo "$input" | jq -r '.tool_input.query // empty' | head -c 50)
-        echo "💻 Exa 代码: ${query}..."
-        ;;
-    esac
-    ;;
-
   ddg-search)
     query=$(echo "$input" | jq -r '.tool_input.query // empty' | head -c 50)
     echo "🦆 DuckDuckGo: ${query}..."

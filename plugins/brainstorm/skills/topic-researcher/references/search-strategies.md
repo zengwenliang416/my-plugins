@@ -1,4 +1,4 @@
-# Exa Search Strategies
+# External Search Strategies
 
 Search templates and filtering strategies for different topic types.
 
@@ -10,16 +10,16 @@ Applicable to: New product design, feature innovation, product improvement
 
 ```bash
 # Industry innovation
-exa search "{product_type} innovation 2026" --content --limit 5
+grok-search search "{product_type} innovation 2026" --max-results 5
 
 # Startup trends
-exa search "{product_type} startup ideas funding 2025-2026" --content --limit 5
+grok-search search "{product_type} startup ideas funding 2025-2026" --max-results 5
 
 # User pain points
-exa search "{product_type} user complaints reviews problems" --content --limit 5
+grok-search search "{product_type} user complaints reviews problems" --max-results 5
 
 # Competitor analysis
-exa search "{product_type} competitors comparison features" --content --limit 5
+grok-search search "{product_type} competitors comparison features" --max-results 5
 ```
 
 ### Process Optimization
@@ -28,16 +28,16 @@ Applicable to: Workflow improvement, efficiency enhancement, automation
 
 ```bash
 # Best practices
-exa search "{process} best practices case study" --content --limit 5
+grok-search search "{process} best practices case study" --max-results 5
 
 # Automation tools
-exa search "{process} automation tools comparison 2026" --content --limit 5
+grok-search search "{process} automation tools comparison 2026" --max-results 5
 
 # Bottleneck analysis
-exa search "{process} bottleneck inefficiency solutions" --content --limit 5
+grok-search search "{process} bottleneck inefficiency solutions" --max-results 5
 
 # Industry benchmarks
-exa search "{process} industry benchmark metrics KPI" --content --limit 5
+grok-search search "{process} industry benchmark metrics KPI" --max-results 5
 ```
 
 ### Market Trends
@@ -46,16 +46,16 @@ Applicable to: Market analysis, consumer insights, trend forecasting
 
 ```bash
 # Market reports
-exa search "{market} market trends 2026 report forecast" --content --limit 5
+grok-search search "{market} market trends 2026 report forecast" --max-results 5
 
 # Consumer behavior
-exa search "{market} consumer behavior changes preferences" --content --limit 5
+grok-search search "{market} consumer behavior changes preferences" --max-results 5
 
 # Emerging technologies
-exa search "{market} emerging technology impact disruption" --content --limit 5
+grok-search search "{market} emerging technology impact disruption" --max-results 5
 
 # Regulatory updates
-exa search "{market} regulation policy changes 2026" --content --limit 5
+grok-search search "{market} regulation policy changes 2026" --max-results 5
 ```
 
 ### Technology Exploration
@@ -64,16 +64,16 @@ Applicable to: Technology selection, architecture design, technical innovation
 
 ```bash
 # Technology trends
-exa search "{technology} trends 2026 roadmap" --content --limit 5
+grok-search search "{technology} trends 2026 roadmap" --max-results 5
 
 # Implementation cases
-exa search "{technology} implementation case study production" --content --limit 5
+grok-search search "{technology} implementation case study production" --max-results 5
 
 # Performance comparison
-exa search "{technology} benchmark comparison performance" --content --limit 5
+grok-search search "{technology} benchmark comparison performance" --max-results 5
 
 # Ecosystem
-exa search "{technology} ecosystem tools libraries frameworks" --content --limit 5
+grok-search search "{technology} ecosystem tools libraries frameworks" --max-results 5
 ```
 
 ### User Experience
@@ -82,16 +82,16 @@ Applicable to: UX improvement, design innovation, usability research
 
 ```bash
 # Design trends
-exa search "{domain} UX design trends 2026" --content --limit 5
+grok-search search "{domain} UX design trends 2026" --max-results 5
 
 # User research
-exa search "{domain} user research insights findings" --content --limit 5
+grok-search search "{domain} user research insights findings" --max-results 5
 
 # Accessibility
-exa search "{domain} accessibility WCAG improvements" --content --limit 5
+grok-search search "{domain} accessibility WCAG improvements" --max-results 5
 
 # Emotional design
-exa search "{domain} emotional design user delight" --content --limit 5
+grok-search search "{domain} emotional design user delight" --max-results 5
 ```
 
 ## Search Result Filtering Strategies
@@ -138,7 +138,7 @@ exa search "{domain} emotional design user delight" --content --limit 5
 
 ```bash
 # Learn from other industries
-exa search "{problem} solution in {other_industry}" --content --limit 5
+grok-search search "{problem} solution in {other_industry}" --max-results 5
 
 # Examples:
 # "checkout optimization in gaming industry"

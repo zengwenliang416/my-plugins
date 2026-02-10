@@ -1,12 +1,14 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S npx tsx
 /**
  * Tech Rules Generator Script
  * Generates technology stack specific coding rules
  */
 
-import { readFile, writeFile, mkdir, stat } from "fs/promises";
+import { readFile, writeFile, mkdir, stat, glob } from "node:fs/promises";
 import { join, dirname } from "path";
-import { Glob } from "bun";
+import { fileURLToPath } from "url";
+
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 
 interface StackConfig {
   name: string;
@@ -86,7 +88,7 @@ const DEFAULT_CONFIG: RulesConfig = {
 };
 
 async function loadConfig(): Promise<RulesConfig> {
-  const configPath = join(import.meta.dir, "../assets/rules-config.json");
+  const configPath = join(SCRIPT_DIR, "../assets/rules-config.json");
   try {
     const content = await readFile(configPath, "utf-8");
     return { ...DEFAULT_CONFIG, ...JSON.parse(content) };
@@ -138,15 +140,17 @@ async function analyzeProjectNaming(projectPath: string): Promise<string> {
   const patterns: string[] = [];
 
   // Check for common patterns
-  const glob = new Glob("**/*.ts");
   let fileCount = 0;
   let kebabCount = 0;
   let camelCount = 0;
   let pascalCount = 0;
 
-  for await (const file of glob.scan(projectPath)) {
+  for await (const file of glob("**/*.ts", {
+    cwd: projectPath,
+    exclude: ["**/node_modules/**", "**/.git/**"],
+  })) {
     fileCount++;
-    const name = file.split("/").pop() || "";
+    const name = String(file).split("/").pop() || "";
     if (name.includes("-")) kebabCount++;
     else if (name[0] === name[0].toLowerCase()) camelCount++;
     else pascalCount++;
@@ -203,15 +207,18 @@ async function analyzeProject(projectPath: string): Promise<ProjectAnalysis> {
 
   // Get directory structure
   const directories: string[] = [];
-  const glob = new Glob("**/");
   let dirCount = 0;
-  for await (const dir of glob.scan(projectPath)) {
+  for await (const dir of glob("**/", {
+    cwd: projectPath,
+    exclude: ["**/node_modules/**", "**/.git/**"],
+  })) {
+    const normalized = String(dir).replace(/\/$/, "");
     if (
-      !dir.includes("node_modules") &&
-      !dir.startsWith(".") &&
-      !dir.includes("/.git")
+      normalized &&
+      normalized !== "." &&
+      !normalized.startsWith(".")
     ) {
-      directories.push(dir);
+      directories.push(normalized);
       dirCount++;
       if (dirCount > 20) break;
     }

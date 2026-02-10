@@ -100,9 +100,9 @@ mcp__context7__query-docs({
 })
 ```
 
-### Step 3: Execute Exa Search
+### Step 3: Execute External Search
 
-Use exa skill for 3-5 searches:
+Use `grok-search` skill for 3-5 searches:
 
 Optional batch runner:
 
@@ -115,19 +115,19 @@ npx tsx scripts/execute_search.ts --topic "{topic}" --mode {basic|deep} --output
 1. **Trends:**
 
 ```
-Skill(skill="brainstorm:exa", args="search \"{topic} trends 2026\" --content --limit 5")
+Skill(skill="brainstorm:grok-search", args="search \"{topic} trends 2026\" --max-results 5")
 ```
 
 2. **Case studies:**
 
 ```
-Skill(skill="brainstorm:exa", args="search \"{topic} case study examples\" --content --limit 5")
+Skill(skill="brainstorm:grok-search", args="search \"{topic} case study examples\" --max-results 5")
 ```
 
 3. **Cross-domain:**
 
 ```
-Skill(skill="brainstorm:exa", args="search \"{topic} inspiration from other industries\" --content --limit 5")
+Skill(skill="brainstorm:grok-search", args="search \"{topic} inspiration from other industries\" --max-results 5")
 ```
 
 **Deep searches (only when deep=true):**
@@ -135,13 +135,13 @@ Skill(skill="brainstorm:exa", args="search \"{topic} inspiration from other indu
 4. **Problems:**
 
 ```
-Skill(skill="brainstorm:exa", args="search \"{topic} challenges problems pain points\" --content --limit 5")
+Skill(skill="brainstorm:grok-search", args="search \"{topic} challenges problems pain points\" --max-results 5")
 ```
 
 5. **Opportunities:**
 
 ```
-Skill(skill="brainstorm:exa", args="search \"{topic} opportunities innovations startups\" --content --limit 5")
+Skill(skill="brainstorm:grok-search", args="search \"{topic} opportunities innovations startups\" --max-results 5")
 ```
 
 ### Step 4: Generate Research Brief

@@ -74,7 +74,7 @@
             "max_results": { "type": "integer", "default": 100 }
           }
         },
-        "exa": {
+        "external_search": {
           "type": "object",
           "properties": {
             "priority": { "type": "integer", "default": 5 },
@@ -140,7 +140,7 @@
         "new_project": {
           "type": "object",
           "properties": {
-            "primary_tool": { "type": "string", "default": "exa" },
+            "primary_tool": { "type": "string", "default": "external_search" },
             "fallback_tools": {
               "type": "array",
               "items": { "type": "string" },

@@ -7,6 +7,9 @@
 import { readFile, writeFile, mkdir } from "fs/promises";
 import { join, dirname } from "path";
 import { spawn } from "child_process";
+import { fileURLToPath } from "url";
+
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 
 type AnalysisType =
   | "module_structure"
@@ -68,7 +71,7 @@ interface AnalysisResult {
 }
 
 async function loadConfig(): Promise<AnalysisConfig> {
-  const configPath = join(import.meta.dir, "../assets/codex-config.json");
+  const configPath = join(SCRIPT_DIR, "../assets/codex-config.json");
   const content = await readFile(configPath, "utf-8");
   return JSON.parse(content);
 }

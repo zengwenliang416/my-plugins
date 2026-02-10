@@ -210,7 +210,7 @@ function loadSkill(name, options) {
 /memory skill-load "codex-cli" --include-refs
 
 # JSON 格式输出
-/memory skill-load "exa" --format json
+/memory skill-load "grok-search" --format json
 
 # 加载类别摘要
 /memory skill-load "category:memory"

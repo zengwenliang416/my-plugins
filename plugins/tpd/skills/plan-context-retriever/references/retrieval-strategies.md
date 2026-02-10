@@ -160,25 +160,25 @@ async function expandSibling(filePath: string) {
 
 对于新项目或缺少历史代码的场景：
 
-### 1. 外部文档检索（Exa）
+### 1. 外部文档检索（context7 / WebSearch）
 
 ```bash
-# 调用 exa skill 获取外部文档
-Skill("exa", "search 'React authentication best practices 2024' --content --limit 5")
+# 使用 WebSearch 获取外部文档
+WebSearch(query="React authentication best practices 2024")
 ```
 
 ### 2. 类似项目参考
 
 ```bash
 # 查找类似开源项目
-Skill("exa", "similar https://github.com/example/project --content")
+WebSearch(query="github authentication project examples")
 ```
 
 ### 3. 框架文档
 
 ```bash
 # 获取框架官方文档
-Skill("exa", "search 'Next.js 15 authentication middleware' --include nextjs.org")
+WebSearch(query="Next.js 15 authentication middleware site:nextjs.org")
 ```
 
 ## 检索结果处理

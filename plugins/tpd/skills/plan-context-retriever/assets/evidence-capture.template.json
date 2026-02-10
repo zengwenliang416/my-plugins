@@ -125,7 +125,7 @@
             "lsp:incomingCalls",
             "glob",
             "grep",
-            "exa:search",
+            "websearch:query",
             "read"
           ]
         },

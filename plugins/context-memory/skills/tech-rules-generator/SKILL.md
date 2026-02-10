@@ -4,11 +4,11 @@ description: |
   【触发条件】/memory tech-rules <stack> 或需要生成技术规则时
   【核心产出】.claude/memory/rules/{stack}.md - 技术栈专属规则文件
   【专属用途】
-    - 搜索最佳实践 (exa)
+    - 检索最佳实践 (context7 / WebSearch)
     - 分析项目现有规范
     - 生成技术栈规则文档
     - 集成到 Claude 上下文
-  【强制工具】Skill(exa), Skill(codex-cli)
+  【强制工具】Skill(codex-cli)
   【不触发】规则已存在且最新时
   【先问什么】默认先确认输入范围、输出格式与约束条件
   [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/generate-rules.ts`).
@@ -55,8 +55,9 @@ npx tsx scripts/generate-rules.ts [args]
    - 框架: "nestjs" (隐含 typescript)
        │
        ▼
-2. 搜索最佳实践 (exa)
-   Skill("memory:exa", category="best-practices")
+2. 搜索最佳实践 (context7 / WebSearch)
+   - 优先使用 context7 官方文档
+   - 必要时补充 WebSearch
    - 官方文档
    - 社区最佳实践
    - 2024 年趋势
@@ -378,7 +379,7 @@ const [users, roles] = await Promise.all([fetchUsers(), fetchRoles()]);
 ## 降级策略
 
 ```
-exa 搜索失败:
+外部检索失败:
 ├── 使用内置规则模板
 ├── 仅基于项目分析生成
 └── 标记需要补充外部资源
@@ -394,7 +395,7 @@ codex-cli 分析失败:
 ```
 tech-rules-generator
     │
-    ├── 使用 exa 搜索最佳实践
+    ├── 使用 context7/WebSearch 搜索最佳实践
     ├── 使用 codex-cli 分析项目
     │
     └── 输出规则供 Claude 会话使用

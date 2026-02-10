@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S npx tsx
 /**
  * Documentation Incremental Updater Script
  * Updates documentation based on recent code changes
@@ -6,7 +6,10 @@
 
 import { readFile, writeFile, mkdir } from "fs/promises";
 import { dirname } from "path";
-import { $ } from "bun";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
 
 interface ChangedFile {
   path: string;
@@ -46,7 +49,11 @@ interface IncrementalUpdate {
 
 async function getChangedFiles(since: string): Promise<string[]> {
   try {
-    const result = await $`git diff --name-only ${since}..HEAD`.text();
+    const { stdout: result } = await execFileAsync(
+      "git",
+      ["diff", "--name-only", `${since}..HEAD`],
+      { encoding: "utf-8" },
+    );
     return result
       .trim()
       .split("\n")
@@ -60,7 +67,12 @@ async function getChangedFiles(since: string): Promise<string[]> {
 
 async function getFileDiff(filePath: string, since: string): Promise<string> {
   try {
-    return await $`git diff ${since}..HEAD -- ${filePath}`.text();
+    const { stdout } = await execFileAsync(
+      "git",
+      ["diff", `${since}..HEAD`, "--", filePath],
+      { encoding: "utf-8", maxBuffer: 10 * 1024 * 1024 },
+    );
+    return stdout;
   } catch {
     return "";
   }
