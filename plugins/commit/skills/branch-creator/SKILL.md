@@ -1,103 +1,68 @@
 ---
 name: branch-creator
 description: |
-  【Trigger】Commit workflow Phase 3.5: create feature branch.
-  【Output】${run_dir}/branch-info.json + new branch
-  【Ask】If on feature branch, ask to reuse or create new.
+  [Trigger] Commit workflow phase 3.5 to prepare or switch a working branch.
+  [Output] `${run_dir}/branch-info.json` and selected branch state.
+  [Skip] User explicitly keeps the current branch or `skip_branch=true`.
+  [Ask] If already on a feature branch, ask whether to reuse or create another one.
+  [Resource Usage] Read naming rules from `references/branch-naming.md` and execute `scripts/create-branch.ts`.
 allowed-tools:
-  [
-    Bash,
-    Read,
-    Write,
-    AskUserQuestion,
-  ]
+  - Bash
+  - Read
+  - Write
+  - AskUserQuestion
 arguments:
   - name: run_dir
     type: string
     required: true
-    description: Runtime directory (contains changes-analysis.json)
+    description: Runtime directory that stores workflow artifacts.
   - name: branch_name
     type: string
     required: false
-    description: Custom branch name (auto-generated if omitted)
+    description: Optional explicit branch name.
   - name: skip_branch
     type: boolean
     required: false
-    description: Skip branch creation
+    description: Skip branch creation and keep current branch.
 ---
 
 # Branch Creator
 
+## Script Entry
+
+```bash
+npx tsx scripts/create-branch.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/branch-naming.json`
+- Execution script: `scripts/create-branch.ts`
+
 ## Input/Output
 
-| Item   | Value                                                     |
-| ------ | --------------------------------------------------------- |
-| Input  | `${run_dir}/changes-analysis.json` + optional branch_name |
-| Output | `${run_dir}/branch-info.json` + new branch                |
+| Item | Value |
+| --- | --- |
+| Input | `${run_dir}/changes-analysis.json` and optional `branch_name` |
+| Output | `${run_dir}/branch-info.json` |
 
 ## Naming Convention
 
-Format: `<type>/<scope>-<description>`
-
-| Type | Scope  | Branch                     |
-| ---- | ------ | -------------------------- |
-| feat | auth   | `feat/auth-add-login`      |
-| fix  | button | `fix/button-style-issue`   |
-| docs | readme | `docs/readme-update-guide` |
-
-Rules: lowercase, hyphens, max 50 chars, alphanumeric only
+- Preferred format: `<type>/<scope>-<description>`
+- Allowed chars: lowercase letters, digits, `/`, `-`
+- Suggested max length: 64
+- Reference details: `references/branch-naming.json`
 
 ## Execution
 
-### 1. Check current branch
-
-```bash
-git branch --show-current
-```
-
-| Current             | Action                                   |
-| ------------------- | ---------------------------------------- |
-| main/master/develop | Create new branch                        |
-| Feature branch      | Ask: reuse / create new / switch to main |
-| Detached HEAD       | Error                                    |
-
-### 2. Read analysis
-
-From changes-analysis.json: primary_type, primary_scope, summary
-
-### 3. Generate name
-
-If no custom name: `${type}/${scope}-${keywords}`
-
-### 4. Check conflicts
-
-```bash
-git show-ref --verify --quiet refs/heads/${name}
-```
-
-If exists → Ask: switch / rename (-v2) / delete / cancel
-
-### 5. Create branch
-
-```bash
-git checkout -b ${branch_name}
-```
-
-### 6. Write branch-info.json
-
-```json
-{
-  "previous_branch": "main",
-  "new_branch": "feat/auth-add-login",
-  "branch_type": "created|switched|reused",
-  "status": "success"
-}
-```
+1. Validate branch naming rules from `references/branch-naming.md`.
+2. Execute:
+   `npx ts-node --esm scripts/create-branch.ts --run-dir "${run_dir}" [--branch-name "${branch_name}"] [--skip-branch]`
+3. Read `${run_dir}/branch-info.json` and continue workflow.
 
 ## Return
 
-```
-🌿 Branch: ${new_branch}
-Previous: ${previous} | Type: ${type} | Scope: ${scope}
-Output: ${run_dir}/branch-info.json
-```
+Return summary:
+- target branch
+- operation type (`created`, `switched`, `reused`, `skipped`)
+- artifact path `${run_dir}/branch-info.json`

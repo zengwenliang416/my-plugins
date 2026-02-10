@@ -1,11 +1,12 @@
 ---
 name: context-retriever
 description: |
-  [Trigger] Dev workflow step 1: Retrieve context related to feature requirements.
-  [Output] Outputs ${run_dir}/context.md containing internal code + external documentation.
-  [Skip] Direct analysis (use multi-model-analyzer), code generation (use prototype-generator).
-  [Ask First] If requirement description is vague, ask what context to retrieve specifically
+  【触发条件】 Dev workflow step 1: Retrieve context related to feature requirements.
+  【核心产出】 Outputs ${run_dir}/context.md containing internal code + external documentation.
+  【不触发】 Direct analysis (use multi-model-analyzer), code generation (use prototype-generator).
+  【先问什么】 If requirement description is vague, ask what context to retrieve specifically
   [Mandatory Tool] Internal code uses auggie-mcp + LSP, external docs use exa skill.
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/retrieve-context.ts`).
 allowed-tools:
   - Write
   - Skill
@@ -19,6 +20,18 @@ arguments:
 ---
 
 # Context Retriever - Context Retrieval Atomic Skill
+
+## Script Entry
+
+```bash
+npx tsx scripts/retrieve-context.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/retrieval-strategies.json`
+- Assets: `assets/context.template.md`
+- Execution script: `scripts/retrieve-context.ts`
 
 ## 🚨 CRITICAL: Mandatory Tool Usage Rules
 

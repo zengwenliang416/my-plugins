@@ -10,6 +10,8 @@ description: |
     - 保持文档与代码同步
   【强制工具】Skill(codex-cli), git
   【不触发】无代码变更时
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/incremental-update.ts`).
 allowed-tools:
   - Skill
   - Read
@@ -28,6 +30,18 @@ arguments:
 ---
 
 # Doc Incremental Updater - 文档增量更新器
+
+## Script Entry
+
+```bash
+npx tsx scripts/incremental-update.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/incremental-patterns.md`
+- Assets: `assets/incremental-config.json`
+- Execution script: `scripts/incremental-update.ts`
 
 ## 执行流程
 

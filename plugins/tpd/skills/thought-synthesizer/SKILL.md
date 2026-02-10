@@ -1,10 +1,11 @@
 ---
 name: thought-synthesizer
 description: |
-  [Trigger] Thinking workflow Phase 4: Synthesize context exploration and constraint set
-  [Output] Outputs ${run_dir}/synthesis.md containing constraints/risks/dependencies/success criteria and open questions
-  [Skip] When no exploration artifacts (can downgrade to light summary)
-  [Ask First] No need to ask, automatically executes
+  【触发条件】 Thinking workflow Phase 4: Synthesize context exploration and constraint set
+  【核心产出】 Outputs ${run_dir}/synthesis.md containing constraints/risks/dependencies/success criteria and open questions
+  【不触发】 When no exploration artifacts (can downgrade to light summary)
+  【先问什么】 No need to ask, automatically executes
+  [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Read
   - Write

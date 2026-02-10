@@ -1,10 +1,13 @@
 ---
 name: architecture-analyzer
 description: |
-  [Trigger] Plan workflow Step 4: Integrate multi-model planning results, generate unified architecture document
-  [Output] Outputs ${run_dir}/architecture.md (integrating backend + frontend planning)
+  【触发条件】 Plan workflow Step 4: Integrate multi-model planning results, generate unified architecture document
+  【核心产出】 Outputs ${run_dir}/architecture.md (integrating backend + frontend planning)
+  【不触发】未产出 codex-plan/gemini-plan 且缺少可整合输入时
   [Prerequisite] Must execute codex-planner and/or gemini-planner first
   [Parallel Support] ✅ Read codex-plan.md (backend) + gemini-plan.md (frontend)
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Read
   - Write

@@ -9,6 +9,8 @@ description: |
     - 架构流、函数调用、数据流、条件路径
   【强制工具】Skill(codex-cli)
   【不触发】已存在且未过期的 codemap
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/analyze-deps.ts`).
 allowed-tools:
   - Skill
   - Write
@@ -31,6 +33,18 @@ arguments:
 ---
 
 # Code Map Generator - 代码地图生成器
+
+## Script Entry
+
+```bash
+npx tsx scripts/analyze-deps.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/module-patterns.md`
+- Assets: `assets/config.json`
+- Execution script: `scripts/analyze-deps.ts`
 
 ## 执行流程
 

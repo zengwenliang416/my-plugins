@@ -10,6 +10,8 @@ description: |
     - 支持增量更新
   【强制工具】Glob, Read
   【不触发】索引已存在且未过期时
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/build-index.ts`).
 allowed-tools:
   - Glob
   - Read
@@ -31,6 +33,18 @@ arguments:
 ---
 
 # Skill Indexer - 技能索引生成器
+
+## Script Entry
+
+```bash
+npx tsx scripts/build-index.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/skill-format.md`
+- Assets: `assets/index-schema.json`
+- Execution script: `scripts/build-index.ts`
 
 ## 执行流程
 

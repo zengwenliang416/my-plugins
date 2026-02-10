@@ -6,6 +6,7 @@ description: |
   【不触发】检测气味（用 smell-detector）、执行重构（用 refactor-executor）。
   【先问什么】suggestions.json 不存在时，询问是否先执行建议生成
   【MUST】LSP.findReferences 追踪引用，必须使用。
+  [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Write
   - Read

@@ -1,9 +1,11 @@
 ---
 name: change-collector
 description: |
-  【Trigger】Commit workflow step 1: collect git changes.
-  【Output】${run_dir}/changes-raw.json
-  【Ask】If not a git repo, ask to initialize.
+  【触发条件】Commit workflow step 1: collect git changes.
+  【核心产出】${run_dir}/changes-raw.json
+  【不触发】当前目录不是 git 仓库且用户拒绝初始化时
+  【先问什么】If not a git repo, ask to initialize.
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/get-git-status.ts`).
 allowed-tools:
 arguments:
   - name: run_dir
@@ -13,6 +15,18 @@ arguments:
 ---
 
 # Change Collector
+
+## Script Entry
+
+```bash
+npx tsx scripts/get-git-status.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/git-status-codes.json`
+- Assets: `assets/changes-raw.template.json`
+- Execution script: `scripts/get-git-status.ts`
 
 ## Input/Output
 

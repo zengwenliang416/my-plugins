@@ -10,6 +10,8 @@ description: |
     - 供 UI 生成时参考
   【强制工具】Skill(gemini-cli), Read, Glob
   【不触发】非前端项目时
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/detect-style.ts`).
 allowed-tools:
   - Skill
   - Read
@@ -31,6 +33,18 @@ arguments:
 ---
 
 # Style Memory - 样式记忆系统
+
+## Script Entry
+
+```bash
+npx tsx scripts/detect-style.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/style-detection.md`
+- Assets: `assets/style-schema.json`
+- Execution script: `scripts/detect-style.ts`
 
 ## 执行流程
 

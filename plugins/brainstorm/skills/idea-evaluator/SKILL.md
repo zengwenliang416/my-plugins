@@ -1,10 +1,11 @@
 ---
 name: idea-evaluator
 description: |
-  [Trigger] Brainstorm Phase 3: Evaluate and filter ideas
-  [Output] ${run_dir}/evaluation.md (with mindmap and evaluation matrix)
-  [Skip] ideas-pool.md does not exist or idea count < 5
-  [Ask] When criteria missing, ask priority dimension (impact/feasibility/innovation)
+  【触发条件】 Brainstorm Phase 3: Evaluate and filter ideas
+  【核心产出】 ${run_dir}/evaluation.md (with mindmap and evaluation matrix)
+  【不触发】 ideas-pool.md does not exist or idea count < 5
+  【先问什么】 When criteria missing, ask priority dimension (impact/feasibility/innovation)
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/calculate_scores.ts`).
 allowed-tools:
   - Read
   - Write
@@ -17,6 +18,18 @@ allowed-tools:
 # Idea Evaluator
 
 Evaluate, categorize, and filter ideas; generate visualized evaluation results.
+
+## Script Entry
+
+```bash
+npx tsx scripts/calculate_scores.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/evaluation-criteria.md`
+- Assets: `assets/evaluation-weights.json`
+- Execution script: `scripts/calculate_scores.ts`
 
 ## MCP Tool Integration
 

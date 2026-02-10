@@ -6,6 +6,7 @@ description: |
   【不触发】常规重构（用默认流程）、已经是现代架构的项目。
   【先问什么】source_stack 或 target_stack 缺失时，询问技术栈信息
   【MUST】codex-cli 分析后端架构，gemini-cli 分析前端架构，必须使用。
+  [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Write
   - Read

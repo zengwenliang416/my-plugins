@@ -10,6 +10,8 @@ description: |
     - 规划文档生成顺序
   【强制工具】Skill(codex-cli), Glob
   【不触发】已有完整文档规划时
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/plan-docs.ts`).
 allowed-tools:
   - Skill
   - Glob
@@ -28,6 +30,18 @@ arguments:
 ---
 
 # Doc Planner - 文档规划器
+
+## Script Entry
+
+```bash
+npx tsx scripts/plan-docs.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/doc-types.md`
+- Assets: `assets/plan-schema.json`
+- Execution script: `scripts/plan-docs.ts`
 
 ## 执行流程
 

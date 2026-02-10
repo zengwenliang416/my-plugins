@@ -9,6 +9,7 @@ description: |
     - 识别受影响的父模块
     - 确定更新策略
   【不触发】全量更新（用 module-discovery）
+  【先问什么】默认先确认输入范围、输出格式与约束条件
 allowed-tools:
   - Bash
   - Glob

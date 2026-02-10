@@ -1,10 +1,11 @@
 ---
 name: conclusion-generator
 description: |
-  [Trigger] Thinking workflow Phase 5: Generate final conclusion and reasoning chain
-  [Output] Outputs ${run_dir}/conclusion.md containing complete reasoning chain and final conclusion
-  [Skip] None
-  [Ask First] No need to ask, automatically executes
+  【触发条件】 Thinking workflow Phase 5: Generate final conclusion and reasoning chain
+  【核心产出】 Outputs ${run_dir}/conclusion.md containing complete reasoning chain and final conclusion
+  【不触发】 None
+  【先问什么】 No need to ask, automatically executes
+  [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Read
   - Write

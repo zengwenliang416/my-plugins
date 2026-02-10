@@ -1,9 +1,10 @@
 ---
 name: analysis-synthesizer
 description: |
-  【Trigger】Commit workflow Phase 4: merge parallel analysis results.
-  【Output】${run_dir}/changes-analysis.json
-  【Ask】If analyses conflict, ask user to resolve.
+  【触发条件】Commit workflow Phase 4: merge parallel analysis results.
+  【核心产出】${run_dir}/changes-analysis.json
+  【不触发】缺少语义分析或符号分析输入文件时
+  【先问什么】If analyses conflict, ask user to resolve.
 allowed-tools:
 arguments:
   - name: run_dir

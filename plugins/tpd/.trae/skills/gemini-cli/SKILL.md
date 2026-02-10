@@ -9,19 +9,19 @@ description: |
 
 # Gemini CLI - TPD 工作流前端专家
 
-Frontend analysis expert via `codeagent-wrapper`. **UX/UI/组件分析** → 架构规划/原型代码 → Claude review & apply. Context limit: **32k tokens**.
+Frontend analysis expert via `../../skills/gemini-cli/scripts/invoke-gemini.ts`. **UX/UI/组件分析** → 架构规划/原型代码 → Claude review & apply. Context limit: **32k tokens**.
 
 ## 执行命令
 
 ```bash
 # 标准调用
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx ../../skills/gemini-cli/scripts/invoke-gemini.ts \
   --workdir "${workdir:-$(pwd)}" \
   --role "${role}" \
   --prompt "${prompt}"
 
 # 带会话继续
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx ../../skills/gemini-cli/scripts/invoke-gemini.ts \
   --workdir "${workdir:-$(pwd)}" \
   --role "${role}" \
   --prompt "${prompt}" \
@@ -44,7 +44,7 @@ Frontend analysis expert via `codeagent-wrapper`. **UX/UI/组件分析** → 架
 ### 场景 1: 多视角约束分析 (thinking 阶段)
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx ../../skills/gemini-cli/scripts/invoke-gemini.ts \
   --role constraint \
   --prompt "
 ## 任务
@@ -69,7 +69,7 @@ ${QUESTION}
 ### 场景 2: 前端架构规划 (plan 阶段)
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx ../../skills/gemini-cli/scripts/invoke-gemini.ts \
   --role architect \
   --prompt "
 ## 任务
@@ -94,7 +94,7 @@ SPEC.md 格式
 ### 场景 3: 前端代码原型 (dev 阶段)
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx ../../skills/gemini-cli/scripts/invoke-gemini.ts \
   --role implementer \
   --prompt "
 ## 任务
@@ -117,7 +117,7 @@ ${CONTEXT}
 ### 场景 4: UX/可访问性审计 (dev 阶段)
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx ../../skills/gemini-cli/scripts/invoke-gemini.ts \
   --role auditor \
   --prompt "
 ## 任务
@@ -153,11 +153,11 @@ Issue 列表 + 修复建议 + 总分 (1-5)
 
 ```bash
 # 第一次调用 - 获取 SESSION_ID
-result=$(~/.claude/bin/codeagent-wrapper gemini --role architect --prompt "...")
+result=$(npx tsx ../../skills/gemini-cli/scripts/invoke-gemini.ts --role architect --prompt "...")
 SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 
 # 后续调用 - 继续会话
-~/.claude/bin/codeagent-wrapper gemini --role architect --prompt "..." --session "$SESSION_ID"
+npx tsx ../../skills/gemini-cli/scripts/invoke-gemini.ts --role architect --prompt "..." --session "$SESSION_ID"
 ```
 
 ---

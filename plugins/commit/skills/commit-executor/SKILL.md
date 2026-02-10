@@ -1,9 +1,10 @@
 ---
 name: commit-executor
 description: |
-  【Trigger】Commit workflow final step: execute git commit.
-  【Output】${run_dir}/commit-result.json
-  【Ask】If hook fails, ask to skip or fix.
+  【触发条件】Commit workflow final step: execute git commit.
+  【核心产出】${run_dir}/commit-result.json
+  【不触发】用户取消提交或前置步骤失败时
+  【先问什么】If hook fails, ask to skip or fix.
 arguments:
   - name: run_dir
     type: string
@@ -16,6 +17,18 @@ arguments:
 ---
 
 # Commit Executor
+
+## Script Entry
+
+```bash
+npx tsx scripts/safe-commit.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/git-safety.md`
+- Assets: `assets/pre-commit-hook.template.sh`
+- Execution script: `scripts/safe-commit.ts`
 
 ## Input/Output
 

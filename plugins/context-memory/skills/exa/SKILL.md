@@ -9,6 +9,8 @@ description: |
     - 框架使用示例搜索
   【强制工具】Bash (exa_exec.ts)
   【不触发】本地代码搜索（用 grep/glob）
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, scripts/ (entry: `scripts/exa_exec.ts`).
 allowed-tools:
   - Bash
 arguments:
@@ -27,6 +29,17 @@ arguments:
 ---
 
 # Memory Plugin - Exa Search Skill
+
+## Script Entry
+
+```bash
+npx tsx scripts/exa_exec.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/search-strategies.md`
+- Execution script: `scripts/exa_exec.ts`
 
 ## 执行流程
 

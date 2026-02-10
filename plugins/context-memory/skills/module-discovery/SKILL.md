@@ -9,6 +9,7 @@ description: |
     - 智能过滤（tests/build/config）
     - 按 Layer 分组（3→2→1）
   【不触发】增量更新（用 change-detector）
+  【先问什么】默认先确认输入范围、输出格式与约束条件
 allowed-tools:
   - Bash
   - Glob

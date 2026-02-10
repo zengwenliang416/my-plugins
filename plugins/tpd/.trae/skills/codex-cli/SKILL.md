@@ -9,20 +9,20 @@ description: |
 
 # Codex CLI - TPD 工作流后端专家
 
-Backend analysis expert via `codeagent-wrapper`. **Read-only sandbox** → constraint/architecture/prototype analysis → Claude review & apply.
+Backend analysis expert via `../../skills/codex-cli/scripts/invoke-codex.ts`. **Read-only sandbox** → constraint/architecture/prototype analysis → Claude review & apply.
 
 ## 执行命令
 
 ```bash
 # 标准调用
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx ../../skills/codex-cli/scripts/invoke-codex.ts \
   --workdir "${workdir:-$(pwd)}" \
   --role "${role}" \
   --prompt "${prompt}" \
   --sandbox read-only
 
 # 带会话继续
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx ../../skills/codex-cli/scripts/invoke-codex.ts \
   --workdir "${workdir:-$(pwd)}" \
   --role "${role}" \
   --prompt "${prompt}" \
@@ -46,7 +46,7 @@ Backend analysis expert via `codeagent-wrapper`. **Read-only sandbox** → const
 ### 场景 1: 约束分析 (thinking 阶段)
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx ../../skills/codex-cli/scripts/invoke-codex.ts \
   --role constraint \
   --prompt "
 ## 任务
@@ -73,7 +73,7 @@ ${QUESTION}
 ### 场景 2: 架构规划 (plan 阶段)
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx ../../skills/codex-cli/scripts/invoke-codex.ts \
   --role architect \
   --prompt "
 ## 任务
@@ -98,7 +98,7 @@ PLANS.md 格式
 ### 场景 3: 代码原型 (dev 阶段)
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx ../../skills/codex-cli/scripts/invoke-codex.ts \
   --role implementer \
   --prompt "
 ## 任务
@@ -122,7 +122,7 @@ ${CONTEXT}
 ### 场景 4: 安全审计 (dev 阶段)
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx ../../skills/codex-cli/scripts/invoke-codex.ts \
   --role auditor \
   --prompt "
 ## 任务
@@ -148,11 +148,11 @@ Issue 列表 + 修复建议 + 总分 (1-5)
 
 ```bash
 # 第一次调用 - 获取 SESSION_ID
-result=$(~/.claude/bin/codeagent-wrapper codex --role architect --prompt "..." --sandbox read-only)
+result=$(npx tsx ../../skills/codex-cli/scripts/invoke-codex.ts --role architect --prompt "..." --sandbox read-only)
 SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 
 # 后续调用 - 继续会话
-~/.claude/bin/codeagent-wrapper codex --role architect --prompt "..." --session "$SESSION_ID" --sandbox read-only
+npx tsx ../../skills/codex-cli/scripts/invoke-codex.ts --role architect --prompt "..." --session "$SESSION_ID" --sandbox read-only
 ```
 
 ---

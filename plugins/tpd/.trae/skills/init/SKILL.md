@@ -60,10 +60,10 @@ Check the following runtime capabilities:
    - `Read`/`Edit` permissions are correctly configured
 
 2. **External model wrappers**
-   - `codeagent-wrapper codex --help` can run
-   - `codeagent-wrapper gemini --help` can run
+   - `npx tsx ../../skills/codex-cli/scripts/invoke-codex.ts --help` can run
+   - `npx tsx ../../skills/gemini-cli/scripts/invoke-gemini.ts --help` can run
 
-If wrapper is unavailable, suggest installation/configuration of `codeagent-wrapper` and login/auth setup.
+If wrappers are unavailable, suggest installation/configuration of wrapper dependencies and login/auth setup.
 
 ---
 

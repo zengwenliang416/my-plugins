@@ -1,9 +1,12 @@
 ---
 name: task-decomposer
 description: |
-  [Trigger] Plan workflow Step 4: Decompose architecture solution into executable tasks
-  [Output] Outputs ${run_dir}/tasks.md
+  【触发条件】 Plan workflow Step 4: Decompose architecture solution into executable tasks
+  【核心产出】 Outputs ${run_dir}/tasks.md
+  【不触发】架构方案尚未确定或输入不足以拆分任务时
   [Mandatory Tool] Skill call codex-cli to verify task feasibility
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Read
   - Write

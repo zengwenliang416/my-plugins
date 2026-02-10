@@ -1,9 +1,10 @@
 ---
 name: message-generator
 description: |
-  【Trigger】Commit workflow step 3: generate commit message.
-  【Output】${run_dir}/commit-message.md
-  【Ask】If analysis missing, ask to run analyzer first.
+  【触发条件】Commit workflow step 3: generate commit message.
+  【核心产出】${run_dir}/commit-message.md
+  【不触发】缺少变更分析结果且用户不愿先补齐分析时
+  【先问什么】If analysis missing, ask to run analyzer first.
 arguments:
   - name: run_dir
     type: string
@@ -16,6 +17,18 @@ arguments:
 ---
 
 # Message Generator
+
+## Script Entry
+
+```bash
+npx tsx scripts/validate-message.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/commit-templates.json`
+- Assets: `assets/commit-message.template.md`
+- Execution script: `scripts/validate-message.ts`
 
 ## 🚨 Mandatory Rules
 

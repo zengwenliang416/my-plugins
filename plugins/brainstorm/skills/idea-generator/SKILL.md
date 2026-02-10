@@ -1,11 +1,12 @@
 ---
 name: idea-generator
 description: |
-  [Trigger] Brainstorm Phase 2: Multi-model parallel idea generation
-  [Output] ${run_dir}/ideas-pool.md (minimum 20 ideas)
-  [Skip] research-brief.md does not exist
-  [Ask] When method param missing, ask preferred divergence method (scamper/hats/auto)
+  【触发条件】 Brainstorm Phase 2: Multi-model parallel idea generation
+  【核心产出】 ${run_dir}/ideas-pool.md (minimum 20 ideas)
+  【不触发】 research-brief.md does not exist
+  【先问什么】 When method param missing, ask preferred divergence method (scamper/hats/auto)
   [Required] Must call codex-cli and gemini-cli in parallel
+  [Resource Usage] Use references/, assets/, and scripts/ (`scripts/merge_ideas.ts`, `../codex-cli/scripts/brainstorm_codex.ts`, `../gemini-cli/scripts/brainstorm_gemini.ts`).
 allowed-tools:
   - Read
   - Write
@@ -20,6 +21,18 @@ allowed-tools:
 # Idea Generator
 
 Generate ideas using multi-model parallel execution (Codex + Gemini) based on divergence frameworks.
+
+## Script Entry
+
+```bash
+npx tsx scripts/merge_ideas.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/multi-model-prompts.md`
+- Assets: `assets/method-config.json`
+- Execution script: `scripts/merge_ideas.ts`
 
 ## MCP Tool Integration
 
@@ -146,15 +159,16 @@ Format: JSON array only
 CODEX_OUTPUT="${run_dir}/codex-ideas.json"
 GEMINI_OUTPUT="${run_dir}/gemini-ideas.json"
 
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx ../codex-cli/scripts/brainstorm_codex.ts \
   --role brainstorm \
   --prompt "$CODEX_PROMPT" \
-  --sandbox read-only > "$CODEX_OUTPUT" 2>&1 &
+  --method "$METHOD" > "$CODEX_OUTPUT" 2>&1 &
 CODEX_PID=$!
 
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx ../gemini-cli/scripts/brainstorm_gemini.ts \
   --role brainstorm \
-  --prompt "$GEMINI_PROMPT" > "$GEMINI_OUTPUT" 2>&1 &
+  --prompt "$GEMINI_PROMPT" \
+  --method "$METHOD" > "$GEMINI_OUTPUT" 2>&1 &
 GEMINI_PID=$!
 
 wait $CODEX_PID $GEMINI_PID

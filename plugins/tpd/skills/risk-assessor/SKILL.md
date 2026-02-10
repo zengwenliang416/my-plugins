@@ -1,9 +1,12 @@
 ---
 name: risk-assessor
 description: |
-  [Trigger] Plan workflow Step 5: Assess technical risks and implementation obstacles
-  [Output] Outputs ${run_dir}/risks.md
+  【触发条件】 Plan workflow Step 5: Assess technical risks and implementation obstacles
+  【核心产出】 Outputs ${run_dir}/risks.md
+  【不触发】尚未完成架构与任务分解，无法进行风险评估时
   [Mandatory Tool] codex-cli (security/performance review)
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Read
   - Write

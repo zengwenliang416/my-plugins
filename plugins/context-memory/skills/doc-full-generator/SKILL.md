@@ -9,6 +9,8 @@ description: |
     - 批量生成，保持一致性
   【强制工具】Skill(codex-cli), Skill(gemini-cli), Write
   【不触发】无有效规划时
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/generate-docs.ts`).
 allowed-tools:
   - Skill
   - Read
@@ -30,6 +32,18 @@ arguments:
 ---
 
 # Doc Full Generator - 完整文档生成器
+
+## Script Entry
+
+```bash
+npx tsx scripts/generate-docs.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/doc-templates.md`
+- Assets: `assets/generation-config.json`
+- Execution script: `scripts/generate-docs.ts`
 
 ## 执行流程
 

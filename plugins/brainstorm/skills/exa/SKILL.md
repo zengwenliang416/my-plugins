@@ -1,6 +1,11 @@
 ---
 name: exa
-description: "AI search for trends, cases, and cross-industry inspiration"
+description: |
+  【触发条件】Brainstorm 需要外部趋势、案例或跨行业灵感检索时
+  【核心产出】结构化外部检索结果与可追溯链接
+  【不触发】仅进行本地代码分析且无需外部资料时
+  【先问什么】搜索主题、时间范围、行业边界与结果条数
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/exa_exec.ts`).
 allowed-tools:
   - Bash
   - Read
@@ -9,6 +14,18 @@ allowed-tools:
 # Exa Search - Brainstorm Research Assistant
 
 AI-native search engine for brainstorming research: trends, case studies, cross-industry inspiration.
+
+## Script Entry
+
+```bash
+npx tsx scripts/exa_exec.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/brainstorm-search-patterns.md`
+- Assets: `assets/search-config.json`
+- Execution script: `scripts/exa_exec.ts`
 
 ## Execution
 

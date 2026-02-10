@@ -7,6 +7,7 @@ description: |
   【先问什么】smells.json 不存在时，询问是否先执行检测
   【MUST】codex-cli 生成技术建议，必须使用。
   【Legacy 模式】legacy=true 时，额外生成迁移相关的重构建议。
+  [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Write
   - Read

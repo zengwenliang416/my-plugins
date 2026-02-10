@@ -10,6 +10,8 @@ description: |
     - 更新所有交叉引用
   【强制工具】Skill(codex-cli), Skill(gemini-cli)
   【不触发】文档已是最新时
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/update-docs.ts`).
 allowed-tools:
   - Skill
   - Read
@@ -32,6 +34,18 @@ arguments:
 ---
 
 # Doc Full Updater - 文档全量更新器
+
+## Script Entry
+
+```bash
+npx tsx scripts/update-docs.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/update-patterns.md`
+- Assets: `assets/updater-config.json`
+- Execution script: `scripts/update-docs.ts`
 
 ## 执行流程
 

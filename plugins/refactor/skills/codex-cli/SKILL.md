@@ -5,6 +5,7 @@ description: |
   【核心产出】只读沙箱分析代码 → 输出 unified diff patch → Claude 审查重构后应用
   【不触发】前端 UI/CSS 重构（改用 gemini-cli）、简单格式化
   【先问什么】无需询问，由其他 skills 调用
+  [Resource Usage] Use references/, assets/, and scripts/ (`scripts/invoke-codex.ts`).
 allowed-tools:
   - Bash
   - Read
@@ -13,20 +14,26 @@ allowed-tools:
 
 # Codex CLI - 重构工作流后端专家
 
-Backend refactoring expert via `codeagent-wrapper`. **Read-only sandbox** → smell detection + unified diff patches → Claude review & apply.
+Backend refactoring expert via `scripts/invoke-codex.ts`. **Read-only sandbox** → smell detection + unified diff patches → Claude review & apply.
+
+## Script Entry
+
+```bash
+npx tsx scripts/invoke-codex.ts --role "<role>" --prompt "<prompt>" [--workdir "<path>"] [--session "<id>"] [--sandbox "read-only"]
+```
 
 ## 执行命令
 
 ```bash
 # 标准调用
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
   --workdir /path/to/project \
   --role refactoring-expert \
   --prompt "Your refactoring task" \
   --sandbox read-only
 
 # 后台并行执行
-~/.claude/bin/codeagent-wrapper codex --prompt "$PROMPT" --sandbox read-only &
+npx tsx scripts/invoke-codex.ts --prompt "$PROMPT" --sandbox read-only &
 ```
 
 ## 重构专用角色
@@ -45,7 +52,7 @@ Backend refactoring expert via `codeagent-wrapper`. **Read-only sandbox** → sm
 ### 场景 1: 代码气味检测
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
   --role smell-detector \
   --prompt "
 ## 任务
@@ -78,7 +85,7 @@ JSON 数组，每个气味包含：
 ### 场景 2: Extract Method 重构
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
   --role refactoring-expert \
   --prompt "
 ## 任务
@@ -108,7 +115,7 @@ JSON 数组，每个气味包含：
 ### 场景 3: Extract Class 重构
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
   --role refactoring-expert \
   --prompt "
 ## 任务
@@ -136,7 +143,7 @@ ${responsibilities_to_extract}
 ### 场景 4: Move Method 重构
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
   --role refactoring-expert \
   --prompt "
 ## 任务
@@ -162,7 +169,7 @@ unified diff
 ### 场景 5: Introduce Parameter Object 重构
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
   --role refactoring-expert \
   --prompt "
 ## 任务
@@ -188,7 +195,7 @@ unified diff
 ### 场景 6: 安全性审查
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
   --role safety-reviewer \
   --prompt "
 ## 任务
@@ -223,7 +230,7 @@ JSON：
 ### Step 1: Codex 分析/生成
 
 ```bash
-result=$(~/.claude/bin/codeagent-wrapper codex \
+result=$(npx tsx scripts/invoke-codex.ts \
   --role refactoring-expert \
   --prompt "$REFACTOR_PROMPT" \
   --sandbox read-only)
@@ -244,7 +251,7 @@ SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 ### Step 4: 验证
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
   --role safety-reviewer \
   --prompt "验证重构结果：[变更摘要]" \
   --session "$SESSION_ID" \
@@ -257,11 +264,11 @@ SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 
 ```bash
 # 第一次调用 - 获取 SESSION_ID
-result=$(~/.claude/bin/codeagent-wrapper codex --prompt "..." --sandbox read-only)
+result=$(npx tsx scripts/invoke-codex.ts --prompt "..." --sandbox read-only)
 SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 
 # 后续调用 - 继续会话
-~/.claude/bin/codeagent-wrapper codex --prompt "..." --session "$SESSION_ID"
+npx tsx scripts/invoke-codex.ts --prompt "..." --session "$SESSION_ID"
 ```
 
 ---

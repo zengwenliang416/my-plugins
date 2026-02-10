@@ -1,10 +1,10 @@
 ---
 name: handoff-generator
 description: |
-  [Trigger] Thinking workflow Phase 6: Generate handoff summary and structured artifacts
-  [Output] Outputs ${run_dir}/handoff.md and ${run_dir}/handoff.json
-  [Skip] None
-  [Ask First] No need to ask, automatically executes
+  【触发条件】 Thinking workflow Phase 6: Generate handoff summary and structured artifacts
+  【核心产出】 Outputs ${run_dir}/handoff.md and ${run_dir}/handoff.json
+  【不触发】 None
+  【先问什么】 No need to ask, automatically executes
   [🚨 Mandatory] Must read input.md/synthesis.md/conclusion.md/state.json
 allowed-tools:
   - Read

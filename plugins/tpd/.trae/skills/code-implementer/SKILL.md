@@ -16,7 +16,7 @@ description: |
 ┌─────────────────────────────────────────────────────────────────┐
 │  ❌ Prohibited: Claude implementing code itself (skipping       │
 │     external model)                                              │
-│  ❌ Prohibited: Directly calling codeagent-wrapper via Terminal │
+│  ❌ Prohibited: Directly calling model wrapper binary via Terminal │
 │  ✅ Required: Invoke codex-cli or gemini-cli                    │
 │                                                                  │
 │  This is the core of multi-model collaboration!                  │
@@ -106,7 +106,7 @@ LSP(operation="outgoingCalls", filePath="<file>", line=<line>, character=<char>)
 
 **❌ Prohibited Actions:**
 
-- ❌ Using Terminal to call codeagent-wrapper
+- ❌ Using Terminal to call model wrapper binary
 - ❌ Implementing code yourself
 - ❌ Using Write/Edit tool to directly write code
 

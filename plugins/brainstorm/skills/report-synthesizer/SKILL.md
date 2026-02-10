@@ -1,10 +1,11 @@
 ---
 name: report-synthesizer
 description: |
-  [Trigger] Brainstorm Phase 4: Generate final report
-  [Output] ${run_dir}/brainstorm-report.md
-  [Skip] evaluation.md does not exist
-  [Ask] Report format preference (brief/detailed)
+  【触发条件】 Brainstorm Phase 4: Generate final report
+  【核心产出】 ${run_dir}/brainstorm-report.md
+  【不触发】 evaluation.md does not exist
+  【先问什么】 Report format preference (brief/detailed)
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/generate_report.ts`).
 allowed-tools:
   - Read
   - Write
@@ -17,6 +18,18 @@ allowed-tools:
 # Report Synthesizer
 
 Consolidate all phase artifacts and generate structured final brainstorm report.
+
+## Script Entry
+
+```bash
+npx tsx scripts/generate_report.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/report-template.md`
+- Assets: `assets/report-config.json`
+- Execution script: `scripts/generate_report.ts`
 
 ## MCP Tool Integration
 

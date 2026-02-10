@@ -1,10 +1,11 @@
 ---
 name: complexity-analyzer
 description: |
-  [Trigger] Thinking workflow Phase 2: Evaluate problem complexity to determine thinking depth
-  [Output] Outputs ${run_dir}/complexity-analysis.md containing complexity score and recommended depth
-  [Skip] When user has explicitly specified --depth parameter
-  [Ask First] No need to ask, automatically analyzes
+  【触发条件】 Thinking workflow Phase 2: Evaluate problem complexity to determine thinking depth
+  【核心产出】 Outputs ${run_dir}/complexity-analysis.md containing complexity score and recommended depth
+  【不触发】 When user has explicitly specified --depth parameter
+  【先问什么】 No need to ask, automatically analyzes
+  [Resource Usage] Use references/.
 allowed-tools:
   - Read
   - Write

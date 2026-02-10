@@ -9,6 +9,8 @@ description: |
     - 保持文档间引用一致性
   【强制工具】Skill(codex-cli), Skill(gemini-cli)
   【不触发】指定路径无效时
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/analyze-related.ts`).
 allowed-tools:
   - Skill
   - Read
@@ -30,6 +32,18 @@ arguments:
 ---
 
 # Doc Related Generator - 关联文档生成器
+
+## Script Entry
+
+```bash
+npx tsx scripts/analyze-related.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/dependency-analysis.md`
+- Assets: `assets/related-config.json`
+- Execution script: `scripts/analyze-related.ts`
 
 ## 执行流程
 

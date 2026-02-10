@@ -1,11 +1,13 @@
 ---
 name: plan-context-retriever
 description: |
-  [Trigger] Plan workflow Step 2: Retrieve code context related to requirements
-  [Output] Outputs ${run_dir}/context.md
+  【触发条件】 Plan workflow Step 2: Retrieve code context related to requirements
+  【核心产出】 Outputs ${run_dir}/context.md
   [🚨 Mandatory Tool 🚨] auggie-mcp must be first choice! LSP symbol analysis! exa for external retrieval (new projects)
   [Prohibited] Skipping auggie-mcp and using Grep/Glob directly
-  [Skip] Direct analysis (use architecture-analyzer)
+  【不触发】 Direct analysis (use architecture-analyzer)
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Read
   - Write

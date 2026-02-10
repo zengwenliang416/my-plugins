@@ -1,9 +1,12 @@
 ---
 name: plan-synthesizer
 description: |
-  [Trigger] Plan workflow Step 6: Integrate all artifacts to generate final plan
-  [Output] Outputs ${run_dir}/plan.md (contains OpenSpec constraints and PBT properties)
+  【触发条件】 Plan workflow Step 6: Integrate all artifacts to generate final plan
+  【核心产出】 Outputs ${run_dir}/plan.md (contains OpenSpec constraints and PBT properties)
+  【不触发】关键前置工件缺失（requirements/context/architecture/tasks/risks）时
   [Hard Stop] Must wait for user approval
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Read
   - Write

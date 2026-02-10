@@ -1,8 +1,10 @@
 ---
 name: changelog-generator
 description: |
-  【Trigger】Commit workflow Phase 5.5: update CHANGELOG.md.
-  【Output】Updated CHANGELOG.md + ${run_dir}/changelog-entry.md
+  【触发条件】Commit workflow Phase 5.5: update CHANGELOG.md.
+  【核心产出】Updated CHANGELOG.md + ${run_dir}/changelog-entry.md
+  【不触发】用户传入 --no-changelog 或确认跳过更新日志时
+  【先问什么】目标版本号、是否写入 Unreleased 区段、是否批量提交模式
   【🚨 Mandatory】Must run unless --no-changelog.
 arguments:
   - name: run_dir
@@ -20,6 +22,18 @@ arguments:
 ---
 
 # Changelog Generator
+
+## Script Entry
+
+```bash
+npx tsx scripts/update-changelog.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/changelog-format.md`
+- Assets: `assets/changelog-template.md`
+- Execution script: `scripts/update-changelog.ts`
 
 ## 🚨 Mandatory Rules
 

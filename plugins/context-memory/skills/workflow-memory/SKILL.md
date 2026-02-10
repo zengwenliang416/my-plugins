@@ -10,6 +10,8 @@ description: |
     - 查询历史工作流
   【强制工具】Write, Read, mcp core_memory
   【不触发】无活跃工作流时
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/workflow-manager.ts`).
 allowed-tools:
   - Write
   - Read
@@ -32,6 +34,18 @@ arguments:
 ---
 
 # Workflow Memory - 工作流记忆管理
+
+## Script Entry
+
+```bash
+npx tsx scripts/workflow-manager.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/workflow-patterns.md`
+- Assets: `assets/workflow-schema.json`
+- Execution script: `scripts/workflow-manager.ts`
 
 ## 执行流程
 

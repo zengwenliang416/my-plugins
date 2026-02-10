@@ -1,10 +1,11 @@
 ---
 name: requirement-parser
 description: |
-  [Trigger] Plan workflow Step 1: Parse user requirements, structured output
-  [Output] Outputs ${run_dir}/requirements.md
-  [Skip] Direct analysis (use architecture-analyzer)
-  [Ask First] When requirements are vague, ask about functionality boundaries and constraints
+  【触发条件】 Plan workflow Step 1: Parse user requirements, structured output
+  【核心产出】 Outputs ${run_dir}/requirements.md
+  【不触发】 Direct analysis (use architecture-analyzer)
+  【先问什么】 When requirements are vague, ask about functionality boundaries and constraints
+  [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Read
   - Write

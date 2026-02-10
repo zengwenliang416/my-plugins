@@ -5,6 +5,7 @@ description: |
   【核心产出】输出重构后的 React/Vue/HTML/CSS 代码，上下文限制 32k tokens
   【不触发】后端逻辑重构、API 重构、数据库操作（改用 codex-cli）
   【先问什么】无需询问，由其他 skills 调用
+  [Resource Usage] Use references/, assets/, and scripts/ (`scripts/invoke-gemini.ts`).
 allowed-tools:
   - Bash
   - Read
@@ -13,19 +14,31 @@ allowed-tools:
 
 # Gemini CLI - 重构工作流前端专家
 
-Frontend refactoring expert via `codeagent-wrapper`. **UI/组件/样式重构** → React/Vue/CSS 原型 → Claude review & apply. Context limit: **32k tokens**.
+Frontend refactoring expert via `scripts/invoke-gemini.ts`. **UI/组件/样式重构** → React/Vue/CSS 原型 → Claude review & apply. Context limit: **32k tokens**.
+
+## Script Entry
+
+```bash
+npx tsx scripts/invoke-gemini.ts --role "<role>" --prompt "<prompt>" [--workdir "<path>"] [--session "<id>"]
+```
+
+## Resource Usage
+
+- Prompt recipes: `references/recipes.md`
+- Output constraints: `assets/output-formats.md`
+- Execution script: `scripts/invoke-gemini.ts`
 
 ## 执行命令
 
 ```bash
 # 标准调用
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx scripts/invoke-gemini.ts \
   --workdir /path/to/project \
   --role frontend-refactor \
   --prompt "Your refactoring task"
 
 # 后台并行执行
-~/.claude/bin/codeagent-wrapper gemini --prompt "$PROMPT" &
+npx tsx scripts/invoke-gemini.ts --prompt "$PROMPT" &
 ```
 
 ## 重构专用角色
@@ -44,7 +57,7 @@ Frontend refactoring expert via `codeagent-wrapper`. **UI/组件/样式重构** 
 ### 场景 1: 组件气味检测
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx scripts/invoke-gemini.ts \
   --role component-analyst \
   --prompt "
 ## 任务
@@ -75,7 +88,7 @@ JSON 数组，每个气味包含：
 ### 场景 2: Extract Component 重构
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx scripts/invoke-gemini.ts \
   --role frontend-refactor \
   --prompt "
 ## 任务
@@ -103,7 +116,7 @@ ${tech_stack} (React/Vue/Svelte)
 ### 场景 3: CSS 重构优化
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx scripts/invoke-gemini.ts \
   --role style-optimizer \
   --prompt "
 ## 任务
@@ -130,7 +143,7 @@ ${css_framework} (Tailwind/CSS Modules/Styled Components)
 ### 场景 4: 响应式重构
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx scripts/invoke-gemini.ts \
   --role frontend-refactor \
   --prompt "
 ## 任务
@@ -158,7 +171,7 @@ ${target_component}
 ### 场景 5: 可访问性重构
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx scripts/invoke-gemini.ts \
   --role accessibility-reviewer \
   --prompt "
 ## 任务
@@ -187,7 +200,7 @@ JSON：
 ### 场景 6: 状态管理重构
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx scripts/invoke-gemini.ts \
   --role frontend-refactor \
   --prompt "
 ## 任务
@@ -217,7 +230,7 @@ ${state_issues}
 ### Step 1: Gemini 分析/生成
 
 ```bash
-result=$(~/.claude/bin/codeagent-wrapper gemini \
+result=$(npx tsx scripts/invoke-gemini.ts \
   --role frontend-refactor \
   --prompt "$REFACTOR_PROMPT")
 SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
@@ -237,7 +250,7 @@ SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 ### Step 4: 验证
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx scripts/invoke-gemini.ts \
   --role accessibility-reviewer \
   --prompt "验证重构结果：[组件摘要]" \
   --session "$SESSION_ID"
@@ -260,11 +273,11 @@ SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 
 ```bash
 # 第一次调用 - 获取 SESSION_ID
-result=$(~/.claude/bin/codeagent-wrapper gemini --prompt "...")
+result=$(npx tsx scripts/invoke-gemini.ts --prompt "...")
 SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 
 # 后续调用 - 继续会话
-~/.claude/bin/codeagent-wrapper gemini --prompt "..." --session "$SESSION_ID"
+npx tsx scripts/invoke-gemini.ts --prompt "..." --session "$SESSION_ID"
 ```
 
 ---

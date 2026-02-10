@@ -6,6 +6,7 @@ description: |
   【不触发】检测气味（用 smell-detector）、影响分析（用 impact-analyzer）。
   【先问什么】impact-analysis.md 不存在时，询问是否先执行影响分析
   【MUST】codex-cli 执行重构，必须使用。
+  [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Write
   - Read

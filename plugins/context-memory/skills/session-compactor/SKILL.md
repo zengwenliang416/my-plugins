@@ -9,6 +9,8 @@ description: |
     - 保存到 MCP core_memory
   【强制工具】mcp core_memory
   【不触发】短会话或无重要内容时
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/compact-session.ts`).
 allowed-tools:
   - mcp__core_memory__store
   - mcp__core_memory__retrieve
@@ -26,6 +28,18 @@ arguments:
 ---
 
 # Session Compactor - 会话压缩持久化
+
+## Script Entry
+
+```bash
+npx tsx scripts/compact-session.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/compaction-patterns.md`
+- Assets: `assets/compaction-config.json`
+- Execution script: `scripts/compact-session.ts`
 
 ## 执行流程
 

@@ -10,6 +10,7 @@ description: |
     - Claude 审查重构
   【强制工具】auggie-mcp, LSP, gemini-cli (降级: codex-cli)
   【不触发】批量处理（由 memory.md 编排）
+  【先问什么】默认先确认输入范围、输出格式与约束条件
 allowed-tools:
   - Bash
   - Read

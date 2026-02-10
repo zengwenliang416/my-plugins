@@ -7,6 +7,7 @@ description: |
   【先问什么】目标路径过于宽泛时，询问具体范围
   【MUST】auggie-mcp 语义分析 + LSP 符号分析，必须使用。
   【Legacy 模式】legacy=true 时，额外检测遗留系统特有气味。
+  [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Write
   - LSP

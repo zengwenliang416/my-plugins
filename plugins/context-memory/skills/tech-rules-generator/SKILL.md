@@ -10,6 +10,8 @@ description: |
     - 集成到 Claude 上下文
   【强制工具】Skill(exa), Skill(codex-cli)
   【不触发】规则已存在且最新时
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/generate-rules.ts`).
 allowed-tools:
   - Skill
   - Read
@@ -31,6 +33,18 @@ arguments:
 ---
 
 # Tech Rules Generator - 技术规则生成器
+
+## Script Entry
+
+```bash
+npx tsx scripts/generate-rules.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/rules-templates.md`
+- Assets: `assets/rules-config.json`
+- Execution script: `scripts/generate-rules.ts`
 
 ## 执行流程
 

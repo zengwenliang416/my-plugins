@@ -5,6 +5,7 @@ description: |
   【核心产出】只读沙箱分析代码 → 输出分析报告或 unified diff patch → Claude 审查后应用
   【不触发】前端 UI/UX 分析（改用 gemini-cli）
   【先问什么】无需询问，由 agents 调用
+  [Resource Usage] Use scripts/ entrypoint `scripts/invoke-codex.ts`.
 allowed-tools:
   - Bash
   - Read
@@ -30,20 +31,30 @@ arguments:
 
 # Codex CLI - TPD 工作流后端专家
 
-Backend analysis expert via `codeagent-wrapper`. **Read-only sandbox** → constraint/architecture/prototype analysis → Claude review & apply.
+Backend analysis expert via `scripts/invoke-codex.ts`. **Read-only sandbox** → constraint/architecture/prototype analysis → Claude review & apply.
+
+## Script Entry
+
+```bash
+npx tsx scripts/invoke-codex.ts --role "<role>" --prompt "<prompt>" [--workdir "<path>"] [--session "<id>"] [--sandbox "read-only"]
+```
+
+## Resource Usage
+
+- Execution script: `scripts/invoke-codex.ts`
 
 ## 执行命令
 
 ```bash
 # 标准调用
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
   --workdir "${workdir:-$(pwd)}" \
   --role "${role}" \
   --prompt "${prompt}" \
   --sandbox read-only
 
 # 带会话继续
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
   --workdir "${workdir:-$(pwd)}" \
   --role "${role}" \
   --prompt "${prompt}" \
@@ -67,7 +78,7 @@ Backend analysis expert via `codeagent-wrapper`. **Read-only sandbox** → const
 ### 场景 1: 约束分析 (thinking 阶段)
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
   --role constraint-analyst \
   --prompt "
 ## 任务
@@ -94,7 +105,7 @@ ${QUESTION}
 ### 场景 2: 架构规划 (plan 阶段)
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
   --role architect \
   --prompt "
 ## 任务
@@ -119,7 +130,7 @@ PLANS.md 格式
 ### 场景 3: 代码原型 (dev 阶段)
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
   --role implementer \
   --prompt "
 ## 任务
@@ -143,7 +154,7 @@ ${CONTEXT}
 ### 场景 4: 安全审计 (dev 阶段)
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
   --role auditor \
   --prompt "
 ## 任务
@@ -169,11 +180,11 @@ Issue 列表 + 修复建议 + 总分 (1-5)
 
 ```bash
 # 第一次调用 - 获取 SESSION_ID
-result=$(~/.claude/bin/codeagent-wrapper codex --role architect --prompt "..." --sandbox read-only)
+result=$(npx tsx scripts/invoke-codex.ts --role architect --prompt "..." --sandbox read-only)
 SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 
 # 后续调用 - 继续会话
-~/.claude/bin/codeagent-wrapper codex --role architect --prompt "..." --session "$SESSION_ID" --sandbox read-only
+npx tsx scripts/invoke-codex.ts --role architect --prompt "..." --session "$SESSION_ID" --sandbox read-only
 ```
 
 ---

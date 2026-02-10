@@ -1,15 +1,26 @@
 ---
 name: grok-search
 description: |
-  Web search and content fetching via Grok API.
-  Replaces built-in WebSearch/WebFetch with enhanced capabilities.
-  Output: unified JSON {ok: bool, data: any, error?: {message, type}}.
+  【触发条件】需要联网检索最新资料或抓取网页内容时
+  【核心产出】统一 JSON 结果（ok/data/error）供后续流程消费
+  【不触发】仅依赖本地代码与文档即可完成任务时
+  【先问什么】查询关键词、平台范围、结果数量与时效窗口
 allowed-tools:
   - Bash
   - Read
 ---
 
 # Grok Search CLI
+
+## Script Entry
+
+```bash
+npx tsx scripts/grok-search.ts [args]
+```
+
+## Resource Usage
+
+- Execution script: `scripts/grok-search.ts`
 
 ## Commands
 

@@ -10,6 +10,8 @@ description: |
     - 生成 Swagger UI 配置
   【强制工具】Skill(codex-cli), Write
   【不触发】非 API 项目时
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/generate-swagger.ts`).
 allowed-tools:
   - Skill
   - Read
@@ -32,6 +34,18 @@ arguments:
 ---
 
 # Swagger Generator - OpenAPI 文档生成器
+
+## Script Entry
+
+```bash
+npx tsx scripts/generate-swagger.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/openapi-patterns.md`
+- Assets: `assets/openapi-config.json`
+- Execution script: `scripts/generate-swagger.ts`
 
 ## 执行流程
 

@@ -1,10 +1,11 @@
 ---
 name: code-implementer
 description: |
-  [Trigger] Dev workflow step 4: Refactor prototype and implement code into the project.
-  [Output] Outputs ${run_dir}/changes.md + actual code changes.
-  [Skip] Prototype generation (use prototype-generator), audit review (use audit-reviewer).
-  [Ask First] If prototype-{model}.diff is missing, ask whether to execute prototype generation first
+  【触发条件】 Dev workflow step 4: Refactor prototype and implement code into the project.
+  【核心产出】 Outputs ${run_dir}/changes.md + actual code changes.
+  【不触发】 Prototype generation (use prototype-generator), audit review (use audit-reviewer).
+  【先问什么】 If prototype-{model}.diff is missing, ask whether to execute prototype generation first
+  [Resource Usage] Use references/, assets/, and scripts/ (`scripts/apply-diff.ts`) and delegate model calls to codex-cli/gemini-cli script entries.
   [Mandatory Tool] Must invoke codex-cli or gemini-cli Skill to refactor prototype, Claude self-implementation is prohibited.
 allowed-tools:
   - Read
@@ -29,13 +30,29 @@ arguments:
 
 # Code Implementer - Code Implementation Atomic Skill
 
+## Script Entry
+
+```bash
+npx tsx scripts/apply-diff.ts [args]
+```
+
+## Resource Usage
+
+- Refactor patterns: `references/refactor-patterns.json`
+- Refactor guidance: `references/refactoring-patterns.md`
+- Report template: `assets/changes.template.md`
+- Local utility script: `scripts/apply-diff.ts`
+- Delegated script entries:
+  - `../codex-cli/scripts/invoke-codex.ts`
+  - `../gemini-cli/scripts/invoke-gemini.ts`
+
 ## 🚨 CRITICAL: Must Invoke codex-cli or gemini-cli Skill
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  ❌ Prohibited: Claude implementing code itself (skipping       │
 │     external model)                                              │
-│  ❌ Prohibited: Directly calling codeagent-wrapper via Bash     │
+│  ❌ Prohibited: Directly invoking model wrapper binaries via Bash│
 │  ✅ Required: Invoke codex-cli or gemini-cli via Skill tool     │
 │                                                                  │
 │  This is the core of multi-model collaboration!                  │
@@ -127,7 +144,7 @@ LSP(operation="outgoingCalls", filePath="<file>", line=<line>, character=<char>)
 
 **❌ Prohibited Actions:**
 
-- ❌ Using Bash tool to call codeagent-wrapper
+- ❌ Using Bash tool to call model wrapper binaries directly
 - ❌ Implementing code yourself
 - ❌ Using Write/Edit tool to directly write code
 
@@ -294,6 +311,6 @@ Next step: Use audit-reviewer for audit
 | Skill invocation      | Required    | Check codex-cli or gemini-cli called |
 | External model output | Required    | changes-{model}.md contains result   |
 | Claude self-impl      | Prohibited  | Cannot skip Skill and write code     |
-| Direct Bash codeagent | Prohibited  | Must invoke via Skill tool           |
+| Direct wrapper call   | Prohibited  | Must invoke via Skill tool           |
 
 **If codex-cli or gemini-cli Skill was not invoked, this Skill execution fails!**

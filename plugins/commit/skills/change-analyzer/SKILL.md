@@ -1,9 +1,11 @@
 ---
 name: change-analyzer
 description: |
-  【Trigger】Commit workflow step 2: analyze changes.
-  【Output】${run_dir}/changes-analysis.json
-  【Ask】If no staged changes, ask to analyze unstaged.
+  【触发条件】Commit workflow step 2: analyze changes.
+  【核心产出】${run_dir}/changes-analysis.json
+  【不触发】没有可分析的 staged/unstaged 变更时
+  【先问什么】If no staged changes, ask to analyze unstaged.
+  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/analyze-changes.ts`).
 allowed-tools:
   [
     Read,
@@ -20,6 +22,18 @@ arguments:
 ---
 
 # Change Analyzer
+
+## Script Entry
+
+```bash
+npx tsx scripts/analyze-changes.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/analysis-rules.json`
+- Assets: `assets/changes-analysis.template.json`
+- Execution script: `scripts/analyze-changes.ts`
 
 ## Input/Output
 
