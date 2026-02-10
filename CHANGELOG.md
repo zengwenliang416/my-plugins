@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add docflow plugin for documentation-first workflow (docflow)
+  - /docflow:init-doc - Initialize llmdoc for new projects
+  - /docflow:with-scout - Investigation-first execution workflow
+  - /docflow:what - Clarify vague requests with option-based questions
+  - /investigate, /read-doc, /update-doc - Documentation workflow commands
+- Enhance skill validation script with TypeScript support and bilingual frontmatter (validation)
+- Add docflow plugin to marketplace registry (marketplace)
 - Add branch-creator skill for automatic feature branch creation (branch-creator)
 - Add interactive selection mode (-s) and dry-run mode (-d) to sync-plugins.sh (scripts)
 - Add unified TPD (Thinking→Plan→Dev) workflow plugin (tpd)
@@ -58,6 +65,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Migrate skill scripts from Bash to TypeScript for better type safety and cross-platform compatibility (skills)
+  - Affected plugins: brainstorm, context-memory, ui-design
+  - TypeScript with ESM, shared wrapper pattern, cross-platform path resolution
 - Update commit workflow documentation with branch-creator integration (commit)
 - Translate commit skill documentation to English (skills)
 - Translate all TPD commands and skills documentation to English (tpd)
