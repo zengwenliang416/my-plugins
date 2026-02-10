@@ -9,6 +9,7 @@ LLM-optimized documentation for the CCG-Workflows plugin ecosystem - a local plu
 | Understand the project      | [Project Overview](overview/project-overview.md)                   |
 | Use the commit workflow     | [How to Commit](guides/how-to-commit.md)                           |
 | Use the TPD workflow        | [How to Use TPD](guides/how-to-use-tpd.md)                         |
+| Use Trae skills and agents  | [How to Use Trae Skills & Agents](guides/how-to-use-trae-skills-and-agents.md) |
 | Create a new plugin         | [How to Create a Plugin](guides/how-to-create-a-plugin.md)         |
 | Understand plugin structure | [Plugin Architecture](architecture/plugin-architecture.md)         |
 | Use external models         | [How to Use External Models](guides/how-to-use-external-models.md) |
@@ -50,6 +51,7 @@ Step-by-step operational instructions for specific tasks.
 
 - [How to Commit](guides/how-to-commit.md) - Execute the 10-phase commit workflow
 - [How to Use TPD](guides/how-to-use-tpd.md) - Execute Thinking, Plan, and Dev phases
+- [How to Use Trae Skills & Agents](guides/how-to-use-trae-skills-and-agents.md) - Trae profile invocation conventions for skills/agents
 - [How to Use External Models](guides/how-to-use-external-models.md) - Invoke Codex/Gemini via codeagent-wrapper CLI
 
 ### Creating Extensions
@@ -78,6 +80,6 @@ Factual lookup information and source-of-truth pointers.
 
 ---
 
-**Document Count:** 20 files (1 overview, 7 architecture, 6 guides, 6 reference)
+**Document Count:** 21 files (1 overview, 7 architecture, 7 guides, 6 reference)
 
-Generated: 2026-02-02
+Generated: 2026-02-10

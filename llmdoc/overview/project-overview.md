@@ -110,3 +110,4 @@ graph TB
 - **Plugin Metadata:** `plugins/<name>/.claude-plugin/plugin.json`
 - **Sync Script:** `scripts/sync-plugins.sh`
 - **Validation Script:** `scripts/validate-skills.sh`
+- **Trae Invocation Conventions (cc-plugin):** `git-repos/cc-plugin/.trae/MIGRATION.md`, `git-repos/cc-plugin/.trae/rules/tokenroll-rules.md`
