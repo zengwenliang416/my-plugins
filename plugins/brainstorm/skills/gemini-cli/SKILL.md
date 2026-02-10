@@ -1,6 +1,11 @@
 ---
 name: gemini-cli
-description: "User/UX perspective idea generation"
+description: |
+  【触发条件】Brainstorm 需要用户体验与创意视角的方案发散时
+  【核心产出】用户价值导向的创意候选项与体验建议
+  【不触发】仅关注后端实现细节且无需 UX 创意输入时
+  【先问什么】目标用户、使用场景、体验优先级与创新方向
+  [Resource Usage] Use `scripts/brainstorm_gemini.ts` with references/ and assets/ materials.
 allowed-tools:
   - Bash
   - Read
@@ -11,18 +16,32 @@ allowed-tools:
 
 UX and creative design expert perspective for idea generation. Focus: user value, emotional experience, innovation breakthroughs.
 
+## Script Entry
+
+```bash
+npx tsx scripts/brainstorm_gemini.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/gemini-prompts.md`
+- Assets: `assets/roles.json`
+- Execution script: `scripts/brainstorm_gemini.ts`
+
 ## Execution
 
 ```bash
 # Standard call
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx scripts/brainstorm_gemini.ts \
   --role brainstorm \
-  --prompt "$PROMPT"
+  --prompt "$PROMPT" \
+  --method "$METHOD"
 
 # Background parallel execution
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx scripts/brainstorm_gemini.ts \
   --role brainstorm \
-  --prompt "$PROMPT" &
+  --prompt "$PROMPT" \
+  --method "$METHOD" &
 ```
 
 ## Roles
@@ -70,9 +89,10 @@ Output JSON array only:
 ### Step 2: Call Gemini
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx scripts/brainstorm_gemini.ts \
   --role brainstorm \
-  --prompt "$PROMPT"
+  --prompt "$PROMPT" \
+  --method "$METHOD"
 ```
 
 ### Step 3: Parse Output

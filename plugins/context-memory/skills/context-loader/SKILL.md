@@ -10,6 +10,8 @@ description: |
     - 生成结构化上下文 JSON
   【强制工具】auggie-mcp, Skill(codex-cli), Skill(gemini-cli)
   【不触发】已有有效上下文时
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, scripts/ (`references/priority-rules.md`, `assets/context-schema.json`, `scripts/load-context.ts`).
 allowed-tools:
   - mcp__auggie-mcp__codebase-retrieval
   - Skill
@@ -28,6 +30,18 @@ arguments:
 ---
 
 # Context Loader - 项目上下文加载
+
+## Script Entry
+
+```bash
+npx tsx scripts/load-context.ts [output-file] [max-tokens]
+```
+
+## Resource Usage
+
+- Retrieval rules: `references/priority-rules.md`
+- Output schema: `assets/context-schema.json`
+- Execution script: `scripts/load-context.ts`
 
 ## 执行流程
 

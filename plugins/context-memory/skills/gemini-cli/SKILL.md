@@ -8,9 +8,11 @@ description: |
     - SKILL.md 索引生成
     - 设计 token 分析
     - 工作流摘要生成
-  【强制工具】codeagent-wrapper gemini
+  【强制工具】scripts/invoke-gemini.ts
   【不触发】后端逻辑分析（用 codex-cli）
   【降级】gemini 失败时切换到 codex-cli
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, and scripts/ (`scripts/invoke-gemini.ts`, `scripts/gemini-generate.ts`).
 allowed-tools:
   - Bash
   - Write
@@ -40,6 +42,12 @@ arguments:
 
 # Memory Plugin - Gemini CLI Skill
 
+## Script Entry
+
+```bash
+npx tsx scripts/invoke-gemini.ts --role "<role>" --prompt "<prompt>" [--workdir "<path>"] [--session "<id>"]
+```
+
 ## 执行流程
 
 ### CLAUDE.md 生成流程
@@ -60,9 +68,10 @@ arguments:
    - multi-layer: @**/*
        │
        ▼
-4. 执行 codeagent-wrapper
+4. 执行脚本入口
    cd ${module_path} && \
-   ~/.claude/bin/codeagent-wrapper gemini \
+   npx tsx scripts/invoke-gemini.ts \
+     --role "architect" \
      --prompt "${prompt}" \
      --workdir "."
        │
@@ -83,8 +92,9 @@ arguments:
    - 注入输入文件
        │
        ▼
-3. 执行 codeagent-wrapper gemini
-   ~/.claude/bin/codeagent-wrapper gemini \
+3. 执行 scripts/invoke-gemini.ts
+   npx tsx scripts/invoke-gemini.ts \
+     --role "architect" \
      --prompt "$PROMPT"
        │
        ▼
@@ -354,9 +364,10 @@ Skill("context-memory:gemini-cli",
 ## CLI 命令示例
 
 ```bash
-# 直接调用 codeagent-wrapper 生成 CLAUDE.md
+# 通过脚本入口生成 CLAUDE.md
 cd /path/to/module && \
-~/.claude/bin/codeagent-wrapper gemini \
+npx tsx scripts/invoke-gemini.ts \
+  --role "architect" \
   --prompt "$(cat <<'EOF'
 Directory Structure Analysis:
 [structure info here]

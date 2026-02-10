@@ -6,8 +6,10 @@ description: |
   【专属用途】
     - CLAUDE.md 生成（降级）
     - 后端代码分析优先
-  【强制工具】codeagent-wrapper codex
+  【强制工具】scripts/invoke-codex.ts
   【不触发】gemini 可用时（优先使用 gemini）
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, and scripts/ (`scripts/invoke-codex.ts`, `scripts/codex-analyze.ts`).
 allowed-tools:
   - Bash
   - Write
@@ -37,6 +39,12 @@ arguments:
 
 # Memory Plugin - Codex CLI Skill
 
+## Script Entry
+
+```bash
+npx tsx scripts/invoke-codex.ts --role "<role>" --prompt "<prompt>" [--workdir "<path>"] [--session "<id>"] [--sandbox "read-only"]
+```
+
 ## 触发条件
 
 此 Skill 仅在以下情况触发：
@@ -65,11 +73,13 @@ arguments:
    - multi-layer: @**/*
        │
        ▼
-4. 执行 codeagent-wrapper codex
+4. 执行脚本入口
    cd ${module_path} && \
-   ~/.claude/bin/codeagent-wrapper codex \
+   npx tsx scripts/invoke-codex.ts \
      --prompt "${prompt}" \
-     --workdir "."
+     --workdir "." \
+     --role "architect" \
+     --sandbox "read-only"
        │
        ▼
 5. 验证输出
@@ -92,7 +102,8 @@ arguments:
 ```bash
 # 单层策略
 cd ${module_path} && \
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
+  --role "architect" \
   --prompt "$(cat <<'PROMPT'
 Directory Structure Analysis:
 [structure info]
@@ -117,7 +128,8 @@ PROMPT
 
 # 多层策略
 cd ${module_path} && \
-~/.claude/bin/codeagent-wrapper codex \
+npx tsx scripts/invoke-codex.ts \
+  --role "architect" \
   --prompt "$(cat <<'PROMPT'
 Directory Structure Analysis:
 [structure info]
@@ -197,6 +209,6 @@ Skill("context-memory:codex-cli",
 
 - [ ] gemini-cli 已确认失败
 - [ ] prompt 构建完整
-- [ ] codeagent-wrapper codex 调用成功
+- [ ] scripts/invoke-codex.ts 调用成功
 - [ ] CLAUDE.md 已生成
 - [ ] 输出符合模板结构

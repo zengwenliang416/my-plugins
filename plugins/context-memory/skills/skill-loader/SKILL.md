@@ -10,6 +10,8 @@ description: |
     - 输出格式化文档
   【强制工具】Read
   【不触发】技能不存在时
+  【先问什么】默认先确认输入范围、输出格式与约束条件
+  [Resource Usage] Use references/, assets/, scripts/ (`references/loading-strategies.md`, `assets/loader-config.json`, `scripts/load-skill.ts`).
 allowed-tools:
   - Read
   - Glob
@@ -29,6 +31,18 @@ arguments:
 ---
 
 # Skill Loader - 技能文档加载器
+
+## Script Entry
+
+```bash
+npx tsx scripts/load-skill.ts <output-file> <skill-name> [full|summary|selective]
+```
+
+## Resource Usage
+
+- Loading strategy: `references/loading-strategies.md`
+- Loader defaults: `assets/loader-config.json`
+- Execution script: `scripts/load-skill.ts`
 
 ## 执行流程
 

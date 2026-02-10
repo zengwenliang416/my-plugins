@@ -1,10 +1,11 @@
 ---
 name: topic-researcher
 description: |
-  [Trigger] Brainstorm Phase 1: Parse topic and execute external research
-  [Output] ${run_dir}/research-brief.md
-  [Skip] User specifies --skip-research or research-brief.md exists
-  [Ask] When topic is too broad, ask for specific direction or constraints
+  【触发条件】 Brainstorm Phase 1: Parse topic and execute external research
+  【核心产出】 ${run_dir}/research-brief.md
+  【不触发】 User specifies --skip-research or research-brief.md exists
+  【先问什么】 When topic is too broad, ask for specific direction or constraints
+  [Resource Usage] Use `scripts/execute_search.ts` for batch search and references/research-brief-template.md for output.
 allowed-tools:
   - Read
   - Write
@@ -19,6 +20,18 @@ allowed-tools:
 # Topic Researcher
 
 Parse brainstorm topic and execute external research to provide information foundation for ideation.
+
+## Script Entry
+
+```bash
+npx tsx scripts/execute_search.ts [args]
+```
+
+## Resource Usage
+
+- Reference docs: `references/research-brief-template.md`
+- Assets: `assets/search-strategy.json`
+- Execution script: `scripts/execute_search.ts`
 
 ## MCP Tool Integration
 
@@ -90,6 +103,12 @@ mcp__context7__query-docs({
 ### Step 3: Execute Exa Search
 
 Use exa skill for 3-5 searches:
+
+Optional batch runner:
+
+```bash
+npx tsx scripts/execute_search.ts --topic "{topic}" --mode {basic|deep} --output-dir "{run_dir}"
+```
 
 **Basic searches (always execute):**
 
