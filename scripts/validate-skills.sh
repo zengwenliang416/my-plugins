@@ -7,6 +7,7 @@ set -e
 PLUGINS_DIR="plugins"
 ERRORS=0
 WARNINGS=0
+STRICT_MODE=false
 
 # Colors
 RED='\033[0;31m'
@@ -17,12 +18,12 @@ NC='\033[0m' # No Color
 
 log_error() {
   echo -e "${RED}❌ ERROR:${NC} $1"
-  ((ERRORS++))
+  ((++ERRORS))
 }
 
 log_warning() {
   echo -e "${YELLOW}⚠️  WARNING:${NC} $1"
-  ((WARNINGS++))
+  ((++WARNINGS))
 }
 
 log_success() {
@@ -32,6 +33,36 @@ log_success() {
 log_info() {
   echo -e "${BLUE}ℹ️${NC} $1"
 }
+
+log_optional_issue() {
+  if [ "$STRICT_MODE" = true ]; then
+    log_warning "$1"
+  else
+    log_info "$1"
+  fi
+}
+
+# Parse args
+for arg in "$@"; do
+  case "$arg" in
+    --strict)
+      STRICT_MODE=true
+      ;;
+    --help|-h)
+      cat <<'EOF'
+Usage: ./scripts/validate-skills.sh [--strict]
+
+Options:
+  --strict   Treat recommended checks as warnings (legacy behavior)
+  --help     Show this help
+EOF
+      exit 0
+      ;;
+    *)
+      echo -e "${YELLOW}⚠️  WARNING:${NC} Unknown option: $arg"
+      ;;
+  esac
+done
 
 # Validate SKILL.md frontmatter
 validate_frontmatter() {
@@ -70,23 +101,24 @@ validate_description() {
   # Use the frontmatter section (between --- markers) to find description keywords
   local frontmatter=$(awk '/^---$/{if(++c==2)exit}c==1' "$skill_md")
 
-  # Check for 4-part format in frontmatter
-  local has_trigger=$(echo "$frontmatter" | grep -c "【触发条件】" || true)
-  local has_output=$(echo "$frontmatter" | grep -c "【核心产出】" || true)
-  local has_not_trigger=$(echo "$frontmatter" | grep -c "【不触发】" || true)
-  local has_ask=$(echo "$frontmatter" | grep -c "【先问什么】" || true)
+  # Check for 4-part format in frontmatter.
+  # Accept both Chinese and English markers to support bilingual skill metadata.
+  local has_trigger=$(echo "$frontmatter" | grep -Ec "【触发条件】|\\[Trigger\\]" || true)
+  local has_output=$(echo "$frontmatter" | grep -Ec "【核心产出】|\\[Output\\]" || true)
+  local has_not_trigger=$(echo "$frontmatter" | grep -Ec "【不触发】|\\[Skip\\]" || true)
+  local has_ask=$(echo "$frontmatter" | grep -Ec "【先问什么】|\\[Ask\\]" || true)
 
   if [ "$has_trigger" -eq 0 ]; then
-    log_warning "$skill_name: Description missing 【触发条件】"
+    log_optional_issue "$skill_name: Description missing 【触发条件】"
   fi
   if [ "$has_output" -eq 0 ]; then
-    log_warning "$skill_name: Description missing 【核心产出】"
+    log_optional_issue "$skill_name: Description missing 【核心产出】"
   fi
   if [ "$has_not_trigger" -eq 0 ]; then
-    log_warning "$skill_name: Description missing 【不触发】"
+    log_optional_issue "$skill_name: Description missing 【不触发】"
   fi
   if [ "$has_ask" -eq 0 ]; then
-    log_warning "$skill_name: Description missing 【先问什么】"
+    log_optional_issue "$skill_name: Description missing 【先问什么】"
   fi
 }
 
@@ -114,7 +146,7 @@ validate_structure() {
   if [ -d "${skill_dir}/references" ]; then
     local ref_count=$(find "${skill_dir}/references" -type f ! -name ".gitkeep" | wc -l | tr -d ' ')
     if [ "$ref_count" -eq 0 ]; then
-      log_warning "$skill_name: references/ directory is empty"
+      log_optional_issue "$skill_name: references/ directory is empty"
     else
       log_success "$skill_name: references/ has $ref_count file(s)"
     fi
@@ -124,7 +156,7 @@ validate_structure() {
   if [ -d "${skill_dir}/assets" ]; then
     local asset_count=$(find "${skill_dir}/assets" -type f ! -name ".gitkeep" | wc -l | tr -d ' ')
     if [ "$asset_count" -eq 0 ]; then
-      log_warning "$skill_name: assets/ directory is empty"
+      log_optional_issue "$skill_name: assets/ directory is empty"
     else
       log_success "$skill_name: assets/ has $asset_count file(s)"
     fi
@@ -134,7 +166,7 @@ validate_structure() {
   if [ -d "${skill_dir}/scripts" ]; then
     local script_count=$(find "${skill_dir}/scripts" -type f \( -name "*.ts" -o -name "*.sh" \) | wc -l | tr -d ' ')
     if [ "$script_count" -eq 0 ]; then
-      log_warning "$skill_name: scripts/ directory has no .ts or .sh files"
+      log_optional_issue "$skill_name: scripts/ directory has no .ts or .sh files"
     else
       log_success "$skill_name: scripts/ has $script_count script(s)"
 
@@ -172,6 +204,7 @@ validate_typescript() {
 echo "========================================"
 echo "       SKILL VALIDATION REPORT"
 echo "========================================"
+echo "Mode: $( [ "$STRICT_MODE" = true ] && echo strict || echo relaxed )"
 echo ""
 
 for plugin_dir in "$PLUGINS_DIR"/*/; do
@@ -180,13 +213,13 @@ for plugin_dir in "$PLUGINS_DIR"/*/; do
 
   skills_root="${plugin_dir}/skills"
   if [ ! -d "$skills_root" ]; then
-    log_warning "$plugin_name: skills directory missing, skipping"
+    log_info "$plugin_name: skills directory missing, skipping"
     continue
   fi
 
   skill_dirs=( "$skills_root"/*/ )
   if [ ${#skill_dirs[@]} -eq 0 ]; then
-    log_warning "$plugin_name: no skills found, skipping"
+    log_info "$plugin_name: no skills found, skipping"
     continue
   fi
 
