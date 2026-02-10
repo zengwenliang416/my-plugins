@@ -23,7 +23,9 @@ The codebase contains 7 workflow commands across 6 plugins. All workflows follow
   - `plugins/tpd/commands/plan.md` - Multi-model architecture planning
   - `plugins/tpd/commands/dev.md` - OpenSpec-based development
 - **Pattern:** Phased with checkpoints + parallel multi-model
-- **Agents:** boundary-explorer, codex-constraint, gemini-constraint, codex-architect, gemini-architect, codex-implementer, gemini-implementer, codex-auditor, gemini-auditor
+- **Agents (Claude profile):** boundary-explorer, context-analyzer, codex-constraint, gemini-constraint, codex-architect, gemini-architect, codex-implementer, gemini-implementer, codex-auditor, gemini-auditor
+- **Agents (Trae profile):** boundary-explorer, context-analyzer, `codex` (role-based), `gemini` (role-based)
+- **Trae Mapping:** `plugins/tpd/.trae/agents/README.md`
 - **Run Dir:** `openspec/changes/{proposal_id}/artifacts/{phase}/`
 
 ### UI-Design Plugin (v2.0.0)
