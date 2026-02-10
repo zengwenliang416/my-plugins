@@ -59,7 +59,7 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
 | **Ignore thinking phase artifacts**  | Check `${THINKING_DIR}/handoff.json` and reuse if exists       |
 | **Re-ask clarified questions**       | Read `thinking-clarifications.md`, only ask NEW ambiguities    |
 | Skip context retrieval               | Always call context-analyzer AND requirement-parser            |
-| Only do single-model architecture    | Must run both codex-architect AND gemini-architect             |
+| Only do single-model architecture    | Must run both `@codex(role=architect)` AND `@gemini(role=architect)` |
 | Skip ambiguity resolution            | Must complete ambiguity audit and get confirmations            |
 | Proceed without verifying artifacts  | Check file exists at EVERY checkpoint                          |
 | Skip validation                      | Always run `openspec validate --strict`                        |
@@ -191,16 +191,16 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
      Update state.json: `current_step=2`, `artifacts.context=true`, `artifacts.requirements=true`, `timestamps.step_2="${ISO_TIMESTAMP}"`
 
 3. **Step 3: Parallel Multi-Model Architecture Planning**
-   - In parallel, launch dedicated architect agents to create architecture plans.
-   - **Task for codex-architect:** "Create backend architecture plan. Analyze codebase patterns, design API contracts, define data models."
-   - **Task for gemini-architect:** "Create frontend architecture plan. Analyze component structure, design state management, plan responsive layout."
+   - In parallel, launch architect role on two core agents.
+   - **Task for codex(role=architect):** "Create backend architecture plan. Analyze codebase patterns, design API contracts, define data models."
+   - **Task for gemini(role=architect):** "Create frontend architecture plan. Analyze component structure, design state management, plan responsive layout."
    - **At most 2 architect agents!**
    - JUST RUN AND WAIT!
 
    ```
-   调用 @codex-architect，参数：description="Codex backend planning" prompt="Execute architecture planning. run_dir=${PLAN_DIR} focus=backend,api,data"
+   调用 @codex，参数：description="Codex backend planning" prompt="Execute role=architect planning. run_dir=${PLAN_DIR} role=architect focus=backend,api,data"
 
-   调用 @gemini-architect，参数：description="Gemini frontend planning" prompt="Execute architecture planning. run_dir=${PLAN_DIR} focus=frontend,components,ux"
+   调用 @gemini，参数：description="Gemini frontend planning" prompt="Execute role=architect planning. run_dir=${PLAN_DIR} role=architect focus=frontend,components,ux"
    ```
 
    - **🔒 Checkpoint**:
@@ -234,7 +234,7 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
      fi
      ```
 
-   - Call MCP tools for **incremental** ambiguity audit (exclude thinking-resolved items):
+   - Call Trae native tools for **incremental** ambiguity audit (exclude thinking-resolved items):
 
      ```
      使用 Codex 分析："Review proposal ${PROPOSAL_ID} for unspecified decision points. Reference thinking-synthesis.md to skip already-resolved constraints. List only NEW: [AMBIGUITY] <description> → [REQUIRED CONSTRAINT] <what must be decided>."
@@ -254,7 +254,7 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
        Please provide decisions for these items.
 
    - Merge thinking constraints + new constraints into `${PLAN_DIR}/constraints.md`
-   - Extract PBT properties via MCP tools:
+   - Extract PBT properties via Trae native tools:
 
      ```
      使用 Codex 分析："Extract PBT properties. For each requirement: [INVARIANT] <property> → [FALSIFICATION STRATEGY] <counterexample generation>."
@@ -470,7 +470,7 @@ THINKING_DIR/                          PLAN_DIR/
 | Step   | Max Agents | Agent Types                              |
 | ------ | ---------- | ---------------------------------------- |
 | Step 2 | **2**      | `context-analyzer`, `requirement-parser` |
-| Step 3 | **2**      | `codex-architect`, `gemini-architect`    |
+| Step 3 | **2**      | `@codex(role=architect)`, `@gemini(role=architect)` |
 
 ---
 
@@ -539,7 +539,7 @@ This command ONLY uses the following agent types:
 | Agent Type         | Usage                                  |
 | ------------------ | -------------------------------------- |
 | `context-analyzer` | Step 2: Codebase context retrieval     |
-| `codex-architect`  | Step 3: Backend architecture planning  |
-| `gemini-architect` | Step 3: Frontend architecture planning |
+| `@codex`           | Step 3: Backend architecture planning (`role=architect`)  |
+| `@gemini`          | Step 3: Frontend architecture planning (`role=architect`) |
 
 Any other agent types are **forbidden** in this command.

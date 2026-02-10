@@ -14,9 +14,9 @@ description: |
 - **Output**: `${run_dir}/plan.md`
 - **Single Responsibility**: Only do plan integration, no new analysis
 
-## MCP Tool Integration
+## Tool Integration
 
-| MCP Tool | Purpose | Trigger |
+| Tool | Purpose | Trigger |
 | -------- | ------- | ------- |
 
 ## Execution Flow

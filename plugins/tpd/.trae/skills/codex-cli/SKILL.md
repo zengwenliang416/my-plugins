@@ -34,7 +34,7 @@ Backend analysis expert via `codeagent-wrapper`. **Read-only sandbox** → const
 
 | 角色               | 用途               | 适用阶段 |
 | ------------------ | ------------------ | -------- |
-| constraint-analyst | 技术约束与风险分析 | thinking |
+| constraint         | 技术约束与风险分析 | thinking |
 | architect          | 后端架构规划       | plan     |
 | implementer        | 后端代码原型生成   | dev      |
 | auditor            | 安全性能审计       | dev      |
@@ -47,7 +47,7 @@ Backend analysis expert via `codeagent-wrapper`. **Read-only sandbox** → const
 
 ```bash
 ~/.claude/bin/codeagent-wrapper codex \
-  --role constraint-analyst \
+  --role constraint \
   --prompt "
 ## 任务
 分析以下问题的技术约束。

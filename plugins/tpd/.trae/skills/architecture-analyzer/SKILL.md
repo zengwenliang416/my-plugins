@@ -27,9 +27,9 @@ description: |
 - ❌ Prohibited: Skip planner skills and analyze directly
 - ❌ Prohibited: Claude writing architecture analysis instead of planner output
 
-## MCP Tool Integration
+## Tool Integration
 
-| MCP Tool | Purpose | Trigger |
+| Tool | Purpose | Trigger |
 | -------- | ------- | ------- |
 
 ## Collaboration Flow

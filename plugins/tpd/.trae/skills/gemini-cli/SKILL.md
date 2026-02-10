@@ -32,7 +32,7 @@ Frontend analysis expert via `codeagent-wrapper`. **UX/UI/组件分析** → 架
 
 | 角色               | 用途              | 适用阶段 |
 | ------------------ | ----------------- | -------- |
-| constraint-analyst | UX/多视角约束分析 | thinking |
+| constraint         | UX/多视角约束分析 | thinking |
 | architect          | 前端架构规划      | plan     |
 | implementer        | 前端代码原型生成  | dev      |
 | auditor            | UX/可访问性审计   | dev      |
@@ -45,7 +45,7 @@ Frontend analysis expert via `codeagent-wrapper`. **UX/UI/组件分析** → 架
 
 ```bash
 ~/.claude/bin/codeagent-wrapper gemini \
-  --role constraint-analyst \
+  --role constraint \
   --prompt "
 ## 任务
 从多个视角分析约束。

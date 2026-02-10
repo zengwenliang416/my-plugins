@@ -14,9 +14,9 @@ description: |
 - **Output**: `${run_dir}/tasks.md`
 - **Single Responsibility**: Only do task decomposition, no risk assessment
 
-## MCP Tool Integration
+## Tool Integration
 
-| MCP Tool | Purpose | Trigger |
+| Tool | Purpose | Trigger |
 | -------- | ------- | ------- |
 
 ## Execution Flow

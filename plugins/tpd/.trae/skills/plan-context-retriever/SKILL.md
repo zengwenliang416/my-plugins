@@ -1,11 +1,11 @@
 ---
 name: plan-context-retriever
 description: |
-  [Trigger] Plan workflow Step 2: Retrieve code context related to requirements
-  [Output] Outputs ${run_dir}/context.md
-  [🚨 Mandatory Tool 🚨] auggie-mcp must be first choice! LSP symbol analysis! exa for external retrieval (new projects)
-  [Prohibited] Skipping auggie-mcp and using Grep/Glob directly
-  [Skip] Direct analysis (use architecture-analyzer)
+  [Trigger] Plan workflow Step 2: Retrieve code context related to requirements.
+  [Output] Outputs ${run_dir}/context.md.
+  [🚨 Mandatory Tool 🚨] Use Trae native SearchCodebase as first choice for internal retrieval.
+  [Prohibited] Skipping SearchCodebase and directly doing blind file browsing.
+  [Skip] Direct analysis (use architecture-analyzer).
 ---
 
 # Plan Context Retriever - Context Retrieval Atomic Skill
@@ -16,124 +16,84 @@ description: |
 - **Output**: `${run_dir}/context.md`
 - **Single Responsibility**: Only do context retrieval, no architecture analysis
 
-## MCP Tool Integration
+## Tool Integration
 
-| MCP Tool     | Purpose                           | Trigger                            |
-| ------------ | --------------------------------- | ---------------------------------- |
-| `auggie-mcp` | Semantic retrieval (first choice) | 🚨 Must use first                  |
-| `LSP`        | Symbol-level precise operations   | Deep analysis of retrieval results |
+| Tool | Purpose | Trigger |
+| --- | --- | --- |
+| `SearchCodebase` | 代码语义定位（首选） | Existing project internal retrieval |
+| `Read` | 精读命中代码并提炼证据 | After SearchCodebase returns candidates |
+| `Web Search` | 新技术/空项目时补充外部依据 | New project or best-practice lookup |
 
 ## Execution Flow
 
 ```
-  thought: "Planning context retrieval strategy. Need: 1) Analyze requirement keywords 2) Determine retrieval scope 3) Select retrieval methods 4) Plan evidence collection",
-  thoughtNumber: 1,
-  totalThoughts: 5,
-  nextThoughtNeeded: true
-})
+thought: "Planning context retrieval strategy. Need: 1) Analyze requirement keywords 2) Determine retrieval scope 3) Run SearchCodebase 4) Consolidate evidence with Read 5) Produce context.md"
 ```
-
-**Thinking Steps**:
-
-1. **Requirement Keyword Extraction**: Extract search keywords from requirements.md
-2. **Retrieval Scope Determination**: Internal code vs external documentation
-3. **Retrieval Method Selection**: auggie-mcp → LSP → Grep/Glob
-4. **Symbol Analysis Planning**: Key symbols needing deep analysis
-5. **Evidence Collection Strategy**: How to organize and record findings
 
 ### Step 1: Read Requirements
 
-使用 Read 工具读取 `${run_dir}/requirements.md`
+使用 Read 工具读取 `${run_dir}/requirements.md`，提取：
 
-Extract from requirements file:
-
-- Functional requirements list
-- Technical constraints
-- Task type
+- 功能需求列表
+- 技术约束
+- 任务类型（frontend/backend/fullstack）
 
 ### Step 2: Determine Project Status
 
-Check if this is a new project:
+Terminal command: `find . -type f \( -name "*.ts" -o -name "*.js" -o -name "*.py" \) | wc -l`
 
-Terminal command: `find . -type f -name "*.ts" -o -name "*.js" -o -name "*.py" | wc -l`
-
-| Status           | Criteria         | Retrieval Strategy                    |
-| ---------------- | ---------------- | ------------------------------------- |
-| New project      | Code files < 10  | Use exa for external retrieval        |
-| Existing project | Code files >= 10 | Use auggie-mcp for internal retrieval |
+| Status | Criteria | Retrieval Strategy |
+| --- | --- | --- |
+| New project | Code files < 10 | Web Search + Read |
+| Existing project | Code files >= 10 | SearchCodebase + Read |
 
 ### Step 3: Internal Code Retrieval (Existing Project)
 
-## 🚨🚨🚨 Mandatory Tool Priority 🚨🚨🚨
+## 🚨 Mandatory Priority
 
-**Code retrieval must follow this order, no skipping:**
-
-| Priority | Tool                                  | Purpose                    | Mandatory                    |
-| -------- | ------------------------------------- | -------------------------- | ---------------------------- |
-| 1        | `mcp__auggie-mcp__codebase-retrieval` | Semantic retrieval (first) | **Must use first**           |
-| 2        | `LSP`                                 | Symbol-level operations    | Deep analysis of results     |
-| 3        | `Grep/Glob`                           | Fallback option            | Only when auggie unavailable |
+| Priority | Tool | Purpose | Mandatory |
+| --- | --- | --- | --- |
+| 1 | `SearchCodebase` | Semantic code retrieval | Must use first |
+| 2 | `Read` | Verify and extract evidence from matched files | Must follow |
+| 3 | `Grep/Glob` | Supplemental exact-match lookup | Optional fallback |
 
 **Prohibited Actions**:
 
-- ❌ Skipping auggie-mcp and using Grep/Glob directly
-- ❌ Completing retrieval without calling LSP
-- ❌ Only using Read to manually browse files
+- ❌ Skipping SearchCodebase and using only Grep/Glob
+- ❌ Writing context without concrete code evidence
+- ❌ Only listing filenames without key symbol notes
 
-**Mandatory call**: 使用代码语义检索："Find code related to <functional requirement>: Related classes, functions, modules; Data models and interface definitions; Existing similar implementations; External library dependencies; Configuration files and environment variables"
+**Mandatory query template**:
 
-**Verify retrieval complete**: Must obtain at least 3 relevant code snippets, otherwise expand search scope.
-
-### Step 4: LSP Symbol-Level Analysis
-
-For key symbols in semantic retrieval results, use LSP for deep analysis:
-
-| Scenario                      | LSP Operation                     | Output              |
-| ----------------------------- | --------------------------------- | ------------------- |
-| Understand file structure     | `documentSymbol`                  | File symbol list    |
-| View symbol definition        | `goToDefinition`                  | Definition location |
-| Find all references           | `findReferences`                  | Reference list      |
-| Understand call relationships | `incomingCalls` / `outgoingCalls` | Call graph          |
-| Interface implementation      | `goToImplementation`              | Implementation list |
-
-### Step 5: External Documentation Retrieval (New Project or Best Practices Needed)
-
-调用 /exa，参数：query=<tech stack> best practices implementation
-
-Retrieval content:
-
-- Official documentation
-- Best practice guides
-- Example codebases
-- Common problem solutions
-
-### Step 6: Evidence Collection
-
-Collect all discovered evidence:
-
-```json
-{
-  "internal_evidence": [
-    {
-      "file": "src/auth/login.ts",
-      "line": 42,
-      "symbol": "authenticateUser",
-      "relevance": "High",
-      "reason": "Existing authentication implementation"
-    }
-  ],
-  "external_evidence": [
-    {
-      "source": "https://docs.example.com/auth",
-      "title": "Authentication Best Practices",
-      "relevance": "Medium",
-      "reason": "Industry standard reference"
-    }
-  ]
-}
+```
+使用 SearchCodebase："Find code related to <functional requirement>:
+- Related classes/functions/modules
+- Data models and interface definitions
+- Existing similar implementations
+- External library dependencies
+- Configuration files and env vars"
 ```
 
-### Step 7: Structured Output
+### Step 4: Evidence Consolidation (Read-based)
+
+对 SearchCodebase 高相关命中执行 Read，并记录：
+
+- 关键文件（路径 + relevance）
+- 关键符号（名称 + 定位）
+- 依赖关系（上游调用/下游依赖）
+- 约束点（鉴权、事务、幂等、超时、重试等）
+
+### Step 5: External Documentation Retrieval (when needed)
+
+调用 Web Search（至少 3 次），覆盖：
+
+- 官方文档
+- 高质量示例仓库
+- 生产最佳实践
+
+并用 Read 固化来源和关键结论。
+
+### Step 6: Structured Output
 
 使用 Edit 工具写入 `${run_dir}/context.md`:
 
@@ -150,69 +110,41 @@ Collect all discovered evidence:
 
 [Core requirement extracted from requirements.md]
 
-## Internal Code Context
+## Internal Code Context (SearchCodebase + Read)
 
 ### Related Files
 
-| File Path              | Relevance | Key Symbols      | Description     |
-| ---------------------- | --------- | ---------------- | --------------- |
-| src/auth/login.ts      | High      | authenticateUser | Core auth logic |
-| src/models/user.ts     | High      | UserModel        | User data model |
-| src/middleware/auth.ts | Medium    | authMiddleware   | Auth middleware |
+| File Path | Relevance | Key Symbols | Description |
+| --- | --- | --- | --- |
+| src/auth/login.ts | High | authenticateUser | Core auth logic |
 
-### Architecture Patterns
+### Architecture/Dependency Notes
 
-- **Current Architecture**: [Identified architecture pattern]
-- **Data Flow**: [How data flows]
-- **Key Interfaces**: [Interfaces to implement/extend]
-
-### Dependency Analysis
-
-| Dependency     | Type            | Version | Purpose       |
-| -------------- | --------------- | ------- | ------------- |
-| express        | External lib    | 4.18.2  | Web framework |
-| jsonwebtoken   | External lib    | 9.0.0   | JWT handling  |
-| ./utils/crypto | Internal module | -       | Crypto utils  |
-
-### Call Relationship Diagram
-```
-
-authenticateUser()
-├── validateCredentials()
-│ └── hashPassword()
-├── generateToken()
-└── saveSession()
-
-```
+- Current architecture: [identified pattern]
+- Key interfaces: [interface list]
+- Dependency chain: [caller → callee]
 
 ## External Documentation Context
 
 ### Reference Materials
 
 | Source | Title | Relevance | Key Points |
-|-----|-----|-------|-----|
+| --- | --- | --- | --- |
 | [URL] | [Title] | High/Medium/Low | [Key information] |
 
 ### Best Practices
 
-- [Best practices extracted from external documentation]
-
-### Technology Selection Recommendations (New Project)
-
-| Domain | Recommended Solution | Reason |
-|-----|---------|-----|
-| Authentication | JWT + OAuth2 | Industry standard |
-| Database | PostgreSQL | Complex query support |
+- [Best practice from source]
 
 ## Potential Impact
 
-- **Potentially Affected Modules**: [List]
-- **Files Requiring Modification**: [List]
-- **Test Coverage Status**: [Existing tests]
+- Potentially affected modules: [list]
+- Files requiring modification: [list]
+- Test coverage status: [existing tests]
 
 ## Evidence Chain
 
-[Complete evidence JSON]
+[Structured JSON evidence]
 
 ---
 
@@ -220,8 +152,6 @@ Next step: Call architecture-analyzer for architecture analysis
 ```
 
 ## Return Value
-
-After execution, return:
 
 ```
 Context retrieval complete.
@@ -235,15 +165,13 @@ Next step: Use /architecture-analyzer for architecture analysis
 
 ## Quality Gates
 
-- ✅ Identified related code files
-- ✅ Extracted key symbols and interfaces
-- ✅ Analyzed dependencies
-- ✅ Assessed potential impact scope
-- ✅ Collected evidence chain
+- ✅ SearchCodebase called at least once for existing project
+- ✅ Read used to verify key matches
+- ✅ Captured file/symbol/dependency evidence
+- ✅ External references included when needed
 
 ## Constraints
 
 - Do not do architecture analysis (delegated to architecture-analyzer)
 - Do not generate code (delegated to subsequent phases)
-- Retrieval scope can be broad, but output must be focused
-- Must use LSP for symbol-level precise analysis
+- Output must be evidence-based, not assumption-based

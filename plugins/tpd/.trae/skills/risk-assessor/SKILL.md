@@ -14,9 +14,9 @@ description: |
 - **Output**: `${run_dir}/risks.md`
 - **Single Responsibility**: Only do risk assessment, no plan integration
 
-## MCP Tool Integration
+## Tool Integration
 
-| MCP Tool | Purpose | Trigger |
+| Tool | Purpose | Trigger |
 | -------- | ------- | ------- |
 
 ## Execution Flow

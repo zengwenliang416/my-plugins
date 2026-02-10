@@ -10,9 +10,9 @@ description: |
 
 # Handoff Generator - Handoff Artifact Generation Atomic Skill
 
-## MCP Tool Integration
+## Tool Integration
 
-| MCP Tool | Purpose | Trigger |
+| Tool | Purpose | Trigger |
 | -------- | ------- | ------- |
 
 ## Responsibility Boundary

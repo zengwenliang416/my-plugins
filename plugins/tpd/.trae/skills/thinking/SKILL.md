@@ -30,7 +30,7 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
 
 - **Forbidden to split sub-agents by role** (e.g., "architect/security expert")
 - **Must split by context boundary** (module/directory/domain)
-- **Must use semantic retrieval** for codebase exploration
+- **Must use SearchCodebase retrieval** for codebase exploration
 - **Sub-agent output must follow unified JSON template**
 - **Forbidden to modify project code** (allowed to write to `openspec/` specification files)
 
@@ -143,9 +143,9 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
      Update state.json: `current_step=1`, `artifacts.complexity=true`
 
 2. **Step 2: Parallel Boundary Exploration**
-   - First, use semantic retrieval to identify boundaries:
+   - First, use SearchCodebase retrieval to identify boundaries:
 
-     使用代码语义检索："Identify main module/directory boundaries, core domains, and configuration scopes for context boundary exploration."
+     使用 SearchCodebase："Identify main module/directory boundaries, core domains, and configuration scopes for context boundary exploration."
 
    - Write boundary list to `${THINKING_DIR}/boundaries.json`
    - 并行调用以下智能体（最多 4 个）：
@@ -175,14 +175,14 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
    - 并行调用以下智能体（最多 2 个）：
 
    ```
-   调用 @codex-constraint，参数：description="Codex constraint analysis" prompt="Execute constraint analysis. run_dir=${THINKING_DIR} level=medium"
+   调用 @codex，参数：description="Codex constraint analysis" prompt="Execute role=constraint analysis. run_dir=${THINKING_DIR} level=medium role=constraint"
 
-   调用 @gemini-constraint，参数：description="Gemini constraint analysis" prompt="Execute constraint analysis. run_dir=${THINKING_DIR} level=medium"
+   调用 @gemini，参数：description="Gemini constraint analysis" prompt="Execute role=constraint analysis. run_dir=${THINKING_DIR} level=medium role=constraint"
    ```
 
    - **任务说明**:
-     - @codex-constraint: "Analyze technical constraints from backend perspective"
-     - @gemini-constraint: "Analyze constraints from UX/frontend perspective"
+     - @codex(role=constraint): "Analyze technical constraints from backend perspective"
+     - @gemini(role=constraint): "Analyze constraints from UX/frontend perspective"
    - Light mode can skip; use `--parallel` to force execution
    - **重要**: 同步等待所有智能体完成，不使用后台模式
    - **🔒 Checkpoint** (deep/ultra only):
@@ -285,7 +285,7 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
 | Step   | Max Agents | Agent Types                               |
 | ------ | ---------- | ----------------------------------------- |
 | Step 2 | **4**      | `@boundary-explorer`                      |
-| Step 3 | **2**      | `@codex-constraint`, `@gemini-constraint` |
+| Step 3 | **2**      | `@codex(role=constraint)`, `@gemini(role=constraint)` |
 
 ---
 
@@ -335,7 +335,7 @@ This command ONLY uses the following agent types:
 | Agent Type           | Usage                                   |
 | -------------------- | --------------------------------------- |
 | `@boundary-explorer` | Step 2: Parallel boundary exploration   |
-| `@codex-constraint`  | Step 3: Technical constraint analysis   |
-| `@gemini-constraint` | Step 3: UX/frontend constraint analysis |
+| `@codex`             | Step 3: Technical constraint analysis (`role=constraint`)   |
+| `@gemini`            | Step 3: UX/frontend constraint analysis (`role=constraint`) |
 
 Any other agent types are **forbidden** in this command.

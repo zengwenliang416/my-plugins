@@ -151,14 +151,14 @@ The dev phase strictly aligns with OpenSpec Implementation: **only implement the
 
    - Launch concurrent agents for **incremental** context and analysis.
    - **Task for context-retriever:** "Retrieve ONLY task-specific context not in plan-context.md"
-   - **Task for codex-implementer (analyze mode):** "Analyze implementation referencing plan-architecture.md and plan-constraints.md"
+   - **Task for codex(role=implementer, mode=analyze):** "Analyze implementation referencing plan-architecture.md and plan-constraints.md"
    - **At most 2 agents in parallel!**
    - JUST RUN AND WAIT!
 
    ```
    调用 /context-retriever，参数：run_dir=${DEV_DIR} mode=${CONTEXT_MODE} base_context=plan-context.md
 
-   调用 @codex-implementer，参数：Execute implementation analysis. run_dir=${DEV_DIR} mode=analyze architecture_ref=plan-architecture.md constraints_ref=plan-constraints.md
+   调用 @codex，参数：Execute implementation analysis. run_dir=${DEV_DIR} role=implementer mode=analyze architecture_ref=plan-architecture.md constraints_ref=plan-constraints.md
    ```
 
    - **Verify**: `${DEV_DIR}/context.md` and `${DEV_DIR}/analysis-codex.md` exist
@@ -166,15 +166,15 @@ The dev phase strictly aligns with OpenSpec Implementation: **only implement the
 
 3. **Step 3: Parallel Prototype Generation**
    - Launch concurrent prototype generation agents.
-   - **Task for codex-implementer (prototype mode):** "Generate backend prototype as unified diff"
-   - **Task for gemini-implementer (prototype mode):** "Generate frontend prototype as unified diff"
+   - **Task for codex(role=implementer, mode=prototype):** "Generate backend prototype as unified diff"
+   - **Task for gemini(role=implementer, mode=prototype):** "Generate frontend prototype as unified diff"
    - **At most 2 prototype agents!**
    - JUST RUN AND WAIT!
 
    ```
-   调用 @codex-implementer，参数：Execute prototype generation. run_dir=${DEV_DIR} mode=prototype
+   调用 @codex，参数：Execute prototype generation. run_dir=${DEV_DIR} role=implementer mode=prototype
 
-   调用 @gemini-implementer，参数：Execute prototype generation. run_dir=${DEV_DIR} mode=prototype
+   调用 @gemini，参数：Execute prototype generation. run_dir=${DEV_DIR} role=implementer mode=prototype
    ```
 
    - **Verify**: `${DEV_DIR}/prototype-codex.diff` and/or `${DEV_DIR}/prototype-gemini.diff` exist
@@ -204,15 +204,15 @@ The dev phase strictly aligns with OpenSpec Implementation: **only implement the
 
 5. **Step 5: Parallel Multi-Model Audit**
    - Launch concurrent audit agents.
-   - **Task for codex-auditor:** "Security and performance audit"
-   - **Task for gemini-auditor:** "UX and accessibility audit"
+   - **Task for codex(role=auditor):** "Security and performance audit"
+   - **Task for gemini(role=auditor):** "UX and accessibility audit"
    - **At most 2 audit agents!**
    - JUST RUN AND WAIT!
 
    ```
-   调用 @codex-auditor，参数：Execute code audit. run_dir=${DEV_DIR} focus=security,performance
+   调用 @codex，参数：Execute code audit. run_dir=${DEV_DIR} role=auditor focus=security,performance
 
-   调用 @gemini-auditor，参数：Execute code audit. run_dir=${DEV_DIR} focus=ux,accessibility
+   调用 @gemini，参数：Execute code audit. run_dir=${DEV_DIR} role=auditor focus=ux,accessibility
    ```
 
    - **Verify**: `${DEV_DIR}/audit-codex.md` and `${DEV_DIR}/audit-gemini.md` exist
@@ -312,9 +312,9 @@ THINKING_DIR/                     PLAN_DIR/                        DEV_DIR/
 
 | Step   | Max Agents | Agent Types                                 |
 | ------ | ---------- | ------------------------------------------- |
-| Step 2 | **2**      | `/context-retriever`, `@codex-implementer`  |
-| Step 3 | **2**      | `@codex-implementer`, `@gemini-implementer` |
-| Step 5 | **2**      | `@codex-auditor`, `@gemini-auditor`         |
+| Step 2 | **2**      | `/context-retriever`, `@codex(role=implementer,mode=analyze)`  |
+| Step 3 | **2**      | `@codex(role=implementer,mode=prototype)`, `@gemini(role=implementer,mode=prototype)` |
+| Step 5 | **2**      | `@codex(role=auditor)`, `@gemini(role=auditor)`         |
 
 ---
 
@@ -369,10 +369,8 @@ This command ONLY uses the following agent types:
 
 | Agent Type            | Usage                                                      |
 | --------------------- | ---------------------------------------------------------- |
-| `@codex-implementer`  | Step 2-3: Implementation analysis and prototype generation |
-| `@gemini-implementer` | Step 3: Frontend prototype generation                      |
-| `@codex-auditor`      | Step 5: Security and performance audit                     |
-| `@gemini-auditor`     | Step 5: UX and accessibility audit                         |
+| `@codex`              | Step 2-3: Implementation analysis and prototype generation (`role=implementer`)；Step 5 audit (`role=auditor`) |
+| `@gemini`             | Step 3: Frontend prototype generation (`role=implementer`)；Step 5 UX/accessibility audit (`role=auditor`)     |
 
 Any other agent types are **forbidden** in this command.
 
@@ -409,9 +407,9 @@ FALLBACK   FALLBACK                   ITERATE ──→ PROTOTYPE
 | State       | Description                                         | Next States                 |
 | ----------- | --------------------------------------------------- | --------------------------- |
 | `DETECT`    | Check `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` env    | INIT_TEAM, FALLBACK         |
-| `INIT_TEAM` | Initialize team with 4 agents                       | PROTOTYPE, FALLBACK         |
-| `PROTOTYPE` | codex-implementer + gemini-implementer (parallel)   | AUDIT                       |
-| `AUDIT`     | codex-auditor + gemini-auditor (parallel)           | COMPLETE, ITERATE, FALLBACK |
+| `INIT_TEAM` | Initialize team with 2 core agents (`codex`, `gemini`) | PROTOTYPE, FALLBACK      |
+| `PROTOTYPE` | codex(role=implementer) + gemini(role=implementer) (parallel) | AUDIT             |
+| `AUDIT`     | codex(role=auditor) + gemini(role=auditor) (parallel) | COMPLETE, ITERATE, FALLBACK |
 | `ITERATE`   | Increment counter, feed audit findings to prototype | PROTOTYPE, FALLBACK         |
 | `COMPLETE`  | All audits passed, proceed to Step 4 (refactor)     | _(terminal)_                |
 | `FALLBACK`  | Revert to standard mode Steps 3+5                   | _(terminal)_                |
@@ -427,10 +425,8 @@ Stored at `${DEV_DIR}/team-state.json`, tracks team cycle progress:
   "iteration": 1,
   "max_iterations": 2,
   "agents": [
-    "codex-implementer",
-    "gemini-implementer",
-    "codex-auditor",
-    "gemini-auditor"
+    "codex",
+    "gemini"
   ],
   "history": [
     { "state": "DETECT", "timestamp": "...", "result": "activated" },
@@ -453,7 +449,7 @@ The system falls back to standard mode (Steps 3+5) when any of these occur:
 
 ```
 🔄 [DETECT]    Agent Teams mode detected (CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1)
-🚀 [INIT_TEAM] Initializing team: codex-implementer, gemini-implementer, codex-auditor, gemini-auditor
+🚀 [INIT_TEAM] Initializing team: codex, gemini (roles delegated at call-time)
 🔨 [PROTOTYPE] Iteration 1/2: generating prototypes...
 🔍 [AUDIT]     Iteration 1/2: running audits...
 ✅ [COMPLETE]   All audits passed, proceeding to refactor (Step 4)

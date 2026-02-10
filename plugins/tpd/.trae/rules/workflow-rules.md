@@ -37,10 +37,41 @@ DEV → 使用以上所有产物进行实现
 
 外部模型（Codex/Gemini）生成的代码仅作为逻辑参考（Prototype），最终交付代码**必须重构**以确保无冗余，达到企业级标准。
 
+## 双核心调用规则（Trae）
+
+在 Trae 配置中，Codex/Gemini 已收敛为两个核心智能体（`@codex`、`@gemini`），调用时必须遵循：
+
+1. **必须显式传 `role`**：`constraint | architect | implementer | auditor`
+2. **`implementer` 必须带 `mode`**：`analyze | prototype`
+3. **`auditor` 建议带 `focus`**：
+   - `@codex(role=auditor)` → `focus=security,performance`
+   - `@gemini(role=auditor)` → `focus=ux,accessibility`
+4. **禁止使用旧 agent ID**：`@codex-constraint`、`@gemini-architect`、`@codex-auditor` 等已废弃
+
+## 检索规则（Trae 原生）
+
+在 `.trae` 工作流中，上下文检索统一走 Trae 原生工具链：
+
+1. **先 SearchCodebase，后 Read**：禁止跳过 SearchCodebase 直接凭经验给结论
+2. **证据必须可回溯**：`context.md`/`explore-*.json` 至少包含文件路径与关键符号说明
+3. **外部资料必须验证**：涉及新技术时，必须 Web Search + Read 固化来源
+
+## 阶段调用速查（何时调用）
+
+| 阶段步骤 | 推荐调用 |
+| -------- | -------- |
+| thinking Step 2 | `@boundary-explorer`（最多 4） |
+| thinking Step 3 | `@codex(role=constraint)` + `@gemini(role=constraint)` |
+| plan Step 2 | `@context-analyzer` + `/requirement-parser` |
+| plan Step 3 | `@codex(role=architect)` + `@gemini(role=architect)` |
+| dev Step 2 | `@codex(role=implementer,mode=analyze)` + `/context-retriever` |
+| dev Step 3 | `@codex(role=implementer,mode=prototype)` + `@gemini(role=implementer,mode=prototype)` |
+| dev Step 5 | `@codex(role=auditor)` + `@gemini(role=auditor)` |
+
 ## 并行约束
 
-| 阶段     | 最大并行智能体                            |
-| -------- | ----------------------------------------- |
-| thinking | 4 (boundary-explorer) + 2 (constraint)    |
-| plan     | 2 (context + requirement) + 2 (architect) |
-| dev      | 2 (implementer) + 2 (auditor)             |
+| 阶段（关键并行步骤） | 最大并行智能体 |
+| -------------------- | -------------- |
+| thinking（Step 2 + Step 3） | 4（`boundary-explorer`） + 2（`@codex/@gemini role=constraint`） |
+| plan（Step 2 + Step 3） | 2（`context-analyzer + requirement-parser`） + 2（`@codex/@gemini role=architect`） |
+| dev（Step 2 + Step 3 + Step 5） | 2（`context-retriever + @codex role=implementer mode=analyze`） + 2（`@codex/@gemini role=implementer mode=prototype`） + 2（`@codex/@gemini role=auditor`） |

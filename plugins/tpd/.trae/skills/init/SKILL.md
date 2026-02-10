@@ -1,6 +1,6 @@
 ---
 name: init
-description: "OpenSpec Initialization: Detect system → Install openspec → Initialize project → Validate MCP tools"
+description: "OpenSpec Initialization: Detect system → Install openspec → Initialize project → Validate Trae toolchain"
 ---
 
 # /init - OpenSpec Initialization
@@ -25,8 +25,8 @@ description: "OpenSpec Initialization: Detect system → Install openspec → In
 ## Step 2: Check and Install OpenSpec
 
 1. Check if already installed:
-   - Linux/macOS: Terminal command `command -v openspec` or `openspec --version`
-   - Windows: Terminal command `where openspec` or `openspec --version`
+   - Linux/macOS: `command -v openspec` or `openspec --version`
+   - Windows: `where openspec` or `openspec --version`
 
 2. If not installed and `--skip-install` not passed, execute:
 
@@ -34,7 +34,7 @@ description: "OpenSpec Initialization: Detect system → Install openspec → In
 npm install -g @fission-ai/openspec@latest
 ```
 
-3. After installation, run terminal command `openspec --version` again to verify
+3. After installation, run `openspec --version` again to verify
 
 ---
 
@@ -51,19 +51,19 @@ openspec init --tools claude
 
 ---
 
-## Step 4: Validate MCP Tool Availability
+## Step 4: Validate Trae Toolchain Availability
 
-Check if the following MCP tools are available:
+Check the following runtime capabilities:
 
-- `mcp__codex__codex`
-- `mcp__gemini__gemini`
+1. **Trae native retrieval**
+   - `SearchCodebase` can be used in skills/agents
+   - `Read`/`Edit` permissions are correctly configured
 
-If unavailable, prompt installation sources:
+2. **External model wrappers**
+   - `codeagent-wrapper codex --help` can run
+   - `codeagent-wrapper gemini --help` can run
 
-- Codex MCP: https://github.com/GuDaStudio/codexmcp
-- Gemini MCP: https://github.com/GuDaStudio/geminimcp
-
-Note: These MCPs will be used in 调用 /plan 和 /dev.
+If wrapper is unavailable, suggest installation/configuration of `codeagent-wrapper` and login/auth setup.
 
 ---
 
@@ -73,7 +73,8 @@ Output check results:
 
 - OpenSpec installed: ✓ / ✗
 - Project initialized: ✓ / ✗
-- Codex MCP: ✓ / ✗
-- Gemini MCP: ✓ / ✗
+- SearchCodebase available: ✓ / ✗
+- Codex wrapper available: ✓ / ✗
+- Gemini wrapper available: ✓ / ✗
 
-If there are incomplete items, list the next steps.
+If there are incomplete items, list concrete next steps.

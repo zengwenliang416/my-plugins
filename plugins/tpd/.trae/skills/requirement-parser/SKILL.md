@@ -15,11 +15,11 @@ description: |
 - **Output**: `${run_dir}/requirements.md`
 - **Single Responsibility**: Only do requirement parsing and structuring, no architecture analysis
 
-## MCP Tool Integration
+## Tool Integration
 
-| MCP Tool     | Purpose                                        | Trigger                                   |
+| Tool     | Purpose                                        | Trigger                                   |
 | ------------ | ---------------------------------------------- | ----------------------------------------- |
-| `auggie-mcp` | Retrieve existing code, understand constraints | When requirement involves existing system |
+| `SearchCodebase` | Retrieve existing code, understand constraints | When requirement involves existing system |
 
 ## Execution Flow
 

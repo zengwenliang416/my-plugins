@@ -39,9 +39,9 @@ description: |
 - **Single Responsibility**: Only do code refactoring and implementation, no analysis or audit
 - **Core Principle**: External model refactors prototype, Claude verifies and applies
 
-## MCP Tool Integration
+## Tool Integration
 
-| MCP Tool | Purpose | Trigger |
+| Tool | Purpose | Trigger |
 | -------- | ------- | ------- |
 
 ## Execution Flow
@@ -115,13 +115,13 @@ LSP(operation="outgoingCalls", filePath="<file>", line=<line>, character=<char>)
 **For Codex model (backend implementation), execute immediately:**
 
 ```
-调用 /codex-cli，参数："--role architect --prompt 'Refactor and improve prototype code. Prototype file path: ${RUN_DIR}/prototype-codex.diff. Please read that file first, then refactor. Requirements: 1.Adjust to project code style 2.Remove redundancy 3.Add type definitions 4.Enhance error handling 5.Fix security vulnerabilities. OUTPUT FORMAT: Unified Diff Patch + change notes'"
+调用 /codex-cli，参数："--role implementer --prompt 'Refactor and improve prototype code. Prototype file path: ${RUN_DIR}/prototype-codex.diff. Please read that file first, then refactor. Requirements: 1.Adjust to project code style 2.Remove redundancy 3.Add type definitions 4.Enhance error handling 5.Fix security vulnerabilities. OUTPUT FORMAT: Unified Diff Patch + change notes'"
 ```
 
 **For Gemini model (frontend implementation), execute immediately:**
 
 ```
-调用 /gemini-cli，参数："--role frontend --prompt 'Refactor and improve prototype code. Prototype file path: ${RUN_DIR}/prototype-gemini.diff. Please read that file first, then refactor. Requirements: 1.Adjust to project code style 2.Optimize component structure 3.Improve styling 4.Ensure responsiveness 5.Enhance accessibility. OUTPUT FORMAT: Unified Diff Patch + change notes'"
+调用 /gemini-cli，参数："--role implementer --prompt 'Refactor and improve prototype code. Prototype file path: ${RUN_DIR}/prototype-gemini.diff. Please read that file first, then refactor. Requirements: 1.Adjust to project code style 2.Optimize component structure 3.Improve styling 4.Ensure responsiveness 5.Enhance accessibility. OUTPUT FORMAT: Unified Diff Patch + change notes'"
 ```
 
 **⚠️ If you find yourself using Terminal/Write/Edit to write code, stop immediately and use skill invocation instead!**

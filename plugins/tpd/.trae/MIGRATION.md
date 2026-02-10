@@ -5,7 +5,7 @@
 | Claude Code | Trae                | 数量 |
 | ----------- | ------------------- | ---- |
 | Commands    | Orchestration Skill | 4    |
-| Agents      | 自定义智能体 (UI)   | 10   |
+| Agents      | 自定义智能体 (UI)   | 4    |
 | Skills      | Skills              | 14   |
 | Hooks       | ❌ 不支持           | 0    |
 
@@ -15,18 +15,12 @@
 
 在 Trae 设置 → 智能体中创建以下智能体：
 
-| 智能体名称      | 英文标识           | 分类          | 工具配置       | 状态 |
-| --------------- | ------------------ | ------------- | -------------- | ---- |
-| 边界探索器      | boundary-explorer  | Investigation | Read, Edit     | ☐    |
-| 上下文分析器    | context-analyzer   | Investigation | Read, Edit     | ☐    |
-| Codex 约束分析  | codex-constraint   | Reasoning     | Read, Terminal | ☐    |
-| Gemini 约束分析 | gemini-constraint  | Reasoning     | Read, Terminal | ☐    |
-| Codex 架构师    | codex-architect    | Planning      | Read, Terminal | ☐    |
-| Gemini 架构师   | gemini-architect   | Planning      | Read, Terminal | ☐    |
-| Codex 实现器    | codex-implementer  | Execution     | Read, Terminal | ☐    |
-| Gemini 实现器   | gemini-implementer | Execution     | Read, Terminal | ☐    |
-| Codex 审计器    | codex-auditor      | Execution     | Read, Terminal | ☐    |
-| Gemini 审计器   | gemini-auditor     | Execution     | Read, Terminal | ☐    |
+| 智能体名称 | 英文标识 | 分类 | 工具配置 | 状态 |
+| ---------- | -------- | ---- | -------- | ---- |
+| 边界探索器 | boundary-explorer | Investigation | Read, Edit | ☐ |
+| 上下文分析器 | context-analyzer | Investigation | Read, Edit | ☐ |
+| Codex 核心 | codex | Reasoning/Planning/Execution/Audit | Read, Terminal | ☐ |
+| Gemini 核心 | gemini | Reasoning/Planning/Execution/Audit | Read, Terminal | ☐ |
 
 详细配置说明见 `.trae/agents/README.md`
 
@@ -89,12 +83,12 @@
 | Claude Code 工具                      | Trae 工具 | 转换说明                        |
 | ------------------------------------- | --------- | ------------------------------- |
 | Read                                  | Read      | 直接映射                        |
-| Glob, Grep                            | Read      | 搜索功能合并到 Read             |
+| Glob, Grep                            | SearchCodebase + Read | 推荐先 SearchCodebase 后 Read |
 | Write, Edit                           | Edit      | 直接映射                        |
 | Bash                                  | Terminal  | 直接映射                        |
-| `mcp__auggie-mcp__codebase-retrieval` | ❌        | 降级为 Read + 手动分析          |
-| `mcp__codex__codex`                   | ❌        | 通过 codeagent-wrapper Terminal |
-| `mcp__gemini__gemini`                 | ❌        | 通过 codeagent-wrapper Terminal |
+| 语义检索能力                          | SearchCodebase | Trae 原生能力              |
+| Codex 调用                            | codeagent-wrapper codex | 通过 Terminal 执行       |
+| Gemini 调用                           | codeagent-wrapper gemini | 通过 Terminal 执行      |
 | LSP                                   | ❌        | 降级为 Read + 代码解析          |
 
 ### 3.2 调用语法转换
@@ -105,9 +99,9 @@
 | `Skill(skill="tpd:xxx", args="...")`         | `调用 /xxx，参数：...`          |
 | `AskUserQuestion({question, options})`       | 直接问句 + (a)/(b)/(c) 选项格式 |
 | `run_in_background=true`                     | `并行调用以下智能体：`          |
-| `mcp__auggie-mcp__codebase-retrieval({...})` | `使用代码语义检索："..."`       |
-| `mcp__codex__codex: "..."`                   | `使用 Codex 分析："..."`        |
-| `mcp__gemini__gemini: "..."`                 | `使用 Gemini 分析："..."`       |
+| `语义检索调用({...})` | `使用 SearchCodebase："..."`       |
+| `Codex 直连调用: "..."` | `使用 Codex 分析："..."`        |
+| `Gemini 直连调用: "..."` | `使用 Gemini 分析："..."`       |
 
 ### 3.3 YAML Front Matter 转换
 
@@ -158,14 +152,8 @@
 
 - [x] agents/investigation/boundary-explorer.md → 配置文档已生成
 - [x] agents/investigation/context-analyzer.md → 配置文档已生成
-- [x] agents/reasoning/codex-constraint.md → 配置文档已生成
-- [x] agents/reasoning/gemini-constraint.md → 配置文档已生成
-- [x] agents/planning/codex-architect.md → 配置文档已生成
-- [x] agents/planning/gemini-architect.md → 配置文档已生成
-- [x] agents/execution/codex-implementer.md → 配置文档已生成
-- [x] agents/execution/gemini-implementer.md → 配置文档已生成
-- [x] agents/execution/codex-auditor.md → 配置文档已生成
-- [x] agents/execution/gemini-auditor.md → 配置文档已生成
+- [x] agents/README.md（codex 段落）→ 合并为单核心智能体（通过 role 调用）
+- [x] agents/README.md（gemini 段落）→ 合并为单核心智能体（通过 role 调用）
 
 ### Rules 转换 ✅
 
@@ -173,7 +161,7 @@
 
 ### 手动步骤
 
-- [ ] 在 Trae UI 中创建 10 个智能体
+- [ ] 在 Trae UI 中创建 4 个智能体
 - [ ] 配置各智能体的工具权限
 - [ ] 测试 `/thinking` skill 调用
 - [ ] 测试 `/plan` skill 调用
@@ -186,28 +174,27 @@
 
 ### 5.1 不支持的功能
 
-| 功能             | Claude Code | Trae | 降级方案                        |
-| ---------------- | ----------- | ---- | ------------------------------- |
-| MCP 语义检索     | ✅          | ❌   | 使用 Read 替代                  |
-| MCP Codex/Gemini | ✅          | ❌   | 通过 codeagent-wrapper Terminal |
-| LSP 符号分析     | ✅          | ❌   | 读取代码手动分析                |
-| 后台任务         | ✅          | ⚠️   | 可能需要手动等待                |
-| 预获取上下文     | ✅          | ❌   | 转换为显式 Terminal 命令        |
-| Hooks            | ✅          | ❌   | 无替代方案                      |
-| Agent Teams      | ✅          | ❌   | 使用标准顺序执行                |
+| 功能 | Claude Code | Trae | 处理方式 |
+| --- | --- | --- | --- |
+| Trae 原生 SearchCodebase | ❌ | ✅ | 直接使用 SearchCodebase + Read |
+| Codex/Gemini 直连 | ✅ | ❌ | 通过 codeagent-wrapper Terminal |
+| LSP 符号分析 | ✅ | ❌ | 读取代码手动分析 |
+| 后台任务 | ✅ | ⚠️ | 可能需要手动等待 |
+| 预获取上下文 | ✅ | ❌ | 转换为显式 Terminal 命令 |
+| Hooks | ✅ | ❌ | 无替代方案 |
+| Agent Teams | ✅ | ❌ | 使用标准顺序执行 |
 
-### 5.2 语义检索降级
+### 5.2 检索执行规范
 
-原 Claude Code 使用 `mcp__auggie-mcp__codebase-retrieval` 进行语义代码检索。
+在 Trae 中，语义代码检索统一使用原生 `SearchCodebase`。
 在 Trae 中，需要：
 
-1. 使用 Read 工具读取相关文件
-2. 手动分析代码结构和依赖
-3. 基于文件内容推断语义分组
+1. 先用 SearchCodebase 定位候选实现
+2. 使用 Read 对命中文件做证据化精读
+3. 基于文件内容整理语义分组和依赖关系
 
-### 5.3 多模型调用降级
+### 5.3 多模型调用方式
 
-原 Claude Code 通过 MCP 工具直接调用 Codex/Gemini。
 在 Trae 中：
 
 1. 通过 `codeagent-wrapper` CLI 工具调用
@@ -242,20 +229,20 @@
 
 1. 调用 `/thinking` 验证深度思考流程
 2. 检查 @boundary-explorer 是否正确响应
-3. 检查 @codex-constraint / @gemini-constraint 是否正确响应
+3. 检查 @codex(role=constraint) / @gemini(role=constraint) 是否正确响应
 4. 验证产物：complexity-analysis.md, explore-\*.json, synthesis.md, conclusion.md, handoff.json
 
 ### 7.2 Plan 阶段测试
 
 1. 调用 `/plan` 验证规划流程
-2. 检查 @context-analyzer / @codex-architect / @gemini-architect 响应
+2. 检查 @context-analyzer / @codex(role=architect) / @gemini(role=architect) 响应
 3. 验证 thinking 阶段产物被正确加载
 4. 验证产物：requirements.md, context.md, codex-plan.md, gemini-plan.md, architecture.md, tasks.md, plan.md
 
 ### 7.3 Dev 阶段测试
 
 1. 调用 `/dev` 验证开发流程
-2. 检查 @codex-implementer / @gemini-implementer / @codex-auditor / @gemini-auditor 响应
+2. 检查 @codex(role=implementer/auditor) / @gemini(role=implementer/auditor) 响应
 3. 验证 plan 阶段产物被正确加载
 4. 验证产物：tasks-scope.md, analysis-codex.md, prototype-_.diff, changes.md, audit-_.md
 
