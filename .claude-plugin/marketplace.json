@@ -9,25 +9,25 @@
       "name": "commit",
       "description": "规范提交工作流：收集 → 分析 → 生成消息 → 更新 Changelog → 执行",
       "source": "./plugins/commit",
-      "version": "1.0.0"
+      "version": "2.0.0"
     },
     {
       "name": "tpd",
       "description": "TPD 工作流：thinking → plan → dev（支持 OpenSpec 交接）",
       "source": "./plugins/tpd",
-      "version": "1.0.0"
+      "version": "2.0.0"
     },
     {
       "name": "ui-design",
       "description": "UI/UX 设计工作流：需求分析 → 样式推荐 → 设计生成（并行 3 变体）→ UX 检查 → 代码生成（双模型协作）→ 质量验证",
       "source": "./plugins/ui-design",
-      "version": "1.0.0"
+      "version": "3.0.0"
     },
     {
       "name": "brainstorm",
       "description": "头脑风暴工作流：主题研究 → 多模型发散 → 创意评估 → 报告生成",
       "source": "./plugins/brainstorm",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "name": "hooks",

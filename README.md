@@ -1,6 +1,6 @@
 # CCG Workflows
 
-面向 [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) 的可插拔工作流插件集。包含 **15 个插件**、**19 条命令**、**51 个 Agent**、**57 个 Skill** 和 **6 个 Hook**，覆盖从深度思考、开发规划、代码实现到提交发布的完整开发生命周期。
+面向 [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) 的本地插件市场与工作流集合。当前包含 **15 个插件**、**19 条命令**、**51 个 Agent**、**57 个 Skill**、**14 个 Hook 脚本（覆盖 7 个生命周期点）**，覆盖从深度思考、开发规划、实现到提交发布的完整开发生命周期。
 
 ## 亮点
 
@@ -40,39 +40,7 @@ claude plugin install feature-impl@ccg-workflows
 ./scripts/sync-plugins.sh tpd commit
 ```
 
-## 插件总览
-
-### 核心工作流插件
-
-| 插件             | 命令                                                             | Agents | 模式           | 说明                                                  |
-| ---------------- | ---------------------------------------------------------------- | ------ | -------------- | ----------------------------------------------------- |
-| **commit**       | `/commit`                                                        | 4      | Parallel       | 规范提交：调查 → 并行分析 → 合成 → 分支 → 消息 → 提交 |
-| **tpd**          | `/tpd:init` `/tpd:thinking` `/tpd:plan` `/tpd:dev`               | 10     | Multi-phase    | 深度思考 → 零决策规划 → 最小相位实现（OpenSpec 交接） |
-| **plan-execute** | `/plan-execute:plan` `/plan-execute:csv` `/plan-execute:execute` | 3      | Pipeline + CSV | CSV 驱动的 plan → csv → execute 三阶段流水线          |
-
-### Agent Team 插件
-
-| 插件                  | 命令                 | Agents | 模式             | 说明                                                   |
-| --------------------- | -------------------- | ------ | ---------------- | ------------------------------------------------------ |
-| **feature-impl**      | `/feature-impl`      | 5      | Pipeline         | 功能实现：规划 → 分阶段实现 → 并行测试/审查 → 构建检查 |
-| **code-review**       | `/code-review`       | 3      | Fan-Out/Fan-In   | 多视角并行代码审查（安全 + 性能 + 质量）+ 交叉验证     |
-| **security-audit**    | `/security-audit`    | 3      | Fan-Out + Debate | 跨层安全审计（依赖 + 代码 + 配置）+ 辩论模式           |
-| **tdd**               | `/tdd`               | 3      | Pipeline         | 测试驱动开发：写测试 → 实现 → 覆盖率验证               |
-| **bug-investigation** | `/bug-investigation` | 3      | Fan-Out          | 多角度 Bug 调查（日志 + 代码追踪 + 复现）              |
-| **database-design**   | `/database-design`   | 2      | Debate           | 数据库设计：schema-designer vs query-optimizer 辩论    |
-| **refactor-team**     | `/refactor-team`     | 3      | Pipeline         | 团队重构：气味检测 → 安全重构 → 回归验证               |
-
-### 辅助插件
-
-| 插件               | 命令          | 说明                                                                     |
-| ------------------ | ------------- | ------------------------------------------------------------------------ |
-| **ui-design**      | `/ui-design`  | UI/UX 设计：需求分析 → 样式推荐 → 并行 3 变体 → UX 检查 → 双模型代码生成 |
-| **brainstorm**     | `/brainstorm` | 头脑风暴：研究 → 多模型发散 → 创意评估 → 报告                            |
-| **refactor**       | `/refactor`   | 代码重构：气味检测 → 建议 → 影响分析 → 安全执行                          |
-| **context-memory** | `/memory`     | 上下文管理：上下文加载、会话压缩、代码地图、技能索引、文档管理           |
-| **hooks**          | —             | 通用钩子：意图评估、安全防护、智能路由、日志备份、代码质量               |
-
-## 命令示例
+## 使用示例
 
 ```bash
 # 深度思考
@@ -119,6 +87,46 @@ claude plugin install feature-impl@ccg-workflows
 /memory code-map auth-flow
 ```
 
+## 文档与指南
+
+- `llmdoc/index.md`：文档总览入口
+- `llmdoc/overview/project-overview.md`：项目概览、插件目录与技术栈
+- `llmdoc/architecture/plugin-architecture.md`：4 层架构与核心结构
+- `llmdoc/architecture/workflow-orchestration.md`：工作流编排模式
+- `llmdoc/guides/how-to-create-a-plugin.md`：插件开发指南
+
+## 插件总览
+
+### 核心工作流插件
+
+| 插件             | 命令                                                             | Agents | 模式           | 说明                                                  |
+| ---------------- | ---------------------------------------------------------------- | ------ | -------------- | ----------------------------------------------------- |
+| **commit**       | `/commit`                                                        | 4      | Parallel       | 规范提交：调查 → 并行分析 → 合成 → 分支 → 消息 → 提交 |
+| **tpd**          | `/tpd:init` `/tpd:thinking` `/tpd:plan` `/tpd:dev`               | 10     | Multi-phase    | 深度思考 → 零决策规划 → 最小相位实现（OpenSpec 交接） |
+| **plan-execute** | `/plan-execute:plan` `/plan-execute:csv` `/plan-execute:execute` | 3      | Pipeline + CSV | CSV 驱动的 plan → csv → execute 三阶段流水线          |
+
+### Agent Team 插件
+
+| 插件                  | 命令                 | Agents | 模式             | 说明                                                   |
+| --------------------- | -------------------- | ------ | ---------------- | ------------------------------------------------------ |
+| **feature-impl**      | `/feature-impl`      | 5      | Pipeline         | 功能实现：规划 → 分阶段实现 → 并行测试/审查 → 构建检查 |
+| **code-review**       | `/code-review`       | 3      | Fan-Out/Fan-In   | 多视角并行代码审查（安全 + 性能 + 质量）+ 交叉验证     |
+| **security-audit**    | `/security-audit`    | 3      | Fan-Out + Debate | 跨层安全审计（依赖 + 代码 + 配置）+ 辩论模式           |
+| **tdd**               | `/tdd`               | 3      | Pipeline         | 测试驱动开发：写测试 → 实现 → 覆盖率验证               |
+| **bug-investigation** | `/bug-investigation` | 3      | Fan-Out          | 多角度 Bug 调查（日志 + 代码追踪 + 复现）              |
+| **database-design**   | `/database-design`   | 2      | Debate           | 数据库设计：schema-designer vs query-optimizer 辩论    |
+| **refactor-team**     | `/refactor-team`     | 3      | Pipeline         | 团队重构：气味检测 → 安全重构 → 回归验证               |
+
+### 辅助插件
+
+| 插件               | 命令          | 说明                                                                     |
+| ------------------ | ------------- | ------------------------------------------------------------------------ |
+| **ui-design**      | `/ui-design`  | UI/UX 设计：需求分析 → 样式推荐 → 并行 3 变体 → UX 检查 → 双模型代码生成 |
+| **brainstorm**     | `/brainstorm` | 头脑风暴：研究 → 多模型发散 → 创意评估 → 报告                            |
+| **refactor**       | `/refactor`   | 代码重构：气味检测 → 建议 → 影响分析 → 安全执行                          |
+| **context-memory** | `/memory`     | 上下文管理：上下文加载、会话压缩、代码地图、技能索引、文档管理           |
+| **hooks**          | —             | 通用钩子：意图评估、安全防护、智能路由、日志备份、代码质量               |
+
 ## 架构
 
 ```
@@ -139,7 +147,7 @@ claude plugin install feature-impl@ccg-workflows
 └─────────────────────────────────────────────────────────┘
 ```
 
-### Agent Team 模式
+## Agent Team 模式
 
 | 模式               | 说明                               | 使用插件                                       |
 | ------------------ | ---------------------------------- | ---------------------------------------------- |
@@ -148,7 +156,10 @@ claude plugin install feature-impl@ccg-workflows
 | **Debate**         | 多角色辩论 → 共识                  | database-design, security-audit                |
 | **Fix Loop**       | 审查 → 修复 → 重检（max 2 rounds） | feature-impl, plan-execute                     |
 
-### Hook 系统
+## Hook 系统
+
+- 生命周期点：`UserPromptSubmit`、`PreToolUse`、`PostToolUse`、`PermissionRequest`、`Notification`、`TeammateIdle`、`TaskCompleted`
+- 说明：Hooks 插件当前包含 14 个 Hook 脚本，以下为核心示例（完整列表见 `llmdoc/reference/hook-scripts.md`）
 
 | Hook               | 生命周期         | 作用                   |
 | ------------------ | ---------------- | ---------------------- |
@@ -180,7 +191,7 @@ claude plugin install feature-impl@ccg-workflows
 │   ├── brainstorm/                   # 头脑风暴（8 skills）
 │   ├── context-memory/               # 上下文管理（20 skills）
 │   ├── refactor/                     # 代码重构（7 skills）
-│   └── hooks/                        # 通用钩子（6 hooks）
+│   └── hooks/                        # 通用钩子（14 hook scripts）
 ├── openspec/                         # OpenSpec 规范与变更提案
 ├── scripts/
 │   ├── sync-plugins.sh               # 插件同步/安装工具
@@ -216,6 +227,11 @@ plugins/{name}/
 # 检查插件结构
 ./scripts/sync-plugins.sh --list
 ```
+
+## 贡献与支持
+
+- 建议先阅读 `llmdoc/index.md` 与相关指南，再开始贡献
+- 提交前可运行 `./scripts/validate-skills.sh` 进行规范检查
 
 ## 许可证
 
