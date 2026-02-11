@@ -2,11 +2,13 @@
 /**
  * Validate Message - 验证 Conventional Commit 消息格式
  *
- * 用法: npx ts-node validate-message.ts <message> [--strict]
+ * 用法: npx tsx validate-message.ts <message> [--strict]
  *
  * 输出: 验证结果和修复建议
  */
 
+import * as fs from "fs";
+import * as path from "path";
 import { fileURLToPath } from "url";
 
 interface ValidationResult {
@@ -27,23 +29,7 @@ interface ParsedMessage {
   footer: string | null;
 }
 
-// Conventional Commit 类型
-const VALID_TYPES = [
-  "feat",
-  "fix",
-  "docs",
-  "style",
-  "refactor",
-  "perf",
-  "test",
-  "build",
-  "ci",
-  "chore",
-  "revert",
-];
-
-// Emoji 映射
-const EMOJI_MAP: Record<string, string> = {
+const DEFAULT_EMOJI_MAP: Record<string, string> = {
   feat: "✨",
   fix: "🐛",
   docs: "📝",
@@ -56,6 +42,29 @@ const EMOJI_MAP: Record<string, string> = {
   chore: "🔧",
   revert: "⏪",
 };
+
+function loadEmojiMap(): Record<string, string> {
+  try {
+    const currentFile = fileURLToPath(import.meta.url);
+    const currentDir = path.dirname(currentFile);
+    const taxonomyPath = path.resolve(
+      currentDir,
+      "../../_shared/references/commit-taxonomy.json"
+    );
+    const raw = fs.readFileSync(taxonomyPath, "utf-8");
+    const parsed = JSON.parse(raw) as { emoji_by_type?: Record<string, string> };
+    if (parsed.emoji_by_type && Object.keys(parsed.emoji_by_type).length > 0) {
+      return parsed.emoji_by_type;
+    }
+  } catch {
+    // Fallback to local defaults when shared taxonomy is unavailable.
+  }
+  return DEFAULT_EMOJI_MAP;
+}
+
+// Conventional Commit 类型（由共享 taxonomy 派生）
+const EMOJI_MAP: Record<string, string> = loadEmojiMap();
+const VALID_TYPES = Object.keys(EMOJI_MAP);
 
 // 正则表达式
 const HEADER_PATTERN = /^(\w+)(?:\(([^)]+)\))?(!)?:\s*(.+)$/;
@@ -235,8 +244,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const message = args.filter((a) => !a.startsWith("--")).join(" ");
 
   if (!message) {
-    console.error("Usage: npx ts-node validate-message.ts <message> [--strict]");
-    console.error('Example: npx ts-node validate-message.ts "feat(auth): add login"');
+    console.error("Usage: npx tsx validate-message.ts <message> [--strict]");
+    console.error('Example: npx tsx validate-message.ts "feat(auth): add login"');
     process.exit(1);
   }
 

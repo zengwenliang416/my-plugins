@@ -6,9 +6,10 @@
  */
 
 import { spawnSync } from "child_process";
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { homedir } from "os";
-import { join } from "path";
+import { dirname, join, resolve } from "path";
+import { fileURLToPath } from "url";
 
 interface Args {
   role: string;
@@ -17,6 +18,9 @@ interface Args {
   dimension: string;
   session: string;
 }
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 function usage(): void {
   console.log(
@@ -91,10 +95,32 @@ function resolveWrapperBinary(): string {
   return "codeagent-wrapper";
 }
 
+function readLocalRolePrompt(role: string): string | null {
+  if (!role) return null;
+  const localPath = resolve(__dirname, "../references/roles", `${role}.md`);
+  if (!existsSync(localPath)) {
+    return null;
+  }
+  return readFileSync(localPath, "utf-8").trim();
+}
+
+function mergeRolePrompt(rolePrompt: string, taskPrompt: string): string {
+  return `${rolePrompt}\n\n---\n\n${taskPrompt}`.trim();
+}
+
 function run(): void {
   const args = parseArgs(process.argv.slice(2));
   const wrapper = resolveWrapperBinary();
-  const commandArgs = ["gemini", "--role", args.role, "--prompt", args.prompt];
+  const localRolePrompt = readLocalRolePrompt(args.role);
+  const finalPrompt = localRolePrompt
+    ? mergeRolePrompt(localRolePrompt, args.prompt)
+    : args.prompt;
+
+  const commandArgs = ["gemini"];
+  if (!localRolePrompt) {
+    commandArgs.push("--role", args.role);
+  }
+  commandArgs.push("--prompt", finalPrompt);
   if (args.image) {
     commandArgs.push("--file", args.image);
   }

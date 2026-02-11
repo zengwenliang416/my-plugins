@@ -6,15 +6,19 @@
  */
 
 import { spawnSync } from "child_process";
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { homedir } from "os";
-import { join } from "path";
+import { dirname, join, resolve } from "path";
+import { fileURLToPath } from "url";
 
 interface Args {
   prompt: string;
   method: string;
   role: string;
 }
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 function usage(): void {
   console.log(
@@ -77,16 +81,39 @@ function resolveWrapperBinary(): string {
   return "codeagent-wrapper";
 }
 
+function readLocalRolePrompt(role: string): string | null {
+  if (!role) return null;
+  const localPath = resolve(__dirname, "../references/roles", `${role}.md`);
+  if (!existsSync(localPath)) {
+    return null;
+  }
+  return readFileSync(localPath, "utf-8").trim();
+}
+
+function mergeRolePrompt(rolePrompt: string, taskPrompt: string): string {
+  return `${rolePrompt}\n\n---\n\n${taskPrompt}`.trim();
+}
+
 function run(): void {
   const parsed = parseArgs(process.argv.slice(2));
   const wrapper = resolveWrapperBinary();
+  const localRolePrompt = readLocalRolePrompt(parsed.role);
+  const finalPrompt = localRolePrompt
+    ? mergeRolePrompt(localRolePrompt, parsed.prompt)
+    : parsed.prompt;
 
   // Keep method argument for compatibility with existing callers.
   void parsed.method;
 
+  const commandArgs = ["codex"];
+  if (!localRolePrompt) {
+    commandArgs.push("--role", parsed.role);
+  }
+  commandArgs.push("--prompt", finalPrompt, "--sandbox", "read-only");
+
   const result = spawnSync(
     wrapper,
-    ["codex", "--role", parsed.role, "--prompt", parsed.prompt, "--sandbox", "read-only"],
+    commandArgs,
     {
       stdio: "inherit",
       shell: process.platform === "win32",

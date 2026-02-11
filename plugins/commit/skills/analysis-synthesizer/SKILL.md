@@ -6,6 +6,9 @@ description: |
   【不触发】缺少语义分析或符号分析输入文件时
   【先问什么】If analyses conflict, ask user to resolve.
 allowed-tools:
+  - Read
+  - Write
+  - AskUserQuestion
 arguments:
   - name: run_dir
     type: string
@@ -15,6 +18,12 @@ arguments:
 
 # Analysis Synthesizer
 
+## Resource Usage
+
+- Shared index: `../_shared/references/_index.md`
+- Shared taxonomy: `../_shared/references/commit-taxonomy.json`
+- Optional fallback rules: `../change-analyzer/references/analysis-rules.json`
+
 ## Input/Output
 
 | Item        | Value                                                                  |
@@ -22,6 +31,14 @@ arguments:
 | Input       | `${run_dir}/semantic-analysis.json`, `${run_dir}/symbol-analysis.json` |
 | Output      | `${run_dir}/changes-analysis.json`                                     |
 | 🚨 Required | Both parallel analysis files must exist                                |
+
+## 上下文加载策略（方案3：渐进式）
+
+1. 先读 `../_shared/references/_index.md`，确认本阶段仅做“分析结果合成”。
+2. 只读取 `${run_dir}/semantic-analysis.json` 与 `${run_dir}/symbol-analysis.json`。
+3. 阈值、emoji、split 判定优先读取 `../_shared/references/commit-taxonomy.json`。
+4. 仅在合成冲突时按需读取 `../change-analyzer/references/analysis-rules.json`。
+5. 禁止预加载 message/changelog/commit 执行阶段文档。
 
 ## Execution
 
@@ -115,16 +132,9 @@ Resolution rules:
 }
 ```
 
-## Emoji Table
+## Emoji Mapping
 
-| Type     | Emoji | Type   | Emoji |
-| -------- | ----- | ------ | ----- |
-| feat     | ✨    | test   | ✅    |
-| fix      | 🐛    | build  | 📦    |
-| docs     | 📝    | ci     | 👷    |
-| style    | 💄    | chore  | 🔧    |
-| refactor | ♻️    | revert | ⏪    |
-| perf     | ⚡    |        |       |
+统一映射请读取 `../_shared/references/commit-taxonomy.json` 的 `emoji_by_type`。
 
 ## Return
 

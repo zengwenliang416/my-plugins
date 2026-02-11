@@ -5,6 +5,9 @@ description: |
   【核心产出】${run_dir}/commit-message.md
   【不触发】缺少变更分析结果且用户不愿先补齐分析时
   【先问什么】If analysis missing, ask to run analyzer first.
+allowed-tools:
+  - Read
+  - Write
 arguments:
   - name: run_dir
     type: string
@@ -26,6 +29,8 @@ npx tsx scripts/validate-message.ts [args]
 
 ## Resource Usage
 
+- Shared index: `../_shared/references/_index.md`
+- Shared taxonomy: `../_shared/references/commit-taxonomy.json`
 - Reference docs: `references/commit-templates.json`
 - Assets: `assets/commit-message.template.md`
 - Execution script: `scripts/validate-message.ts`
@@ -47,16 +52,17 @@ npx tsx scripts/validate-message.ts [args]
 | Input  | `${run_dir}/changes-analysis.json` + options |
 | Output | `${run_dir}/commit-message.md`               |
 
-## Emoji Table
+## 上下文加载策略（方案3：渐进式）
 
-| Type     | Emoji | Type   | Emoji |
-| -------- | ----- | ------ | ----- |
-| feat     | ✨    | test   | ✅    |
-| fix      | 🐛    | build  | 📦    |
-| docs     | 📝    | ci     | 👷    |
-| style    | 💄    | chore  | 🔧    |
-| refactor | ♻️    | revert | ⏪    |
-| perf     | ⚡    |        |       |
+1. 先读 `../_shared/references/_index.md` 确认仅加载 message 相关资源。
+2. 先读 `${run_dir}/changes-analysis.json`，提取 `primary_type/scope/commit_strategy`。
+3. 优先读取 `../_shared/references/commit-taxonomy.json` 的 `emoji_by_type`。
+4. 再按 type 读取 `references/commit-templates.json` 的对应模板片段。
+5. 仅在格式冲突时读取 `references/conventional-commits.md`，不要预先全量加载。
+
+## Emoji Mapping
+
+统一映射请读取 `../_shared/references/commit-taxonomy.json` 的 `emoji_by_type`。
 
 ## Execution
 

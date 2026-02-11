@@ -2,12 +2,13 @@
 /**
  * Update Changelog - 更新 CHANGELOG.md
  *
- * 用法: npx ts-node update-changelog.ts <entry> [--version <version>]
+ * 用法: npx tsx update-changelog.ts <entry> [--version <version>]
  *
  * 输出: 更新后的 CHANGELOG.md
  */
 
 import * as fs from "fs";
+import * as path from "path";
 import { fileURLToPath } from "url";
 
 interface ChangelogEntry {
@@ -16,23 +17,29 @@ interface ChangelogEntry {
   breaking?: boolean;
 }
 
-// Conventional Commit 到 Changelog 类型映射
-const TYPE_MAP: Record<string, ChangelogEntry["type"]> = {
+type ChangelogType = ChangelogEntry["type"];
+
+interface TypeMappingConfig {
+  conventional_to_changelog?: Record<string, ChangelogType | null>;
+  changelog_sections_order?: ChangelogType[];
+}
+
+const DEFAULT_TYPE_MAP: Record<string, ChangelogType | null> = {
   feat: "Added",
   fix: "Fixed",
   docs: "Changed",
   style: "Changed",
   refactor: "Changed",
   perf: "Changed",
-  test: "Changed",
+  test: null,
   build: "Changed",
-  ci: "Changed",
-  chore: "Changed",
+  ci: null,
+  chore: null,
   revert: "Removed",
 };
 
 // 类型优先级（显示顺序）
-const TYPE_PRIORITY: ChangelogEntry["type"][] = [
+const DEFAULT_TYPE_PRIORITY: ChangelogType[] = [
   "Changed",
   "Added",
   "Deprecated",
@@ -40,6 +47,32 @@ const TYPE_PRIORITY: ChangelogEntry["type"][] = [
   "Fixed",
   "Security",
 ];
+
+function loadTypeMappingConfig(): {
+  typeMap: Record<string, ChangelogType | null>;
+  typePriority: ChangelogType[];
+} {
+  try {
+    const currentFile = fileURLToPath(import.meta.url);
+    const currentDir = path.dirname(currentFile);
+    const mappingPath = path.resolve(currentDir, "../references/type-mapping.json");
+    const raw = fs.readFileSync(mappingPath, "utf-8");
+    const parsed = JSON.parse(raw) as TypeMappingConfig;
+    return {
+      typeMap: parsed.conventional_to_changelog || DEFAULT_TYPE_MAP,
+      typePriority: parsed.changelog_sections_order || DEFAULT_TYPE_PRIORITY,
+    };
+  } catch {
+    return {
+      typeMap: DEFAULT_TYPE_MAP,
+      typePriority: DEFAULT_TYPE_PRIORITY,
+    };
+  }
+}
+
+const TYPE_MAPPING = loadTypeMappingConfig();
+const TYPE_MAP = TYPE_MAPPING.typeMap;
+const TYPE_PRIORITY = TYPE_MAPPING.typePriority;
 
 const CHANGELOG_TEMPLATE = `# Changelog
 
@@ -199,8 +232,12 @@ function rebuildChangelog(
 
 function commitTypeToChangelogType(
   commitType: string
-): ChangelogEntry["type"] {
-  return TYPE_MAP[commitType] || "Changed";
+): ChangelogEntry["type"] | null {
+  const normalized = commitType.toLowerCase();
+  if (Object.prototype.hasOwnProperty.call(TYPE_MAP, normalized)) {
+    return TYPE_MAP[normalized];
+  }
+  return "Changed";
 }
 
 // CLI 入口
@@ -212,23 +249,29 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const entryArg = args.filter((a) => !a.startsWith("--") && a !== version)[0];
 
   if (!entryArg) {
-    console.error("Usage: npx ts-node update-changelog.ts <entry> [--version <version>]");
-    console.error('Example: npx ts-node update-changelog.ts "feat: Add new button component"');
+    console.error("Usage: npx tsx update-changelog.ts <entry> [--version <version>]");
+    console.error('Example: npx tsx update-changelog.ts "feat: Add new button component"');
     process.exit(1);
   }
 
-  // 解析 entry (格式: type: description)
-  const match = entryArg.match(/^(\w+)(?:\([^)]+\))?:\s*(.+)$/);
+  // 解析 entry (格式: type(scope)!: description)
+  const match = entryArg.match(/^(\w+)(?:\([^)]+\))?(!)?:\s*(.+)$/);
   if (!match) {
     console.error("Invalid entry format. Expected: type: description");
     process.exit(1);
   }
 
-  const [, commitType, description] = match;
+  const [, commitType, bangMarker, description] = match;
+  const changelogType = commitTypeToChangelogType(commitType);
+  if (!changelogType) {
+    console.log(`ℹ️ Skip changelog for commit type: ${commitType}`);
+    process.exit(0);
+  }
+
   const entry: ChangelogEntry = {
-    type: commitTypeToChangelogType(commitType),
+    type: changelogType,
     content: description,
-    breaking: entryArg.includes("!:") || entryArg.includes("BREAKING"),
+    breaking: bangMarker === "!" || entryArg.includes("BREAKING"),
   };
 
   const changelogPath = "CHANGELOG.md";

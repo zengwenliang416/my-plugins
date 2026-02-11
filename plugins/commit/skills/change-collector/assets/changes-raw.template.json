@@ -1,15 +1,15 @@
 {
-  "timestamp": "${TIMESTAMP}",
-  "branch": "${BRANCH}",
+  "timestamp": "${timestamp}",
+  "branch": "${branch}",
   "staged": [],
   "unstaged": [],
   "untracked": [],
-  "diff_stat": {
-    "files_changed": 0,
+  "diffStat": {
+    "filesChanged": 0,
     "insertions": 0,
     "deletions": 0
   },
-  "has_staged": false,
-  "has_unstaged": false,
-  "has_untracked": false
+  "hasStaged": false,
+  "hasUnstaged": false,
+  "hasUntracked": false
 }

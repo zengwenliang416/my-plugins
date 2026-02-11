@@ -1,0 +1,57 @@
+{
+  "emoji_by_type": {
+    "feat": "✨",
+    "fix": "🐛",
+    "docs": "📝",
+    "style": "💄",
+    "refactor": "♻️",
+    "perf": "⚡",
+    "test": "✅",
+    "build": "📦",
+    "ci": "👷",
+    "chore": "🔧",
+    "revert": "⏪"
+  },
+  "changelog_type_by_commit_type": {
+    "feat": "Added",
+    "fix": "Fixed",
+    "docs": "Changed",
+    "style": "Changed",
+    "refactor": "Changed",
+    "perf": "Changed",
+    "build": "Changed",
+    "revert": "Removed",
+    "test": "skip",
+    "ci": "skip",
+    "chore": "skip",
+    "breaking": "Changed"
+  },
+  "complexity_thresholds": {
+    "low": {
+      "max_files": 3,
+      "max_lines": 50,
+      "max_scopes": 1
+    },
+    "medium": {
+      "max_files": 10,
+      "max_lines": 300,
+      "max_scopes": 2
+    },
+    "high": {
+      "min_files": 11,
+      "min_lines": 301,
+      "min_scopes": 3
+    }
+  },
+  "split_recommendation_rules": [
+    "2+ scopes => split",
+    ">10 files or >300 lines => split",
+    "mixed feat+fix => optional split",
+    "cross-module semantic groups => split"
+  ],
+  "load_policy": {
+    "prefer_structured_first": true,
+    "read_markdown_on_demand": true,
+    "avoid_full_reference_scan": true
+  }
+}

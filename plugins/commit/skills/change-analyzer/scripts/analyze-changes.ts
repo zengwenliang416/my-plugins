@@ -2,7 +2,7 @@
 /**
  * Analyze Changes - 分析变更类型和作用域
  *
- * 用法: npx ts-node analyze-changes.ts <changes-raw.json>
+ * 用法: npx tsx analyze-changes.ts <changes-raw.json>
  *
  * 输出: 变更分析结果 JSON
  */
@@ -117,10 +117,11 @@ function evaluateComplexity(
 function shouldSplitCommit(
   files: FileChange[],
   types: string[],
-  scopes: string[]
+  scopes: string[],
+  totalChanges: number
 ): { shouldSplit: boolean; reason: string | null } {
   // 多作用域
-  if (scopes.length > 2) {
+  if (scopes.length >= 2) {
     return { shouldSplit: true, reason: `涉及 ${scopes.length} 个不同作用域` };
   }
 
@@ -133,6 +134,9 @@ function shouldSplitCommit(
   // 大变更
   if (files.length > 10) {
     return { shouldSplit: true, reason: `文件数过多 (${files.length} 个)` };
+  }
+  if (totalChanges > 300) {
+    return { shouldSplit: true, reason: `变更行数过多 (${totalChanges} 行)` };
   }
 
   return { shouldSplit: false, reason: null };
@@ -185,13 +189,14 @@ function analyzeChanges(rawChanges: RawChanges): AnalysisResult {
   const primaryType = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "chore";
 
   const primaryScope = inferScope(files);
+  const totalChanges = rawChanges.diffStat.insertions + rawChanges.diffStat.deletions;
   const complexity = evaluateComplexity(
     files.length,
     rawChanges.diffStat.insertions,
     rawChanges.diffStat.deletions
   );
 
-  const splitResult = shouldSplitCommit(files, types, scopes);
+  const splitResult = shouldSplitCommit(files, types, scopes, totalChanges);
 
   // 按类型分组文件
   const filesByType: Record<string, FileChange[]> = {};
@@ -233,7 +238,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const inputFile = args[0];
 
   if (!inputFile) {
-    console.error("Usage: npx ts-node analyze-changes.ts <changes-raw.json>");
+    console.error("Usage: npx tsx analyze-changes.ts <changes-raw.json>");
     process.exit(1);
   }
 

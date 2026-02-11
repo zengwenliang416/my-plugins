@@ -71,6 +71,8 @@ npx tsx scripts/invoke-codex.ts \
 | implementer        | 后端代码原型生成   | dev      |
 | auditor            | 安全性能审计       | dev      |
 
+> 兼容说明：若本机 `~/.claude/prompts/codex/` 缺少上述角色 prompt，脚本会自动回退到内置可用角色（如 `analyzer` / `reviewer`），避免 `role prompt not found` 警告导致流程中断。
+
 ---
 
 ## 场景模板

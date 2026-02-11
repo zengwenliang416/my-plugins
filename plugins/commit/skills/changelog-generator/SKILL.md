@@ -6,6 +6,10 @@ description: |
   【不触发】用户传入 --no-changelog 或确认跳过更新日志时
   【先问什么】目标版本号、是否写入 Unreleased 区段、是否批量提交模式
   【🚨 Mandatory】Must run unless --no-changelog.
+allowed-tools:
+  - Bash
+  - Read
+  - Write
 arguments:
   - name: run_dir
     type: string
@@ -31,6 +35,8 @@ npx tsx scripts/update-changelog.ts [args]
 
 ## Resource Usage
 
+- Shared index: `../_shared/references/_index.md`
+- Shared taxonomy: `../_shared/references/commit-taxonomy.json`
 - Reference docs: `references/changelog-format.md`
 - Assets: `assets/changelog-template.md`
 - Execution script: `scripts/update-changelog.ts`
@@ -49,16 +55,23 @@ npx tsx scripts/update-changelog.ts [args]
 | Input  | `${run_dir}/changes-analysis.json` + `commit-message.md` |
 | Output | `CHANGELOG.md` + `${run_dir}/changelog-entry.md`         |
 
+## 上下文加载策略（方案3：渐进式）
+
+1. 先读 `../_shared/references/_index.md`，确认当前阶段只做 changelog 生成。
+2. 先读取 `${run_dir}/changes-analysis.json` 与 `${run_dir}/commit-message.md`。
+3. 优先读取 `../_shared/references/commit-taxonomy.json` 的 `changelog_type_by_commit_type`。
+4. 仅在版式或段落结构异常时，再读取 `references/changelog-format.md`。
+5. 新建文件时优先复用 `assets/changelog-template.md`。
+
 ## Type Mapping
 
-| Commit Type                    | Changelog Type                 |
-| ------------------------------ | ------------------------------ |
-| feat                           | Added                          |
-| fix                            | Fixed                          |
-| docs/style/refactor/perf/build | Changed                        |
-| revert                         | Removed                        |
-| test/ci/chore                  | (not recorded)                 |
-| BREAKING                       | Changed (**Breaking:** prefix) |
+优先从 `../_shared/references/commit-taxonomy.json` 的 `changelog_type_by_commit_type` 读取映射：
+
+- `feat -> Added`
+- `fix -> Fixed`
+- `docs/style/refactor/perf/build -> Changed`
+- `revert -> Removed`
+- `test/ci/chore -> skip`
 
 ## Execution
 

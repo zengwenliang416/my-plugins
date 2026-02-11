@@ -58,6 +58,15 @@ arguments:
 | --------------------- | -------------------------------- | --------------- |
 | `auggie-mcp`          | 语义分析代码结构和依赖关系       | 🚨 必须首先使用 |
 
+## 上下文加载策略（渐进式，节省 token）
+
+1. 先定位目标范围（目录/文件），优先处理高风险目录，不全量扫描整个仓库。
+2. 先读 `references/smell-catalog.md` 的相关章节，再按检测结果补充细节。
+3. 仅在 legacy=true 时执行遗留气味检测与技术栈查询；默认跳过 legacy 分支。
+4. 结果输出优先复用 `assets/smells.template.json` 与 `assets/smells-report.template.md`。
+
+**重要**：避免一次性读取全部说明与大样例，使用“先概要、后细节”的按需加载流程。
+
 ## 执行流程
 
 
@@ -232,68 +241,38 @@ Skill(skill="gemini-cli", args="--role component-analyst --prompt '检测 ${targ
 
 **写入 `${run_dir}/smells.json`**：
 
+输出结构以 `assets/smells.template.json` 为准，至少包含：
+
+- `timestamp`、`target`、`legacy_mode`
+- `summary.files_scanned`、`summary.total_smells`、`summary.by_severity`、`summary.by_type`
+- `smells[]`：每项包含 `id/type/severity/file/line_start/line_end/description/metrics`
+- `legacy_smells[]`：仅在 legacy=true 时填充
+
+最小示例（字段可扩展）：
+
 ```json
 {
   "timestamp": "2026-01-19T12:00:00Z",
   "target": "${target}",
-  "total_files": 15,
-  "total_smells": 8,
+  "legacy_mode": false,
+  "summary": {
+    "files_scanned": 15,
+    "total_smells": 1
+  },
   "smells": [
     {
       "id": "SMELL-001",
       "type": "long_method",
       "severity": "high",
-      "location": {
-        "file": "src/services/UserService.ts",
-        "line": 45,
-        "symbol": "processUserData"
-      },
+      "file": "src/services/example.ts",
+      "line_start": 45,
+      "line_end": 120,
+      "description": "函数过长，建议拆分",
       "metrics": {
-        "lines": 120,
-        "threshold": 50
-      },
-      "description": "函数 processUserData 有 120 行，超过建议的 50 行限制",
-      "suggestion": "考虑提取子方法"
-    },
-    {
-      "id": "SMELL-002",
-      "type": "god_class",
-      "severity": "critical",
-      "location": {
-        "file": "src/core/AppManager.ts",
-        "line": 1,
-        "symbol": "AppManager"
-      },
-      "metrics": {
-        "methods": 25,
-        "lines": 800,
-        "threshold_methods": 10,
-        "threshold_lines": 300
-      },
-      "description": "类 AppManager 有 25 个方法和 800 行代码，职责过重",
-      "suggestion": "考虑按职责拆分为多个类"
+        "lines": 75
+      }
     }
   ],
-  "summary": {
-    "by_type": {
-      "long_method": 3,
-      "god_class": 1,
-      "long_parameter_list": 2,
-      "duplicated_code": 2
-    },
-    "by_severity": {
-      "critical": 1,
-      "high": 3,
-      "medium": 2,
-      "low": 2
-    },
-    "by_category": {
-      "general": 8,
-      "legacy_frontend": 0,
-      "legacy_backend": 0
-    }
-  },
-  "legacy_mode": false,
   "legacy_smells": []
 }
 ```
@@ -302,97 +281,15 @@ Skill(skill="gemini-cli", args="--role component-analyst --prompt '检测 ${targ
 
 **写入 `${run_dir}/smells-report.md`**：
 
-```markdown
-# 代码气味检测报告
+报告结构以 `assets/smells-report.template.md` 为准，至少包含：
 
-## 检测概览
+1. 检测概览（目标、扫描文件数、气味总数、严重级别分布）
+2. 按类型统计（类型、数量、严重程度）
+3. Top 高风险发现（包含位置、指标、问题描述、建议）
+4. 检测方法验证（auggie-mcp / LSP 是否执行）
+5. legacy=true 时追加“遗留系统气味”章节
 
-| 指标     | 值                                  |
-| -------- | ----------------------------------- |
-| 目标     | ${target}                           |
-| 文件数   | 15                                  |
-| 气味总数 | 8                                   |
-| 严重级别 | 1 Critical, 3 High, 2 Medium, 2 Low |
-
-## 按类型统计
-
-| 气味类型     | 数量 | 严重程度    |
-| ------------ | ---- | ----------- |
-| 过长函数     | 3    | 🔴 High     |
-| 过大类       | 1    | 🔴 Critical |
-| 过长参数列表 | 2    | 🟡 Medium   |
-| 重复代码     | 2    | 🟡 Medium   |
-
-## 详细发现
-
-### 🔴 Critical: God Class
-
-**位置**: `src/core/AppManager.ts:1`
-**符号**: `AppManager`
-**指标**: 25 方法 / 800 行（阈值: 10 方法 / 300 行）
-
-**问题描述**:
-类 AppManager 承担了过多职责，包括配置管理、状态管理、事件处理等。
-
-**建议**:
-考虑按职责拆分：
-
-- `ConfigManager` - 配置管理
-- `StateManager` - 状态管理
-- `EventBus` - 事件处理
-
----
-
-### 🔴 High: Long Method
-
-**位置**: `src/services/UserService.ts:45`
-**符号**: `processUserData`
-**指标**: 120 行（阈值: 50 行）
-
-**问题描述**:
-函数过长，包含多个逻辑步骤，难以理解和维护。
-
-**建议**:
-提取以下子方法：
-
-- `validateUserInput()` - 输入验证
-- `transformUserData()` - 数据转换
-- `persistUserData()` - 数据持久化
-
----
-
-## 检测方法验证
-
-- [x] auggie-mcp 语义分析
-- [x] LSP.documentSymbol 结构分析
-- [x] 行数/方法数度量
-- [x] 参数数量检查
-
----
-
-## 🆕 遗留系统气味（仅 legacy 模式）
-
-### 前端遗留气味
-
-| 气味类型         | 位置             | 实例数 | 严重程度  |
-| ---------------- | ---------------- | ------ | --------- |
-| jQuery Spaghetti | src/js/\*.js     | 45     | 🔴 High   |
-| Global State     | src/js/app.js    | 12     | 🔴 High   |
-| $scope Pollution | src/controllers/ | 28     | 🟡 Medium |
-
-### 后端遗留气味
-
-| 气味类型          | 位置              | 实例数 | 严重程度    |
-| ----------------- | ----------------- | ------ | ----------- |
-| Hardcoded Config  | src/config.php    | 8      | 🔴 Critical |
-| Raw SQL           | src/models/\*.php | 23     | 🔴 High     |
-| No API Versioning | routes/api.php    | 1      | 🟡 Medium   |
-
----
-
-检测时间: ${timestamp}
-下一步: 调用 refactor-suggester 生成重构建议
-```
+建议按严重程度排序输出（critical > high > medium > low），便于下一步交给 `refactor-suggester`。
 
 ---
 

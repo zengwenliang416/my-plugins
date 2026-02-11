@@ -7,6 +7,7 @@
  * 功能: 验证消息格式，检查 pre-commit hook，执行提交
  */
 
+import * as fs from "fs";
 import { execSync, spawnSync } from "child_process";
 import { fileURLToPath } from "url";
 
@@ -59,6 +60,15 @@ function exec(cmd: string): { stdout: string; stderr: string; code: number } {
       code: error.status || 1,
     };
   }
+}
+
+function runGit(args: string[]): { stdout: string; stderr: string; code: number } {
+  const result = spawnSync("git", args, { encoding: "utf-8" });
+  return {
+    stdout: (result.stdout || "").trim(),
+    stderr: (result.stderr || "").trim(),
+    code: result.status ?? (result.error ? 1 : 0),
+  };
 }
 
 function runSafetyChecks(message: string): SafetyCheck[] {
@@ -123,18 +133,36 @@ function runSafetyChecks(message: string): SafetyCheck[] {
 
 function runPreCommitHook(): { success: boolean; output: string } {
   const hookPath = ".git/hooks/pre-commit";
-  const result = exec(`test -x ${hookPath} && ${hookPath}`);
 
-  if (result.code === 0) {
-    return { success: true, output: result.stdout };
-  }
-
-  // 如果 hook 不存在，视为成功
-  if (result.stderr.includes("not found") || result.code === 127) {
+  // Hook file missing or non-executable should be treated as "no hook".
+  // Otherwise commits would fail in repos without pre-commit hooks.
+  if (!fs.existsSync(hookPath)) {
     return { success: true, output: "No pre-commit hook found" };
   }
 
-  return { success: false, output: result.stderr || result.stdout };
+  try {
+    const stat = fs.statSync(hookPath);
+    const executable = (stat.mode & 0o111) !== 0;
+    if (!executable) {
+      return {
+        success: true,
+        output: "Pre-commit hook exists but is not executable, skipping",
+      };
+    }
+  } catch {
+    return { success: true, output: "No pre-commit hook found" };
+  }
+
+  const result = exec(hookPath);
+
+  if (result.code === 0) {
+    return { success: true, output: result.stdout || "Pre-commit hook passed" };
+  }
+
+  return {
+    success: false,
+    output: result.stderr || result.stdout || "Pre-commit hook failed",
+  };
 }
 
 function executeCommit(
@@ -194,11 +222,12 @@ function executeCommit(
   }
 
   // 执行提交
-  const commitCmd = skipHooks
-    ? `git commit --no-verify -m "${message.replace(/"/g, '\\"')}"`
-    : `git commit -m "${message.replace(/"/g, '\\"')}"`;
-
-  const result = exec(commitCmd);
+  const commitArgs = ["commit"];
+  if (skipHooks) {
+    commitArgs.push("--no-verify");
+  }
+  commitArgs.push("-m", message);
+  const result = runGit(commitArgs);
 
   if (result.code !== 0) {
     return {

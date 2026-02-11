@@ -5,6 +5,11 @@ description: |
   【核心产出】${run_dir}/commit-result.json
   【不触发】用户取消提交或前置步骤失败时
   【先问什么】If hook fails, ask to skip or fix.
+allowed-tools:
+  - Bash
+  - Read
+  - Write
+  - AskUserQuestion
 arguments:
   - name: run_dir
     type: string
@@ -26,7 +31,9 @@ npx tsx scripts/safe-commit.ts [args]
 
 ## Resource Usage
 
+- Shared index: `../_shared/references/_index.md`
 - Reference docs: `references/git-safety.md`
+- Structured checks: `references/pre-commit-checks.json`
 - Assets: `assets/pre-commit-hook.template.sh`
 - Execution script: `scripts/safe-commit.ts`
 
@@ -36,6 +43,13 @@ npx tsx scripts/safe-commit.ts [args]
 | ------ | ---------------------------------------- |
 | Input  | `${run_dir}/commit-message.md` + options |
 | Output | `${run_dir}/commit-result.json`          |
+
+## 上下文加载策略（方案3：渐进式）
+
+1. 先读 `../_shared/references/_index.md`，确认当前阶段只需执行与安全检查。
+2. 先读 `${run_dir}/commit-message.md` 与 options，确定 commit 参数。
+3. 优先读取 `references/pre-commit-checks.json` 做结构化校验。
+4. 仅在 hook/冲突异常场景时读取 `references/git-safety.md` 细则。
 
 ## Options
 

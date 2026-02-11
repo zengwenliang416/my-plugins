@@ -58,6 +58,15 @@ arguments:
 1. 验证 `${run_dir}/smells.json` 存在
 2. 如果不存在，提示用户先执行 smell-detector
 
+## 上下文加载策略（渐进式，节省 token）
+
+1. 先读取 `${run_dir}/smells.json`，只提取 `summary` 和 Top-N 高风险气味。
+2. 按气味类型按需查阅 `references/refactoring-patterns.md`，不要全量逐段阅读。
+3. 仅在 legacy=true 时读取遗留迁移相关内容；legacy=false 时跳过迁移上下文。
+4. 输出结构优先复用 `assets/suggestions.template.json`，避免在对话中展开完整大样例。
+
+**重要**：禁止一次性加载全部上下文，必须遵循“先摘要 → 再命中细节”的顺序。
+
 ## 执行流程
 
 
@@ -329,106 +338,41 @@ mcp__auggie-mcp__codebase-retrieval({
 
 **写入 `${run_dir}/suggestions.json`**：
 
+输出结构以 `assets/suggestions.template.json` 为准，至少包含：
+
+- `timestamp`、`run_dir`、`legacy_mode`
+- `summary.total_suggestions`、`summary.by_type`、`summary.by_risk`
+- `suggestions[]`：每条建议包含 `id/type/smell_id/target/description/risk_level/steps`
+- `migration_suggestions[]`：仅在 legacy=true 且识别到迁移任务时填充
+
+最小示例（字段可扩展）：
+
 ```json
 {
   "timestamp": "2026-01-19T12:00:00Z",
-  "total_suggestions": 5,
+  "run_dir": "${run_dir}",
+  "legacy_mode": false,
+  "summary": {
+    "total_suggestions": 1
+  },
   "suggestions": [
     {
       "id": "REF-001",
-      "smell_id": "SMELL-001",
       "type": "extract_method",
+      "smell_id": "SMELL-001",
       "target": {
-        "file": "src/services/UserService.ts",
-        "symbol": "processUserData",
-        "line": 45
+        "file": "src/services/example.ts",
+        "symbol": "processData"
       },
-      "description": "将 processUserData 方法拆分为三个子方法",
+      "description": "拆分超长函数",
       "risk_level": "low",
-      "confidence": 0.95,
       "steps": [
-        {
-          "order": 1,
-          "action": "提取输入验证逻辑",
-          "target_name": "validateUserInput",
-          "lines": "48-65"
-        },
-        {
-          "order": 2,
-          "action": "提取数据转换逻辑",
-          "target_name": "transformUserData",
-          "lines": "66-95"
-        },
-        {
-          "order": 3,
-          "action": "提取持久化逻辑",
-          "target_name": "persistUserData",
-          "lines": "96-120"
-        }
-      ],
-      "before_snippet": "async processUserData(data: UserInput) {\n  // 120 lines of code\n}",
-      "after_snippet": "async processUserData(data: UserInput) {\n  this.validateUserInput(data);\n  const transformed = this.transformUserData(data);\n  await this.persistUserData(transformed);\n}",
-      "estimated_effort": "30 minutes",
-      "test_impact": {
-        "affected_tests": ["UserService.test.ts"],
-        "coverage_status": "covered"
-      }
-    },
-    {
-      "id": "REF-002",
-      "smell_id": "SMELL-002",
-      "type": "extract_class",
-      "target": {
-        "file": "src/core/AppManager.ts",
-        "symbol": "AppManager",
-        "line": 1
-      },
-      "description": "将 AppManager 拆分为三个职责明确的类",
-      "risk_level": "high",
-      "confidence": 0.85,
-      "steps": [
-        {
-          "order": 1,
-          "action": "创建 ConfigManager 类",
-          "methods_to_move": ["loadConfig", "saveConfig", "getConfig"]
-        },
-        {
-          "order": 2,
-          "action": "创建 StateManager 类",
-          "methods_to_move": ["getState", "setState", "resetState"]
-        },
-        {
-          "order": 3,
-          "action": "创建 EventBus 类",
-          "methods_to_move": ["emit", "on", "off"]
-        },
-        {
-          "order": 4,
-          "action": "更新 AppManager 引用",
-          "affected_files": 15
-        }
-      ],
-      "estimated_effort": "4 hours",
-      "test_impact": {
-        "affected_tests": ["AppManager.test.ts", "integration/*.test.ts"],
-        "coverage_status": "partial"
-      }
+        "提取验证逻辑",
+        "提取转换逻辑",
+        "提取持久化逻辑"
+      ]
     }
   ],
-  "summary": {
-    "by_type": {
-      "extract_method": 3,
-      "extract_class": 1,
-      "introduce_parameter_object": 1
-    },
-    "by_risk": {
-      "low": 3,
-      "medium": 1,
-      "high": 1
-    },
-    "total_estimated_effort": "6 hours"
-  },
-  "legacy_mode": false,
   "migration_suggestions": []
 }
 ```

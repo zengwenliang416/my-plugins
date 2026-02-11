@@ -69,6 +69,8 @@ npx tsx scripts/invoke-gemini.ts \
 | implementer        | 前端代码原型生成  | dev      |
 | auditor            | UX/可访问性审计   | dev      |
 
+> 兼容说明：若本机 `~/.claude/prompts/gemini/` 缺少上述角色 prompt，脚本会自动回退到可用角色（如 `analyzer` / `reviewer`），避免 `role prompt not found` 警告影响执行链路。
+
 ---
 
 ## 场景模板

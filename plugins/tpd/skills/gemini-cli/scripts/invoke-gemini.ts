@@ -2,13 +2,14 @@
 /**
  * Gemini wrapper for cross-platform skill execution.
  * Usage:
- *   npx ts-node --esm invoke-gemini.ts --prompt "<prompt>" [--role <role>] [--workdir <path>] [--session <id>]
+ *   npx tsx invoke-gemini.ts --prompt "<prompt>" [--role <role>] [--workdir <path>] [--session <id>]
  */
 
 import { spawnSync } from "child_process";
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { homedir } from "os";
-import { join } from "path";
+import { dirname, join, resolve } from "path";
+import { fileURLToPath } from "url";
 
 interface ParsedArgs {
   role: string;
@@ -18,9 +19,12 @@ interface ParsedArgs {
   passthrough: string[];
 }
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 function usage(): void {
   console.log(
-    "Usage: npx ts-node --esm invoke-gemini.ts --prompt <prompt> [--role <role>] [--workdir <path>] [--session <id>]"
+    "Usage: npx tsx invoke-gemini.ts --prompt <prompt> [--role <role>] [--workdir <path>] [--session <id>]"
   );
 }
 
@@ -85,11 +89,85 @@ function resolveWrapperBinary(): string {
   return "codeagent-wrapper";
 }
 
+function resolvePromptsDir(): string {
+  if (process.env.CLAUDE_PROMPTS_DIR?.trim()) {
+    return process.env.CLAUDE_PROMPTS_DIR.trim();
+  }
+  return join(homedir(), ".claude", "prompts");
+}
+
+function localRolePromptPath(role: string): string {
+  return resolve(__dirname, "../references/roles", `${role}.md`);
+}
+
+function readLocalRolePrompt(role: string): string | null {
+  if (!role) return null;
+  const promptPath = localRolePromptPath(role);
+  if (!existsSync(promptPath)) {
+    return null;
+  }
+  return readFileSync(promptPath, "utf-8").trim();
+}
+
+function globalRolePromptExists(model: string, role: string): boolean {
+  if (!role) return false;
+  const promptPath = resolve(resolvePromptsDir(), model, `${role}.md`);
+  return existsSync(promptPath);
+}
+
+function rolePromptExists(model: string, role: string): boolean {
+  if (!role) return false;
+  if (existsSync(localRolePromptPath(role))) {
+    return true;
+  }
+  return globalRolePromptExists(model, role);
+}
+
+function mergeRolePrompt(rolePrompt: string, taskPrompt: string): string {
+  return `${rolePrompt}\n\n---\n\n${taskPrompt}`.trim();
+}
+
+function resolveRoleAlias(role: string): string {
+  if (!role) return role;
+  if (rolePromptExists("gemini", role)) {
+    return role;
+  }
+
+  const aliasMap: Record<string, string> = {
+    "constraint-analyst": "analyzer",
+    architect: "analyzer",
+    implementer: "optimizer",
+    auditor: "reviewer",
+  };
+
+  const alias = aliasMap[role];
+  if (alias && rolePromptExists("gemini", alias)) {
+    console.error(`[tpd:gemini-cli] role '${role}' prompt missing, fallback to '${alias}'.`);
+    return alias;
+  }
+
+  if (rolePromptExists("gemini", "analyzer")) {
+    console.error(`[tpd:gemini-cli] role '${role}' prompt missing, fallback to 'analyzer'.`);
+    return "analyzer";
+  }
+
+  return role;
+}
+
 function main(): void {
   const parsed = parseArgs(process.argv.slice(2));
   const wrapper = resolveWrapperBinary();
+  const localRolePrompt = readLocalRolePrompt(parsed.role);
+  const resolvedRole = localRolePrompt ? "" : resolveRoleAlias(parsed.role);
+  const finalPrompt = localRolePrompt
+    ? mergeRolePrompt(localRolePrompt, parsed.prompt)
+    : parsed.prompt;
 
-  const args = ["gemini", "--role", parsed.role, "--prompt", parsed.prompt];
+  const args = ["gemini"];
+  if (resolvedRole) {
+    args.push("--role", resolvedRole);
+  }
+  args.push("--prompt", finalPrompt);
   if (parsed.workdir) {
     args.push("--workdir", parsed.workdir);
   }

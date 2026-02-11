@@ -31,6 +31,8 @@ npx tsx scripts/analyze-changes.ts [args]
 
 ## Resource Usage
 
+- Shared index: `../_shared/references/_index.md`
+- Shared taxonomy: `../_shared/references/commit-taxonomy.json`
 - Reference docs: `references/analysis-rules.json`
 - Assets: `assets/changes-analysis.template.json`
 - Execution script: `scripts/analyze-changes.ts`
@@ -42,6 +44,14 @@ npx tsx scripts/analyze-changes.ts [args]
 | Input       | `${run_dir}/changes-raw.json`        |
 | Output      | `${run_dir}/changes-analysis.json`   |
 | 🚨 Required | auggie-mcp (semantic), LSP (symbols) |
+
+## 上下文加载策略（方案3：渐进式）
+
+1. 先读 `../_shared/references/_index.md`，确认当前阶段仅需分析规则与阈值。
+2. 先读 `${run_dir}/changes-raw.json` 提取文件列表、diff 统计与 staged 状态。
+3. 优先读取 `references/analysis-rules.json` 与 `../_shared/references/commit-taxonomy.json` 的结构化规则。
+4. 仅在冲突/歧义时再读取 `references/analysis-rules.md` 进行人工解释。
+5. 输出优先复用 `assets/changes-analysis.template.json`，避免展开完整大样例。
 
 ## Execution
 
@@ -119,12 +129,12 @@ Skip: config files, text files, LSP errors
 ```json
 {
   "timestamp": "ISO8601",
-  "analyzed_files": 3,
-  "primary_type": "feat",
-  "primary_scope": "auth-service",
+  "analyzedFiles": 3,
+  "primaryType": "feat",
+  "primaryScope": "auth-service",
   "complexity": "low|medium|high",
-  "should_split": false,
-  "split_recommendation": {
+  "shouldSplit": false,
+  "splitRecommendation": {
     "commits": [
       {
         "type": "feat",
@@ -136,24 +146,17 @@ Skip: config files, text files, LSP errors
       }
     ]
   },
-  "commit_strategy": {
-    "suggested_type": "feat",
-    "suggested_scope": "auth",
+  "commitStrategy": {
+    "suggestedType": "feat",
+    "suggestedScope": "auth",
     "confidence": "high"
   }
 }
 ```
 
-## Emoji Table
+## Emoji Mapping
 
-| Type     | Emoji | Type   | Emoji |
-| -------- | ----- | ------ | ----- |
-| feat     | ✨    | test   | ✅    |
-| fix      | 🐛    | build  | 📦    |
-| docs     | 📝    | ci     | 👷    |
-| style    | 💄    | chore  | 🔧    |
-| refactor | ♻️    | revert | ⏪    |
-| perf     | ⚡    |        |       |
+统一映射请读取 `../_shared/references/commit-taxonomy.json` 的 `emoji_by_type`，不要在本技能重复维护。
 
 ## Complexity
 
