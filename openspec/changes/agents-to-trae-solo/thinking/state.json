@@ -1,0 +1,8 @@
+{
+  "proposal_id": "agents-to-trae-solo",
+  "thinking_dir": "openspec/changes/agents-to-trae-solo/thinking",
+  "status": "initialized",
+  "depth": "auto",
+  "created_at": "2026-02-03T00:00:00Z",
+  "question": "Convert cc-plugin/agents to Trae IDE SOLO Coder intelligent agent document format"
+}

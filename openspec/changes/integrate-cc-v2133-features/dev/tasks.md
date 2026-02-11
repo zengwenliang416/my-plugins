@@ -3,7 +3,7 @@
 Status: Plan complete (8 tasks, 5 waves, 14 file operations)
 Plan: `plan/plan.md`
 
-## T-1: Migrate tech-rules-generator output path ✅
+## T-1: Migrate tech-rules-generator output path
 
 **Wave**: 1 | **Dependencies**: None
 
@@ -15,7 +15,7 @@ Plan: `plan/plan.md`
 
 ---
 
-## T-2a: Fix hooks-system.md canonical reference ✅
+## T-2a: Fix hooks-system.md canonical reference
 
 **Wave**: 2 | **Dependencies**: T-1
 
@@ -27,7 +27,7 @@ Plan: `plan/plan.md`
 
 ---
 
-## T-2b: Fix hook-scripts.md reference document ✅
+## T-2b: Fix hook-scripts.md reference document
 
 **Wave**: 2 | **Dependencies**: T-2a
 
@@ -39,7 +39,7 @@ Plan: `plan/plan.md`
 
 ---
 
-## T-2c: Fix how-to-create-a-hook.md guide ✅
+## T-2c: Fix how-to-create-a-hook.md guide
 
 **Wave**: 2 | **Dependencies**: T-2a | **Parallel with**: T-2b
 
@@ -51,7 +51,7 @@ Plan: `plan/plan.md`
 
 ---
 
-## T-2d: Fix hooks CLAUDE.md user-facing documentation ✅
+## T-2d: Fix hooks CLAUDE.md user-facing documentation
 
 **Wave**: 2 | **Dependencies**: T-2a, T-2b
 
@@ -63,7 +63,7 @@ Plan: `plan/plan.md`
 
 ---
 
-## T-3: Enhance orchestration hook scripts ✅
+## T-3: Enhance orchestration hook scripts
 
 **Wave**: 3 | **Dependencies**: T-2d | **Parallel with**: T-4
 
@@ -77,7 +77,7 @@ Plan: `plan/plan.md`
 
 ---
 
-## T-4: Refine Agent Teams section in /tpd:dev ✅
+## T-4: Refine Agent Teams section in /tpd:dev
 
 **Wave**: 4 | **Dependencies**: T-2d | **Parallel with**: T-3
 
@@ -91,7 +91,7 @@ Plan: `plan/plan.md`
 
 ---
 
-## T-5: Update memory architecture documentation ✅
+## T-5: Update memory architecture documentation
 
 **Wave**: 5 | **Dependencies**: T-1, T-3, T-4
 

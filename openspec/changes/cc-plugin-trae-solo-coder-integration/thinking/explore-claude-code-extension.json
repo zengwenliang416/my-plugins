@@ -1,0 +1,76 @@
+{
+  "module_name": "claude-code-extension",
+  "existing_structures": [
+    "4-layer plugin architecture: Commands -> Agents -> Skills -> Hooks",
+    "Plugin directory structure: plugins/{plugin-name}/{commands,agents,skills,docs}/",
+    "Agent md files with YAML frontmatter: name, description, tools, model, color",
+    "Skill SKILL.md files with frontmatter: name, description, allowed-tools, arguments",
+    "Command md files with frontmatter: description, argument-hint, allowed-tools",
+    "Hooks system in plugins/hooks/hooks/hooks.json with 5 lifecycle points",
+    "Run directory isolation pattern: .claude/{plugin}/runs/{timestamp}/ or openspec/changes/{id}/",
+    "Multi-model collaboration via codeagent-wrapper CLI (~/.claude/bin/codeagent-wrapper)",
+    "MCP tool integration for semantic retrieval and external models"
+  ],
+  "existing_conventions": [
+    "Task tool subagent_type format: '{plugin}:{category}:{agent-name}' (e.g., tpd:investigation:boundary-explorer)",
+    "Task tool supports 'general-purpose' subagent_type for generic agents with prompt-based instructions",
+    "Task tool parameters: prompt, description, run_in_background (for parallel execution)",
+    "Skill tool invocation: Skill(skill='{plugin}:{skill-name}', args='...')",
+    "Agent frontmatter schema: name, description, tools (array), model (sonnet|opus), color",
+    "Agent output scope: Only write to ${run_dir} directory",
+    "External model calls use --sandbox read-only constraint",
+    "External model output format: Unified Diff Patch or JSON only",
+    "Session management: Store SESSION_ID and pass via --session parameter",
+    "Quality gates checklist at end of each agent definition",
+    "MCP tools declared in frontmatter tools array: mcp__{provider}__{tool}"
+  ],
+  "constraints_discovered": [
+    "Task tool subagent_type must match registered agent path pattern",
+    "External models (Codex/Gemini) are strictly prohibited from writing to filesystem",
+    "All code from external models must be reviewed by Claude before application",
+    "Maximum 2 parallel agents per step to control resource usage",
+    "Agents must use mcp__auggie-mcp__codebase-retrieval for semantic code understanding",
+    "Skills have explicit allowed-tools list limiting their capabilities",
+    "Commands orchestrate, Agents execute sub-tasks, Skills provide atomic operations",
+    "Hooks intercept tool calls at PreToolUse/PostToolUse/etc. lifecycle points",
+    "Run directory isolation required for artifact management",
+    "Dual-model collaboration pattern: Codex for backend, Gemini for frontend/UX"
+  ],
+  "open_questions": [
+    "How does cc-plugin expose its plugin architecture for Trae SOLO CODER integration?",
+    "Can Trae SOLO CODER mode be mapped to the existing subagent_type mechanism?",
+    "What protocol does Trae use for multi-agent communication vs Claude Code Task tool?",
+    "Does cc-plugin have an MCP server capability that Trae could consume?",
+    "How would session state be shared between Claude Code agents and Trae agents?",
+    "What is the authentication/authorization model for cross-IDE agent invocation?",
+    "Can the codeagent-wrapper be extended to support Trae as an external model provider?"
+  ],
+  "dependencies": [
+    "Claude Code CLI with Task, Skill tools",
+    "codeagent-wrapper CLI for external model invocation",
+    "MCP (Model Context Protocol) for tool integration",
+    "mcp__auggie-mcp__codebase-retrieval for semantic search",
+    "mcp__codex__codex and mcp__gemini__gemini for multi-model access",
+    "openspec CLI for proposal management",
+    "Plugin marketplace registry: .claude-plugin/marketplace.json",
+    "Hooks system for lifecycle interception"
+  ],
+  "risks": [
+    "Trae SOLO CODER mode may have incompatible agent communication protocol",
+    "Session state isolation between IDEs could cause context loss",
+    "Different sandbox constraints between Claude Code and Trae could create security gaps",
+    "Tool capability mismatch: Trae may not support MCP or equivalent",
+    "Multi-agent orchestration complexity increases debugging difficulty",
+    "External model rate limits and latency could affect user experience",
+    "Code sovereignty: Ensuring Trae-generated code meets project quality standards"
+  ],
+  "success_criteria_hints": [
+    "Trae SOLO CODER agents can be invoked via Task tool subagent_type mechanism",
+    "Bidirectional agent communication: Claude Code agents can call Trae, and vice versa",
+    "Session state and context can be shared across IDE boundaries",
+    "Unified diff patch format works for both Claude Code and Trae code delivery",
+    "Sandbox constraints are enforced consistently across all agent types",
+    "Existing workflow commands (tpd:thinking, tpd:plan, tpd:dev) can orchestrate Trae agents",
+    "MCP tools remain accessible from Trae-invoked agents"
+  ]
+}
