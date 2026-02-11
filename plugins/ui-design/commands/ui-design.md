@@ -65,15 +65,17 @@ Phase 10:  Delivery                → Output summary
 ```bash
 if [[ "$ARGUMENTS" =~ --run-id=([^ ]+) ]]; then
     RUN_ID="${BASH_REMATCH[1]}"
-    RUN_DIR=".claude/ui-design/runs/${RUN_ID}"
     MODE="resume"
 else
     MODE="new"
     RUN_ID=$(date -u +%Y%m%dT%H%M%SZ)
-    RUN_DIR=".claude/ui-design/runs/${RUN_ID}"
-    mkdir -p "$RUN_DIR"
 fi
+CHANGE_ID="${RUN_ID}"
+RUN_DIR="openspec/changes/${CHANGE_ID}"
+mkdir -p "$RUN_DIR"
 ```
+
+Spec-only policy: ui-design artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
 
 ### Save Input
 
@@ -463,7 +465,7 @@ Next Steps:
 ## Run Directory Structure
 
 ```
-.claude/ui-design/runs/${RUN_ID}/
+openspec/changes/${CHANGE_ID}/
 ├── state.json
 ├── input.md
 ├── ref-analysis-visual.md             # Team 1 Phase A

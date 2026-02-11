@@ -72,7 +72,7 @@ Phase 4: Delivery (Lead)
 All artifacts are stored in:
 
 ```
-.claude/refactor-team/runs/${RUN_ID}/
+openspec/changes/${CHANGE_ID}/
 ├── input.md               # Parsed refactoring request
 ├── smells-report.md       # Risk-categorized code smells
 ├── changes-log.md         # Refactoring changes by batch

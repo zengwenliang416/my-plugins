@@ -14,7 +14,7 @@ The documented core workflows currently include 11 commands across 7 plugins. Th
 - **Pattern:** Parallel (semantic + symbol analyzers)
 - **Phases:** 10 phases, hard stops at Phase 6 (confirm) and Phase 10 (deliver)
 - **Agents:** change-investigator, semantic-analyzer, symbol-analyzer, commit-worker
-- **Run Dir:** `.claude/committing/runs/{timestamp}/`
+- **Run Dir:** `openspec/changes/{change_id}/`
 
 ### TPD Plugin (v2.0.0)
 
@@ -26,7 +26,7 @@ The documented core workflows currently include 11 commands across 7 plugins. Th
 - **Agents (Claude profile):** boundary-explorer, context-analyzer, codex-constraint, gemini-constraint, codex-architect, gemini-architect, codex-implementer, gemini-implementer, codex-auditor, gemini-auditor
 - **Agents (Trae profile):** boundary-explorer, context-analyzer, `codex` (role-based), `gemini` (role-based)
 - **Trae Mapping:** `plugins/tpd/.trae/agents/README.md`
-- **Run Dir:** `openspec/changes/{proposal_id}/artifacts/{phase}/`
+- **Run Dir:** `openspec/changes/{proposal_id}/` (phase outputs may use `{proposal_id}/{phase}/`)
 
 ### UI-Design Plugin (v2.0.0)
 
@@ -34,28 +34,28 @@ The documented core workflows currently include 11 commands across 7 plugins. Th
 - **Pattern:** Parallel (3 design variants) + sequential dual-model code generation
 - **Phases:** 10 phases with variant selection and validation loops
 - **Agents:** requirement-analyzer, design-variant-generator, ux-guideline-checker, gemini-prototype-generator, claude-code-refactor, quality-validator
-- **Run Dir:** `.claude/ui-design/runs/{timestamp}/`
+- **Run Dir:** `openspec/changes/{change_id}/`
 
 ### Brainstorm Plugin (v1.1.0)
 
 - **Command:** `plugins/brainstorm/commands/brainstorm.md`
 - **Pattern:** Sequential
 - **Flow:** Research → Ideation → Evaluation → Report
-- **Run Dir:** `.claude/brainstorm/runs/{timestamp}/`
+- **Run Dir:** `openspec/changes/{change_id}/`
 
 ### Refactor Plugin (v1.0.0)
 
 - **Command:** `plugins/refactor/commands/refactor.md`
 - **Pattern:** Sequential with conditional legacy mode
 - **Flow:** Smell Detection → Suggestions → Impact Analysis → Execution
-- **Run Dir:** `.claude/refactor/runs/{timestamp}/`
+- **Run Dir:** `openspec/changes/{change_id}/`
 
 ### Context-Memory Plugin (v1.0.0)
 
 - **Command:** `plugins/context-memory/commands/memory.md`
 - **Pattern:** Interactive router
 - **Function:** Dispatches to specialized skills based on user selection
-- **Run Dir:** `.claude/context-memory/runs/{timestamp}/`
+- **Run Dir:** no fixed run directory; command acts as router and delegated workflows should use OpenSpec artifacts when runtime output is needed
 
 ### Docflow Plugin (v1.0.0)
 

@@ -5,19 +5,26 @@
 当执行多阶段工作流（thinking → plan → dev）时，**必须确保阶段间数据连续性**：
 
 1. **每个阶段必须检查前一阶段的产物**
-2. **复制相关产物**并加前缀（如 `thinking-synthesis.md`、`plan-constraints.md`）
-3. **已有数据时跳过冗余操作**
+2. **通过 `artifact-manifest.json` 解析上游产物路径**（禁止跨阶段复制）
+3. **已有数据时跳过冗余检索，仅做增量处理**
 4. **只提出新问题**，不重复已回答的问题
 
 ## 数据流模式
 
 ```
-THINKING → handoff.json, synthesis.md, clarifications.md, boundaries.json
-    ↓ (PLAN 必须读取这些)
-PLAN → architecture.md, constraints.md, pbt.md, risks.md, context.md, tasks.md
-    ↓ (DEV 必须读取这些)
-DEV → 使用以上所有产物进行实现
+THINKING/meta/artifact-manifest.json
+    ↓ (PLAN 通过 manifest 解析 handoff/synthesis/boundaries/clarifications)
+PLAN/meta/artifact-manifest.json
+    ↓ (DEV 通过 manifest 解析 architecture/constraints/pbt/risks/context)
+DEV → 按解析后的路径消费产物（NO copy）
 ```
+
+## Hard Cutover 运行策略
+
+1. **禁止运行时读写 `.claude/*/runs/*`**（仅允许 OpenSpec artifacts 路径）
+2. **禁止阶段间复制产物文件**（如 `thinking-*`、`plan-*` 前缀快照）
+3. **缺失必需 manifest/产物时必须 fail-fast**，并给出明确修复建议
+4. **lineage 必须可追溯**：阶段交接需能说明产物来源与依赖
 
 ## 任务拆分规则
 
@@ -29,8 +36,8 @@ DEV → 使用以上所有产物进行实现
 
 ## 写入范围限制
 
-- **thinking 阶段**: 仅写入 `openspec/changes/${PROPOSAL_ID}/artifacts/thinking/`
-- **plan 阶段**: 仅写入 `openspec/changes/${PROPOSAL_ID}/artifacts/plan/`
+- **thinking 阶段**: 仅写入 `openspec/changes/${PROPOSAL_ID}/thinking/`
+- **plan 阶段**: 仅写入 `openspec/changes/${PROPOSAL_ID}/plan/`
 - **dev 阶段**: 可修改项目代码，但严格限制在 `tasks-scope.md` 范围内
 
 ## 代码主权

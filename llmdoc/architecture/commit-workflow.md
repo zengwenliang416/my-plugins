@@ -21,7 +21,7 @@
 
 ### Phase 1-2: Initialize & Investigate (Sequential)
 
-- **1. Initialize:** Create run directory at `.claude/committing/runs/{timestamp}/`.
+- **1. Initialize:** Create run directory at `openspec/changes/{change_id}/`.
 - **2. Investigate:** Task calls `change-investigator` agent.
   - Git commands: `git status --porcelain`, `git diff --staged`
   - Output: `changes-raw.json`, `investigation-summary.md`

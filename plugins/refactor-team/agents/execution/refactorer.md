@@ -357,7 +357,7 @@ Write to `${run_dir}/changes-log.md` (append mode):
       "action": "remove_export"
     }
   ],
-  "run_dir": ".claude/refactor-team/runs/20260208-143022"
+  "run_dir": "openspec/changes/20260208-143022"
 }
 ```
 

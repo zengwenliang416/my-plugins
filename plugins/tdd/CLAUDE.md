@@ -46,7 +46,7 @@ test-writer (RED) → implementer (GREEN) → coverage-validator → Delivery
 ## Output Structure
 
 ```
-.claude/tdd/runs/${RUN_ID}/
+openspec/changes/${CHANGE_ID}/
 ├── input.md                 # Feature/bug description
 ├── interfaces.md            # API surface design
 ├── test-plan.md            # Test strategy (by test-writer)

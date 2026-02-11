@@ -45,9 +45,12 @@ You are the **Lead** orchestrating a team-based refactoring pipeline with safety
 
    ```bash
    RUN_ID=$(date +%Y%m%d-%H%M%S)
-   run_dir=".claude/refactor-team/runs/${RUN_ID}"
+   CHANGE_ID="${RUN_ID}"
+   run_dir="openspec/changes/${CHANGE_ID}"
    mkdir -p ${run_dir}
    ```
+
+Spec-only policy: refactor-team artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
 
 2. Parse arguments:
    - Extract `<target>` (file, directory, module name)

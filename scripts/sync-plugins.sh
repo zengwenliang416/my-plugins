@@ -1,6 +1,9 @@
 #!/bin/bash
 # Sync and install plugins to Claude Code
 # Usage: ./scripts/sync-plugins.sh [options] [plugin-name...]
+# Runtime artifact note:
+#   Workflow execution state is governed by OpenSpec change directories (`openspec/changes/*/`).
+#   This script only syncs plugin definitions to cache; it does not copy runtime artifacts.
 #
 # Options:
 #   -i, --install     Install plugins after syncing

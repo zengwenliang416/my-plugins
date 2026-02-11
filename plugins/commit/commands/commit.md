@@ -39,6 +39,17 @@ allowed-tools: [Task, Skill, AskUserQuestion, Read, Bash]
 
 ---
 
+## Context Loading Policy（方案3：渐进式）
+
+在每个阶段执行前，先读取 `plugins/commit/skills/_shared/references/_index.md`，并遵循：
+
+1. 只加载当前阶段运行产物（`${RUN_DIR}` 下文件）和对应 skill 的最小参考文件。
+2. 优先 JSON（结构化规则/映射），按需再加载 Markdown（解释性文档）。
+3. 禁止跨阶段预加载（例如 Phase 2 不预读 message/changelog 规则）。
+4. 输出优先复用 `assets/*.template.*`，避免在对话中展开大样例。
+
+---
+
 ## Arguments
 
 | Flag              | Description        |
@@ -59,15 +70,19 @@ allowed-tools: [Task, Skill, AskUserQuestion, Read, Bash]
 ### Phase 1: Initialize
 
 ```bash
-RUN_DIR=".claude/committing/runs/$(date -u +%Y%m%dT%H%M%SZ)"
-mkdir -p ${RUN_DIR}
+RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)"
+CHANGE_ID="${RUN_ID}"
+RUN_DIR="openspec/changes/${CHANGE_ID}"
+mkdir -p "${RUN_DIR}"
 ```
+
+Spec-only policy: commit workflow artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
 
 ### Phase 2: Investigate
 
 ```
 Task(
-  subagent_type="general-purpose",
+  subagent_type="commit:change-investigator",
   prompt="Execute change-investigator agent. Read plugins/commit/agents/change-investigator.md for instructions. run_dir=${RUN_DIR}",
   description="investigate changes"
 )
@@ -82,14 +97,14 @@ Output: `${RUN_DIR}/changes-raw.json`, `${RUN_DIR}/investigation-summary.md`
 ```
 // In ONE message, call BOTH:
 Task(
-  subagent_type="general-purpose",
+  subagent_type="commit:semantic-analyzer",
   prompt="Execute semantic-analyzer agent. Read plugins/commit/agents/semantic-analyzer.md for instructions. run_dir=${RUN_DIR}",
   description="semantic analysis",
   run_in_background=true
 )
 
 Task(
-  subagent_type="general-purpose",
+  subagent_type="commit:symbol-analyzer",
   prompt="Execute symbol-analyzer agent. Read plugins/commit/agents/symbol-analyzer.md for instructions. run_dir=${RUN_DIR}",
   description="symbol analysis",
   run_in_background=true
@@ -126,14 +141,22 @@ Show: type, scope, files, complexity → User chooses: accept / customize / canc
 
 ```bash
 git reset HEAD
-for commit in commits:
-    git add ${files}
-    git commit -m "$(cat <<'EOF'
-    ${type}(${scope}): ${emoji} ${title}
+jq -c '.split_recommendation.commits[]' "${RUN_DIR}/changes-analysis.json" | while IFS= read -r commit_json; do
+  echo "${commit_json}" | jq -r '.files[]' | xargs git add
 
-    ${body}
-    EOF
-    )"
+  type=$(echo "${commit_json}" | jq -r '.type')
+  scope=$(echo "${commit_json}" | jq -r '.scope')
+  emoji=$(echo "${commit_json}" | jq -r '.emoji // ""')
+  title=$(echo "${commit_json}" | jq -r '.description')
+  body=$(echo "${commit_json}" | jq -r '.body // ""')
+
+  git commit -m "$(cat <<EOF
+${type}(${scope}): ${emoji} ${title}
+
+${body}
+EOF
+)"
+done
 ```
 
 | Type     | Emoji | Type   | Emoji |
@@ -165,7 +188,7 @@ Skip only if: `--no-changelog` OR (test/ci/chore + user confirms)
 
 ```
 Task(
-  subagent_type="general-purpose",
+  subagent_type="commit:commit-worker",
   prompt="Execute commit-worker agent. Read plugins/commit/agents/commit-worker.md for instructions. run_dir=${RUN_DIR} options=${OPTIONS}",
   description="execute commit"
 )

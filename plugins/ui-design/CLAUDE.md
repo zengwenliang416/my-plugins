@@ -76,7 +76,7 @@ all pass → coder generates code → reviewer validates quality
 ## Output Structure
 
 ```
-.claude/ui-design/runs/${RUN_ID}/
+openspec/changes/${CHANGE_ID}/
 ├── ref-analysis-{visual,color,component}.md  # Team 1 independent analysis
 ├── cross-validation-{visual,color,component}.md  # Team 1 cross-validation
 ├── design-reference-analysis.md              # Team 1 synthesis

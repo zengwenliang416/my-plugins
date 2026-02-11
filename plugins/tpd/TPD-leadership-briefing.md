@@ -124,7 +124,7 @@ If you are generating text descriptions/prompts for images, use this format for 
 ### 5.0 当前仓库可直接演示的 change-id（实证样例）
 
 - 推荐使用：`integrate-cc-v2133-features`
-- 该样例具备 `thinking + plan + dev` 三个 artifacts 目录，可完整讲清阶段交接。
+- 该样例具备 `thinking + plan + dev` 三个 phase 目录，可完整讲清阶段交接。
 - 若要展示“已完成实施代码变更”，需先在该 change 上继续跑 dev 实施步骤（当前可稳定展示到 `tasks-scope.md` 级别）。
 
 ### 5.1 演示目标
@@ -153,10 +153,10 @@ If you are generating text descriptions/prompts for images, use this format for 
 
 ### 5.3 演示时必须打开的产物
 
-- `openspec/changes/integrate-cc-v2133-features/artifacts/thinking/handoff.json`
-- `openspec/changes/integrate-cc-v2133-features/artifacts/plan/plan.md`
-- `openspec/changes/integrate-cc-v2133-features/artifacts/dev/tasks-scope.md`
-- （可选）`openspec/changes/integrate-cc-v2133-features/artifacts/dev/changes.md`（若已执行实际代码落地）
+- `openspec/changes/integrate-cc-v2133-features/thinking/handoff.json`
+- `openspec/changes/integrate-cc-v2133-features/plan/plan.md`
+- `openspec/changes/integrate-cc-v2133-features/dev/tasks-scope.md`
+- （可选）`openspec/changes/integrate-cc-v2133-features/dev/changes.md`（若已执行实际代码落地）
 
 **讲解点**：上一个阶段的文件会被下一个阶段显式复用，不是“隐式记忆”。
 
@@ -219,10 +219,10 @@ If you are generating text descriptions/prompts for images, use this format for 
 
 - 插件注册与版本：`.claude-plugin/marketplace.json:15`
 - TPD 插件元信息：`plugins/tpd/.claude-plugin/plugin.json:2`
-- OpenSpec 实证样例（完整三阶段目录）：`openspec/changes/integrate-cc-v2133-features/artifacts/`
-- Thinking 已完成状态：`openspec/changes/integrate-cc-v2133-features/artifacts/thinking/state.json`
-- Plan 已完成状态：`openspec/changes/integrate-cc-v2133-features/artifacts/plan/state.json`
-- Dev 当前最小相位范围：`openspec/changes/integrate-cc-v2133-features/artifacts/dev/tasks-scope.md`
+- OpenSpec 实证样例（完整三阶段目录）：`openspec/changes/integrate-cc-v2133-features/`
+- Thinking 已完成状态：`openspec/changes/integrate-cc-v2133-features/thinking/state.json`
+- Plan 已完成状态：`openspec/changes/integrate-cc-v2133-features/plan/state.json`
+- Dev 当前最小相位范围：`openspec/changes/integrate-cc-v2133-features/dev/tasks-scope.md`
 - 三阶段命令入口：`plugins/tpd/commands/thinking.md:14`、`plugins/tpd/commands/plan.md:18`、`plugins/tpd/commands/dev.md:13`
 - Thinking 阶段状态机与产物：`plugins/tpd/commands/thinking.md:91`
 - Thinking → Plan 交接产物：`plugins/tpd/commands/thinking.md:229`

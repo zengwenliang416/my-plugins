@@ -62,9 +62,12 @@ Create a timestamped run directory:
 
 ```bash
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-RUN_DIR=/Users/wenliang_zeng/workspace/open_sources/ccg-workflows/.claude/bug-investigation/runs/${TIMESTAMP}
+CHANGE_ID="${TIMESTAMP}"
+RUN_DIR="openspec/changes/${CHANGE_ID}"
 mkdir -p ${RUN_DIR}
 ```
+
+Spec-only policy: bug-investigation artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
 
 ### Step 1.2: Parse Input
 

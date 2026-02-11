@@ -61,7 +61,7 @@
 
 ## Key Artifacts
 
-运行目录: `.claude/committing/runs/${TIMESTAMP}/`
+运行目录: `openspec/changes/${CHANGE_ID}/`
 
 | Artifact                   | Description      |
 | -------------------------- | ---------------- |

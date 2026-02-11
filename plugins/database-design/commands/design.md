@@ -59,9 +59,12 @@ Final schema + migration SQL
 
 ```bash
 RUN_ID=$(date +%Y%m%d_%H%M%S)
-RUN_DIR=".claude/database-design/runs/${RUN_ID}"
+CHANGE_ID="${RUN_ID}"
+RUN_DIR="openspec/changes/${CHANGE_ID}"
 mkdir -p "$RUN_DIR"
 ```
+
+Spec-only policy: database-design artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
 
 2. Parse requirements:
    - Extract entities, relationships, constraints

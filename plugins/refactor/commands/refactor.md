@@ -69,9 +69,11 @@ allowed-tools:
 
 2. 生成运行目录路径：
    - RUN_ID: 当前 UTC 时间戳，格式 YYYYMMDDTHHMMSSZ
-   - RUN_DIR: `.claude/refactoring/runs/${RUN_ID}`
+   - RUN_DIR: `openspec/changes/${RUN_ID}`
 
 3. 使用 AskUserQuestion 确认执行计划
+
+Spec-only policy: refactor artifacts MUST be consolidated under `openspec/changes/${RUN_ID}`.
 
 **🆕 如果 LEGACY=true，展示遗留系统现代化计划**:
 
@@ -327,7 +329,7 @@ Skill(skill="refactor-executor", args="run_dir=${RUN_DIR} mode=${MODE}")
 ## 运行目录结构
 
 ```
-.claude/refactoring/runs/20260115T100000Z/
+openspec/changes/20260115T100000Z/
 ├── state.json              # 工作流状态
 ├── target.txt              # 重构目标
 ├── smells.json             # Phase 2: 代码气味数据

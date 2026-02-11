@@ -59,6 +59,6 @@ A step-by-step guide for executing the TPD (Thinking → Plan → Dev) workflow.
 
 After each phase, verify artifacts exist:
 
-- **Thinking:** `openspec/changes/${PROPOSAL_ID}/artifacts/thinking/handoff.json`
-- **Plan:** `openspec/changes/${PROPOSAL_ID}/artifacts/plan/plan.md`
-- **Dev:** `openspec/changes/${PROPOSAL_ID}/artifacts/dev/changes.md`
+- **Thinking:** `openspec/changes/${PROPOSAL_ID}/thinking/handoff.json`
+- **Plan:** `openspec/changes/${PROPOSAL_ID}/plan/plan.md`
+- **Dev:** `openspec/changes/${PROPOSAL_ID}/dev/changes.md`

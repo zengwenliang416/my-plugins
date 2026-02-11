@@ -13,8 +13,8 @@
 - `plugins/<name>/agents/*.md` (AgentDefinition): Sub-task worker definitions invoked via Task tool.
 - `plugins/<name>/skills/*/SKILL.md` (SkillDefinition): Atomic reusable components with I/O contracts.
 - `plugins/<name>/hooks/hooks.json` (HookRegistry): Cross-cutting automation at 5 lifecycle points.
-- `scripts/sync-plugins.sh:1-659` (SyncScript): Plugin discovery, validation, and installation orchestrator.
-- `scripts/validate-skills.sh:1-233` (ValidationScript): SKILL.md frontmatter and structure validator.
+- `scripts/sync-plugins.sh` (SyncScript): Plugin discovery, validation, and installation orchestrator.
+- `scripts/validate-skills.sh` (ValidationScript): SKILL.md validator + command runtime path guardrails.
 
 ## 3. Execution Flow (LLM Retrieval Map)
 
@@ -45,6 +45,6 @@
 
 - **Separation of Concerns:** Commands orchestrate, Agents parallelize, Skills atomize, Hooks intercept.
 - **Parallel-First:** Agents support `run_in_background=true` for concurrent execution.
-- **Run Directory Isolation:** Each workflow execution uses `.claude/<plugin>/runs/<timestamp>/` for state.
+- **Change Workspace Isolation:** Each workflow execution uses OpenSpec change paths (`openspec/changes/<change-id>/`) for state and outputs.
 - **Matcher Patterns:** Hooks use regex patterns (e.g., `Write|Edit|MultiEdit`, `mcp__.*`) for precise targeting.
 - **Timeout Enforcement:** All hooks have configurable timeouts (3-30s) to prevent blocking.

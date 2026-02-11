@@ -37,7 +37,7 @@ plugins/{plugin-name}/
 
 ### Runtime Directories
 
-- `.claude/{workflow}/runs/{timestamp}/` - Workflow execution artifacts
+- `openspec/changes/{change-id}/` - Workflow execution workspace (OpenSpec-only runtime source)
 - `llmdoc/` - LLM documentation (overview, guides, architecture, reference)
 
 ## 4. Markdown File Conventions

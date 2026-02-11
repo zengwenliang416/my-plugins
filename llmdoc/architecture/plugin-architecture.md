@@ -126,5 +126,5 @@ arguments:
 
 - **Separation of Concerns:** Commands orchestrate, Agents execute sub-tasks, Skills provide atomics.
 - **Parallel-First:** Background task execution enables multi-model analysis.
-- **Run Directory Isolation:** `.claude/{plugin}/runs/{timestamp}/` for artifact management.
+- **Run Directory Isolation:** `openspec/changes/{change_id}/` for artifact management.
 - **Dual-Model Collaboration:** Codex (backend) + Gemini (frontend) for comprehensive coverage.

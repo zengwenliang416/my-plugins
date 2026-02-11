@@ -27,7 +27,7 @@ A step-by-step guide for creating multi-phase workflow commands in ccg-workflows
 3. **Implement Run Directory:** Initialize with timestamp-based isolation:
 
    ```bash
-   RUN_DIR=".claude/{plugin}/runs/$(date -u +%Y%m%dT%H%M%SZ)"
+   RUN_DIR="openspec/changes/${CHANGE_ID}"
    mkdir -p ${RUN_DIR}
    ```
 

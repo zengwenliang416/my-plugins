@@ -28,10 +28,10 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
 ## Core Rules
 
 - ✅ Must first `openspec view` and let user confirm `proposal_id`
-- ✅ **Must check for thinking phase artifacts** and reuse `handoff.json`, `synthesis.md`, `clarifications.md` if available
+- ✅ **Must check for thinking phase manifest** and reuse thinking artifacts via `meta/artifact-manifest.json` if available
 - ✅ Must use both Codex and Gemini for multi-model analysis
 - ✅ Must complete "ambiguity resolution audit", all decision points must be converted to explicit constraints
-- ✅ **Must NOT re-ask questions already answered in thinking phase** (check `thinking-clarifications.md`)
+- ✅ **Must NOT re-ask questions already answered in thinking phase** (resolve `clarifications.md` via thinking manifest)
 - ✅ Must extract PBT properties (invariants + falsification strategies)
 - ✅ Must execute `openspec validate <proposal_id> --strict`
 - ✅ Only after explicit user approval can proceed to /tpd:dev
@@ -68,8 +68,8 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
 
 | ❌ Forbidden Behavior                | ✅ Correct Approach                                            |
 | ------------------------------------ | -------------------------------------------------------------- |
-| **Ignore thinking phase artifacts**  | Check `${THINKING_DIR}/handoff.json` and reuse if exists       |
-| **Re-ask clarified questions**       | Read `thinking-clarifications.md`, only ask NEW ambiguities    |
+| **Ignore thinking phase artifacts**  | Resolve artifacts via `${THINKING_DIR}/meta/artifact-manifest.json` |
+| **Re-ask clarified questions**       | Read `${THINKING_CLARIFICATIONS_MD}`, only ask NEW ambiguities |
 | Skip context retrieval               | Always call context-analyzer AND requirement-parser            |
 | Only do single-model architecture    | Must run both codex-architect AND gemini-architect             |
 | Skip ambiguity resolution            | Must complete ambiguity audit and get confirmations            |
@@ -98,37 +98,59 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
      - TASK_TYPE: fullstack (default) | frontend | backend
      - LOOP_MODE: Whether to auto-chain to dev (--loop argument)
      - PROPOSAL_ID: Confirmed from Step 0
-   - Generate run directory:
+	   - Generate run directory:
 
-     ```bash
-     PLAN_DIR="openspec/changes/${PROPOSAL_ID}/artifacts/plan"
-     THINKING_DIR="openspec/changes/${PROPOSAL_ID}/artifacts/thinking"
-     mkdir -p "${PLAN_DIR}"
-     ```
+	     ```bash
+	     PLAN_DIR="openspec/changes/${PROPOSAL_ID}/plan"
+	     THINKING_DIR="openspec/changes/${PROPOSAL_ID}/thinking"
+	     THINKING_META_DIR="${THINKING_DIR}/meta"
+	     THINKING_MANIFEST="${THINKING_META_DIR}/artifact-manifest.json"
+	     mkdir -p "${PLAN_DIR}"
+	     ```
 
-   - **🔗 Thinking Phase Integration** - Check and load thinking artifacts:
+	   - **🔗 Thinking Phase Integration** - Check and resolve thinking artifacts via manifest:
 
-     ```bash
-     # Check if thinking phase was completed
-     if [ -f "${THINKING_DIR}/handoff.json" ]; then
-       echo "✅ Thinking phase detected - loading handoff artifacts"
-       THINKING_COMPLETED=true
-     else
-       echo "⚠️ No thinking phase found - proceeding with full analysis"
-       THINKING_COMPLETED=false
-     fi
-     ```
+	     ```bash
+	     # Initialize resolved thinking artifact paths
+	     THINKING_HANDOFF_MD=""
+	     THINKING_HANDOFF_JSON=""
+	     THINKING_SYNTHESIS_MD=""
+	     THINKING_BOUNDARIES_JSON=""
+	     THINKING_CLARIFICATIONS_MD=""
 
-   - **If thinking phase exists**, copy and integrate:
+	     # Check if thinking phase manifest exists
+	     if [ -f "${THINKING_MANIFEST}" ]; then
+	       echo "✅ Thinking phase manifest detected - resolving artifact references"
+	       THINKING_COMPLETED=true
 
-     ```bash
-     # Copy key artifacts for reference
-     cp "${THINKING_DIR}/handoff.md" "${PLAN_DIR}/thinking-handoff.md" 2>/dev/null || true
-     cp "${THINKING_DIR}/handoff.json" "${PLAN_DIR}/thinking-handoff.json" 2>/dev/null || true
-     cp "${THINKING_DIR}/synthesis.md" "${PLAN_DIR}/thinking-synthesis.md" 2>/dev/null || true
-     cp "${THINKING_DIR}/boundaries.json" "${PLAN_DIR}/thinking-boundaries.json" 2>/dev/null || true
-     cp "${THINKING_DIR}/clarifications.md" "${PLAN_DIR}/thinking-clarifications.md" 2>/dev/null || true
-     ```
+	       THINKING_HANDOFF_MD=$(jq -r '.artifacts[]? | select(.name=="handoff.md") | .path' "${THINKING_MANIFEST}" | head -n1)
+	       THINKING_HANDOFF_JSON=$(jq -r '.artifacts[]? | select(.name=="handoff.json") | .path' "${THINKING_MANIFEST}" | head -n1)
+	       THINKING_SYNTHESIS_MD=$(jq -r '.artifacts[]? | select(.name=="synthesis.md") | .path' "${THINKING_MANIFEST}" | head -n1)
+	       THINKING_BOUNDARIES_JSON=$(jq -r '.artifacts[]? | select(.name=="boundaries.json") | .path' "${THINKING_MANIFEST}" | head -n1)
+	       THINKING_CLARIFICATIONS_MD=$(jq -r '.artifacts[]? | select(.name=="clarifications.md") | .path' "${THINKING_MANIFEST}" | head -n1)
+
+	       # Optional artifacts may be empty; handoff.json is required to treat thinking as completed
+	       if [ -z "${THINKING_HANDOFF_JSON}" ] || [ "${THINKING_HANDOFF_JSON}" = "null" ]; then
+	         echo "⚠️ Thinking manifest exists but handoff.json entry missing - fallback to full analysis"
+	         THINKING_COMPLETED=false
+	       fi
+	     else
+	       echo "⚠️ No thinking phase manifest found - proceeding with full analysis"
+	       THINKING_COMPLETED=false
+	     fi
+	     ```
+
+	   - **If thinking phase exists**, consume by reference (no file copy):
+
+	     ```bash
+	     if [ "${THINKING_COMPLETED}" = true ]; then
+	       echo "📥 Thinking artifacts resolved from manifest:"
+	       echo "  - handoff: ${THINKING_HANDOFF_JSON}"
+	       echo "  - synthesis: ${THINKING_SYNTHESIS_MD}"
+	       echo "  - boundaries: ${THINKING_BOUNDARIES_JSON}"
+	       echo "  - clarifications: ${THINKING_CLARIFICATIONS_MD}"
+	     fi
+	     ```
 
    - **Initialize State Machine** - Write `${PLAN_DIR}/state.json`:
      ```json
@@ -158,42 +180,46 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
          "step_1": "${ISO_TIMESTAMP}"
        }
      }
-     ```
-   - Write `${PLAN_DIR}/input.md`
-   - Load proposal content via `/openspec:proposal ${PROPOSAL_ID}`
-   - Write proposal content to `${PLAN_DIR}/proposal.md`
+	     ```
+	   - Write `${PLAN_DIR}/input.md`
+	   - Load proposal content via `/openspec:proposal ${PROPOSAL_ID}`
+	   - Write proposal content to `${PLAN_DIR}/proposal.md`
    - **🔒 Checkpoint**:
-     ```bash
-     test -f "${PLAN_DIR}/state.json" || { echo "❌ Step 1 FAILED: state.json not created"; exit 1; }
-     test -f "${PLAN_DIR}/proposal.md" || { echo "❌ Step 1 FAILED: proposal.md not found"; exit 1; }
-     ```
-     Update state.json: `artifacts.proposal=true`
+	     ```bash
+	     test -f "${PLAN_DIR}/state.json" || { echo "❌ Step 1 FAILED: state.json not created"; exit 1; }
+	     test -f "${PLAN_DIR}/proposal.md" || { echo "❌ Step 1 FAILED: proposal.md not found"; exit 1; }
+	     if [ "${THINKING_COMPLETED}" = true ]; then
+	       test -n "${THINKING_HANDOFF_JSON}" || { echo "❌ Step 1 FAILED: THINKING_HANDOFF_JSON unresolved"; exit 1; }
+	       test -f "${THINKING_HANDOFF_JSON}" || { echo "❌ Step 1 FAILED: handoff.json not found at resolved path"; exit 1; }
+	     fi
+	     ```
+	     Update state.json: `artifacts.proposal=true`
 
-2. **Step 2: Parallel Context & Requirements Retrieval (with Thinking Reuse)**
-   - **🔗 If thinking phase exists** (`THINKING_COMPLETED=true`):
-     - Read `thinking-handoff.json` to extract pre-analyzed context boundaries
-     - Read `thinking-boundaries.json` to reuse boundary definitions
-     - **Skip redundant boundary exploration** - focus on plan-specific details only
+	2. **Step 2: Parallel Context & Requirements Retrieval (with Thinking Reuse)**
+	   - **🔗 If thinking phase exists** (`THINKING_COMPLETED=true`):
+	     - Read `${THINKING_HANDOFF_JSON}` to extract pre-analyzed context boundaries
+	     - Read `${THINKING_BOUNDARIES_JSON}` to reuse boundary definitions
+	     - **Skip redundant boundary exploration** - focus on plan-specific details only
 
-     ```bash
-     # Reuse thinking boundaries if available
-     if [ -f "${PLAN_DIR}/thinking-boundaries.json" ]; then
-       echo "📥 Reusing boundaries from thinking phase"
-       # Context retriever should reference thinking-boundaries.json
-     fi
-     ```
+	     ```bash
+	     # Reuse thinking boundaries if available
+	     if [ -n "${THINKING_BOUNDARIES_JSON}" ] && [ -f "${THINKING_BOUNDARIES_JSON}" ]; then
+	       echo "📥 Reusing boundaries from thinking phase"
+	       # Context retriever should reference ${THINKING_BOUNDARIES_JSON}
+	     fi
+	     ```
 
-   - Launch concurrent retrieval agents with thinking context:
-   - **Task for plan-context-retriever:** "Retrieve codebase context, referencing thinking-handoff.json if exists"
-   - **Task for requirement-parser:** "Parse requirements, incorporating thinking-synthesis.md constraints"
-   - **At most 2 agents in parallel!**
-   - JUST RUN AND WAIT!
+	   - Launch concurrent retrieval agents with thinking context:
+	   - **Task for plan-context-retriever:** "Retrieve codebase context, referencing resolved thinking handoff if exists"
+	   - **Task for requirement-parser:** "Parse requirements, incorporating resolved synthesis constraints"
+	   - **At most 2 agents in parallel!**
+	   - JUST RUN AND WAIT!
 
    ```
-   Task(subagent_type="tpd:investigation:context-analyzer", description="Retrieve plan context", prompt="Execute context retrieval. run_dir=${PLAN_DIR} thinking_dir=${THINKING_DIR} reuse_thinking=${THINKING_COMPLETED}")
+	   Task(subagent_type="tpd:investigation:context-analyzer", description="Retrieve plan context", prompt="Execute context retrieval. run_dir=${PLAN_DIR} thinking_dir=${THINKING_DIR} reuse_thinking=${THINKING_COMPLETED}")
 
-   Skill(skill="tpd:requirement-parser", args="run_dir=${PLAN_DIR} thinking_synthesis=${PLAN_DIR}/thinking-synthesis.md")
-   ```
+	   Skill(skill="tpd:requirement-parser", args="run_dir=${PLAN_DIR} thinking_synthesis=${THINKING_SYNTHESIS_MD}")
+	   ```
 
    - **🔒 Checkpoint**:
      ```bash
@@ -226,27 +252,27 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
 
    - **⏸️ Hard Stop**: Use AskUserQuestion to display core differences and recommendations
 
-4. **Step 4: Ambiguity Resolution & PBT Extraction (with Thinking Reuse)**
-   - **🔗 If thinking phase exists** (`THINKING_COMPLETED=true`):
-     - Read `thinking-synthesis.md` for pre-resolved constraints
-     - Read `thinking-clarifications.md` for user's previous answers
-     - **Only ask about NEW ambiguities** not covered in thinking phase
+	4. **Step 4: Ambiguity Resolution & PBT Extraction (with Thinking Reuse)**
+	   - **🔗 If thinking phase exists** (`THINKING_COMPLETED=true`):
+	     - Read `${THINKING_SYNTHESIS_MD}` for pre-resolved constraints
+	     - Read `${THINKING_CLARIFICATIONS_MD}` for user's previous answers
+	     - **Only ask about NEW ambiguities** not covered in thinking phase
 
-     ```bash
-     # Check for pre-resolved clarifications
-     if [ -f "${PLAN_DIR}/thinking-clarifications.md" ]; then
-       echo "📥 Loading ${CLARIFICATION_COUNT} pre-resolved clarifications from thinking phase"
-       # Extract already-answered questions to avoid re-asking
-     fi
-     ```
+	     ```bash
+	     # Check for pre-resolved clarifications
+	     if [ -n "${THINKING_CLARIFICATIONS_MD}" ] && [ -f "${THINKING_CLARIFICATIONS_MD}" ]; then
+	       echo "📥 Loading ${CLARIFICATION_COUNT} pre-resolved clarifications from thinking phase"
+	       # Extract already-answered questions to avoid re-asking
+	     fi
+	     ```
 
-   - Call MCP tools for **incremental** ambiguity audit (exclude thinking-resolved items):
+	   - Call MCP tools for **incremental** ambiguity audit (exclude manifest-resolved thinking items):
 
-     ```
-     mcp__codex__codex: "Review proposal ${PROPOSAL_ID} for unspecified decision points. Reference thinking-synthesis.md to skip already-resolved constraints. List only NEW: [AMBIGUITY] <description> → [REQUIRED CONSTRAINT] <what must be decided>."
+	     ```
+	     mcp__codex__codex: "Review proposal ${PROPOSAL_ID} for unspecified decision points. Reference ${THINKING_SYNTHESIS_MD} to skip already-resolved constraints. List only NEW: [AMBIGUITY] <description> → [REQUIRED CONSTRAINT] <what must be decided>."
 
-     mcp__gemini__gemini: "Identify implicit assumptions in proposal ${PROPOSAL_ID}. Reference thinking-clarifications.md to skip already-answered questions. List only NEW: [ASSUMPTION] <description> → [EXPLICIT CONSTRAINT NEEDED] <concrete specification>."
-     ```
+	     mcp__gemini__gemini: "Identify implicit assumptions in proposal ${PROPOSAL_ID}. Reference ${THINKING_CLARIFICATIONS_MD} to skip already-answered questions. List only NEW: [ASSUMPTION] <description> → [EXPLICIT CONSTRAINT NEEDED] <concrete specification>."
+	     ```
 
    - Write output to `${PLAN_DIR}/ambiguities.md`
    - **⏸️ Conditional Hard Stop**:
@@ -414,25 +440,27 @@ The goal of the plan phase: Refine the OpenSpec proposal into a **zero-decision 
 
 ## Thinking Phase Integration
 
-When `/tpd:thinking` was executed before `/tpd:plan`, the following artifacts are reused:
+When `/tpd:thinking` was executed before `/tpd:plan`, artifacts are resolved via `meta/artifact-manifest.json` and reused by reference:
 
-| Thinking Artifact   | Plan Usage                         | Benefit                            |
-| ------------------- | ---------------------------------- | ---------------------------------- |
-| `handoff.json`      | Step 1: Load constraint summary    | Skip redundant analysis            |
-| `boundaries.json`   | Step 2: Reuse context boundaries   | Faster context retrieval           |
-| `synthesis.md`      | Step 4: Pre-resolved constraints   | Skip resolved ambiguities          |
-| `clarifications.md` | Step 4: User's previous answers    | **Avoid re-asking same questions** |
-| `explore-*.json`    | Step 2: Reference boundary details | Deeper context understanding       |
+| Thinking Artifact   | Resolved Path Variable       | Plan Usage                         | Benefit                            |
+| ------------------- | ---------------------------- | ---------------------------------- | ---------------------------------- |
+| `handoff.json`      | `THINKING_HANDOFF_JSON`      | Step 1: Load constraint summary    | Skip redundant analysis            |
+| `boundaries.json`   | `THINKING_BOUNDARIES_JSON`   | Step 2: Reuse context boundaries   | Faster context retrieval           |
+| `synthesis.md`      | `THINKING_SYNTHESIS_MD`      | Step 4: Pre-resolved constraints   | Skip resolved ambiguities          |
+| `clarifications.md` | `THINKING_CLARIFICATIONS_MD` | Step 4: User's previous answers    | **Avoid re-asking same questions** |
+| `explore-*.json`    | (via manifest entries)       | Step 2: Reference boundary details | Deeper context understanding       |
 
 ### Data Flow
 
 ```
-THINKING_DIR/                          PLAN_DIR/
-├── handoff.json      ────────────►   ├── thinking-handoff.json
-├── handoff.md        ────────────►   ├── thinking-handoff.md
-├── synthesis.md      ────────────►   ├── thinking-synthesis.md
-├── boundaries.json   ────────────►   ├── thinking-boundaries.json
-└── clarifications.md ────────────►   └── thinking-clarifications.md
+THINKING_DIR/meta/artifact-manifest.json
+├── handoff.json      ────────────►   THINKING_HANDOFF_JSON
+├── handoff.md        ────────────►   THINKING_HANDOFF_MD
+├── synthesis.md      ────────────►   THINKING_SYNTHESIS_MD
+├── boundaries.json   ────────────►   THINKING_BOUNDARIES_JSON
+└── clarifications.md ────────────►   THINKING_CLARIFICATIONS_MD
+
+PLAN phase consumes resolved paths directly (NO copy to PLAN_DIR).
 ```
 
 ### Conditional Logic

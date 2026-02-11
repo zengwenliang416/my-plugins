@@ -90,7 +90,7 @@ graph TB
 
 ### OpenSpec Integration (TPD Plugin)
 
-- Artifact management in `openspec/changes/${PROPOSAL_ID}/artifacts/`
+- TPD workflow data is managed in `openspec/changes/${PROPOSAL_ID}/` (spec/change workspace)
 - Thinking phase exports constraints, Plan phase eliminates ambiguities, Dev phase implements minimal phases
 - Strict validation via `openspec validate --strict`
 

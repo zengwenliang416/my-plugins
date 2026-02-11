@@ -114,7 +114,7 @@ Copy the following to your project's `.claude/CLAUDE.md`:
 
 ### Multi-Phase Workflow Management
 
-- All workflows use `.claude/{plugin}/runs/{timestamp}/` isolated run directories
+- All workflows use `openspec/changes/{change_id}/` isolated run directories
 - Track phase progress via `state.json`, support `--run-id` to resume interrupted workflows
 - Use **Hard Stop** (`AskUserQuestion`) at critical decision points
 - Final phase MUST generate delivery summary and prompt next steps

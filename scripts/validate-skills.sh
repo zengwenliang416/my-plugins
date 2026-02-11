@@ -8,6 +8,10 @@ PLUGINS_DIR="plugins"
 ERRORS=0
 WARNINGS=0
 STRICT_MODE=false
+SKILL_SOFT_LINE_LIMIT=350
+SKILL_CHAR_BUDGET=12000
+MAX_EXAMPLE_BLOCK_LINES=120
+REFERENCE_INDEX_THRESHOLD=8
 
 # Colors
 RED='\033[0;31m'
@@ -137,6 +141,48 @@ validate_line_count() {
   return 0
 }
 
+# Validate context/token budget hints
+validate_context_budget() {
+  local skill_md="$1"
+  local skill_name="$2"
+  local lines chars max_block
+
+  lines=$(wc -l < "$skill_md" | tr -d ' ')
+  chars=$(wc -c < "$skill_md" | tr -d ' ')
+
+  if [ "$lines" -gt "$SKILL_SOFT_LINE_LIMIT" ]; then
+    log_optional_issue "$skill_name: SKILL.md has $lines lines (recommended <= $SKILL_SOFT_LINE_LIMIT for context efficiency)"
+  fi
+
+  if [ "$chars" -gt "$SKILL_CHAR_BUDGET" ]; then
+    if ! grep -Eiq "渐进|按需加载|分片|_index|_manifest|不要一次性|only load|progressive|lazy load" "$skill_md"; then
+      log_optional_issue "$skill_name: SKILL.md has $chars chars (recommended <= $SKILL_CHAR_BUDGET). Consider progressive loading guidance."
+    fi
+  fi
+
+  max_block=$(awk '
+    BEGIN { in_block=0; line_count=0; max_lines=0 }
+    /^```/ {
+      if (in_block == 0) {
+        in_block=1
+        line_count=0
+      } else {
+        in_block=0
+        if (line_count > max_lines) max_lines=line_count
+      }
+      next
+    }
+    {
+      if (in_block == 1) line_count++
+    }
+    END { print max_lines }
+  ' "$skill_md")
+
+  if [ "$max_block" -gt "$MAX_EXAMPLE_BLOCK_LINES" ]; then
+    log_optional_issue "$skill_name: Long fenced code block ($max_block lines). Consider moving large examples to assets/."
+  fi
+}
+
 # Validate directory structure
 validate_structure() {
   local skill_dir="$1"
@@ -180,6 +226,30 @@ validate_structure() {
   fi
 }
 
+# Validate references indexing for larger knowledge packs
+validate_reference_index() {
+  local skill_dir="$1"
+  local skill_name="$2"
+  local references_dir ref_count
+
+  references_dir="${skill_dir}/references"
+  if [ ! -d "$references_dir" ]; then
+    return 0
+  fi
+
+  ref_count=$(find "$references_dir" -type f ! -name ".gitkeep" | wc -l | tr -d ' ')
+  if [ "$ref_count" -lt "$REFERENCE_INDEX_THRESHOLD" ]; then
+    return 0
+  fi
+
+  if [ ! -f "${references_dir}/_index.md" ] \
+    && [ ! -f "${references_dir}/index.md" ] \
+    && [ ! -f "${references_dir}/_manifest.json" ] \
+    && [ ! -f "${references_dir}/manifest.json" ]; then
+    log_optional_issue "$skill_name: references/ has $ref_count files but no index/manifest. Recommend adding _index.md or _manifest.json."
+  fi
+}
+
 # Validate TypeScript scripts can be parsed
 validate_typescript() {
   local skill_dir="$1"
@@ -198,6 +268,51 @@ validate_typescript() {
       fi
     fi
   done
+}
+
+# Guard against legacy runtime path usage in plugin command definitions
+validate_command_runtime_paths() {
+  local legacy_hits absolute_hits runtime_hits artifacts_hits
+
+  if command -v rg >/dev/null 2>&1; then
+    legacy_hits=$(find "$PLUGINS_DIR" -path "*/commands/*.md" -type f -print0 | xargs -0 rg -n "\\.claude/.*/runs" 2>/dev/null || true)
+    absolute_hits=$(find "$PLUGINS_DIR" -path "*/commands/*.md" -type f -print0 | xargs -0 rg -n "/Users/.*/\\.claude/" 2>/dev/null || true)
+    runtime_hits=$(find "$PLUGINS_DIR" -path "*/commands/*.md" -type f -print0 | xargs -0 rg -n "\\.runtime/" 2>/dev/null || true)
+    artifacts_hits=$(find "$PLUGINS_DIR" -path "*/commands/*.md" -type f -print0 | xargs -0 rg -n "openspec/changes/.*/artifacts" 2>/dev/null || true)
+  else
+    legacy_hits=$(find "$PLUGINS_DIR" -path "*/commands/*.md" -type f -print0 | xargs -0 grep -nE "\\.claude/.*/runs" 2>/dev/null || true)
+    absolute_hits=$(find "$PLUGINS_DIR" -path "*/commands/*.md" -type f -print0 | xargs -0 grep -nE "/Users/.*/\\.claude/" 2>/dev/null || true)
+    runtime_hits=$(find "$PLUGINS_DIR" -path "*/commands/*.md" -type f -print0 | xargs -0 grep -nE "\\.runtime/" 2>/dev/null || true)
+    artifacts_hits=$(find "$PLUGINS_DIR" -path "*/commands/*.md" -type f -print0 | xargs -0 grep -nE "openspec/changes/.*/artifacts" 2>/dev/null || true)
+  fi
+
+  if [ -n "$legacy_hits" ]; then
+    log_error "Forbidden legacy runtime path found in command files (.claude/*/runs)"
+    echo "$legacy_hits"
+  else
+    log_success "Command runtime path guard: no legacy .claude/*/runs references"
+  fi
+
+  if [ -n "$absolute_hits" ]; then
+    log_error "Forbidden absolute legacy runtime path found in command files (/Users/.../.claude/...)"
+    echo "$absolute_hits"
+  else
+    log_success "Command runtime path guard: no absolute /Users/.../.claude/... references"
+  fi
+
+  if [ -n "$runtime_hits" ]; then
+    log_error "Forbidden independent runtime directory found in command files (.runtime/...)"
+    echo "$runtime_hits"
+  else
+    log_success "Command runtime path guard: no independent .runtime/... references"
+  fi
+
+  if [ -n "$artifacts_hits" ]; then
+    log_error "Forbidden OpenSpec artifacts runtime path found in command files (openspec/changes/*/artifacts/*)"
+    echo "$artifacts_hits"
+  else
+    log_success "Command runtime path guard: no openspec/changes/*/artifacts/* runtime references"
+  fi
 }
 
 # Main validation loop
@@ -242,10 +357,15 @@ for plugin_dir in "$PLUGINS_DIR"/*/; do
     validate_frontmatter "$skill_md" "$skill_name"
     validate_description "$skill_md" "$skill_name"
     validate_line_count "$skill_md" "$skill_name"
+    validate_context_budget "$skill_md" "$skill_name"
     validate_structure "$skill_dir" "$skill_name"
+    validate_reference_index "$skill_dir" "$skill_name"
     validate_typescript "$skill_dir" "$skill_name"
   done
 done
+
+# Validate command-level runtime path guard (hard-cutover)
+validate_command_runtime_paths
 
 # Summary
 echo ""

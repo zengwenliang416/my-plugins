@@ -24,8 +24,8 @@ The dev phase strictly aligns with OpenSpec Implementation: **only implement the
 
 - ✅ Must first `openspec view` and confirm `proposal_id`
 - ✅ Must first `/openspec:apply <proposal_id>`
-- ✅ **Must load plan phase artifacts** (`architecture.md`, `constraints.md`, `pbt.md`, `risks.md`)
-- ✅ **Must load thinking phase artifacts if exists** (`synthesis.md`, `clarifications.md`)
+- ✅ **Must resolve plan phase artifacts via `meta/artifact-manifest.json`** (`architecture.md`, `constraints.md`, `pbt.md`, `risks.md`, `context.md`)
+- ✅ **Must resolve thinking phase artifacts via manifest if exists** (`synthesis.md`, `clarifications.md`)
 - ✅ Only implement minimal verifiable phase in tasks.md (forbidden to complete all at once)
 - ✅ **Must verify implementation against `constraints.md`** before applying
 - ✅ **Must reference `pbt.md` for test requirements** in each task
@@ -66,68 +66,92 @@ The dev phase strictly aligns with OpenSpec Implementation: **only implement the
    - Parse arguments:
      - TASK_TYPE: fullstack (default) | frontend | backend
      - FEATURE: Optional; if omitted, extract from plan/proposal
-     - PROPOSAL_ID: Confirmed from Step 0
-   - Generate run directory:
+	   - PROPOSAL_ID: Confirmed from Step 0
+	   - Generate run directory:
 
-     ```bash
-     DEV_DIR="openspec/changes/${PROPOSAL_ID}/artifacts/dev"
-     PLAN_DIR="openspec/changes/${PROPOSAL_ID}/artifacts/plan"
-     THINKING_DIR="openspec/changes/${PROPOSAL_ID}/artifacts/thinking"
-     mkdir -p "${DEV_DIR}"
-     ```
+	     ```bash
+	     DEV_DIR="openspec/changes/${PROPOSAL_ID}/dev"
+	     PLAN_DIR="openspec/changes/${PROPOSAL_ID}/plan"
+	     THINKING_DIR="openspec/changes/${PROPOSAL_ID}/thinking"
+	     PLAN_META_DIR="${PLAN_DIR}/meta"
+	     PLAN_MANIFEST="${PLAN_META_DIR}/artifact-manifest.json"
+	     THINKING_META_DIR="${THINKING_DIR}/meta"
+	     THINKING_MANIFEST="${THINKING_META_DIR}/artifact-manifest.json"
+	     mkdir -p "${DEV_DIR}"
+	     ```
 
-   - **🔗 Plan Phase Integration** (MANDATORY):
+	   - **🔗 Plan Phase Integration** (MANDATORY):
 
-     ```bash
-     # Verify plan phase exists
-     if [ ! -f "${PLAN_DIR}/plan.md" ]; then
-       echo "❌ ERROR: Plan phase not found. Execute /tpd:plan first."
-       exit 1
-     fi
+	     ```bash
+	     # Verify plan phase manifest exists
+	     if [ ! -f "${PLAN_MANIFEST}" ]; then
+	       echo "❌ ERROR: Plan manifest not found. Execute /tpd:plan first."
+	       exit 1
+	     fi
 
-     # Copy key artifacts for reference
-     cp "${PLAN_DIR}/architecture.md" "${DEV_DIR}/plan-architecture.md"
-     cp "${PLAN_DIR}/constraints.md" "${DEV_DIR}/plan-constraints.md"
-     cp "${PLAN_DIR}/pbt.md" "${DEV_DIR}/plan-pbt.md"
-     cp "${PLAN_DIR}/risks.md" "${DEV_DIR}/plan-risks.md"
-     cp "${PLAN_DIR}/context.md" "${DEV_DIR}/plan-context.md"
-     echo "✅ Plan phase artifacts loaded"
-     ```
+	     # Resolve required plan artifacts via manifest (NO copy)
+	     PLAN_ARCHITECTURE_MD=$(jq -r '.artifacts[]? | select(.name=="architecture.md") | .path' "${PLAN_MANIFEST}" | head -n1)
+	     PLAN_CONSTRAINTS_MD=$(jq -r '.artifacts[]? | select(.name=="constraints.md") | .path' "${PLAN_MANIFEST}" | head -n1)
+	     PLAN_PBT_MD=$(jq -r '.artifacts[]? | select(.name=="pbt.md") | .path' "${PLAN_MANIFEST}" | head -n1)
+	     PLAN_RISKS_MD=$(jq -r '.artifacts[]? | select(.name=="risks.md") | .path' "${PLAN_MANIFEST}" | head -n1)
+	     PLAN_CONTEXT_MD=$(jq -r '.artifacts[]? | select(.name=="context.md") | .path' "${PLAN_MANIFEST}" | head -n1)
+	     PLAN_FINAL_MD=$(jq -r '.artifacts[]? | select(.name=="plan.md") | .path' "${PLAN_MANIFEST}" | head -n1)
 
-   - **🔗 Thinking Phase Integration** (if exists):
+	     test -n "${PLAN_FINAL_MD}" && test -f "${PLAN_FINAL_MD}" || { echo "❌ ERROR: plan.md unresolved from plan manifest"; exit 1; }
+	     test -n "${PLAN_ARCHITECTURE_MD}" && test -f "${PLAN_ARCHITECTURE_MD}" || { echo "❌ ERROR: architecture.md unresolved from plan manifest"; exit 1; }
+	     test -n "${PLAN_CONSTRAINTS_MD}" && test -f "${PLAN_CONSTRAINTS_MD}" || { echo "❌ ERROR: constraints.md unresolved from plan manifest"; exit 1; }
+	     test -n "${PLAN_PBT_MD}" && test -f "${PLAN_PBT_MD}" || { echo "❌ ERROR: pbt.md unresolved from plan manifest"; exit 1; }
+	     test -n "${PLAN_RISKS_MD}" && test -f "${PLAN_RISKS_MD}" || { echo "❌ ERROR: risks.md unresolved from plan manifest"; exit 1; }
+	     test -n "${PLAN_CONTEXT_MD}" && test -f "${PLAN_CONTEXT_MD}" || { echo "❌ ERROR: context.md unresolved from plan manifest"; exit 1; }
+	     echo "✅ Plan phase artifacts resolved via manifest"
+	     ```
 
-     ```bash
-     if [ -f "${THINKING_DIR}/handoff.json" ]; then
-       cp "${THINKING_DIR}/synthesis.md" "${DEV_DIR}/thinking-synthesis.md" 2>/dev/null || true
-       cp "${THINKING_DIR}/clarifications.md" "${DEV_DIR}/thinking-clarifications.md" 2>/dev/null || true
-       THINKING_COMPLETED=true
-       echo "✅ Thinking phase artifacts loaded"
-     else
-       THINKING_COMPLETED=false
-     fi
-     ```
+	   - **🔗 Thinking Phase Integration** (if exists):
 
-   - Locate and copy task file:
-     ```bash
-     TASKS_FILE="openspec/changes/${PROPOSAL_ID}/tasks.md"
-     cp "${TASKS_FILE}" "${DEV_DIR}/tasks.md"
-     ```
-   - Select **minimal verifiable phase** (1~3 tasks, able to form closed-loop verification)
-   - **Reference `plan-pbt.md`** to extract test requirements for selected tasks
-   - Write scope to `${DEV_DIR}/tasks-scope.md` including:
-     - Selected tasks
-     - Relevant constraints from `plan-constraints.md`
-     - Test requirements from `plan-pbt.md`
-     - Known risks from `plan-risks.md`
-   - **⏸️ Hard Stop**: Use AskUserQuestion to display task scope with constraints and test requirements
+	     ```bash
+	     THINKING_SYNTHESIS_MD=""
+	     THINKING_CLARIFICATIONS_MD=""
+	     THINKING_HANDOFF_JSON=""
+
+	     if [ -f "${THINKING_MANIFEST}" ]; then
+	       THINKING_SYNTHESIS_MD=$(jq -r '.artifacts[]? | select(.name=="synthesis.md") | .path' "${THINKING_MANIFEST}" | head -n1)
+	       THINKING_CLARIFICATIONS_MD=$(jq -r '.artifacts[]? | select(.name=="clarifications.md") | .path' "${THINKING_MANIFEST}" | head -n1)
+	       THINKING_HANDOFF_JSON=$(jq -r '.artifacts[]? | select(.name=="handoff.json") | .path' "${THINKING_MANIFEST}" | head -n1)
+
+	       if [ -n "${THINKING_HANDOFF_JSON}" ] && [ "${THINKING_HANDOFF_JSON}" != "null" ] && [ -f "${THINKING_HANDOFF_JSON}" ]; then
+	         THINKING_COMPLETED=true
+	         echo "✅ Thinking phase artifacts resolved via manifest"
+	       else
+	         THINKING_COMPLETED=false
+	         echo "⚠️ Thinking manifest exists but handoff.json unresolved"
+	       fi
+	     else
+	       THINKING_COMPLETED=false
+	       echo "⚠️ No thinking manifest found, continue without optional thinking artifacts"
+	     fi
+	     ```
+
+	   - Locate task file (reference only, no copy):
+	     ```bash
+	     TASKS_FILE="openspec/changes/${PROPOSAL_ID}/tasks.md"
+	     test -f "${TASKS_FILE}" || { echo "❌ ERROR: tasks.md not found"; exit 1; }
+	     ```
+	   - Select **minimal verifiable phase** (1~3 tasks, able to form closed-loop verification)
+	   - **Reference `${PLAN_PBT_MD}`** to extract test requirements for selected tasks
+	   - Write scope to `${DEV_DIR}/tasks-scope.md` including:
+	     - Selected tasks
+	     - Relevant constraints from `${PLAN_CONSTRAINTS_MD}`
+	     - Test requirements from `${PLAN_PBT_MD}`
+	     - Known risks from `${PLAN_RISKS_MD}`
+	   - **⏸️ Hard Stop**: Use AskUserQuestion to display task scope with constraints and test requirements
 
 2. **Step 2: Context Reuse & Implementation Analysis**
    - **🔗 Reuse plan context** instead of full retrieval:
 
      ```bash
-     # plan-context.md already copied in Step 1
+     # PLAN_CONTEXT_MD already resolved from plan manifest in Step 1
      # Only do incremental retrieval for task-specific details
-     if [ -f "${DEV_DIR}/plan-context.md" ]; then
+     if [ -n "${PLAN_CONTEXT_MD}" ] && [ -f "${PLAN_CONTEXT_MD}" ]; then
        echo "📥 Reusing context from plan phase"
        CONTEXT_MODE="incremental"
      else
@@ -136,15 +160,15 @@ The dev phase strictly aligns with OpenSpec Implementation: **only implement the
      ```
 
    - Launch concurrent agents for **incremental** context and analysis.
-   - **Task for context-retriever:** "Retrieve ONLY task-specific context not in plan-context.md"
-   - **Task for codex-implementer (analyze mode):** "Analyze implementation referencing plan-architecture.md and plan-constraints.md"
+   - **Task for context-retriever:** "Retrieve ONLY task-specific context not in resolved plan context artifact"
+   - **Task for codex-implementer (analyze mode):** "Analyze implementation referencing resolved plan architecture and constraints artifacts"
    - **At most 2 agents in parallel!**
    - JUST RUN AND WAIT!
 
    ```
-   Skill(skill="tpd:context-retriever", args="run_dir=${DEV_DIR} mode=${CONTEXT_MODE} base_context=plan-context.md")
+   Skill(skill="tpd:context-retriever", args="run_dir=${DEV_DIR} mode=${CONTEXT_MODE} base_context=${PLAN_CONTEXT_MD}")
 
-   Task(subagent_type="tpd:execution:codex-implementer", description="Codex analysis", prompt="Execute implementation analysis. run_dir=${DEV_DIR} mode=analyze architecture_ref=plan-architecture.md constraints_ref=plan-constraints.md")
+   Task(subagent_type="tpd:execution:codex-implementer", description="Codex analysis", prompt="Execute implementation analysis. run_dir=${DEV_DIR} mode=analyze architecture_ref=${PLAN_ARCHITECTURE_MD} constraints_ref=${PLAN_CONSTRAINTS_MD}")
    ```
 
    - **Verify**: `${DEV_DIR}/context.md` and `${DEV_DIR}/analysis-codex.md` exist
@@ -168,21 +192,21 @@ The dev phase strictly aligns with OpenSpec Implementation: **only implement the
 4. **Step 4: Refactor & Constraint-Aware Side-effect Review**
    - Execute refactor implementation with constraint awareness:
      ```
-     Skill(skill="tpd:code-implementer", args="run_dir=${DEV_DIR} constraints_ref=plan-constraints.md pbt_ref=plan-pbt.md")
+     Skill(skill="tpd:code-implementer", args="run_dir=${DEV_DIR} constraints_ref=${PLAN_CONSTRAINTS_MD} pbt_ref=${PLAN_PBT_MD}")
      ```
    - **Verify**: `${DEV_DIR}/changes.md` exists
 
-   - **🔗 Constraint Compliance Check** (reference `plan-constraints.md`):
+   - **🔗 Constraint Compliance Check** (reference `${PLAN_CONSTRAINTS_MD}`):
      - Does implementation violate any hard constraints?
      - Are soft constraints properly handled or documented as exceptions?
-     - Are clarified decisions from `thinking-clarifications.md` respected?
+     - If `${THINKING_CLARIFICATIONS_MD}` exists, are clarified decisions respected?
 
    - **Mandatory Side-effect Review**: Check if all changes are strictly limited to `tasks-scope.md`:
      - Were unauthorized files added/modified?
      - Were unapproved dependencies introduced?
      - Were existing interface contracts broken?
 
-   - **🔗 Test Requirement Check** (reference `plan-pbt.md`):
+   - **🔗 Test Requirement Check** (reference `${PLAN_PBT_MD}`):
      - Are required tests included for this task?
      - Do tests cover the properties defined in PBT?
 
@@ -206,7 +230,7 @@ The dev phase strictly aligns with OpenSpec Implementation: **only implement the
 
 6. **Step 6: Task Completion & Iteration**
    - Mark completed tasks in `openspec/changes/${PROPOSAL_ID}/tasks.md` as `- [x]`
-   - Copy synced tasks.md back to `${DEV_DIR}/tasks.md`
+   - Write current phase progress summary to `${DEV_DIR}/tasks-progress.md` (optional snapshot, no tasks file copy)
    - **⏸️ Hard Stop**: Use AskUserQuestion to ask whether to proceed to next phase
    - If continuing → repeat Step 1~6 with next task scope
 
@@ -220,60 +244,66 @@ The dev phase strictly aligns with OpenSpec Implementation: **only implement the
      ```
      🎉 Development Complete!
 
-     📋 Proposal: ${PROPOSAL_ID}
-     🔀 Type: ${TASK_TYPE}
+	     📋 Proposal: ${PROPOSAL_ID}
+	     🔀 Type: ${TASK_TYPE}
 
-     📁 Artifacts:
-       ${DEV_DIR}/
-       ├── input.md
-       ├── context.md
-       ├── tasks.md
-       ├── tasks-scope.md
-       ├── analysis-codex.md
-       ├── prototype-codex.diff
-       ├── prototype-gemini.diff
-       ├── changes.md
-       ├── audit-codex.md
-       └── audit-gemini.md
+	     📁 Artifacts:
+	       ${DEV_DIR}/
+	       ├── input.md
+	       ├── context.md
+	       ├── tasks-progress.md
+	       ├── tasks-scope.md
+	       ├── analysis-codex.md
+	       ├── prototype-codex.diff
+	       ├── prototype-gemini.diff
+	       ├── changes.md
+	       ├── audit-codex.md
+	       └── audit-gemini.md
 
-     ✅ All tasks completed and archived!
-     ```
+	     📌 Source of truth tasks file:
+	       openspec/changes/${PROPOSAL_ID}/tasks.md
+
+	     ✅ All tasks completed and archived!
+	     ```
 
 ---
 
 ## Previous Phase Integration
 
-Dev phase **MUST** load artifacts from plan phase (and thinking phase if exists):
+Dev phase **MUST** resolve artifacts from plan/thinking manifests (no copy into DEV_DIR):
 
 ### Plan Phase Artifacts (MANDATORY)
 
-| Plan Artifact     | Dev Usage                                | Benefit                          |
-| ----------------- | ---------------------------------------- | -------------------------------- |
-| `architecture.md` | Step 2: Guide implementation approach    | Consistent architecture          |
-| `constraints.md`  | Step 4: Verify constraint compliance     | **Prevent constraint violation** |
-| `pbt.md`          | Step 1, 4: Test requirements per task    | **Ensure test coverage**         |
-| `risks.md`        | Step 1: Highlight known risks            | Risk-aware implementation        |
-| `context.md`      | Step 2: Base context (skip re-retrieval) | Faster context loading           |
+| Plan Artifact     | Resolved Variable       | Dev Usage                                | Benefit                          |
+| ----------------- | ----------------------- | ---------------------------------------- | -------------------------------- |
+| `architecture.md` | `PLAN_ARCHITECTURE_MD`  | Step 2: Guide implementation approach    | Consistent architecture          |
+| `constraints.md`  | `PLAN_CONSTRAINTS_MD`   | Step 4: Verify constraint compliance     | **Prevent constraint violation** |
+| `pbt.md`          | `PLAN_PBT_MD`           | Step 1, 4: Test requirements per task    | **Ensure test coverage**         |
+| `risks.md`        | `PLAN_RISKS_MD`         | Step 1: Highlight known risks            | Risk-aware implementation        |
+| `context.md`      | `PLAN_CONTEXT_MD`       | Step 2: Base context (skip re-retrieval) | Faster context loading           |
 
 ### Thinking Phase Artifacts (Optional)
 
-| Thinking Artifact   | Dev Usage                              | Benefit                       |
-| ------------------- | -------------------------------------- | ----------------------------- |
-| `synthesis.md`      | Step 4: Reference resolved constraints | Honor previous decisions      |
-| `clarifications.md` | Step 4: User's explicit decisions      | **Avoid re-asking questions** |
+| Thinking Artifact   | Resolved Variable            | Dev Usage                              | Benefit                       |
+| ------------------- | ---------------------------- | -------------------------------------- | ----------------------------- |
+| `synthesis.md`      | `THINKING_SYNTHESIS_MD`      | Step 4: Reference resolved constraints | Honor previous decisions      |
+| `clarifications.md` | `THINKING_CLARIFICATIONS_MD` | Step 4: User's explicit decisions      | **Avoid re-asking questions** |
 
 ### Data Flow
 
 ```
-THINKING_DIR/                     PLAN_DIR/                        DEV_DIR/
-├── synthesis.md      ──────►                          ──────►   ├── thinking-synthesis.md
-├── clarifications.md ──────►                          ──────►   ├── thinking-clarifications.md
-                                  ├── architecture.md  ──────►   ├── plan-architecture.md
-                                  ├── constraints.md   ──────►   ├── plan-constraints.md
-                                  ├── pbt.md           ──────►   ├── plan-pbt.md
-                                  ├── risks.md         ──────►   ├── plan-risks.md
-                                  ├── context.md       ──────►   ├── plan-context.md
-                                  └── tasks.md         ──────►   └── tasks.md
+THINKING_DIR/meta/artifact-manifest.json      PLAN_DIR/meta/artifact-manifest.json
+├── synthesis.md      ──────► THINKING_SYNTHESIS_MD
+└── clarifications.md ──────► THINKING_CLARIFICATIONS_MD
+
+                                               ├── architecture.md  ──────► PLAN_ARCHITECTURE_MD
+                                               ├── constraints.md   ──────► PLAN_CONSTRAINTS_MD
+                                               ├── pbt.md           ──────► PLAN_PBT_MD
+                                               ├── risks.md         ──────► PLAN_RISKS_MD
+                                               ├── context.md       ──────► PLAN_CONTEXT_MD
+                                               └── plan.md          ──────► PLAN_FINAL_MD
+
+DEV phase consumes resolved paths directly (NO copy to DEV_DIR).
 ```
 
 ---

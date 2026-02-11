@@ -55,8 +55,12 @@ Parse these flags from the user's command:
 
    ```bash
    RUN_ID=$(date +%Y%m%d-%H%M%S)
-   mkdir -p .claude/feature-impl/runs/${RUN_ID}
+   CHANGE_ID="${RUN_ID}"
+   RUN_DIR="openspec/changes/${CHANGE_ID}"
+   mkdir -p "${RUN_DIR}"
    ```
+
+Spec-only policy: feature-impl artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
 
 2. **Parse input**:
    - Extract feature description from user command

@@ -10,7 +10,7 @@
 - `plugins/*/commands/*.md` (Command Entry Points): Define workflows via YAML frontmatter + phase-based markdown specification.
 - `plugins/*/agents/*.md` (Agent Definitions): Specialized sub-task workers invoked via Task tool with `run_in_background` support.
 - `plugins/*/skills/*/SKILL.md` (Skill Modules): Atomic reusable operations invoked via Skill tool.
-- `.claude/{plugin}/runs/{timestamp}/state.json` (State Tracking): Workflow progress and phase completion status.
+- `openspec/changes/*/` (Change Workspace): Workflow progress, phase outputs, and resumable context.
 
 ## 3. Workflow Patterns
 
@@ -52,12 +52,12 @@ Hard Stop: Phase 10 (Deliver) ⏸️
 
 **Implementation:** `plugins/tpd/commands/dev.md` - 12 phases with hard stops at Phase 3, 5, 9, 10.
 
-## 4. Run Directory Pattern
+## 4. Runtime Artifact Directory Pattern
 
-All workflows use isolated run directories for artifact management:
+All workflows use OpenSpec change directories for runtime state and outputs:
 
 ```
-.claude/{plugin}/runs/{timestamp}/
+openspec/changes/{change_id}/
 ├── state.json              # Workflow state tracking
 ├── input.md                # Original input/request
 ├── changes-raw.json        # Phase 1 output
@@ -67,13 +67,13 @@ All workflows use isolated run directories for artifact management:
 └── ...
 ```
 
-**OpenSpec Integration:** TPD workflows use extended path:
+TPD phased workflows use proposal-scoped artifacts:
 
 ```
-openspec/changes/{proposal_id}/artifacts/{phase}/
+openspec/changes/{proposal_id}/{phase}/
 ```
 
-**Implementation:** `plugins/commit/commands/commit.md:62-64` - RUN_DIR initialization.
+**Implementation:** `plugins/commit/commands/commit.md` and `plugins/tpd/commands/{thinking,plan,dev}.md`.
 
 ## 5. State Tracking
 
@@ -103,7 +103,7 @@ openspec/changes/{proposal_id}/artifacts/{phase}/
 
 ## 7. Design Rationale
 
-- **Isolation:** Timestamp-based directories prevent artifact collision across runs.
+- **Isolation:** change-id + workflow + run-id partitioning prevents artifact collision across runs.
 - **Parallelism:** `run_in_background=true` enables concurrent agent execution.
 - **Checkpoints:** Hard stops with `AskUserQuestion` ensure user control at critical decisions.
 - **Resumability:** State tracking enables interrupted workflows to continue.

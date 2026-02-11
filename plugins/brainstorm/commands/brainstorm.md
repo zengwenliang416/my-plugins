@@ -51,10 +51,17 @@ allowed-tools:
 2. Create run directory:
 
    ```bash
-   RUN_ID=$(date -u +%Y%m%dT%H%M%SZ)
-   RUN_DIR=".claude/brainstorm/runs/${RUN_ID}"
+   if [[ "$ARGUMENTS" =~ --run-id=([^ ]+) ]]; then
+       RUN_ID="${BASH_REMATCH[1]}"
+   else
+       RUN_ID=$(date -u +%Y%m%dT%H%M%SZ)
+   fi
+   CHANGE_ID="${RUN_ID}"
+   RUN_DIR="openspec/changes/${CHANGE_ID}"
    mkdir -p "$RUN_DIR"
    ```
+
+Spec-only policy: brainstorm artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
 
 3. Use AskUserQuestion to confirm execution plan
 

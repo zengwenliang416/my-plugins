@@ -21,8 +21,11 @@ This phase is a deterministic transformation — no agents are needed. You (the 
 ### Step 1: Locate Run Directory
 
 ```bash
-RUN_DIR=.claude/plan-execute/runs/${RUN_ID}
+CHANGE_ID="${RUN_ID}"
+RUN_DIR="openspec/changes/${CHANGE_ID}"
 ```
+
+Spec-only policy: plan-execute artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
 
 **Validate prerequisites:**
 

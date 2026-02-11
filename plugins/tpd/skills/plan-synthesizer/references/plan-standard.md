@@ -148,7 +148,7 @@ plan.md
 ### 4.2 命名规范
 
 ```
-openspec/changes/{proposal_id}/artifacts/plan/
+openspec/changes/{proposal_id}/plan/
 ├── plan.md           # 主计划文档
 ├── requirements.md   # 需求规格
 ├── context.md        # 上下文检索

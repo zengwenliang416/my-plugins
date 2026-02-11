@@ -49,7 +49,7 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │  ✅ ALLOWED: Write to openspec/ directory only                  │
-│     - openspec/changes/${PROPOSAL_ID}/artifacts/thinking/*      │
+│     - openspec/changes/${PROPOSAL_ID}/thinking/*      │
 │                                                                 │
 │  ❌ FORBIDDEN: Write to any other location                      │
 │     - Project source code                                       │
@@ -96,7 +96,9 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
      ```
    - If OpenSpec not initialized → prompt user to execute `/tpd:init` first
    - Generate `PROPOSAL_ID` from problem description slug
-   - Create `THINKING_DIR`: `openspec/changes/${PROPOSAL_ID}/artifacts/thinking`
+   - Create directories:
+     - `THINKING_DIR`: `openspec/changes/${PROPOSAL_ID}/thinking`
+     - `THINKING_META_DIR`: `${THINKING_DIR}/meta`
    - **Initialize State Machine** - Write `${THINKING_DIR}/state.json`:
      ```json
      {
@@ -113,7 +115,9 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
          "gemini_thought": false,
          "synthesis": false,
          "conclusion": false,
-         "handoff": false
+         "handoff": false,
+         "manifest": false,
+         "lineage": false
        },
        "timestamps": {
          "started": "${ISO_TIMESTAMP}",
@@ -122,7 +126,33 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
      }
      ```
    - Write `${THINKING_DIR}/input.md` with problem description
-   - **🔒 Checkpoint**: Verify both files exist before proceeding
+   - Initialize `${THINKING_META_DIR}/artifact-manifest.json` with empty artifact registry:
+     ```json
+     {
+       "workflow": "tpd-thinking",
+       "proposal_id": "${PROPOSAL_ID}",
+       "phase": "thinking",
+       "status": "initialized",
+       "generated_at": "${ISO_TIMESTAMP}",
+       "artifacts": [],
+       "depends_on": []
+     }
+     ```
+   - Initialize `${THINKING_META_DIR}/lineage.json`:
+     ```json
+     {
+       "workflow": "tpd-thinking",
+       "phase": "thinking",
+       "proposal_id": "${PROPOSAL_ID}",
+       "sources": [
+         {
+           "type": "user_input",
+           "path": "${THINKING_DIR}/input.md"
+         }
+       ]
+     }
+     ```
+   - **🔒 Checkpoint**: Verify `state.json`, `input.md`, `meta/artifact-manifest.json`, `meta/lineage.json` all exist before proceeding
 
 1. **Step 1: Complexity Assessment (using `tpd:complexity-analyzer`)**
    - Call Skill immediately:
@@ -142,6 +172,7 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
      test -f "${THINKING_DIR}/complexity-analysis.md" || { echo "❌ Step 1 FAILED: complexity-analysis.md not found"; exit 1; }
      ```
      Update state.json: `current_step=1`, `artifacts.complexity=true`
+     Update `${THINKING_META_DIR}/artifact-manifest.json`: register `complexity-analysis.md` as generated
 
 2. **Step 2: Parallel Boundary Exploration (using `boundary-explorer`)**
    - First, use auggie to identify boundaries:
@@ -174,6 +205,7 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
      ls "${THINKING_DIR}"/explore-*.json 1>/dev/null 2>&1 || { echo "❌ Step 2 FAILED: No explore-*.json found"; exit 1; }
      ```
      Update state.json: `current_step=2`, `artifacts.boundaries=true`, `artifacts.exploration=true`
+     Update `${THINKING_META_DIR}/artifact-manifest.json`: register `boundaries.json` and `explore-*.json` artifacts
 
 3. **Step 3: Parallel Multi-Model Constraint Analysis (deep/ultra only)**
    - In parallel, launch constraint analysis agents.
@@ -196,6 +228,7 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
      test -f "${THINKING_DIR}/gemini-thought.md" || echo "⚠️ gemini-thought.md missing (may be expected)"
      ```
      Update state.json: `current_step=3`, `artifacts.codex_thought=true/false`, `artifacts.gemini_thought=true/false`
+     Update `${THINKING_META_DIR}/artifact-manifest.json`: register available `codex-thought.md` / `gemini-thought.md`
 
 4. **Step 4: Synthesis & User Confirmation (using `tpd:thought-synthesizer`)**
    - Call Skill immediately:
@@ -208,6 +241,7 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
      test -f "${THINKING_DIR}/synthesis.md" || { echo "❌ Step 4 FAILED: synthesis.md not found"; exit 1; }
      ```
      Update state.json: `current_step=4`, `artifacts.synthesis=true`
+     Update `${THINKING_META_DIR}/artifact-manifest.json`: register `synthesis.md`
    - **⏸️ Constraint Clarification Hard Stop**: If `synthesis.md` contains `open_questions`, use AskUserQuestion to clarify
    - Write user answers to `${THINKING_DIR}/clarifications.md`
 
@@ -224,6 +258,7 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
      test -f "${THINKING_DIR}/conclusion.md" || { echo "❌ Step 5 FAILED: conclusion.md not found"; exit 1; }
      ```
      Update state.json: `current_step=5`, `artifacts.conclusion=true`
+     Update `${THINKING_META_DIR}/artifact-manifest.json`: register `conclusion.md`
    - **⏸️ Ultra Mode Hard Stop**: Display conclusion summary and ask if further exploration needed
 
 6. **Step 6: Handoff (using `tpd:handoff-generator`)**
@@ -236,7 +271,9 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
      test -f "${THINKING_DIR}/handoff.md" || { echo "❌ Step 6 FAILED: handoff.md not found"; exit 1; }
      test -f "${THINKING_DIR}/handoff.json" || { echo "❌ Step 6 FAILED: handoff.json not found"; exit 1; }
      ```
-     Update state.json: `current_step=6`, `status="completed"`, `artifacts.handoff=true`, `timestamps.completed="${ISO_TIMESTAMP}"`
+     Update state.json: `current_step=6`, `status="completed"`, `artifacts.handoff=true`, `artifacts.manifest=true`, `artifacts.lineage=true`, `timestamps.completed="${ISO_TIMESTAMP}"`
+     Finalize `${THINKING_META_DIR}/artifact-manifest.json`: set `status=completed`, register `handoff.md` and `handoff.json`
+     Finalize `${THINKING_META_DIR}/lineage.json`: append output lineage for handoff artifacts
    - Output completion summary:
 
      ```
@@ -253,22 +290,32 @@ Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - 
      - Constraints: See ${THINKING_DIR}/handoff.md
      - Success Criteria: See ${THINKING_DIR}/handoff.md
 
-     ➡️ Next Phase: /tpd:plan
+	     ➡️ Next Phase: /tpd:plan
 
-     📁 Artifacts:
-       ${THINKING_DIR}/
-       ├── input.md
-       ├── complexity-analysis.md
-       ├── boundaries.json
-       ├── explore-*.json
-       ├── synthesis.md
-       ├── clarifications.md (if any)
-       ├── codex-thought.md (deep/ultra)
-       ├── gemini-thought.md (deep/ultra)
-       ├── conclusion.md
-       ├── handoff.md
-       └── handoff.json
-     ```
+	     📁 Artifacts:
+	       ${THINKING_DIR}/
+	       ├── input.md
+	       ├── state.json
+	       ├── complexity-analysis.md
+	       ├── boundaries.json
+	       ├── explore-*.json
+	       ├── synthesis.md
+	       ├── clarifications.md (if any)
+	       ├── codex-thought.md (deep/ultra)
+	       ├── gemini-thought.md (deep/ultra)
+	       ├── conclusion.md
+	       ├── handoff.md
+	       ├── handoff.json
+	       └── meta/
+	           ├── artifact-manifest.json
+	           └── lineage.json
+	     ```
+
+## Thinking → Plan Handoff Contract
+
+- `/tpd:plan` MUST read `${THINKING_DIR}/meta/artifact-manifest.json` first.
+- Required handoff artifacts (`handoff.md`, `handoff.json`, `synthesis.md`) MUST be resolved via manifest entries.
+- Plan phase SHOULD consume lineage references from `${THINKING_DIR}/meta/lineage.json` to avoid file copy duplication.
 
 ---
 
