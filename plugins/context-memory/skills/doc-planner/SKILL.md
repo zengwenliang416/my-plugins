@@ -1,315 +1,99 @@
 ---
 name: doc-planner
 description: |
-  【触发条件】/memory docs [path] 或需要规划文档结构时
-  【核心产出】.claude/memory/docs/plan.json - 文档规划文件
-  【专属用途】
-    - 分析代码结构确定文档需求
-    - 生成文档大纲和优先级
-    - 识别缺失文档
-    - 规划文档生成顺序
-  【强制工具】Skill(codex-cli), Glob
-  【不触发】已有完整文档规划时
-  【先问什么】默认先确认输入范围、输出格式与约束条件
-  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/plan-docs.ts`).
+  Plan documentation scope, group modules, and recommend generation strategy.
+  [Trigger] Before running doc-full-generator or doc-full-updater to understand scope.
+  [Output] ${run_dir}/doc-plan.json with modules, actions, priorities, and processing order.
+  [Skip] When user already knows exactly which modules to document.
+  [Ask] Desired scope (full, changed, or specific module path).
 allowed-tools:
-  - Skill
-  - Glob
   - Read
   - Write
+  - Glob
+  - Grep
+  - Skill
+  - mcp__auggie-mcp__codebase-retrieval
 arguments:
-  - name: path
+  - name: run_dir
     type: string
-    required: false
-    default: "."
-    description: 分析目录路径
+    required: true
+    description: Output directory for plan artifacts
   - name: scope
     type: string
-    default: "full"
-    description: 规划范围 (full|api|components|guides)
+    required: false
+    description: "full, changed, or module:<path> (default: full)"
 ---
 
-# Doc Planner - 文档规划器
+# doc-planner
 
-## Script Entry
+## Purpose
 
-```bash
-npx tsx scripts/plan-docs.ts [args]
-```
+Analyze the project and create a documentation plan: which modules need CLAUDE.md, what content each should contain, and the recommended generation order.
 
-## Resource Usage
+## Steps
 
-- Reference docs: `references/doc-types.md`
-- Assets: `assets/plan-schema.json`
-- Execution script: `scripts/plan-docs.ts`
+### Phase 1: Project Analysis
 
-## 执行流程
+1. Call `Skill("context-memory:module-discovery", {run_dir})` to get `modules.json`.
+2. Scan for existing CLAUDE.md files using `Glob("**/CLAUDE.md")`.
+3. Compare: identify modules missing CLAUDE.md, modules with stale CLAUDE.md.
 
-```
-1. 扫描代码结构
-   Glob("**/*.{ts,js,py,go,java}")
-   - 识别模块边界
-   - 识别公共接口
-       │
-       ▼
-2. 分析现有文档
-   Glob("**/*.md", "**/docs/**")
-   - 识别已有文档
-   - 检测过时文档
-       │
-       ▼
-3. 使用 codex-cli 分析
-   Skill("memory:codex-cli", prompt="doc_needs")
-   - 评估代码复杂度
-   - 识别文档需求
-   - 确定优先级
-       │
-       ▼
-4. 生成文档规划
-   - 文档树结构
-   - 生成顺序
-   - 依赖关系
-       │
-       ▼
-5. 输出规划文件
-   .claude/memory/docs/plan.json
-```
+### Phase 2: Staleness Detection
 
-## 输出格式
+4. For each existing CLAUDE.md:
+   - Get CLAUDE.md last-modified time.
+   - Get most recent source file modification time in the module.
+   - If source is newer than CLAUDE.md, mark as `stale`.
+   - If source has significant changes (>5 files changed), mark as `needs-regeneration`.
 
-### plan.json
+### Phase 3: Scope Filtering
+
+5. Apply scope filter:
+   - `full`: All modules.
+   - `changed`: Only modules with stale or missing CLAUDE.md.
+   - `module:<path>`: Single specific module.
+
+### Phase 4: Plan Generation
+
+6. Write `${run_dir}/doc-plan.json`:
 
 ```json
 {
-  "version": "1.0",
-  "generated": "2024-01-20T08:00:00Z",
-  "project_root": "/path/to/project",
   "scope": "full",
-  "summary": {
-    "total_files": 150,
-    "documented": 45,
-    "needs_doc": 105,
-    "outdated": 12,
-    "coverage": "30%"
-  },
-  "documents": [
+  "modules": [
     {
-      "id": "doc-001",
-      "type": "api",
-      "path": "docs/api/auth.md",
-      "title": "认证 API 文档",
-      "source_files": ["src/services/auth.ts", "src/routes/auth.ts"],
-      "priority": "high",
+      "path": "src/auth",
       "status": "missing",
-      "estimated_sections": ["Overview", "Endpoints", "Examples", "Errors"],
-      "dependencies": [],
-      "complexity": "medium"
+      "action": "generate",
+      "strategy": "multi-model",
+      "priority": "high",
+      "layer": 3
     },
     {
-      "id": "doc-002",
-      "type": "guide",
-      "path": "docs/guides/getting-started.md",
-      "title": "快速开始指南",
-      "source_files": [],
-      "priority": "high",
-      "status": "outdated",
-      "estimated_sections": ["Installation", "Configuration", "First Steps"],
-      "dependencies": ["doc-001"],
-      "complexity": "low"
+      "path": "src/pages",
+      "status": "stale",
+      "action": "update",
+      "strategy": "incremental",
+      "priority": "medium",
+      "layer": 1
     }
   ],
-  "structure": {
-    "docs/": {
-      "api/": ["auth.md", "users.md", "orders.md"],
-      "guides/": ["getting-started.md", "deployment.md"],
-      "reference/": ["config.md", "errors.md"],
-      "README.md": null
-    }
-  },
-  "generation_order": ["doc-001", "doc-003", "doc-002", "doc-004"],
-  "metadata": {
-    "analysis_time_ms": 2500,
-    "files_scanned": 150,
-    "existing_docs": 8
-  }
+  "processing_order": ["src/utils", "src/auth", "src/services", "src/pages"],
+  "estimated_modules": 12,
+  "recommended_command": "claude-update full"
 }
 ```
 
-## 文档类型识别
+### Phase 5: User Summary
 
-### API 文档
+7. Present plan summary:
+   - Total modules to process
+   - Missing vs stale vs up-to-date counts
+   - Recommended action (`claude-generate full` vs `claude-update related`)
+   - Estimated processing order (layer 3 → 2 → 1)
 
-```
-触发条件:
-├── 文件包含路由定义 (router, controller)
-├── 文件导出 REST endpoints
-├── 文件包含 @api 或 @route 注释
-└── 文件名匹配 *api*, *route*, *endpoint*
+## Verification
 
-输出结构:
-├── Overview
-├── Authentication
-├── Endpoints
-│   ├── GET /resource
-│   ├── POST /resource
-│   └── ...
-├── Request/Response Examples
-└── Error Codes
-```
-
-### 组件文档
-
-```
-触发条件:
-├── React/Vue/Angular 组件文件
-├── 文件导出 UI 组件
-├── 文件包含 props/state 定义
-└── 文件名匹配 *.component.*, *.tsx
-
-输出结构:
-├── Overview
-├── Props/API
-├── Usage Examples
-├── Variants
-└── Accessibility
-```
-
-### 指南文档
-
-```
-触发条件:
-├── 复杂业务逻辑模块
-├── 集成点 (第三方服务)
-├── 配置系统
-└── 工作流/流程
-
-输出结构:
-├── Introduction
-├── Prerequisites
-├── Step-by-Step Guide
-├── Troubleshooting
-└── FAQ
-```
-
-## 优先级评估
-
-### 评分维度
-
-```
-1. 代码复杂度 (1-5)
-   - 函数数量
-   - 依赖数量
-   - 圈复杂度
-
-2. 使用频率 (1-5)
-   - 被引用次数
-   - 公共接口数量
-
-3. 变更频率 (1-5)
-   - 最近提交次数
-   - 作者数量
-
-4. 现有文档状态 (1-5)
-   - 缺失: 5
-   - 过时: 4
-   - 不完整: 3
-   - 完整: 1
-```
-
-### 优先级计算
-
-```javascript
-function calculatePriority(doc) {
-  const score =
-    doc.complexity * 0.3 +
-    doc.usage * 0.3 +
-    doc.change_freq * 0.2 +
-    doc.doc_status * 0.2;
-
-  if (score > 4) return "critical";
-  if (score > 3) return "high";
-  if (score > 2) return "medium";
-  return "low";
-}
-```
-
-## 依赖分析
-
-```
-文档依赖关系:
-├── API 文档 → 无依赖 (可独立生成)
-├── 组件文档 → 可能依赖 API 文档
-├── 指南文档 → 依赖相关 API/组件文档
-└── 架构文档 → 依赖所有基础文档
-```
-
-## 生成顺序算法
-
-```javascript
-function calculateOrder(documents) {
-  // 拓扑排序 + 优先级
-  const sorted = topologicalSort(documents);
-  return sorted.sort((a, b) => {
-    // 同层级按优先级排序
-    if (a.depth === b.depth) {
-      return priorityValue(b.priority) - priorityValue(a.priority);
-    }
-    return a.depth - b.depth;
-  });
-}
-```
-
-## 使用示例
-
-```bash
-# 完整规划
-/memory docs
-
-# 指定目录
-/memory docs src/
-
-# 仅 API 文档
-/memory docs --scope api
-
-# 仅组件文档
-/memory docs --scope components
-
-# 仅指南
-/memory docs --scope guides
-```
-
-## 输出位置
-
-```
-.claude/memory/docs/
-├── plan.json           # 主规划文件
-├── plan.backup.json    # 备份
-└── analysis/
-    ├── api-analysis.json
-    ├── components-analysis.json
-    └── coverage-report.md
-```
-
-## 与其他 Skills 的关系
-
-```
-doc-planner → plan.json
-                  │
-    ┌─────────────┼─────────────┐
-    │             │             │
-    ▼             ▼             ▼
-doc-full    doc-related   doc-incremental
-generator   generator     updater
-
-使用规划执行具体文档生成
-```
-
-## 降级策略
-
-```
-codex-cli 不可用时:
-├── 使用静态分析
-├── 基于文件名和目录结构推断
-├── 生成基础规划
-└── 标记 "simplified analysis"
-```
+- `doc-plan.json` exists with valid module entries.
+- Processing order respects layer dependencies (3 before 2 before 1).
+- Each module has a clear `action` and `strategy`.

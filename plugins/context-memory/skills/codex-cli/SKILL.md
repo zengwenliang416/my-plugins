@@ -1,214 +1,55 @@
 ---
 name: codex-cli
 description: |
-  【触发条件】gemini-cli 失败时的降级选项
-  【核心产出】CLAUDE.md 模块文档（作为 gemini 的备选）
-  【专属用途】
-    - CLAUDE.md 生成（降级）
-    - 后端代码分析优先
-  【强制工具】scripts/invoke-codex.ts
-  【不触发】gemini 可用时（优先使用 gemini）
-  【先问什么】默认先确认输入范围、输出格式与约束条件
-  [Resource Usage] Use references/, assets/, and scripts/ (`scripts/invoke-codex.ts`, `scripts/codex-analyze.ts`).
+  Codex wrapper skill for code analysis, documentation generation, and quality auditing.
+  [Trigger] Agent or skill needs Codex model for analysis/generation/audit tasks.
+  [Output] Model response via codeagent-wrapper + optional ${run_dir}/codex-${role}.log
+  [Skip] When task can be handled by Claude inline without external model.
+  [Ask] Which role to use (analyzer, doc-generator, auditor) if not specified.
 allowed-tools:
   - Bash
-  - Write
   - Read
+  - Write
 arguments:
+  - name: role
+    type: string
+    required: true
+    description: analyzer, doc-generator, or auditor
   - name: prompt
     type: string
     required: true
-    description: 生成任务描述
-  - name: module_path
+    description: Prompt passed to Codex wrapper
+  - name: run_dir
     type: string
     required: false
-    description: 目标模块路径 (CLAUDE.md 生成用)
-  - name: strategy
+    description: Output workspace for artifacts
+  - name: session_id
     type: string
     required: false
-    description: 生成策略 (single-layer|multi-layer)
-  - name: input_files
-    type: array
-    required: false
-    description: 输入文件路径列表
-  - name: output_format
-    type: string
-    default: "markdown"
-    description: 输出格式 (markdown|json|yaml)
+    description: Existing Codex session id for multi-turn
 ---
 
-# Memory Plugin - Codex CLI Skill
-
-## Script Entry
-
-```bash
-npx tsx scripts/invoke-codex.ts --role "<role>" --prompt "<prompt>" [--workdir "<path>"] [--session "<id>"] [--sandbox "read-only"]
-```
-
-## 触发条件
-
-此 Skill 仅在以下情况触发：
-
-1. **gemini-cli 失败**：非零退出码
-2. **gemini-cli 输出为空**：无有效内容
-3. **gemini 配额耗尽**：API 限制
-
-## 执行流程
-
-### CLAUDE.md 生成流程（降级）
-
-```
-1. 接收模块路径和策略
-   - module_path: 目标目录
-   - strategy: single-layer | multi-layer
-       │
-       ▼
-2. 扫描目录结构
-   - 统计文件数量和类型
-   - 识别子目录
-       │
-       ▼
-3. 构建 Prompt (与 gemini-cli 相同模板)
-   - single-layer: @*/CLAUDE.md @*.ts ...
-   - multi-layer: @**/*
-       │
-       ▼
-4. 执行脚本入口
-   cd ${module_path} && \
-   npx tsx scripts/invoke-codex.ts \
-     --prompt "${prompt}" \
-     --workdir "." \
-     --role "architect" \
-     --sandbox "read-only"
-       │
-       ▼
-5. 验证输出
-   - 检查 CLAUDE.md 是否生成
-   - 返回手动模式提示 (如失败)
-```
-
-## 与 gemini-cli 的差异
-
-| 维度     | gemini-cli           | codex-cli            |
-| -------- | -------------------- | -------------------- |
-| 优先级   | 主要工具             | 降级选项             |
-| 擅长     | 文档生成、自然语言   | 后端逻辑、代码分析   |
-| 上下文   | 32k tokens           | 128k tokens          |
-| 速度     | 较快                 | 较慢                 |
-| 文档质量 | 更流畅               | 更技术化             |
-
-## 执行命令
-
-```bash
-# 单层策略
-cd ${module_path} && \
-npx tsx scripts/invoke-codex.ts \
-  --role "architect" \
-  --prompt "$(cat <<'PROMPT'
-Directory Structure Analysis:
-[structure info]
-
-Read: @*/CLAUDE.md @*.ts @*.tsx
-
-Generate single file: ./CLAUDE.md
-
-Template Structure:
-- Purpose (1-2 sentences)
-- Structure (directory tree)
-- Components (exports, dependencies)
-- Integration points
-- Implementation notes
-
-Instructions:
-- Create exactly one CLAUDE.md file
-- Reference child CLAUDE.md files, do not duplicate
-- No placeholder text or TODOs
-PROMPT
-)"
-
-# 多层策略
-cd ${module_path} && \
-npx tsx scripts/invoke-codex.ts \
-  --role "architect" \
-  --prompt "$(cat <<'PROMPT'
-Directory Structure Analysis:
-[structure info]
-
-Read: @**/*
-
-Generate CLAUDE.md files:
-- Primary: ./CLAUDE.md (current directory)
-- Additional: CLAUDE.md in each subdirectory
-
-Instructions:
-- Work bottom-up: deepest directories first
-- Parent directories reference children
-- No placeholder text or TODOs
-PROMPT
-)"
-```
-
-## 输出格式规范
-
-### Markdown (默认)
-
-```markdown
-# Generated Document
-
-## Overview
-
-[概述内容]
-
-## Details
-
-[详细内容]
-
-## References
-
-[相关引用]
-```
-
-## 最终降级
-
-如果 codex-cli 也失败：
-
-```
-Error: Both gemini-cli and codex-cli failed
-Suggestion: 请手动创建 ${module_path}/CLAUDE.md
-
-推荐结构:
-# ${module_name}
+# codex-cli
 
 ## Purpose
-[描述模块功能]
 
-## Structure
-[目录结构]
+Call `scripts/invoke-codex.ts` with role-routed prompts for context-memory workflows.
 
-## Components
-[组件列表]
-```
+## Roles
 
-## 使用示例
+- `analyzer`: Code structure analysis, module classification, dependency mapping
+- `doc-generator`: CLAUDE.md content generation, documentation synthesis
+- `auditor`: Quality review, completeness checks, consistency validation
 
-```
-# 降级生成 CLAUDE.md (single-layer)
-Skill("context-memory:codex-cli",
-  module_path="src/auth",
-  strategy="single-layer"
-)
+## Steps
 
-# 降级生成 CLAUDE.md (multi-layer)
-Skill("context-memory:codex-cli",
-  module_path="src/core/handlers",
-  strategy="multi-layer"
-)
-```
+1. Validate role is one of `analyzer`, `doc-generator`, `auditor`.
+2. Build invocation arguments from skill inputs.
+3. Execute `npx tsx scripts/invoke-codex.ts --role ${role} --prompt "${prompt}" [--workdir ${run_dir}] [--session ${session_id}] --sandbox read-only`.
+4. Capture result, session id, and error state.
+5. Write execution log under `${run_dir}/codex-${role}.log` if `run_dir` provided.
 
-## 验证清单
+## Verification
 
-- [ ] gemini-cli 已确认失败
-- [ ] prompt 构建完整
-- [ ] scripts/invoke-codex.ts 调用成功
-- [ ] CLAUDE.md 已生成
-- [ ] 输出符合模板结构
+- Command exits successfully or returns structured error.
+- Session id is retained for follow-up calls when available.

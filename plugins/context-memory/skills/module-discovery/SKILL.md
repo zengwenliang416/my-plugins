@@ -1,208 +1,120 @@
 ---
 name: module-discovery
 description: |
-  【触发条件】claude-full 命令执行时，扫描项目目录结构
-  【核心产出】modules.json（按 Layer 分组的模块列表）
-  【专属用途】
-    - 扫描目录树
-    - 计算模块 depth
-    - 智能过滤（tests/build/config）
-    - 按 Layer 分组（3→2→1）
-  【不触发】增量更新（用 change-detector）
-  【先问什么】默认先确认输入范围、输出格式与约束条件
+  Scan project tree, classify modules into layers, and group by architectural depth.
+  [Trigger] Any doc-generation or skill-indexing workflow needs module inventory.
+  [Output] ${run_dir}/modules.json with layers (3→2→1), types, and file counts.
+  [Skip] When modules.json already exists and is fresh (< 1 hour old).
+  [Ask] Whether to exclude specific directories from scanning.
 allowed-tools:
   - Bash
-  - Glob
   - Read
+  - Write
+  - Glob
+  - Grep
+  - mcp__auggie-mcp__codebase-retrieval
 arguments:
-  - name: path
+  - name: run_dir
+    type: string
+    required: true
+    description: Output directory for modules.json
+  - name: project_root
     type: string
     required: false
-    default: "."
-    description: 扫描的根目录路径
+    description: Project root path (defaults to cwd)
   - name: exclude_patterns
-    type: array
+    type: string
     required: false
-    description: 排除的目录模式 (默认排除 node_modules, dist, build, coverage, __pycache__)
+    description: Comma-separated glob patterns to exclude (e.g., "node_modules,dist,build")
 ---
 
-# Module Discovery Skill
+# module-discovery
 
-## 核心概念
+## Purpose
 
-### Layer 分层
+Scan a project tree to discover modules, classify them by type and architectural layer, and output a structured `modules.json` for downstream skills.
 
-| Layer | Depth | 策略         | 上下文                         |
-| ----- | ----- | ------------ | ------------------------------ |
-| 3     | ≥3    | multi-layer  | `@**/*` 所有文件               |
-| 2     | 1-2   | single-layer | `@*/CLAUDE.md @*.{ts,tsx,...}` |
-| 1     | 0     | single-layer | `@*/CLAUDE.md`                 |
+## Layer Classification
 
-**执行顺序**: Layer 3 → Layer 2 → Layer 1（自底向上）
+| Layer | Description                       | Examples                         | Dependency Direction      |
+| ----- | --------------------------------- | -------------------------------- | ------------------------- |
+| 3     | Leaf modules, no internal deps    | utils, helpers, constants, types | None (imported by others) |
+| 2     | Middle modules, depend on layer 3 | services, components, middleware | Imports from layer 3      |
+| 1     | Top modules, depend on layer 2    | pages, routes, entry points, CLI | Imports from layer 2-3    |
 
-### 模块类型
+## Module Type Detection
 
-| 类型       | 判断条件                     | 说明               |
-| ---------- | ---------------------------- | ------------------ |
-| code       | 包含 .ts/.tsx/.js/.py 等文件 | 需要生成 CLAUDE.md |
-| navigation | 仅包含子目录，无代码文件     | 仅引用子模块       |
-| skip       | tests/config/build 目录      | 跳过处理           |
+| Type        | Indicators                                                               |
+| ----------- | ------------------------------------------------------------------------ |
+| `utility`   | Pure functions, no side effects, files like `utils/`, `helpers/`, `lib/` |
+| `service`   | Business logic, external calls, files like `services/`, `api/`           |
+| `component` | UI components, files like `components/`, `widgets/`                      |
+| `page`      | Route handlers, entry points, files like `pages/`, `routes/`, `app/`     |
+| `config`    | Configuration, files like `config/`, `settings/`, `.env` templates       |
+| `test`      | Test files, `__tests__/`, `*.test.*`, `*.spec.*`                         |
+| `plugin`    | Plugin definitions, files matching `plugins/*/`                          |
 
-## MCP 工具集成
+## Steps
 
-| MCP 工具              | 用途                 | 触发条件        |
-| --------------------- | -------------------- | --------------- |
-| `auggie-mcp`          | 语义检索识别模块类型 | 智能过滤时      |
+### Phase 1: Discovery
 
-## 执行流程
+1. Use `mcp__auggie-mcp__codebase-retrieval` with query: "List all top-level modules, packages, and significant directories in this project".
+2. Supplement with `Glob` to find `package.json`, `CLAUDE.md`, `index.*` files as module indicators.
+3. Exclude patterns from `exclude_patterns` (default: `node_modules,dist,build,.git,coverage`).
 
-```
-│     thought: "规划目录扫描策略：
-│       1) 使用 Glob 扫描目录树
-│       2) 计算每个目录的 depth
-│       3) 使用 auggie-mcp 智能识别模块类型
-│       4) 按 Layer 分组输出",
-│     thoughtNumber: 1,
-│     totalThoughts: 4,
-│     nextThoughtNeeded: true
-│   })
-│
-├── Step 1: auggie-mcp 识别项目类型
-│   mcp__auggie-mcp__codebase-retrieval({
-│     information_request: "识别项目类型和技术栈，确定：
-│       1. 主要编程语言
-│       2. 项目结构模式（monorepo/单模块）
-│       3. 需要过滤的目录（tests/build/config）"
-│   })
-│
-├── Step 2: 扫描目录结构
-│   Glob: */         → 一级目录
-│   Glob: **/*/      → 所有子目录
-│   计算每个目录的 depth（相对于 root）
-│
-├── Step 3: 分类模块类型
-│   For each directory:
-│     ├── 检查是否有代码文件 → code
-│     ├── 检查是否只有子目录 → navigation
-│     └── 检查是否应跳过 → skip
-│
-├── Step 4: 按 Layer 分组
-│   Layer 3: depth >= 3
-│   Layer 2: depth 1-2
-│   Layer 1: depth 0
-│
-└── Step 5: 输出 modules.json
-```
+### Phase 2: Classification
 
-## 智能过滤规则
+4. For each discovered module:
+   - Detect type based on path patterns and file contents.
+   - Scan import/require statements to determine dependencies on other modules.
+   - Assign layer based on dependency depth (leaf=3, middle=2, top=1).
 
-### 默认排除
+### Phase 3: Output
 
-```
-node_modules/
-dist/
-build/
-coverage/
-.git/
-__pycache__/
-.next/
-.nuxt/
-.cache/
-```
-
-### 条件过滤（通过 auggie-mcp 识别）
-
-```
-tests/              → 除非项目是测试框架
-__tests__/          → 除非项目是测试框架
-*.test.ts           → 测试文件
-*.spec.ts           → 测试文件
-e2e/                → E2E 测试目录
-fixtures/           → 测试固件
-mocks/              → Mock 数据
-```
-
-## 输出格式
-
-### modules.json
+5. Write `${run_dir}/modules.json`:
 
 ```json
 {
-  "root": "/path/to/project",
-  "scan_time": "2024-01-20T10:30:00Z",
-  "summary": {
-    "total_modules": 25,
-    "by_layer": {
-      "layer_3": 10,
-      "layer_2": 12,
-      "layer_1": 3
-    },
-    "by_type": {
-      "code": 20,
-      "navigation": 5,
-      "skip": 8
-    }
-  },
+  "project_root": "/path/to/project",
   "layers": {
     "3": [
       {
-        "path": "src/auth/handlers/oauth",
-        "depth": 3,
-        "type": "code",
-        "strategy": "multi-layer",
-        "file_count": 5,
-        "has_claude_md": false
+        "path": "src/utils",
+        "type": "utility",
+        "files": 12,
+        "exports": ["formatDate", "parseConfig"]
       }
     ],
     "2": [
       {
-        "path": "src/auth",
-        "depth": 1,
-        "type": "code",
-        "strategy": "single-layer",
-        "file_count": 8,
-        "has_claude_md": true
+        "path": "src/services",
+        "type": "service",
+        "files": 8,
+        "deps": ["src/utils"]
       }
     ],
     "1": [
       {
-        "path": "src",
-        "depth": 0,
-        "type": "navigation",
-        "strategy": "single-layer",
-        "file_count": 0,
-        "has_claude_md": true
+        "path": "src/pages",
+        "type": "page",
+        "files": 5,
+        "deps": ["src/services", "src/utils"]
       }
     ]
   },
-  "execution_plan": {
-    "parallel_limit": 4,
-    "estimated_modules": 25,
-    "strategy": "layer-by-layer"
-  }
+  "total_modules": 25,
+  "total_files": 150,
+  "scan_timestamp": "ISO-8601"
 }
 ```
 
-## 使用示例
+## Error Handling
 
-```
-# 扫描当前项目
-Skill("context-memory:module-discovery")
+- If codebase-retrieval returns empty, fall back to `Glob("**/{package.json,index.*,CLAUDE.md}")`.
+- If no modules detected, write empty `modules.json` with `total_modules: 0` and log warning.
 
-# 扫描指定目录
-Skill("context-memory:module-discovery", path="src/")
+## Verification
 
-# 自定义排除
-Skill("context-memory:module-discovery",
-  path=".",
-  exclude_patterns=["vendor/", "generated/"]
-)
-```
-
-## 验证清单
-
-- [ ] auggie-mcp 识别了项目类型
-- [ ] 所有目录都计算了 depth
-- [ ] 模块类型分类准确
-- [ ] Layer 分组正确（3→2→1）
-- [ ] modules.json 已生成
+- `modules.json` exists and is valid JSON.
+- Every module has `path`, `type`, `files`, and layer assignment.
+- Layers are consistent: no layer-3 module depends on layer-1 or layer-2.

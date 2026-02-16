@@ -1,382 +1,97 @@
 ---
 name: swagger-generator
 description: |
-  【触发条件】/memory swagger [path] 或需要生成 API 文档时
-  【核心产出】openapi.yaml 或 openapi.json - OpenAPI 规范文件
-  【专属用途】
-    - 分析路由定义生成 OpenAPI 规范
-    - 支持 Express/Koa/Fastify/NestJS
-    - 自动提取参数和响应类型
-    - 生成 Swagger UI 配置
-  【强制工具】Skill(codex-cli), Write
-  【不触发】非 API 项目时
-  【先问什么】默认先确认输入范围、输出格式与约束条件
-  [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/generate-swagger.ts`).
+  Generate OpenAPI/Swagger documentation from code by detecting frameworks and extracting routes.
+  [Trigger] Project has API endpoints and needs OpenAPI spec generation.
+  [Output] ${run_dir}/openapi.yaml (or .json) + ${run_dir}/api-summary.md
+  [Skip] When project has no HTTP routes or already has hand-maintained OpenAPI spec.
+  [Ask] Target framework if auto-detection is ambiguous, and output format (yaml/json).
 allowed-tools:
-  - Skill
   - Read
   - Write
+  - Bash
+  - Skill
   - Glob
+  - Grep
+  - mcp__auggie-mcp__codebase-retrieval
 arguments:
-  - name: path
+  - name: run_dir
+    type: string
+    required: true
+    description: Output directory for OpenAPI artifacts
+  - name: framework
     type: string
     required: false
-    default: "src/"
-    description: API 路由目录
-  - name: output
+    description: "Force framework detection: express, fastify, nestjs, hono, flask, django, spring (auto-detect if omitted)"
+  - name: output_format
     type: string
-    default: "openapi.yaml"
-    description: 输出文件路径
-  - name: format
-    type: string
-    default: "yaml"
-    description: 输出格式 (yaml|json)
+    required: false
+    description: "yaml or json (default: yaml)"
 ---
 
-# Swagger Generator - OpenAPI 文档生成器
+# swagger-generator
 
-## Script Entry
+## Purpose
 
-```bash
-npx tsx scripts/generate-swagger.ts [args]
-```
+Detect API framework, extract route definitions, and generate an OpenAPI 3.0 spec.
 
-## Resource Usage
+## Framework Detection
 
-- Reference docs: `references/openapi-patterns.md`
-- Assets: `assets/openapi-config.json`
-- Execution script: `scripts/generate-swagger.ts`
+| Framework | Detection Pattern                               |
+| --------- | ----------------------------------------------- |
+| Express   | `require('express')`, `app.get/post/put/delete` |
+| Fastify   | `require('fastify')`, `fastify.route`           |
+| NestJS    | `@Controller()`, `@Get()/@Post()` decorators    |
+| Hono      | `new Hono()`, `app.get/post`                    |
+| Flask     | `from flask`, `@app.route`                      |
+| Django    | `urlpatterns`, `path()`                         |
+| Spring    | `@RestController`, `@RequestMapping`            |
 
-## 执行流程
+## Steps
 
-```
-1. 识别框架类型
-   - Express: app.get/post/...
-   - Koa: router.get/post/...
-   - Fastify: fastify.route/...
-   - NestJS: @Get/@Post/...
-       │
-       ▼
-2. 扫描路由定义
-   Glob("{path}/**/*.{ts,js}")
-   - 过滤路由文件
-       │
-       ▼
-3. 使用 codex-cli 分析
-   Skill("memory:codex-cli", prompt="api_extraction")
-   - 提取端点信息
-   - 分析参数类型
-   - 识别响应结构
-       │
-       ▼
-4. 构建 OpenAPI 规范
-   - 组装 paths
-   - 定义 schemas
-   - 添加 security
-       │
-       ▼
-5. 输出文件
-   - YAML 或 JSON 格式
-   - 生成 Swagger UI 配置
-```
+### Phase 1: Framework Detection
 
-## 框架检测
+1. If `framework` specified, use it directly.
+2. Otherwise, use `mcp__auggie-mcp__codebase-retrieval` to find API route definitions.
+3. Match patterns from detection table above.
+4. If multiple frameworks detected, process each separately.
 
-### 自动检测
+### Phase 2: Route Extraction
 
-```javascript
-function detectFramework(projectPath) {
-  const pkg = readPackageJson(projectPath);
-  const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+5. For each detected framework:
+   a. Use `Grep` to find all route definitions.
+   b. For each route, extract:
+   - HTTP method
+   - Path pattern
+   - Request body schema (if any)
+   - Response schema (if any)
+   - Middleware/guards
+     c. Use `Skill("context-memory:gemini-cli", {role: "api-extractor", prompt})` for complex schema inference.
 
-  if (deps["@nestjs/core"]) return "nestjs";
-  if (deps["fastify"]) return "fastify";
-  if (deps["koa"]) return "koa";
-  if (deps["express"]) return "express";
-  if (deps["hono"]) return "hono";
+### Phase 3: Schema Generation
 
-  return "unknown";
-}
-```
+6. Build OpenAPI 3.0 document:
+   - `info`: Extract from package.json or project metadata.
+   - `paths`: From extracted routes.
+   - `components/schemas`: From request/response types.
+   - `tags`: Group by controller/router file.
 
-### 框架特征
+### Phase 4: Output
 
-```
-Express:
-├── app.get('/path', handler)
-├── router.post('/path', handler)
-└── 中间件: express.Router()
+7. Write spec to `${run_dir}/openapi.${output_format}`.
+8. Write human-readable summary to `${run_dir}/api-summary.md`:
+   - Total endpoints count
+   - Endpoints by method (GET, POST, etc.)
+   - Missing schema warnings
 
-Koa:
-├── router.get('/path', handler)
-└── 中间件: koa-router
+## Multi-Model Fallback
 
-Fastify:
-├── fastify.get('/path', options, handler)
-├── fastify.route({ method, url, handler })
-└── schema 内置支持
+- Gemini (api-extractor) for schema inference.
+- If Gemini fails, use Codex (analyzer) to parse types directly.
+- Last resort: extract only route paths without schemas.
 
-NestJS:
-├── @Controller('path')
-├── @Get(), @Post(), @Put(), @Delete()
-└── @Body(), @Query(), @Param() 装饰器
-```
+## Verification
 
-## Codex CLI 分析提示
-
-```
-分析以下 API 路由代码，提取:
-
-1. 端点信息
-   - HTTP 方法
-   - URL 路径
-   - 路径参数
-
-2. 请求参数
-   - Query 参数
-   - Body 参数 (类型定义)
-   - Header 参数
-
-3. 响应信息
-   - 成功响应结构
-   - 错误响应结构
-   - 状态码
-
-4. 认证要求
-   - 是否需要认证
-   - 认证类型
-
-输出格式: JSON (OpenAPI paths 结构)
-```
-
-## 输出格式
-
-### OpenAPI 3.0 YAML
-
-```yaml
-openapi: 3.0.3
-info:
-  title: API Documentation
-  description: Auto-generated by memory plugin
-  version: 1.0.0
-
-servers:
-  - url: http://localhost:3000
-    description: Development server
-
-paths:
-  /api/users:
-    get:
-      summary: Get all users
-      tags:
-        - Users
-      parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-      responses:
-        "200":
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  users:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/User"
-                  total:
-                    type: integer
-
-    post:
-      summary: Create a new user
-      tags:
-        - Users
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateUserInput"
-      responses:
-        "201":
-          description: User created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-        "400":
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-components:
-  schemas:
-    User:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        email:
-          type: string
-          format: email
-        name:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-
-    CreateUserInput:
-      type: object
-      required:
-        - email
-        - name
-      properties:
-        email:
-          type: string
-          format: email
-        name:
-          type: string
-        password:
-          type: string
-          minLength: 8
-
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
-security:
-  - bearerAuth: []
-```
-
-## 类型映射
-
-### TypeScript → OpenAPI
-
-```
-string          → { type: "string" }
-number          → { type: "number" }
-boolean         → { type: "boolean" }
-Date            → { type: "string", format: "date-time" }
-string[]        → { type: "array", items: { type: "string" } }
-Record<K, V>    → { type: "object", additionalProperties: {...} }
-Interface       → { $ref: "#/components/schemas/InterfaceName" }
-```
-
-### 常见格式
-
-```
-email: string   → { type: "string", format: "email" }
-uuid: string    → { type: "string", format: "uuid" }
-url: string     → { type: "string", format: "uri" }
-date: string    → { type: "string", format: "date" }
-```
-
-## Swagger UI 配置
-
-### 生成 swagger-ui-config.json
-
-```json
-{
-  "openapi": "./openapi.yaml",
-  "info": {
-    "title": "API Documentation"
-  },
-  "swaggerOptions": {
-    "url": "/openapi.yaml",
-    "displayRequestDuration": true,
-    "filter": true,
-    "showExtensions": true
-  }
-}
-```
-
-### 集成代码模板
-
-```typescript
-// Express + Swagger UI
-import swaggerUi from "swagger-ui-express";
-import YAML from "yamljs";
-
-const swaggerDocument = YAML.load("./openapi.yaml");
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-```
-
-## 使用示例
-
-```bash
-# 生成 OpenAPI 文档
-/memory swagger
-
-# 指定路径
-/memory swagger src/routes/
-
-# JSON 格式输出
-/memory swagger --format json
-
-# 指定输出文件
-/memory swagger --output api/openapi.yaml
-```
-
-## 输出文件
-
-```
-项目根目录/
-├── openapi.yaml          # OpenAPI 规范
-├── openapi.json          # (可选) JSON 格式
-└── .claude/memory/swagger/
-    ├── endpoints.json    # 端点缓存
-    ├── schemas.json      # Schema 缓存
-    └── last-scan.json    # 扫描记录
-```
-
-## 增量更新
-
-```
-检测变更:
-1. 比对路由文件 hash
-2. 识别新增/修改的端点
-3. 仅更新变更部分
-4. 保留手动添加的描述
-```
-
-## 降级策略
-
-```
-codex-cli 不可用:
-├── 使用正则表达式提取路由
-├── 基于注释推断参数
-├── 生成基础 OpenAPI 结构
-└── 标记需要补充的部分
-```
-
-## 与其他 Skills 的关系
-
-```
-swagger-generator
-    │
-    ├── 使用 codex-cli 分析代码
-    │
-    └── 输出可供 doc-full-generator 引用
-```
+- OpenAPI spec is valid (has `openapi`, `info`, `paths` fields).
+- Every detected route appears in the spec.
+- Summary includes accurate endpoint count.
