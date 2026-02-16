@@ -1,118 +1,59 @@
 ---
 name: gemini-cli
-description: |
-  【触发条件】当需要分析设计图片、提取视觉元素、识别 UI 组件时使用。
-  【核心产出】输出图片的设计分析结果（颜色、布局、组件、字体、图标）
-  【不触发】代码生成、文本任务、非图片分析（改用 dev/gemini-cli）
-  【先问什么】image_path 参数缺失时，询问要分析的设计图片路径
-  [Resource Usage] Use references/, assets/, scripts/ (`references/recipes.md`, `assets/ui-output.template.tsx`, `scripts/invoke-gemini-ui.ts`).
+description: "Gemini wrapper skill for UI reference analysis, style design, and frontend prototype generation"
 allowed-tools:
   - Bash
   - Read
+  - Write
+arguments:
+  - name: role
+    type: string
+    required: true
+    description: analyzer, ui_designer, or frontend
+  - name: mode
+    type: string
+    required: false
+    description: reference, style, variant, or prototype (used by caller to choose prompt template)
+  - name: prompt
+    type: string
+    required: true
+    description: Final prompt passed to Gemini wrapper
+  - name: image
+    type: string
+    required: false
+    description: Image path for vision tasks
+  - name: dimension
+    type: string
+    required: false
+    description: Optional analysis dimension (visual/color/component/layout)
+  - name: session_id
+    type: string
+    required: false
+    description: Existing Gemini session id
 ---
 
-# Gemini CLI - UI 设计视觉分析
+# gemini-cli
 
-Design image analyzer via `scripts/invoke-gemini-ui.ts`. **设计截图/参考图** → 结构化设计规格 → 供其他 Skills 使用。Context limit: **32k tokens**.
+## Purpose
+Call `scripts/invoke-gemini-ui.ts` with controlled arguments and keep session continuity for multi-round UI tasks.
 
 ## Script Entry
-
 ```bash
-npx tsx scripts/invoke-gemini-ui.ts --prompt "<prompt>" [--image "<path>"] [--dimension "<type>"] [--role "<role>"] [--session "<id>"]
+npx tsx scripts/invoke-gemini-ui.ts --role "${ROLE}" --prompt "${PROMPT}" [--image "${IMAGE}"] [--dimension "${DIMENSION}"] [--session "${SESSION_ID}"]
 ```
 
-## Resource Usage
+## Execution
+1. Validate `role` in `analyzer|ui_designer|frontend`.
+2. Validate `prompt` is non-empty.
+3. If `image` is provided, verify file exists.
+4. Execute wrapper script.
+5. Capture result and session id for follow-up calls.
 
-- Prompt recipes: `references/recipes.md`
-- UI output template: `assets/ui-output.template.tsx`
-- Execution script: `scripts/invoke-gemini-ui.ts`
+## Skill Policy
+- Use this skill only when model synthesis is required.
+- Reuse `session_id` for multi-round analysis to keep context.
+- Do not call raw `gemini` directly in agent flows.
 
-## 执行命令
-
-### 🚨 统一使用脚本入口（推荐）
-
-```bash
-# 图片分析 - 在 prompt 中提及图片路径，Gemini 会自动使用 read_file 工具
-npx tsx scripts/invoke-gemini-ui.ts --prompt "请分析这张设计图片 ${image_path}：[你的分析请求]"
-
-# 文本任务 - 可指定角色
-npx tsx scripts/invoke-gemini-ui.ts --role frontend --prompt "你的任务描述"
-```
-
-## 强制协作流程
-
-### Step 1: 首轮分析（图片）
-
-```bash
-# 使用统一脚本入口分析图片
-npx tsx scripts/invoke-gemini-ui.ts --prompt "请分析这张设计图片 ${image_path}：
-
-你是一位资深 UI/UX 设计师。请分析：
-1. 界面类型（网页、App、Dashboard 等）
-2. 设计语言（Material、Apple HIG、扁平化等）
-3. 视觉风格（极简、信息密集、装饰性）
-4. 品牌调性
-"
-```
-
-- 记录整体风格判断
-- 保存分析结果
-- 保存 SESSION_ID 用于后续调用
-
-### Step 2: 深入分析（多轮）
-
-```bash
-# 继续分析配色/组件/字体/图标/布局，使用 --session 保持上下文
-npx tsx scripts/invoke-gemini-ui.ts --session "$SESSION_ID" --prompt "请继续分析这张图片 ${image_path}，聚焦于配色系统：
-请给出具体数值（HEX、px、rem）。
-"
-```
-
-- ⚠️ 每轮聚焦单一维度
-- 使用 `--session` 保持上下文连续
-
-### Step 3: Claude 整合
-
-1. 汇总 Gemini 多轮分析结果
-2. 转换为可执行的设计规格（Tailwind 配置等）
-3. 验证数据一致性
-4. 输出结构化文档
-
-## 分析维度
-
-| 维度     | 分析内容                               | 输出格式    |
-| -------- | -------------------------------------- | ----------- |
-| 整体风格 | 界面类型、设计语言、品牌调性           | 文本描述    |
-| 配色系统 | 主色、辅助色、背景、文字、功能色       | HEX 值      |
-| UI 组件  | 按钮、卡片、输入框等样式               | 圆角/阴影   |
-| 字体排版 | 字体家族、字号层级、字重               | px/rem      |
-| 图标系统 | 图标类型、粗细、推荐图标库             | 描述 + 推荐 |
-| 布局规格 | 栅格、间距、容器宽度                   | px          |
-
-## 命令选择指南
-
-| 任务类型     | 推荐命令                                            | 原因                   |
-| ------------ | --------------------------------------------------- | ---------------------- |
-| 图片分析     | `npx tsx scripts/invoke-gemini-ui.ts --prompt "分析图片..."` | 统一脚本入口、会话管理 |
-| 文本生成     | `npx tsx scripts/invoke-gemini-ui.ts --prompt "..."`         | 角色注入、会话管理     |
-| 代码生成     | `npx tsx scripts/invoke-gemini-ui.ts --role frontend --prompt "..."` | 前端专业角色 |
-| 设计方案     | `npx tsx scripts/invoke-gemini-ui.ts --role analyzer --prompt "..."` | 分析角色 |
-
-## 强制约束
-
-| 必须执行                                 | 禁止事项                     |
-| ---------------------------------------- | ---------------------------- |
-| ✅ 统一使用 `scripts/invoke-gemini-ui.ts` | ❌ 直接调用 `gemini` 原生命令 |
-| ✅ 每轮聚焦单一维度                      | ❌ 一次问太多问题            |
-| ✅ 输出用 HEX/px 标准格式                | ❌ 使用模糊的颜色描述        |
-| ✅ Claude 整合后再输出                   | ❌ 直接使用 Gemini 原始输出  |
-| ✅ 使用 `--session` 保持多轮上下文       | ❌ 每轮重新启动会话          |
-
-## 输出格式
-
-```json
-{
-  "success": true,
-  "analysis": "Gemini 的分析结果"
-}
-```
+## Verification
+- Wrapper command exits successfully or returns structured error.
+- Output is persisted by caller into run-dir artifacts.

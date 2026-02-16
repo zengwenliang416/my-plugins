@@ -1,115 +1,62 @@
-# UI-Design Plugin Usage Guide v3.0
+# UI-Design Plugin
 
-Always answer in Chinese (Simplified).
+始终使用中文（简体）回答。
 
-## Available Skills
+## 可用命令
+- `/ui-design`: 端到端 UI/UX 设计与实现流程。
 
-| Skill                  | Trigger        | Description                              |
-| ---------------------- | -------------- | ---------------------------------------- |
-| `/ui-design:ui-design` | "design", "UI" | Full UI/UX design workflow (Native Team) |
+## 工作流阶段
+1. Init：解析参数并初始化 `openspec/changes/<run_id>/`。
+2. Scenario Confirm：通过 `AskUserQuestion` 确认 `scenario` 与 `tech_stack`。
+3. Reference Analysis Team：并行分析视觉、配色、组件并汇总。
+4. Requirements：生成 `requirements.md`，`optimize` 场景额外做 `code-analysis.md`。
+5. Style Recommendation：生成三套风格候选。
+6. Variant Selection：用户确认最终变体。
+7. Design Pipeline Team：设计生成 -> UX 校验 -> 修复回环 -> 代码生成 -> 质量校验。
+8. Delivery：输出结果与可恢复命令。
 
-## Quick Start
+## Agent Team（合并后）
+- `ui-design:analysis-core`
+  - `mode=reference` + `perspective=visual|color|component`
+  - `mode=requirements`
+  - `mode=existing-code`
+- `ui-design:design-core`
+  - `mode=style`
+  - `mode=variant`
+- `ui-design:generation-core`
+  - `mode=prototype`
+  - `mode=refactor`
+- `ui-design:validation-core`
+  - `mode=ux`
+  - `mode=quality`
 
-```bash
-# Design from scratch
-/ui-design Design a SaaS analytics dashboard
+## 子代理通信约定
+- 全部消息使用统一 envelope：`type/from/to/run_id/task_id/requires_ack/payload`。
+- `requires_ack=true` 的定向消息必须确认。
+- 关键事件必须记录到 `${RUN_DIR}/team/mailbox.jsonl`。
+- 等待超过 60 秒时，写入 `${RUN_DIR}/team/heartbeat.jsonl`。
 
-# With reference image
-/ui-design --image=./reference.png Design a login page matching this style
+## 技能调用约定
+- 子代理按需调用 `ui-design:gemini-cli`：
+  - 参考分析（analysis-core）
+  - 风格/变体生成（design-core）
+  - 代码原型生成（generation-core）
+- 非必须模型步骤优先使用本地分析（Read / auggie / LSP）。
 
-# With design document
-/ui-design --ref=./design-spec.md Implement this design spec
+## 质量门禁
+- UX pass rate >= 80%
+- High-priority UX issues = 0
+- 每个变体最多 2 轮修复
+- Quality score >= 7.5/10
 
-# Optimize existing UI
-/ui-design --scenario=optimize Optimize the user settings page
-
-# Specify tech stack
-/ui-design --tech-stack=vue Design an e-commerce homepage
-```
-
-## Architecture
-
-Hybrid architecture with two Team phases + Task/Lead mode:
-
-```
-Phase 1:   Init (Lead)              — mkdir, parse args
-Phase 2:   Scenario Confirm (Lead)  — AskUserQuestion [HARD STOP]
-Phase 2.5: Design Ref Analysis Team — 3 specialists + cross-validate + synthesis
-Phase 3:   Requirements (Task)      — Task(requirement-analyzer)
-Phase 4:   Style Recommend (Task)   — Task(style-recommender)
-Phase 5:   Variant Selection (Lead) — AskUserQuestion [HARD STOP]
-Phase 6-9: Design Pipeline Team     — designer + reviewer + coder pipeline
-Phase 10:  Delivery (Lead)          — summary output
-```
-
-## Team 1: Design Reference Analysis (Phase 2.5)
-
-Multi-perspective cross-validation supporting three input types:
-
-| Input       | Parameter        | Confidence           |
-| ----------- | ---------------- | -------------------- |
-| Image       | `--image=<path>` | [EXTRACTED] High     |
-| Document    | `--ref=<path>`   | [PARSED] Medium-High |
-| Description | (no flag)        | [INFERRED] Medium    |
-
-3 specialist analysts → independent analysis → cross-validation → weighted-vote synthesis
-
-## Team 2: Design Pipeline (Phase 6-9)
-
-Pipeline parallelism + structured fix loop:
-
-```
-designer builds A → reviewer reviews A (designer continues B in parallel)
-reviewer finds issue → UX_FIX_REQUEST → designer fixes → UX_FIX_APPLIED → targeted re-check
-all pass → coder generates code → reviewer validates quality
-```
-
-## Agent Types
-
-| Category   | Agents                                                                                                                       | Description |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| Analysis   | image-analyzer (coordinator), visual-analyst, color-analyst, component-analyst, requirement-analyzer, existing-code-analyzer | Analysis    |
-| Design     | style-recommender, design-variant-generator                                                                                  | Design      |
-| Validation | ux-guideline-checker, quality-validator                                                                                      | Validation  |
-| Generation | gemini-prototype-generator, claude-code-refactor                                                                             | Generation  |
-
-## Output Structure
-
-```
-openspec/changes/${CHANGE_ID}/
-├── ref-analysis-{visual,color,component}.md  # Team 1 independent analysis
-├── cross-validation-{visual,color,component}.md  # Team 1 cross-validation
-├── design-reference-analysis.md              # Team 1 synthesis
-├── requirements.md
-├── style-recommendations.md
-├── previews/
-├── design-{A,B,C}.md                        # Team 2 designer
-├── ux-check-{A,B,C}.md                      # Team 2 reviewer
-├── code/{gemini-raw,${tech_stack}}/          # Team 2 coder
-└── quality-report.md                         # Team 2 reviewer
-```
-
-## Quality Gates
-
-| Phase   | Gate                 | Threshold |
-| ------- | -------------------- | --------- |
-| Phase 7 | UX pass rate         | >= 80%    |
-| Phase 7 | High-priority issues | = 0       |
-| Phase 7 | Fix round limit      | 2 rounds  |
-| Phase 9 | Quality score        | >= 7.5/10 |
-
-## Resume Workflow
-
-```bash
-/ui-design --run-id=20260131T100000Z
-```
-
-## Shared Resources
-
-```
-plugins/ui-design/skills/_shared/
-├── colors/           # Color scheme library
-├── styles/           # Style template library
-├── typography/       # Typography system library
-└── ux-guidelines/    # UX guideline references
-```
+## 输出目录
+- `ref-analysis-{visual,color,component}.md`
+- `design-reference-analysis.md`
+- `requirements.md`
+- `style-recommendations.md`
+- `design-{A,B,C}.md`
+- `ux-check-{A,B,C}.md`
+- `code/gemini-raw/`
+- `code/<tech_stack>/`
+- `quality-report.md`
+- `team/{phase-events.jsonl,heartbeat.jsonl,mailbox.jsonl}`
