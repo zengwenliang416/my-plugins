@@ -1,5 +1,5 @@
 ---
-description: "OpenSpec Initialization: Detect system → Install openspec → Initialize project → Validate MCP tools"
+description: "Initialize OpenSpec environment and validate required tooling for TPD workflow"
 argument-hint: "[--skip-install]"
 allowed-tools:
   - Bash
@@ -8,77 +8,44 @@ allowed-tools:
   - Write
 ---
 
-# /tpd:init - OpenSpec Initialization
+# /tpd:init
 
-## 🚨 Execution Rules
+## Purpose
+Prepare the local environment for TPD workflows.
 
-- Must first detect the operating system and adjust commands accordingly
-- Proceed to the next step only after each step succeeds
-- Do not overwrite existing configuration; ask the user first if necessary
-- Provide clear, actionable fix suggestions on failure
+## Steps
 
----
+### Step 1: Detect Platform
+1. Detect OS with `uname -s` (or PowerShell-compatible check on Windows).
+2. Select platform-specific command syntax.
 
-## Step 1: Detect Operating System
+### Step 2: Ensure OpenSpec CLI
+1. Check installation with `openspec --version`.
+2. If missing and `--skip-install` is not set, install:
+   ```bash
+   npm install -g @fission-ai/openspec@latest
+   ```
+3. Verify installation again.
 
-- Use `uname -s` (Linux/macOS) or environment variables to detect Windows
-- Inform the user of the detected system type
-- If Windows, use PowerShell syntax for subsequent commands
+### Step 3: Initialize Project
+1. Run in project root:
+   ```bash
+   openspec init --tools claude
+   ```
+2. If `openspec/` already exists, ask user whether to overwrite or keep existing.
+3. Verify minimum structure: `openspec/project.md` and `openspec/changes/`.
 
----
-
-## Step 2: Check and Install OpenSpec
-
-1. Check if already installed:
-   - Linux/macOS: `command -v openspec` or `openspec --version`
-   - Windows: `where openspec` or `openspec --version`
-
-2. If not installed and `--skip-install` not passed, execute:
-
-```bash
-npm install -g @fission-ai/openspec@latest
-```
-
-3. After installation, run `openspec --version` again to verify
-
----
-
-## Step 3: Initialize OpenSpec
-
-Execute in project root directory:
-
-```bash
-openspec init --tools claude
-```
-
-- If `openspec/` already exists: ask whether to overwrite or skip
-- Verify directory structure exists: `openspec/project.md`, `openspec/changes/`
-
----
-
-## Step 4: Validate MCP Tool Availability
-
-Check if the following MCP tools are available:
-
+### Step 4: Validate Required MCP Tools
+Check availability of:
 - `mcp__codex__codex`
 - `mcp__gemini__gemini`
 
-If unavailable, prompt installation sources:
+If unavailable, provide installation guidance and continue with partial readiness report.
 
-- Codex MCP: https://github.com/GuDaStudio/codexmcp
-- Gemini MCP: https://github.com/GuDaStudio/geminimcp
-
-Note: These MCPs will be used in /tpd:plan and /tpd:dev.
-
----
-
-## Step 5: Output Initialization Summary
-
-Output check results:
-
-- OpenSpec installed: ✓ / ✗
-- Project initialized: ✓ / ✗
-- Codex MCP: ✓ / ✗
-- Gemini MCP: ✓ / ✗
-
-If there are incomplete items, list the next steps.
+### Step 5: Print Summary
+Report:
+- OpenSpec CLI status
+- OpenSpec project initialization status
+- Codex MCP status
+- Gemini MCP status
+- Next actions for incomplete items

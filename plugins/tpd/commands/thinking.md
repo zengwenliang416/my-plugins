@@ -1,380 +1,169 @@
 ---
-description: "Deep Thinking Workflow: Complexity assessment → Context boundary exploration → Constraint integration → Conclusion generation → Handoff summary. Supports auto/light/deep/ultra."
+description: "TPD Thinking phase with Team-first orchestration: complexity -> boundary exploration -> constraint analysis -> synthesis -> handoff"
 argument-hint: "[--depth=auto|light|deep|ultra] [--parallel] [--verbose] <problem description>"
 allowed-tools:
-  - Skill
-  - AskUserQuestion
   - Read
   - Write
   - Bash
+  - AskUserQuestion
+  - Skill
   - Task
+  - TeamCreate
+  - TeamDelete
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
+  - TaskGet
+  - TaskOutput
+  - SendMessage
   - mcp__auggie-mcp__codebase-retrieval
 ---
 
-# /tpd:thinking - Deep Thinking Workflow Command
+# /tpd:thinking
 
-## Overview
+## Purpose
+Produce a constraint set and handoff artifacts under `openspec/changes/<proposal_id>/thinking/`.
 
-Integrates Claude Code ultrathink, Codex-CLI reasoning, and Gemini Deep Think - three thinking modes providing multi-level, multi-perspective deep analysis capabilities.
+## Required Constraints
+- Only write under `openspec/changes/<proposal_id>/thinking/`.
+- Do not modify project source code.
+- Use context-boundary split for investigation tasks.
+- Keep artifact names compatible with downstream plan phase.
 
-**Core Features**:
+## Team Roles
+- `context-explorer`: boundary/context investigation.
+- `codex-core`: Codex role-routed reasoning (`constraint`).
+- `gemini-core`: Gemini role-routed reasoning (`constraint`).
 
-- **Smart Routing**: Automatically selects thinking depth based on problem complexity
-- **Multi-Boundary Parallel**: Parallel exploration by context boundaries, forming constraint sets
-- **Multi-Model Supplementation**: Codex/Gemini provide supplementary perspectives on constraints and risks
-- **Thinking Visualization**: Complete display of reasoning chains and thinking processes
-- **Conclusion Integration**: Synthesizes multi-model outputs to generate high-quality conclusions
+## Message Protocol
+All team messages must use this schema:
 
----
-
-## Core Philosophy
-
-- **Output is Constraint Set**: Output "constraint set + verifiable success criteria", not information piles
-- **Convergence Direction**: Constraints are for "excluding directions", enabling zero-decision execution in subsequent plan
-- **No Architecture Decisions**: Only expose constraints, risks, and questions to be confirmed
-- **OpenSpec Rules**: thinking phase **writes directly to `openspec/` specification**, does not modify project code
-
-## Guardrails
-
-- **Forbidden to split sub-agents by role** (e.g., "architect/security expert")
-- **Must split by context boundary** (module/directory/domain)
-- **Must use `mcp__auggie-mcp__codebase-retrieval`** for semantic retrieval
-- **Sub-agent output must follow unified JSON template**
-- **Forbidden to modify project code** (allowed to write to `openspec/` specification files)
-
-## 🚨 Mandatory Execution Rules
-
-### Write Scope Restriction
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  ✅ ALLOWED: Write to openspec/ directory only                  │
-│     - openspec/changes/${PROPOSAL_ID}/thinking/*      │
-│                                                                 │
-│  ❌ FORBIDDEN: Write to any other location                      │
-│     - Project source code                                       │
-│     - User workspace files                                      │
-│     - Any path outside openspec/                                │
-└─────────────────────────────────────────────────────────────────┘
+```json
+{
+  "type": "boundary_ready|constraint_ready|constraint_question|constraint_answer|phase_broadcast|heartbeat|error",
+  "from": "agent-name|lead",
+  "to": "agent-name|lead|all",
+  "proposal_id": "<proposal_id>",
+  "task_id": "<task_id>",
+  "requires_ack": true,
+  "payload": {}
+}
 ```
 
-### Step Execution Policy
+Acknowledgment rules:
+- Directed message with `requires_ack=true` must get an ACK.
+- If ACK is missing after one retry, lead marks communication timeout and continues with fallback notes.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  🔴 CRITICAL: You MUST NOT skip any step!                       │
-│                                                                 │
-│  Before proceeding to next step, you MUST:                      │
-│  1. Execute the required Skill/Task call                        │
-│  2. Verify output file exists                                   │
-│  3. Update state.json with current step                         │
-│                                                                 │
-│  If verification fails → STOP and report error                  │
-│  DO NOT proceed with "shortcut" or "direct execution"           │
-└─────────────────────────────────────────────────────────────────┘
-```
+## Progress Visibility Rules
+- Before each step: append `start` event to `team/phase-events.jsonl` and print phase marker.
+- After each step: append `done` event and print completion marker.
+- On failure: append `error` event with exact stderr summary and failing step.
+- During waits longer than 60 seconds: append heartbeat snapshot every 60 seconds to `team/heartbeat.jsonl`.
+- If hook logs exist, append recent teammate/task events to `team/hooks-snapshot.jsonl`.
 
-### Anti-Patterns (FORBIDDEN)
+## Artifacts
+Required outputs:
+- `input.md`
+- `complexity-analysis.md`
+- `explore-*.json`
+- `codex-thought.md` (for deep/ultra)
+- `gemini-thought.md` (for deep/ultra)
+- `synthesis.md`
+- `conclusion.md`
+- `handoff.md`
+- `handoff.json`
+- `meta/artifact-manifest.json`
+- `team/phase-events.jsonl`
+- `team/heartbeat.jsonl`
+- `team/mailbox.jsonl`
 
-| ❌ Forbidden Behavior                  | ✅ Correct Approach                         |
-| -------------------------------------- | ------------------------------------------- |
-| Skip complexity assessment             | Always call `tpd:complexity-analyzer` first |
-| Execute task directly without thinking | Output constraints only, no implementation  |
-| Write files outside openspec/          | All output to `${THINKING_DIR}/`            |
-| Skip boundary exploration              | Launch boundary-explorer agents             |
-| Proceed without verifying artifacts    | Check file exists before next step          |
+Optional outputs:
+- `team/hooks-snapshot.jsonl`
+- `team/communication-failures.md`
 
----
+## Steps
 
-## Actions
-
-0. **Step 0: Initialization**
-   - Parse arguments: `--depth`, `--parallel`, `--verbose`, and problem description
-   - Check OpenSpec status:
-     ```bash
-     openspec view 2>/dev/null || openspec list 2>/dev/null || ls -la openspec 2>/dev/null || echo "OpenSpec not initialized"
-     ```
-   - If OpenSpec not initialized → prompt user to execute `/tpd:init` first
-   - Generate `PROPOSAL_ID` from problem description slug
-   - Create directories:
-     - `THINKING_DIR`: `openspec/changes/${PROPOSAL_ID}/thinking`
-     - `THINKING_META_DIR`: `${THINKING_DIR}/meta`
-   - **Initialize State Machine** - Write `${THINKING_DIR}/state.json`:
-     ```json
-     {
-       "proposal_id": "${PROPOSAL_ID}",
-       "current_step": 0,
-       "status": "initialized",
-       "depth": "auto",
-       "artifacts": {
-         "input": false,
-         "complexity": false,
-         "boundaries": false,
-         "exploration": false,
-         "codex_thought": false,
-         "gemini_thought": false,
-         "synthesis": false,
-         "conclusion": false,
-         "handoff": false,
-         "manifest": false,
-         "lineage": false
-       },
-       "timestamps": {
-         "started": "${ISO_TIMESTAMP}",
-         "step_0": "${ISO_TIMESTAMP}"
-       }
-     }
-     ```
-   - Write `${THINKING_DIR}/input.md` with problem description
-   - Initialize `${THINKING_META_DIR}/artifact-manifest.json` with empty artifact registry:
-     ```json
-     {
-       "workflow": "tpd-thinking",
-       "proposal_id": "${PROPOSAL_ID}",
-       "phase": "thinking",
-       "status": "initialized",
-       "generated_at": "${ISO_TIMESTAMP}",
-       "artifacts": [],
-       "depends_on": []
-     }
-     ```
-   - Initialize `${THINKING_META_DIR}/lineage.json`:
-     ```json
-     {
-       "workflow": "tpd-thinking",
-       "phase": "thinking",
-       "proposal_id": "${PROPOSAL_ID}",
-       "sources": [
-         {
-           "type": "user_input",
-           "path": "${THINKING_DIR}/input.md"
-         }
-       ]
-     }
-     ```
-   - **🔒 Checkpoint**: Verify `state.json`, `input.md`, `meta/artifact-manifest.json`, `meta/lineage.json` all exist before proceeding
-
-1. **Step 1: Complexity Assessment (using `tpd:complexity-analyzer`)**
-   - Call Skill immediately:
-     ```
-     Skill(skill="tpd:complexity-analyzer", args="run_dir=${THINKING_DIR}")
-     ```
-   - Determine depth routing:
-     | Complexity Score | Depth | Trigger Condition |
-     | --- | --- | --- |
-     | 1-3 | light | Simple Q&A, fact queries, single-step tasks |
-     | 4-6 | deep | Requires reasoning, comparative analysis |
-     | 7-10 | ultra | Complex architecture, multi-step reasoning |
-   - **⏸️ Optional Hard Stop**: If `--depth=auto` and score 4-6, use AskUserQuestion to confirm depth
-   - **🔒 Checkpoint**:
-     ```bash
-     # Verify artifact exists
-     test -f "${THINKING_DIR}/complexity-analysis.md" || { echo "❌ Step 1 FAILED: complexity-analysis.md not found"; exit 1; }
-     ```
-     Update state.json: `current_step=1`, `artifacts.complexity=true`
-     Update `${THINKING_META_DIR}/artifact-manifest.json`: register `complexity-analysis.md` as generated
-
-2. **Step 2: Parallel Boundary Exploration (using `boundary-explorer`)**
-   - First, use auggie to identify boundaries:
-     ```
-     mcp__auggie-mcp__codebase-retrieval({
-       information_request: "Identify main module/directory boundaries, core domains, and configuration scopes for context boundary exploration."
-     })
-     ```
-   - Write boundary list to `${THINKING_DIR}/boundaries.json`
-   - Launch concurrent `boundary-explorer` agents to explore context boundaries.
-   - **At most use 4 `boundary-explorer` agents to explore!**
-   - **At most use 4 `boundary-explorer` agents to explore!**
-   - NEVER RUN `boundary-explorer` background, NEVER USE get task output, JUST RUN AND WAIT!
-
-   For each boundary (example, actual boundaries from boundaries.json):
-
+### Step 0: Initialize
+1. Resolve OpenSpec state:
+   ```bash
+   openspec view 2>/dev/null || openspec list 2>/dev/null || ls -la openspec 2>/dev/null
    ```
-   Task(subagent_type="tpd:investigation:boundary-explorer", description="Explore user-domain", prompt="Execute boundary exploration. run_dir=${THINKING_DIR} boundary=user-domain scope='user-related models/services/UI'")
-
-   Task(subagent_type="tpd:investigation:boundary-explorer", description="Explore auth-session", prompt="Execute boundary exploration. run_dir=${THINKING_DIR} boundary=auth-session scope='authentication/session/middleware'")
-
-   Task(subagent_type="tpd:investigation:boundary-explorer", description="Explore config-infra", prompt="Execute boundary exploration. run_dir=${THINKING_DIR} boundary=config-infra scope='configuration/deployment/build scripts'")
-
-   Task(subagent_type="tpd:investigation:boundary-explorer", description="Explore data-layer", prompt="Execute boundary exploration. run_dir=${THINKING_DIR} boundary=data-layer scope='database/ORM/data models'")
+2. Parse arguments and derive `PROPOSAL_ID` from the problem slug.
+3. Initialize directories:
+   ```bash
+   THINKING_DIR="openspec/changes/${PROPOSAL_ID}/thinking"
+   THINKING_META_DIR="${THINKING_DIR}/meta"
+   TEAM_DIR="${THINKING_DIR}/team"
+   mkdir -p "${THINKING_META_DIR}" "${TEAM_DIR}"
    ```
+4. Initialize tracking files:
+   - `${TEAM_DIR}/phase-events.jsonl`
+   - `${TEAM_DIR}/heartbeat.jsonl`
+   - `${TEAM_DIR}/mailbox.jsonl`
+5. Write `input.md` and initial `state.json`.
 
-   - **🔒 Checkpoint**:
-     ```bash
-     # Verify at least one exploration artifact exists
-     ls "${THINKING_DIR}"/explore-*.json 1>/dev/null 2>&1 || { echo "❌ Step 2 FAILED: No explore-*.json found"; exit 1; }
-     ```
-     Update state.json: `current_step=2`, `artifacts.boundaries=true`, `artifacts.exploration=true`
-     Update `${THINKING_META_DIR}/artifact-manifest.json`: register `boundaries.json` and `explore-*.json` artifacts
-
-3. **Step 3: Parallel Multi-Model Constraint Analysis (deep/ultra only)**
-   - In parallel, launch constraint analysis agents.
-   - **Task for codex-constraint:** "Analyze technical constraints from backend perspective"
-   - **Task for gemini-constraint:** "Analyze constraints from UX/frontend perspective"
-   - **At most 2 constraint agents!**
-   - JUST RUN AND WAIT!
-
+### Step 1: Complexity Routing
+1. Run:
+   ```text
+   Skill(skill="tpd:complexity-analyzer", args="run_dir=${THINKING_DIR}")
    ```
-   Task(subagent_type="tpd:reasoning:codex-constraint", description="Codex constraint analysis", prompt="Execute constraint analysis. run_dir=${THINKING_DIR} level=medium")
+2. Verify `complexity-analysis.md` exists.
+3. Resolve `DEPTH` (`light|deep|ultra`).
+4. If score is medium and depth is auto, confirm with user once.
 
-   Task(subagent_type="tpd:reasoning:gemini-constraint", description="Gemini constraint analysis", prompt="Execute constraint analysis. run_dir=${THINKING_DIR} level=medium")
+### Step 2: Create Team and Boundary Tasks
+1. Create team:
+   ```text
+   TeamCreate(team_name="tpd-thinking-${PROPOSAL_ID}", description="Thinking boundary and constraint team")
    ```
+2. Create boundary tasks (2-4 tasks, each on a distinct boundary) using `context-explorer` with `mode=boundary`.
+3. Broadcast phase start and log message envelope to `mailbox.jsonl`.
+4. Wait for task completion.
+5. If wait exceeds 60 seconds, poll with `TaskList` and append heartbeat snapshots.
+6. If `~/.claude/logs/hook-events/task-completed.jsonl` or `~/.claude/logs/hook-events/teammate-idle.jsonl` exists, append latest lines to `hooks-snapshot.jsonl`.
+7. Verify at least one `explore-*.json` artifact.
 
-   - Light mode can skip; use `--parallel` to force execution
-   - **🔒 Checkpoint** (deep/ultra only):
-     ```bash
-     # Verify constraint analysis artifacts
-     test -f "${THINKING_DIR}/codex-thought.md" || echo "⚠️ codex-thought.md missing (may be expected)"
-     test -f "${THINKING_DIR}/gemini-thought.md" || echo "⚠️ gemini-thought.md missing (may be expected)"
-     ```
-     Update state.json: `current_step=3`, `artifacts.codex_thought=true/false`, `artifacts.gemini_thought=true/false`
-     Update `${THINKING_META_DIR}/artifact-manifest.json`: register available `codex-thought.md` / `gemini-thought.md`
+### Step 3: Constraint Analysis and Agent Communication
+1. Skip this step when `DEPTH=light`.
+2. Create two tasks: `codex-core` and `gemini-core` with `role=constraint`.
+3. Require each task to:
+   - read all boundary artifacts,
+   - send one directed message to peer (`constraint_question`),
+   - wait for ACK and respond (`constraint_answer`),
+   - write its own `*-thought.md` artifact,
+   - send one `heartbeat` message before completion.
+4. Wait for both tasks and verify artifacts.
 
-4. **Step 4: Synthesis & User Confirmation (using `tpd:thought-synthesizer`)**
-   - Call Skill immediately:
-     ```
-     Skill(skill="tpd:thought-synthesizer", args="run_dir=${THINKING_DIR} depth=${DEPTH}")
-     ```
-   - Aggregates: hard/soft constraints, open questions, dependencies, risks, success criteria hints
-   - **🔒 Checkpoint**:
-     ```bash
-     test -f "${THINKING_DIR}/synthesis.md" || { echo "❌ Step 4 FAILED: synthesis.md not found"; exit 1; }
-     ```
-     Update state.json: `current_step=4`, `artifacts.synthesis=true`
-     Update `${THINKING_META_DIR}/artifact-manifest.json`: register `synthesis.md`
-   - **⏸️ Constraint Clarification Hard Stop**: If `synthesis.md` contains `open_questions`, use AskUserQuestion to clarify
-   - Write user answers to `${THINKING_DIR}/clarifications.md`
+### Step 4: Synthesis
+1. Run:
+   ```text
+   Skill(skill="tpd:thought-synthesizer", args="run_dir=${THINKING_DIR} depth=${DEPTH}")
+   ```
+2. Verify `synthesis.md`.
+3. If unresolved questions remain, ask user and append clarifications.
 
-5. **Step 5: Conclusion Generation (using `tpd:conclusion-generator`)**
-   - Call Skill immediately:
-     ```
-     Skill(skill="tpd:conclusion-generator", args="run_dir=${THINKING_DIR}")
-     ```
-   - Generates final conclusion based on integration results
-   - Builds complete reasoning chain
-   - Marks confidence level
-   - **🔒 Checkpoint**:
-     ```bash
-     test -f "${THINKING_DIR}/conclusion.md" || { echo "❌ Step 5 FAILED: conclusion.md not found"; exit 1; }
-     ```
-     Update state.json: `current_step=5`, `artifacts.conclusion=true`
-     Update `${THINKING_META_DIR}/artifact-manifest.json`: register `conclusion.md`
-   - **⏸️ Ultra Mode Hard Stop**: Display conclusion summary and ask if further exploration needed
+### Step 5: Conclusion and Handoff
+1. Run:
+   ```text
+   Skill(skill="tpd:conclusion-generator", args="run_dir=${THINKING_DIR}")
+   Skill(skill="tpd:handoff-generator", args="run_dir=${THINKING_DIR} proposal_id=${PROPOSAL_ID}")
+   ```
+2. Verify `conclusion.md`, `handoff.md`, `handoff.json`.
+3. Build `meta/artifact-manifest.json`.
 
-6. **Step 6: Handoff (using `tpd:handoff-generator`)**
-   - Call Skill immediately:
-     ```
-     Skill(skill="tpd:handoff-generator", args="run_dir=${THINKING_DIR}")
-     ```
-   - **🔒 Final Checkpoint**:
-     ```bash
-     test -f "${THINKING_DIR}/handoff.md" || { echo "❌ Step 6 FAILED: handoff.md not found"; exit 1; }
-     test -f "${THINKING_DIR}/handoff.json" || { echo "❌ Step 6 FAILED: handoff.json not found"; exit 1; }
-     ```
-     Update state.json: `current_step=6`, `status="completed"`, `artifacts.handoff=true`, `artifacts.manifest=true`, `artifacts.lineage=true`, `timestamps.completed="${ISO_TIMESTAMP}"`
-     Finalize `${THINKING_META_DIR}/artifact-manifest.json`: set `status=completed`, register `handoff.md` and `handoff.json`
-     Finalize `${THINKING_META_DIR}/lineage.json`: append output lineage for handoff artifacts
-   - Output completion summary:
+### Step 6: Finalize
+1. Send shutdown broadcast to all teammates.
+2. Delete team with `TeamDelete`.
+3. Update `state.json` to `completed`.
 
-     ```
-     🧠 Deep Thinking Complete!
+## Fallback Policy
+- If `TeamCreate` fails, fall back to standalone `Task` execution while preserving the same artifacts.
+- If one model task fails, continue with available artifacts and record gap in `synthesis.md`.
+- If handoff generation fails, stop and return actionable error.
+- If hook logs are unavailable, continue without hook snapshot output.
 
-     📋 Question: ${QUESTION}
-     📋 Proposal: ${PROPOSAL_ID}
-     🔬 Thinking Depth: ${DEPTH}
-
-     🎯 Core Conclusion:
-     ${CONCLUSION_SUMMARY}
-
-     📦 Handoff Summary:
-     - Constraints: See ${THINKING_DIR}/handoff.md
-     - Success Criteria: See ${THINKING_DIR}/handoff.md
-
-	     ➡️ Next Phase: /tpd:plan
-
-	     📁 Artifacts:
-	       ${THINKING_DIR}/
-	       ├── input.md
-	       ├── state.json
-	       ├── complexity-analysis.md
-	       ├── boundaries.json
-	       ├── explore-*.json
-	       ├── synthesis.md
-	       ├── clarifications.md (if any)
-	       ├── codex-thought.md (deep/ultra)
-	       ├── gemini-thought.md (deep/ultra)
-	       ├── conclusion.md
-	       ├── handoff.md
-	       ├── handoff.json
-	       └── meta/
-	           ├── artifact-manifest.json
-	           └── lineage.json
-	     ```
-
-## Thinking → Plan Handoff Contract
-
-- `/tpd:plan` MUST read `${THINKING_DIR}/meta/artifact-manifest.json` first.
-- Required handoff artifacts (`handoff.md`, `handoff.json`, `synthesis.md`) MUST be resolved via manifest entries.
-- Plan phase SHOULD consume lineage references from `${THINKING_DIR}/meta/lineage.json` to avoid file copy duplication.
-
----
-
-## Parallel Constraints Summary
-
-| Step   | Max Agents | Agent Types                                                         |
-| ------ | ---------- | ------------------------------------------------------------------- |
-| Step 2 | **4**      | `tpd:investigation:boundary-explorer`                               |
-| Step 3 | **2**      | `tpd:reasoning:codex-constraint`, `tpd:reasoning:gemini-constraint` |
-
----
-
-## Thinking Depth Comparison
-
-| Feature              | Light        | Deep              | Ultra                |
-| -------------------- | ------------ | ----------------- | -------------------- |
-| Boundary Count       | 1            | 2-3               | 3-5                  |
-| Parallel Subagents   | None/Few     | Medium parallel   | High parallel        |
-| Multi-Model Analysis | Skip         | Required          | Required             |
-| Applicable Scenarios | Simple needs | Medium complexity | Complex architecture |
-
----
-
-## Error Handling
-
-### Model Call Failure
-
-```
-⚠️ ${MODEL} Thinking Failed
-Error: ${ERROR_MESSAGE}
-
-Handling:
-- Continue with other model results
-- Mark missing perspective in synthesis.md
-```
-
-### Thinking Timeout
-
-```
-⚠️ Thinking Timeout
-Completed Models: ${COMPLETED_MODELS}
-Timeout Models: ${TIMEOUT_MODELS}
-
-Suggestions:
-1. Lower thinking depth
-2. Simplify the question
-3. Think step by step
-```
-
----
-
-## Agent Type Restrictions
-
-This command ONLY uses the following agent types via the `Task` tool:
-
-| Agent Type                            | Usage                                   |
-| ------------------------------------- | --------------------------------------- |
-| `tpd:investigation:boundary-explorer` | Step 2: Parallel boundary exploration   |
-| `tpd:reasoning:codex-constraint`      | Step 3: Technical constraint analysis   |
-| `tpd:reasoning:gemini-constraint`     | Step 3: UX/frontend constraint analysis |
-
-Any other `subagent_type` values are **forbidden** in this command.
+## Verification
+- Every required artifact exists.
+- `handoff.json` is valid JSON.
+- `team/phase-events.jsonl` and `team/heartbeat.jsonl` contain entries.
+- No write outside `openspec/changes/<proposal_id>/thinking/`.

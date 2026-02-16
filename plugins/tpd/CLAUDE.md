@@ -77,27 +77,15 @@ dev ──────────→ 最小可验证相位实现
 - `changes.md` - Applied changes
 - `audit-*.md` - Audit reports
 
-## Agent Types (v2.0)
+## Agent Types (v2.1)
 
-| Category      | Agents                                |
-| ------------- | ------------------------------------- |
-| Investigation | boundary-explorer, context-analyzer   |
-| Reasoning     | codex-constraint, gemini-constraint   |
-| Planning      | codex-architect, gemini-architect     |
-| Execution     | codex-implementer, gemini-implementer |
-|               | codex-auditor, gemini-auditor         |
+TPD now uses 3 merged agents:
 
-## Agent Teams (Experimental)
+- `context-explorer`: investigation workloads for both boundary exploration and plan context retrieval.
+- `codex-core`: role-routed Codex agent (`constraint`, `architect`, `implementer`, `auditor`).
+- `gemini-core`: role-routed Gemini agent (`constraint`, `architect`, `implementer`, `auditor`).
 
-The dev phase supports an optional Agent Teams mode for iterative prototype-audit cycles.
-
-- **Env var**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
-- **Scope**: Only affects `/tpd:dev` Steps 3 and 5
-- **Iteration limit**: Fixed at 2 (HC-10)
-- **Fallback**: Automatically reverts to standard mode on failure or iteration exhaustion
-- **Default**: Disabled. Standard mode behavior is unchanged when env var is unset
-
-See `plugins/tpd/commands/dev.md` Agent Teams section for the full state machine specification.
+Team orchestration is defined directly in `plugins/tpd/commands/{thinking,plan,dev}.md`.
 
 ---
 

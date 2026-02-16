@@ -66,26 +66,7 @@ function resolveWrapperBinary(): string {
   if (process.env.CODEAGENT_WRAPPER?.trim()) {
     return process.env.CODEAGENT_WRAPPER.trim();
   }
-
-  const home = homedir();
-  if (process.platform === "win32") {
-    const candidates = [
-      join(home, ".claude", "bin", "codeagent-wrapper.cmd"),
-      join(home, ".claude", "bin", "codeagent-wrapper.exe"),
-      join(home, ".claude", "bin", "codeagent-wrapper"),
-    ];
-    for (const candidate of candidates) {
-      if (existsSync(candidate)) {
-        return candidate;
-      }
-    }
-  } else {
-    const candidate = join(home, ".claude", "bin", "codeagent-wrapper");
-    if (existsSync(candidate)) {
-      return candidate;
-    }
-  }
-
+  // Legacy ~/.claude/bin fallback is deprecated; rely on PATH by default.
   return "codeagent-wrapper";
 }
 
