@@ -20,7 +20,7 @@ CCG-Workflows is a plugin ecosystem designed for Claude Code users and plugin de
 | **context-memory** | 1.0.0   | `/memory`                                | Project memory management: context loading, session persistence, code mapping, CLAUDE.md updates                    |
 | **refactor**       | 1.0.0   | `/refactor`                              | Code refactoring workflow: smell detection, impact analysis, safe execution                                         |
 | **hooks**          | 1.0.0   | (passive)                                | Cross-cutting automation: security guards, logging, quality checks, intent evaluation                               |
-| **docflow**        | 1.0.0   | `/docflow:init-doc`, `/docflow:with-scout`, `/docflow:what` | Documentation-first workflow with Agent Team collaboration and structured inter-agent communication                  |
+| **docflow**        | 1.0.0   | `/prompts:docflow-init-doc`, `/prompts:docflow-with-scout`, `/prompts:docflow-what` | Documentation-first workflow with Agent Team collaboration and structured inter-agent communication                  |
 
 ## 4. Tech Stack
 

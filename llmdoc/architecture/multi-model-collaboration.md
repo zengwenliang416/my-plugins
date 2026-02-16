@@ -7,7 +7,7 @@
 
 ## 2. Core Components
 
-- `~/.claude/bin/codeagent-wrapper` (CLI): Unified wrapper for invoking external models with role-based prompting and sandbox constraints.
+- `codeagent-wrapper` (CLI): Unified wrapper for invoking external models with role-based prompting and sandbox constraints.
 - `plugins/*/skills/codex-cli/SKILL.md` (Skill): Technical perspective integration via Codex with `--sandbox read-only`.
 - `plugins/*/skills/gemini-cli/SKILL.md` (Skill): UX/visual perspective integration via Gemini with session management.
 - `plugins/*/agents/*/codex-*.md` (Agents): Codex-based agents for backend architecture, constraints, implementation.

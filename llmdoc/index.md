@@ -9,6 +9,7 @@ LLM-optimized documentation for the CCG-Workflows plugin ecosystem - a local plu
 | Understand the project      | [Project Overview](overview/project-overview.md)                   |
 | Use the commit workflow     | [How to Commit](guides/how-to-commit.md)                           |
 | Use the TPD workflow        | [How to Use TPD](guides/how-to-use-tpd.md)                         |
+| Use docflow in Codex        | [How to Use Docflow in Codex](guides/how-to-use-docflow-in-codex.md) |
 | Use Trae skills and agents  | [How to Use Trae Skills & Agents](guides/how-to-use-trae-skills-and-agents.md) |
 | Create a new plugin         | [How to Create a Plugin](guides/how-to-create-a-plugin.md)         |
 | Understand plugin structure | [Plugin Architecture](architecture/plugin-architecture.md)         |
@@ -51,6 +52,7 @@ Step-by-step operational instructions for specific tasks.
 
 - [How to Commit](guides/how-to-commit.md) - Execute the 10-phase commit workflow
 - [How to Use TPD](guides/how-to-use-tpd.md) - Execute Thinking, Plan, and Dev phases
+- [How to Use Docflow in Codex](guides/how-to-use-docflow-in-codex.md) - Use `/prompts:docflow-*` entries and run docflow quality gates
 - [How to Use Trae Skills & Agents](guides/how-to-use-trae-skills-and-agents.md) - Trae profile invocation conventions for skills/agents
 - [How to Use External Models](guides/how-to-use-external-models.md) - Invoke Codex/Gemini via codeagent-wrapper CLI
 
@@ -80,6 +82,6 @@ Factual lookup information and source-of-truth pointers.
 
 ---
 
-**Document Count:** 21 files (1 overview, 7 architecture, 7 guides, 6 reference)
+**Document Count:** 22 files (1 overview, 7 architecture, 8 guides, 6 reference)
 
-Generated: 2026-02-10
+Generated: 2026-02-12

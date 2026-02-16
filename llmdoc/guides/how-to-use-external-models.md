@@ -7,7 +7,7 @@ Invoke external AI models via `codeagent-wrapper` CLI for specialized analysis t
 2. **Invoke the model** using codeagent-wrapper:
 
    ```bash
-   ~/.claude/bin/codeagent-wrapper codex \
+   codeagent-wrapper codex \
      --role brainstorm \
      --prompt "$PROMPT" \
      --sandbox read-only
@@ -22,7 +22,7 @@ Invoke external AI models via `codeagent-wrapper` CLI for specialized analysis t
 4. **Use session management** for multi-turn Gemini conversations:
 
    ```bash
-   ~/.claude/bin/codeagent-wrapper gemini \
+   codeagent-wrapper gemini \
      --role designer \
      --prompt "$PROMPT" \
      --session "$SESSION_ID"

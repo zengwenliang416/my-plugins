@@ -60,15 +60,16 @@ The documented core workflows currently include 11 commands across 7 plugins. Th
 ### Docflow Plugin (v1.0.0)
 
 - **Commands:**
-  - `plugins/docflow/commands/init-doc.md` - Initialize `llmdoc` via scout + recorder Agent Team
-  - `plugins/docflow/commands/with-scout.md` - Investigate-first execution via investigator + worker Agent Team
-  - `plugins/docflow/commands/what.md` - Clarify ambiguous requests and route to `/docflow:with-scout`
+  - `.codex/prompts/docflow-init-doc.md` - `/prompts:docflow-init-doc`, initialize `llmdoc` via scout + recorder Agent Team
+  - `.codex/prompts/docflow-with-scout.md` - `/prompts:docflow-with-scout`, investigate-first execution via investigator + worker Agent Team
+  - `.codex/prompts/docflow-what.md` - `/prompts:docflow-what`, clarify ambiguous requests and route to `/prompts:docflow-with-scout`
 - **Pattern:** Team-orchestrated investigation and execution with cross-check + fix-loop
-- **Agents:** scout, recorder, investigator, worker
+- **Agents:** `docflow-scout`, `docflow-recorder`, `docflow-investigator`, `docflow-worker`
 - **Team Signals (examples):**
   - init-doc: `SCOUT_REPORT_READY`, `SCOUT_CROSSCHECK_RESULT`, `DOC_DRAFT_READY`
   - with-scout: `INVESTIGATION_READY`, `INVESTIGATION_REVIEW_RESULT`, `EXECUTION_RESULT`, `EXECUTION_FIX_APPLIED`
 - **Retry Policy:** bounded repair loops (max 2 rounds), unresolved blockers escalate to user
+- **Compatibility:** legacy `plugins/docflow/commands/*.md` remains as mapping reference; recommended entry is `/prompts:docflow-*`
 - **Run Dir:** no fixed run directory; uses task-scoped context and `llmdoc/agent/` artifacts where applicable
 
 ## 3. Related Architecture
