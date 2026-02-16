@@ -20,7 +20,7 @@
 ### 命令
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini \
+codeagent-wrapper gemini \
   --workdir ${PROJECT_DIR} \
   --role component-analyst \
   --prompt "${PROMPT}"
@@ -298,7 +298,7 @@ JSON：
 ### 启动新会话
 
 ```bash
-result=$(~/.claude/bin/codeagent-wrapper gemini \
+result=$(codeagent-wrapper gemini \
   --role frontend-refactor \
   --prompt "$PROMPT")
 SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
@@ -307,7 +307,7 @@ SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 ### 继续会话
 
 ```bash
-~/.claude/bin/codeagent-wrapper gemini \
+codeagent-wrapper gemini \
   --role frontend-refactor \
   --prompt "$FOLLOW_UP_PROMPT" \
   --session "$SESSION_ID"

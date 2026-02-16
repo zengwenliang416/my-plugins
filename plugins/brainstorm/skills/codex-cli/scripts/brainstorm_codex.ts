@@ -7,8 +7,7 @@
 
 import { spawnSync } from "child_process";
 import { existsSync, readFileSync } from "fs";
-import { homedir } from "os";
-import { dirname, join, resolve } from "path";
+import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
 interface Args {
@@ -58,26 +57,7 @@ function resolveWrapperBinary(): string {
   if (process.env.CODEAGENT_WRAPPER?.trim()) {
     return process.env.CODEAGENT_WRAPPER.trim();
   }
-
-  const home = homedir();
-  if (process.platform === "win32") {
-    const windowsCandidates = [
-      join(home, ".claude", "bin", "codeagent-wrapper.cmd"),
-      join(home, ".claude", "bin", "codeagent-wrapper.exe"),
-      join(home, ".claude", "bin", "codeagent-wrapper"),
-    ];
-    for (const candidate of windowsCandidates) {
-      if (existsSync(candidate)) {
-        return candidate;
-      }
-    }
-  } else {
-    const unixCandidate = join(home, ".claude", "bin", "codeagent-wrapper");
-    if (existsSync(unixCandidate)) {
-      return unixCandidate;
-    }
-  }
-
+  // Legacy ~/.claude/bin fallback is deprecated; rely on PATH by default.
   return "codeagent-wrapper";
 }
 

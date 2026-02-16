@@ -21,7 +21,7 @@
 ### 命令
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+codeagent-wrapper codex \
   --workdir ${PROJECT_DIR} \
   --role smell-detector \
   --prompt "${PROMPT}" \
@@ -312,7 +312,7 @@ JSON：
 ### 启动新会话
 
 ```bash
-result=$(~/.claude/bin/codeagent-wrapper codex \
+result=$(codeagent-wrapper codex \
   --role refactoring-expert \
   --prompt "$PROMPT" \
   --sandbox read-only)
@@ -322,7 +322,7 @@ SESSION_ID=$(echo "$result" | grep SESSION_ID | cut -d= -f2)
 ### 继续会话
 
 ```bash
-~/.claude/bin/codeagent-wrapper codex \
+codeagent-wrapper codex \
   --role refactoring-expert \
   --prompt "$FOLLOW_UP_PROMPT" \
   --session "$SESSION_ID" \
