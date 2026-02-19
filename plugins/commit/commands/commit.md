@@ -118,7 +118,7 @@ Output: `${RUN_DIR}/semantic-analysis.json`, `${RUN_DIR}/symbol-analysis.json`
 ### Phase 4: Synthesize
 
 ```
-Skill("analysis-synthesizer", "run_dir=${RUN_DIR}")
+Skill("commit:analysis-synthesizer", "run_dir=${RUN_DIR}")
 ```
 
 Merges parallel analysis results into unified `changes-analysis.json`.
@@ -128,7 +128,7 @@ Output: `${RUN_DIR}/changes-analysis.json`
 ### Phase 5: Branch
 
 ```
-Skill("branch-creator", "run_dir=${RUN_DIR}")
+Skill("commit:branch-creator", "run_dir=${RUN_DIR}")
 ```
 
 Output: `${RUN_DIR}/branch-info.json` + new branch (if needed)
@@ -171,7 +171,7 @@ done
 ### Phase 7: Generate Message
 
 ```
-Skill("message-generator", "run_dir=${RUN_DIR} options=${OPTIONS}")
+Skill("commit:message-generator", "run_dir=${RUN_DIR} options=${OPTIONS}")
 ```
 
 → User confirms → AUTO-CONTINUE
@@ -179,7 +179,7 @@ Skill("message-generator", "run_dir=${RUN_DIR} options=${OPTIONS}")
 ### Phase 8: Changelog
 
 ```
-Skill("changelog-generator", "run_dir=${RUN_DIR} version=${VERSION}")
+Skill("commit:changelog-generator", "run_dir=${RUN_DIR} version=${VERSION}")
 ```
 
 Skip only if: `--no-changelog` OR (test/ci/chore + user confirms)

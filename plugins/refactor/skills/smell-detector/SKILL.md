@@ -222,13 +222,13 @@ mcp__context7__query-docs({
 **后端代码气味增强检测（codex-cli）**：
 
 ```
-Skill(skill="codex-cli", args="--role smell-detector --prompt '检测 ${target} 中的后端代码气味：Long Method, God Class, Feature Envy, Shotgun Surgery' --sandbox read-only")
+Skill(skill="refactor:codex-cli", args="--role smell-detector --prompt '检测 ${target} 中的后端代码气味：Long Method, God Class, Feature Envy, Shotgun Surgery' --sandbox read-only")
 ```
 
 **前端组件气味增强检测（gemini-cli）**：
 
 ```
-Skill(skill="gemini-cli", args="--role component-analyst --prompt '检测 ${target} 中的前端组件气味：God Component, Prop Drilling, CSS Bloat, Accessibility Issues'")
+Skill(skill="refactor:gemini-cli", args="--role component-analyst --prompt '检测 ${target} 中的前端组件气味：God Component, Prop Drilling, CSS Bloat, Accessibility Issues'")
 ```
 
 **使用条件**：

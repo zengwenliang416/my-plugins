@@ -129,7 +129,7 @@ Spec-only policy: refactor artifacts MUST be consolidated under `openspec/change
 **Skill 调用：**
 
 ```
-Skill(skill="legacy-analyzer", args="run_dir=${RUN_DIR} source_stack=${SOURCE_STACK} target_stack=${TARGET_STACK}")
+Skill(skill="refactor:legacy-analyzer", args="run_dir=${RUN_DIR} source_stack=${SOURCE_STACK} target_stack=${TARGET_STACK}")
 ```
 
 **验证**：
@@ -161,10 +161,10 @@ Skill(skill="legacy-analyzer", args="run_dir=${RUN_DIR} source_stack=${SOURCE_ST
 
 ```
 # 常规模式
-Skill(skill="smell-detector", args="run_dir=${RUN_DIR} target=${TARGET}")
+Skill(skill="refactor:smell-detector", args="run_dir=${RUN_DIR} target=${TARGET}")
 
 # Legacy 模式（传递 legacy 标志，启用遗留系统气味检测）
-Skill(skill="smell-detector", args="run_dir=${RUN_DIR} target=${TARGET} legacy=true")
+Skill(skill="refactor:smell-detector", args="run_dir=${RUN_DIR} target=${TARGET} legacy=true")
 ```
 
 **验证**：
@@ -201,7 +201,7 @@ Skill(skill="smell-detector", args="run_dir=${RUN_DIR} target=${TARGET} legacy=t
 **Skill 调用：**
 
 ```
-Skill(skill="refactor-suggester", args="run_dir=${RUN_DIR}")
+Skill(skill="refactor:refactor-suggester", args="run_dir=${RUN_DIR}")
 ```
 
 **验证**：确认 `${RUN_DIR}/suggestions.json` 已生成
@@ -235,7 +235,7 @@ Skill(skill="refactor-suggester", args="run_dir=${RUN_DIR}")
 **Skill 调用：**
 
 ```
-Skill(skill="impact-analyzer", args="run_dir=${RUN_DIR}")
+Skill(skill="refactor:impact-analyzer", args="run_dir=${RUN_DIR}")
 ```
 
 **验证**：确认 `${RUN_DIR}/impact-analysis.md` 已生成
@@ -277,7 +277,7 @@ Skill(skill="impact-analyzer", args="run_dir=${RUN_DIR}")
 **Skill 调用：**
 
 ```
-Skill(skill="refactor-executor", args="run_dir=${RUN_DIR} mode=${MODE}")
+Skill(skill="refactor:refactor-executor", args="run_dir=${RUN_DIR} mode=${MODE}")
 ```
 
 **验证**：

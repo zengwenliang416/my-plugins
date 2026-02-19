@@ -1,21 +1,21 @@
 # UI-Design Plugin
 
-始终使用中文（简体）回答。
+Always answer in Chinese (Simplified).
 
-## 可用命令
-- `/ui-design`: 端到端 UI/UX 设计与实现流程。
+## Available Commands
+- `/ui-design`: End-to-end UI/UX design and implementation workflow.
 
-## 工作流阶段
-1. Init：解析参数并初始化 `openspec/changes/<run_id>/`。
-2. Scenario Confirm：通过 `AskUserQuestion` 确认 `scenario` 与 `tech_stack`。
-3. Reference Analysis Team：并行分析视觉、配色、组件并汇总。
-4. Requirements：生成 `requirements.md`，`optimize` 场景额外做 `code-analysis.md`。
-5. Style Recommendation：生成三套风格候选。
-6. Variant Selection：用户确认最终变体。
-7. Design Pipeline Team：设计生成 -> UX 校验 -> 修复回环 -> 代码生成 -> 质量校验。
-8. Delivery：输出结果与可恢复命令。
+## Workflow Phases
+1. Init: Parse arguments and initialize `openspec/changes/<run_id>/`.
+2. Scenario Confirm: Confirm `scenario` and `tech_stack` via `AskUserQuestion`.
+3. Reference Analysis Team: Analyze visual, color, and component references in parallel and summarize.
+4. Requirements: Generate `requirements.md`; for `optimize` scenario, also generate `code-analysis.md`.
+5. Style Recommendation: Generate three style candidates.
+6. Variant Selection: User confirms final variant.
+7. Design Pipeline Team: Design generation → UX validation → fix loop → code generation → quality check.
+8. Delivery: Output results and resumable command.
 
-## Agent Team（合并后）
+## Agent Team (Merged)
 - `ui-design:analysis-core`
   - `mode=reference` + `perspective=visual|color|component`
   - `mode=requirements`
@@ -30,26 +30,26 @@
   - `mode=ux`
   - `mode=quality`
 
-## 子代理通信约定
-- 全部消息使用统一 envelope：`type/from/to/run_id/task_id/requires_ack/payload`。
-- `requires_ack=true` 的定向消息必须确认。
-- 关键事件必须记录到 `${RUN_DIR}/team/mailbox.jsonl`。
-- 等待超过 60 秒时，写入 `${RUN_DIR}/team/heartbeat.jsonl`。
+## Sub-Agent Communication Conventions
+- All messages use a unified envelope: `type/from/to/run_id/task_id/requires_ack/payload`.
+- Directed messages with `requires_ack=true` must be acknowledged.
+- Key events must be recorded to `${RUN_DIR}/team/mailbox.jsonl`.
+- When waiting longer than 60 seconds, write to `${RUN_DIR}/team/heartbeat.jsonl`.
 
-## 技能调用约定
-- 子代理按需调用 `ui-design:gemini-cli`：
-  - 参考分析（analysis-core）
-  - 风格/变体生成（design-core）
-  - 代码原型生成（generation-core）
-- 非必须模型步骤优先使用本地分析（Read / auggie / LSP）。
+## Skill Invocation Conventions
+- Sub-agents invoke `ui-design:gemini-cli` as needed for:
+  - Reference analysis (analysis-core)
+  - Style/variant generation (design-core)
+  - Code prototype generation (generation-core)
+- For non-essential model steps, prefer local analysis (Read / auggie / LSP).
 
-## 质量门禁
+## Quality Gates
 - UX pass rate >= 80%
 - High-priority UX issues = 0
-- 每个变体最多 2 轮修复
+- Maximum 2 fix rounds per variant
 - Quality score >= 7.5/10
 
-## 输出目录
+## Output Directory
 - `ref-analysis-{visual,color,component}.md`
 - `design-reference-analysis.md`
 - `requirements.md`

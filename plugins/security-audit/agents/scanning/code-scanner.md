@@ -1,5 +1,6 @@
 ---
 name: code-scanner
+description: Performs static code analysis for security vulnerabilities following OWASP Top 10, produces findings reports, and cross-validates results with other specialist agents.
 tools:
   - Read
   - Grep

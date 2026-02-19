@@ -146,7 +146,7 @@ mcp__auggie-mcp__codebase-retrieval({
 🚨 **MUST: 使用 Skill 工具调用 codex-cli**
 
 ```
-Skill(skill="codex-cli", args="--role legacy-analyst --prompt '${CODEX_PROMPT}' --sandbox read-only")
+Skill(skill="refactor:codex-cli", args="--role legacy-analyst --prompt '${CODEX_PROMPT}' --sandbox read-only")
 ```
 
 **CODEX_PROMPT 构建**：
@@ -188,7 +188,7 @@ JSON：
 🚨 **MUST: 使用 Skill 工具调用 gemini-cli**
 
 ```
-Skill(skill="gemini-cli", args="--role frontend-analyst --prompt '${GEMINI_PROMPT}'")
+Skill(skill="refactor:gemini-cli", args="--role frontend-analyst --prompt '${GEMINI_PROMPT}'")
 ```
 
 **GEMINI_PROMPT 构建**：

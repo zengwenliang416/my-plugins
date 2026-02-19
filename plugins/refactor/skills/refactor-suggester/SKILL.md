@@ -169,7 +169,7 @@ migration_plan=$(cat "${run_dir}/migration-plan.json")
 🚨 **必须通过 Skill 工具调用 codex-cli**
 
 ```
-Skill(skill="codex-cli", args="--role refactoring-expert --prompt '${CODEX_PROMPT}' --sandbox read-only")
+Skill(skill="refactor:codex-cli", args="--role refactoring-expert --prompt '${CODEX_PROMPT}' --sandbox read-only")
 ```
 
 **CODEX_PROMPT 构建**：
@@ -206,7 +206,7 @@ ${smells_summary}
 **调用 Codex 生成迁移建议：**
 
 ```
-Skill(skill="codex-cli", args="--role legacy-migration-expert --prompt '${MIGRATION_PROMPT}' --sandbox read-only")
+Skill(skill="refactor:codex-cli", args="--role legacy-migration-expert --prompt '${MIGRATION_PROMPT}' --sandbox read-only")
 ```
 
 **MIGRATION_PROMPT 构建**：
@@ -247,7 +247,7 @@ ${legacy_smells}
 **调用 Gemini 生成前端迁移建议：**
 
 ```
-Skill(skill="gemini-cli", args="--role frontend-migration-expert --prompt '${FRONTEND_MIGRATION_PROMPT}'")
+Skill(skill="refactor:gemini-cli", args="--role frontend-migration-expert --prompt '${FRONTEND_MIGRATION_PROMPT}'")
 ```
 
 **FRONTEND_MIGRATION_PROMPT 构建**：
@@ -289,7 +289,7 @@ ${target_stack}
 🚨 **当存在前端气味时，必须通过 Skill 工具调用 gemini-cli**
 
 ```
-Skill(skill="gemini-cli", args="--role frontend-refactor --prompt '${GEMINI_PROMPT}'")
+Skill(skill="refactor:gemini-cli", args="--role frontend-refactor --prompt '${GEMINI_PROMPT}'")
 ```
 
 **GEMINI_PROMPT 构建**：

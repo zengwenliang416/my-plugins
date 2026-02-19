@@ -149,7 +149,7 @@ impact=$(cat "${run_dir}/impact-analysis.md")
 🚨 **必须通过 Skill 工具调用 codex-cli**
 
 ```
-Skill(skill="codex-cli", args="--role refactoring-expert --prompt '${CODEX_PROMPT}' --sandbox read-only")
+Skill(skill="refactor:codex-cli", args="--role refactoring-expert --prompt '${CODEX_PROMPT}' --sandbox read-only")
 ```
 
 **CODEX_PROMPT 构建**：
@@ -186,7 +186,7 @@ Skill(skill="codex-cli", args="--role refactoring-expert --prompt '${CODEX_PROMP
 🚨 **前端组件/样式重构必须通过 Skill 工具调用 gemini-cli**
 
 ```
-Skill(skill="gemini-cli", args="--role frontend-refactor --prompt '${GEMINI_PROMPT}'")
+Skill(skill="refactor:gemini-cli", args="--role frontend-refactor --prompt '${GEMINI_PROMPT}'")
 ```
 
 **GEMINI_PROMPT 构建**：
