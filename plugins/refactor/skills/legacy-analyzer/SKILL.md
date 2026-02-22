@@ -1,11 +1,11 @@
 ---
 name: legacy-analyzer
 description: |
-  【触发条件】重构工作流启用 --legacy 模式时：分析遗留系统架构，生成现代化策略。
-  【核心产出】输出 ${run_dir}/legacy-analysis.md 和 ${run_dir}/migration-plan.json。
-  【不触发】常规重构（用默认流程）、已经是现代架构的项目。
-  【先问什么】source_stack 或 target_stack 缺失时，询问技术栈信息
-  【MUST】codex-cli 分析后端架构，gemini-cli 分析前端架构，必须使用。
+  [Trigger] When refactor workflow runs with --legacy mode: analyze legacy system architecture and generate modernization strategy.
+  [Output] ${run_dir}/legacy-analysis.md and ${run_dir}/migration-plan.json.
+  [Skip] For standard refactoring or projects already on modern architecture.
+  [Ask] When source_stack or target_stack is missing, ask for tech stack info.
+  [Must] codex-cli for backend analysis and gemini-cli for frontend analysis must be used.
   [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Write
@@ -54,10 +54,10 @@ arguments:
 
 ## MCP 工具集成
 
-| MCP 工具              | 用途                         | 触发条件        |
-| --------------------- | ---------------------------- | --------------- |
-| `auggie-mcp`          | 语义级架构分析               | 🚨 每次执行必用 |
-| `context7`            | 查询目标技术栈文档和最佳实践 | 🚨 每次执行必用 |
+| MCP 工具     | 用途                         | 触发条件        |
+| ------------ | ---------------------------- | --------------- |
+| `auggie-mcp` | 语义级架构分析               | 🚨 每次执行必用 |
+| `context7`   | 查询目标技术栈文档和最佳实践 | 🚨 每次执行必用 |
 
 ---
 
@@ -99,8 +99,6 @@ AskUserQuestion(
 ---
 
 ## 执行流程
-
-
 
 ```
   thought: "规划遗留系统分析策略。源栈：${source_stack}，目标栈：${target_stack}。需要：1) 识别架构边界 2) 评估技术债务 3) 设计迁移路径 4) 评估风险 5) 制定时间线",

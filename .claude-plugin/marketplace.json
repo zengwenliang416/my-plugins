@@ -1,49 +1,49 @@
 {
   "name": "ccg-workflows",
-  "description": "CCG 工作流插件集 - 可插拔的开发工作流增强",
+  "description": "CCG workflow plugin collection — pluggable development workflow enhancements",
   "owner": {
     "name": "CCG Team"
   },
   "plugins": [
     {
       "name": "commit",
-      "description": "规范提交工作流：收集 → 分析 → 生成消息 → 更新 Changelog → 执行",
+      "description": "Standardized commit workflow: collect → analyze → generate message → update changelog → execute",
       "source": "./plugins/commit",
       "version": "2.0.0"
     },
     {
       "name": "tpd",
-      "description": "TPD 工作流：thinking → plan → dev（支持 OpenSpec 交接）",
+      "description": "TPD workflow: thinking → plan → dev (with OpenSpec handoff)",
       "source": "./plugins/tpd",
       "version": "2.0.0"
     },
     {
       "name": "ui-design",
-      "description": "UI/UX 设计工作流：需求分析 → 样式推荐 → 设计生成（并行 3 变体）→ UX 检查 → 代码生成（双模型协作）→ 质量验证",
+      "description": "UI/UX design workflow: requirements → style recommendation → parallel 3-variant generation → UX review → code generation (dual-model) → quality validation",
       "source": "./plugins/ui-design",
       "version": "3.0.0"
     },
     {
       "name": "brainstorm",
-      "description": "头脑风暴工作流：主题研究 → 多模型发散 → 创意评估 → 报告生成",
+      "description": "Brainstorming workflow: topic research → multi-model ideation → idea evaluation → report generation",
       "source": "./plugins/brainstorm",
       "version": "1.1.0"
     },
     {
       "name": "hooks",
-      "description": "通用钩子集合：意图评估、日志备份、代码质量、智能路由、安全防护、会话管理",
+      "description": "General-purpose hook collection: intent evaluation, log backup, code quality, smart routing, security, session management",
       "source": "./plugins/hooks",
       "version": "1.0.0"
     },
     {
       "name": "context-memory",
-      "description": "项目记忆管理插件 - 支持上下文加载、会话压缩、代码地图生成、技能记忆、文档管理和技术规则生成",
+      "description": "Project memory management — context loading, session compaction, code map generation, skill memory, doc management, and tech rules generation",
       "source": "./plugins/context-memory",
       "version": "2.0.0"
     },
     {
       "name": "refactor",
-      "description": "代码重构工作流：模式识别 → 重构方案 → 安全验证 → 自动应用",
+      "description": "Code refactoring workflow: pattern detection → refactor proposal → safety validation → auto-apply",
       "source": "./plugins/refactor",
       "version": "1.0.0"
     },

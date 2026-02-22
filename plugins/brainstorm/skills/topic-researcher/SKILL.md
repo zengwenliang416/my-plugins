@@ -1,10 +1,10 @@
 ---
 name: topic-researcher
 description: |
-  【触发条件】 Brainstorm Phase 1: Parse topic and execute external research
-  【核心产出】 ${run_dir}/research-brief.md
-  【不触发】 User specifies --skip-research or research-brief.md exists
-  【先问什么】 When topic is too broad, ask for specific direction or constraints
+  [Trigger] Brainstorm Phase 1: parse topic and execute external research.
+  [Output] ${run_dir}/research-brief.md.
+  [Skip] When user specifies --skip-research or research-brief.md already exists.
+  [Ask] When topic is too broad, ask for specific direction or constraints.
   [Resource Usage] Use `scripts/execute_search.ts` for batch search and references/research-brief-template.md for output.
 allowed-tools:
   - Read
@@ -35,10 +35,10 @@ npx tsx scripts/execute_search.ts [args]
 
 ## MCP Tool Integration
 
-| Tool                  | Purpose                                         | Required |
-| --------------------- | ----------------------------------------------- | -------- |
-| `auggie-mcp`          | Retrieve project code context                   | Yes      |
-| `context7`            | Query technical docs and best practices         | Yes      |
+| Tool         | Purpose                                 | Required |
+| ------------ | --------------------------------------- | -------- |
+| `auggie-mcp` | Retrieve project code context           | Yes      |
+| `context7`   | Query technical docs and best practices | Yes      |
 
 ## Parameters
 
@@ -55,7 +55,6 @@ npx tsx scripts/execute_search.ts [args]
 ```bash
 mkdir -p "${run_dir}"
 ```
-
 
 **Required MCP call:**
 

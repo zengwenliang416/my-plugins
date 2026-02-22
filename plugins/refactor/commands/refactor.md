@@ -1,5 +1,5 @@
 ---
-description: "重构工作流：代码气味检测 → 重构建议 → 影响分析 → 安全执行 | 遗留系统现代化"
+description: "Refactor workflow: code smell detection → refactor suggestions → impact analysis → safe execution | legacy system modernization"
 argument-hint: <target-path> [--mode=analyze|auto|interactive] [--focus=smell|pattern|all] [--legacy] [--source-stack=xxx] [--target-stack=xxx] [--run-id=xxx]
 allowed-tools:
   - Skill
@@ -8,30 +8,30 @@ allowed-tools:
   - LSP
 ---
 
-# /refactor - 重构工作流命令
+# /refactor - Refactor Workflow Command
 
-## 使用方式
+## Usage
 
-### 常规重构模式
+### Standard Refactor Mode
 
 ```bash
-/refactor src/services/                      # 分析重构机会
-/refactor src/utils/helper.ts --mode=auto    # 自动执行安全重构
-/refactor --mode=interactive src/            # 交互式逐步重构
-/refactor --focus=smell src/                 # 仅检测代码气味
-/refactor --run-id=20260115T100000Z          # 断点续传
+/refactor src/services/                      # Analyze refactor opportunities
+/refactor src/utils/helper.ts --mode=auto    # Auto-execute safe refactors
+/refactor --mode=interactive src/            # Interactive step-by-step refactor
+/refactor --focus=smell src/                 # Smell detection only
+/refactor --run-id=20260115T100000Z          # Resume from checkpoint
 ```
 
-### 🆕 遗留系统现代化模式
+### Legacy System Modernization Mode
 
 ```bash
-# 基础用法：自动检测技术栈
+# Basic: auto-detect tech stack
 /refactor --legacy .
 
-# 指定源技术栈和目标技术栈
+# Specify source and target stacks
 /refactor --legacy --source-stack="jQuery + PHP + MySQL" --target-stack="React + Node.js + PostgreSQL" .
 
-# 常见迁移场景
+# Common migration scenarios
 /refactor --legacy --source-stack="AngularJS 1.x" --target-stack="Angular 17" src/
 /refactor --legacy --source-stack="Java EE + JSP" --target-stack="Spring Boot + React" .
 /refactor --legacy --source-stack="COBOL + DB2" --target-stack="Java + PostgreSQL" .
@@ -39,317 +39,317 @@ allowed-tools:
 
 ## 🚨🚨🚨 MUST FOLLOW RULES 🚨🚨🚨
 
-**你必须按照下面的 Phase 顺序，使用 Skill 工具调用对应的 skill。**
+**You MUST follow the Phase order below and use the Skill tool to invoke each skill.**
 
-**禁止行为（违反则工作流失败）：**
+**Prohibited behaviors (violations cause workflow failure):**
 
-- ❌ 跳过 Skill 调用，自己直接重构代码
-- ❌ 用 Read/Write/Edit 替代 Skill 调用
-- ❌ 省略任何 Phase
-- ❌ 未经影响分析就执行重构
+- ❌ Skip Skill calls and refactor code directly yourself
+- ❌ Replace Skill calls with Read/Write/Edit tools
+- ❌ Omit any Phase
+- ❌ Execute refactoring without impact analysis
 
-**每个 Phase 你必须：**
+**For each Phase you MUST:**
 
-1. 调用指定的 Skill（使用 Skill 工具）
-2. 等待 Skill 执行完成
-3. 验证输出文件存在
-4. 再进入下一个 Phase
+1. Call the specified Skill (using the Skill tool)
+2. Wait for Skill execution to complete
+3. Verify output files exist
+4. Then proceed to the next Phase
 
 ---
 
-## Phase 1: 初始化
+## Phase 1: Initialization
 
-1. 解析参数：
-   - MODE: analyze (默认) | auto | interactive
-   - FOCUS: all (默认) | smell | pattern
-   - TARGET: 目标路径（文件或目录）
-   - **LEGACY**: false (默认) | true（启用遗留系统现代化模式）
-   - **SOURCE_STACK**: 源技术栈描述（--legacy 模式下使用）
-   - **TARGET_STACK**: 目标技术栈描述（--legacy 模式下使用）
+1. Parse arguments:
+   - MODE: analyze (default) | auto | interactive
+   - FOCUS: all (default) | smell | pattern
+   - TARGET: target path (file or directory)
+   - **LEGACY**: false (default) | true (enable legacy system modernization mode)
+   - **SOURCE_STACK**: source tech stack description (used in --legacy mode)
+   - **TARGET_STACK**: target tech stack description (used in --legacy mode)
 
-2. 生成运行目录路径：
-   - RUN_ID: 当前 UTC 时间戳，格式 YYYYMMDDTHHMMSSZ
+2. Generate run directory path:
+   - RUN_ID: current UTC timestamp, format YYYYMMDDTHHMMSSZ
    - RUN_DIR: `openspec/changes/${RUN_ID}`
 
-3. 使用 AskUserQuestion 确认执行计划
+3. Use AskUserQuestion to confirm execution plan
 
 Spec-only policy: refactor artifacts MUST be consolidated under `openspec/changes/${RUN_ID}`.
 
-**🆕 如果 LEGACY=true，展示遗留系统现代化计划**:
+**If LEGACY=true, show legacy modernization plan**:
 
 ```
-📋 遗留系统现代化计划:
-┌────┬────────────────────┬──────────────────┬────────────┐
-│ #  │ 阶段               │ 执行者           │ 模式       │
-├────┼────────────────────┼──────────────────┼────────────┤
-│ 1  │ 遗留系统分析       │ legacy-analyzer  │ 后台       │
-│ 2  │ 代码气味检测       │ smell-detector   │ 后台       │
-│ 3  │ 迁移建议生成       │ refactor-suggester│ 后台      │
-│ 4  │ 影响范围分析       │ impact-analyzer  │ 后台       │
-│ 5  │ 用户确认           │ 用户             │ 硬停止     │
-│ 6  │ 安全重构执行       │ refactor-executor│ 后台       │
-└────┴────────────────────┴──────────────────┴────────────┘
+📋 Legacy System Modernization Plan:
+┌────┬────────────────────┬──────────────────────┬─────────────┐
+│ #  │ Phase              │ Executor             │ Mode        │
+├────┼────────────────────┼──────────────────────┼─────────────┤
+│ 1  │ Legacy analysis    │ legacy-analyzer      │ background  │
+│ 2  │ Smell detection    │ smell-detector       │ background  │
+│ 3  │ Migration suggest  │ refactor-suggester   │ background  │
+│ 4  │ Impact analysis    │ impact-analyzer      │ background  │
+│ 5  │ User confirmation  │ user                 │ hard stop   │
+│ 6  │ Safe refactor exec │ refactor-executor    │ background  │
+└────┴────────────────────┴──────────────────────┴─────────────┘
 
-目标: ${TARGET}
-模式: ${MODE}
-源技术栈: ${SOURCE_STACK}
-目标技术栈: ${TARGET_STACK}
+Target: ${TARGET}
+Mode: ${MODE}
+Source stack: ${SOURCE_STACK}
+Target stack: ${TARGET_STACK}
 
-确认执行? [Y/n]
+Confirm execution? [Y/n]
 ```
 
-**常规模式执行计划**:
+**Standard mode execution plan**:
 
 ```
-📋 重构执行计划:
-┌────┬────────────────────┬──────────────┬────────────┐
-│ #  │ 阶段               │ 执行者       │ 模式       │
-├────┼────────────────────┼──────────────┼────────────┤
-│ 1  │ 代码气味检测       │ smell-detector │ 后台     │
-│ 2  │ 重构建议生成       │ refactor-suggester │ 后台 │
-│ 3  │ 影响范围分析       │ impact-analyzer │ 后台    │
-│ 4  │ 用户确认           │ 用户         │ 硬停止     │
-│ 5  │ 安全重构执行       │ refactor-executor │ 后台  │
-└────┴────────────────────┴──────────────┴────────────┘
+📋 Refactor Execution Plan:
+┌────┬────────────────────┬──────────────────────┬─────────────┐
+│ #  │ Phase              │ Executor             │ Mode        │
+├────┼────────────────────┼──────────────────────┼─────────────┤
+│ 1  │ Smell detection    │ smell-detector       │ background  │
+│ 2  │ Refactor suggest   │ refactor-suggester   │ background  │
+│ 3  │ Impact analysis    │ impact-analyzer      │ background  │
+│ 4  │ User confirmation  │ user                 │ hard stop   │
+│ 5  │ Safe refactor exec │ refactor-executor    │ background  │
+└────┴────────────────────┴──────────────────────┴─────────────┘
 
-目标: ${TARGET}
-模式: ${MODE}
+Target: ${TARGET}
+Mode: ${MODE}
 
-确认执行? [Y/n]
+Confirm execution? [Y/n]
 ```
 
 ---
 
-## Phase 1.5: 遗留系统分析（仅 --legacy 模式）
+## Phase 1.5: Legacy System Analysis (--legacy mode only)
 
 ### 🚨🚨🚨 MUST EXECUTE (if LEGACY=true) 🚨🚨🚨
 
-**仅当 LEGACY=true 时执行此阶段**
+**Execute this phase only when LEGACY=true**
 
-**Skill 调用：**
+**Skill call:**
 
 ```
 Skill(skill="refactor:legacy-analyzer", args="run_dir=${RUN_DIR} source_stack=${SOURCE_STACK} target_stack=${TARGET_STACK}")
 ```
 
-**验证**：
+**Verification**:
 
-- 确认 `${RUN_DIR}/legacy-analysis.md` 已生成
-- 确认 `${RUN_DIR}/migration-plan.json` 已生成
+- Confirm `${RUN_DIR}/legacy-analysis.md` is generated
+- Confirm `${RUN_DIR}/migration-plan.json` is generated
 
-**遗留系统分析内容**：
+**Legacy system analysis content**:
 
-- 当前架构模式识别（单体/分层/模块化）
-- 技术债务评估
-- 迁移接缝（Seams）识别
-- 推荐迁移策略（Strangler Fig / Big Bang / Incremental）
-- 风险评估和时间线
+- Current architecture pattern recognition (monolith/layered/modular)
+- Technical debt assessment
+- Migration seam identification
+- Recommended migration strategy (Strangler Fig / Big Bang / Incremental)
+- Risk assessment and timeline
 
-**产出将影响后续 Phase**：
+**Output influences subsequent phases**:
 
-- smell-detector 会检测遗留系统特有的气味
-- refactor-suggester 会生成迁移相关的重构建议
-- 执行策略会考虑迁移阶段
+- smell-detector will detect legacy-system-specific smells
+- refactor-suggester will generate migration-related refactor suggestions
+- Execution strategy will account for migration phases
 
 ---
 
-## Phase 2: 代码气味检测
+## Phase 2: Code Smell Detection
 
 ### 🚨🚨🚨 MUST EXECUTE 🚨🚨🚨
 
-**立即调用 Skill 工具：**
+**Invoke the Skill tool immediately:**
 
 ```
-# 常规模式
+# Standard mode
 Skill(skill="refactor:smell-detector", args="run_dir=${RUN_DIR} target=${TARGET}")
 
-# Legacy 模式（传递 legacy 标志，启用遗留系统气味检测）
+# Legacy mode (pass legacy flag to enable legacy smell detection)
 Skill(skill="refactor:smell-detector", args="run_dir=${RUN_DIR} target=${TARGET} legacy=true")
 ```
 
-**验证**：
+**Verification**:
 
-- 确认 `${RUN_DIR}/smells.json` 已生成
-- 确认 `${RUN_DIR}/smells-report.md` 已生成
+- Confirm `${RUN_DIR}/smells.json` is generated
+- Confirm `${RUN_DIR}/smells-report.md` is generated
 
-**检测的代码气味类型**：
+**Code smell types detected**:
 
-- 重复代码 (Duplicated Code)
-- 过长函数 (Long Method)
-- 过大类 (Large Class / God Class)
-- 过长参数列表 (Long Parameter List)
-- 散弹式修改 (Shotgun Surgery)
-- 依恋情结 (Feature Envy)
-- 数据泥团 (Data Clumps)
-- 过度耦合 (Tight Coupling)
+- Duplicated Code
+- Long Method
+- Large Class / God Class
+- Long Parameter List
+- Shotgun Surgery
+- Feature Envy
+- Data Clumps
+- Tight Coupling
 
 ---
 
-## Phase 3: 重构建议生成
+## Phase 3: Refactor Suggestion Generation
 
 ### 🚨🚨🚨 MUST EXECUTE - DO NOT SKIP 🚨🚨🚨
 
-**❌ 禁止行为：**
+**❌ Prohibited behaviors:**
 
-- ❌ 自己生成重构建议
-- ❌ 跳过 Skill 调用
+- ❌ Generate refactor suggestions yourself
+- ❌ Skip the Skill call
 
-**✅ 唯一正确做法：调用 Skill 工具**
+**✅ Only correct approach: invoke the Skill tool**
 
-### 立即执行
+### Execute now
 
-**Skill 调用：**
+**Skill call:**
 
 ```
 Skill(skill="refactor:refactor-suggester", args="run_dir=${RUN_DIR}")
 ```
 
-**验证**：确认 `${RUN_DIR}/suggestions.json` 已生成
+**Verification**: Confirm `${RUN_DIR}/suggestions.json` is generated
 
-**生成的重构建议类型**：
+**Generated refactor suggestion types**:
 
-- 提取方法 (Extract Method)
-- 提取类 (Extract Class)
-- 内联 (Inline)
-- 移动方法/字段 (Move Method/Field)
-- 重命名 (Rename)
-- 引入参数对象 (Introduce Parameter Object)
-- 用多态替换条件表达式 (Replace Conditional with Polymorphism)
-- 封装字段 (Encapsulate Field)
+- Extract Method
+- Extract Class
+- Inline
+- Move Method/Field
+- Rename
+- Introduce Parameter Object
+- Replace Conditional with Polymorphism
+- Encapsulate Field
 
 ---
 
-## Phase 4: 影响范围分析
+## Phase 4: Impact Analysis
 
 ### 🚨🚨🚨 MUST EXECUTE - DO NOT SKIP 🚨🚨🚨
 
-**❌ 禁止行为（违反则工作流失败）：**
+**❌ Prohibited behaviors (violations cause workflow failure):**
 
-- ❌ 跳过影响分析直接重构
-- ❌ 自己猜测影响范围
+- ❌ Skip impact analysis and refactor directly
+- ❌ Guess impact scope yourself
 
-**✅ 唯一正确做法：调用 Skill 工具**
+**✅ Only correct approach: invoke the Skill tool**
 
-### 立即执行
+### Execute now
 
-**Skill 调用：**
+**Skill call:**
 
 ```
 Skill(skill="refactor:impact-analyzer", args="run_dir=${RUN_DIR}")
 ```
 
-**验证**：确认 `${RUN_DIR}/impact-analysis.md` 已生成
+**Verification**: Confirm `${RUN_DIR}/impact-analysis.md` is generated
 
-**影响分析内容**：
+**Impact analysis content**:
 
-- 受影响的文件列表
-- 受影响的符号（函数/类/变量）
-- 调用关系链
-- 测试覆盖范围
-- 风险评估（低/中/高/极高）
+- List of affected files
+- Affected symbols (functions/classes/variables)
+- Call chain relationships
+- Test coverage scope
+- Risk assessment (low/medium/high/critical)
 
-**⏸️ 硬停止**：展示影响分析结果，用户确认后继续
+**⏸️ Hard stop**: Show impact analysis results, continue after user confirmation
 
 ---
 
-## Phase 5: 安全重构执行
+## Phase 5: Safe Refactor Execution
 
 ### 🚨🚨🚨 MUST EXECUTE - DO NOT SKIP 🚨🚨🚨
 
-**❌ 禁止行为（违反则工作流失败）：**
+**❌ Prohibited behaviors (violations cause workflow failure):**
 
-- ❌ 自己用 Write/Edit 工具执行重构
-- ❌ 跳过 Skill 调用直接修改文件
-- ❌ 未确认就执行高风险重构
+- ❌ Execute refactoring yourself with Write/Edit tools
+- ❌ Modify files directly by skipping Skill calls
+- ❌ Execute high-risk refactoring without confirmation
 
-**✅ 唯一正确做法：调用 Skill 工具**
+**✅ Only correct approach: invoke the Skill tool**
 
-### 执行条件
+### Execution conditions
 
-| 模式        | 行为                             |
-| ----------- | -------------------------------- |
-| analyze     | 跳过此阶段，仅输出分析报告       |
-| auto        | 自动执行低风险重构，高风险需确认 |
-| interactive | 每个重构操作逐一确认             |
+| Mode        | Behavior                                           |
+| ----------- | -------------------------------------------------- |
+| analyze     | Skip this phase, output analysis report only       |
+| auto        | Auto-execute low-risk refactors, confirm high-risk |
+| interactive | Confirm each refactor operation one by one         |
 
-### 立即执行（非 analyze 模式）
+### Execute now (non-analyze mode)
 
-**Skill 调用：**
+**Skill call:**
 
 ```
 Skill(skill="refactor:refactor-executor", args="run_dir=${RUN_DIR} mode=${MODE}")
 ```
 
-**验证**：
+**Verification**:
 
-- 确认 `${RUN_DIR}/changes.md` 已生成
-- 确认 `${RUN_DIR}/refactor-result.json` 已生成
+- Confirm `${RUN_DIR}/changes.md` is generated
+- Confirm `${RUN_DIR}/refactor-result.json` is generated
 
 ---
 
-## Phase 6: 交付
+## Phase 6: Delivery
 
-输出完成摘要：
+Output completion summary:
 
 ```
-🎉 重构任务完成！
+🎉 Refactor task complete!
 
-📋 目标: ${TARGET}
-🔀 模式: ${MODE}
+📋 Target: ${TARGET}
+🔀 Mode: ${MODE}
 
-📊 检测结果:
-- 代码气味: X 个
-- 重构建议: Y 个
-- 已执行: Z 个
-- 跳过: W 个
+📊 Detection results:
+- Code smells: X
+- Refactor suggestions: Y
+- Executed: Z
+- Skipped: W
 
-⚠️ 风险分布:
-- 低风险: A 个 ✅
-- 中风险: B 个 ⚡
-- 高风险: C 个 🔶
-- 极高风险: D 个 🔴
+⚠️ Risk distribution:
+- Low risk: A ✅
+- Medium risk: B ⚡
+- High risk: C 🔶
+- Critical risk: D 🔴
 
-📁 产物:
+📁 Artifacts:
   ${RUN_DIR}/
-  ├── smells.json           # 代码气味数据
-  ├── smells-report.md      # 气味检测报告
-  ├── suggestions.json      # 重构建议数据
-  ├── impact-analysis.md    # 影响分析报告
-  ├── changes.md            # 变更清单
-  └── refactor-result.json  # 执行结果
+  ├── smells.json           # Code smell data
+  ├── smells-report.md      # Smell detection report
+  ├── suggestions.json      # Refactor suggestion data
+  ├── impact-analysis.md    # Impact analysis report
+  ├── changes.md            # Change list
+  └── refactor-result.json  # Execution result
 
-🔄 后续:
-  - 断点续传: /refactor --run-id=${RUN_ID}
-  - 运行测试: npm test
-  - 查看变更: git diff
+🔄 Next steps:
+  - Resume: /refactor --run-id=${RUN_ID}
+  - Run tests: npm test
+  - View changes: git diff
 ```
 
 ---
 
-## 运行目录结构
+## Run Directory Structure
 
 ```
 openspec/changes/20260115T100000Z/
-├── state.json              # 工作流状态
-├── target.txt              # 重构目标
-├── smells.json             # Phase 2: 代码气味数据
-├── smells-report.md        # Phase 2: 气味检测报告
-├── suggestions.json        # Phase 3: 重构建议
-├── impact-analysis.md      # Phase 4: 影响分析
-├── changes.md              # Phase 5: 变更清单
-└── refactor-result.json    # Phase 5: 执行结果
+├── state.json              # Workflow state
+├── target.txt              # Refactor target
+├── smells.json             # Phase 2: code smell data
+├── smells-report.md        # Phase 2: smell detection report
+├── suggestions.json        # Phase 3: refactor suggestions
+├── impact-analysis.md      # Phase 4: impact analysis
+├── changes.md              # Phase 5: change list
+└── refactor-result.json    # Phase 5: execution result
 ```
 
-## 重构模式
+## Refactor Modes
 
-| 模式        | 说明     | 流程                                |
-| ----------- | -------- | ----------------------------------- |
-| analyze     | 仅分析   | 检测 → 建议 → 分析（不执行）        |
-| auto        | 自动执行 | 检测 → 建议 → 分析 → 自动执行低风险 |
-| interactive | 交互式   | 检测 → 建议 → 分析 → 逐一确认执行   |
+| Mode        | Description    | Flow                                                |
+| ----------- | -------------- | --------------------------------------------------- |
+| analyze     | Analysis only  | detect → suggest → analyze (no execution)           |
+| auto        | Auto execution | detect → suggest → analyze → auto-execute low-risk  |
+| interactive | Interactive    | detect → suggest → analyze → confirm each execution |
 
-## 参考资源
+## Reference Resources
 
 - Skills: `skills/smell-detector/`, `skills/refactor-suggester/`, `skills/impact-analyzer/`, `skills/refactor-executor/`
-- 代码气味参考: `skills/smell-detector/references/smell-catalog.md`
-- 重构模式参考: `skills/refactor-suggester/references/refactoring-patterns.md`
+- Code smell reference: `skills/smell-detector/references/smell-catalog.md`
+- Refactor pattern reference: `skills/refactor-suggester/references/refactoring-patterns.md`

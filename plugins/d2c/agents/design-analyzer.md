@@ -11,6 +11,7 @@ tools:
   - Bash
   - SendMessage
   - AskUserQuestion
+memory: project
 ---
 
 # Design Analyzer Agent
@@ -39,9 +40,11 @@ Write `${RUN_DIR}/visual-analysis.md` containing:
 # Visual Analysis
 
 ## Page Overview
+
 [Brief description of the page/screen purpose and layout pattern]
 
 ## Page Background
+
 - **Color**: [hex — e.g., #FFFFFF for white pages]
 - **Pattern**: [solid | gradient | textured]
 - **Gradient** (if applicable): [full CSS gradient value]
@@ -49,11 +52,13 @@ Write `${RUN_DIR}/visual-analysis.md` containing:
 This value is used by the image generator to ensure section background images blend seamlessly with the page — their edges fade to this exact color.
 
 ## Component Tree
+
 [Hierarchical structure of identified components]
 
 ## Components
 
 ### Component: [Name]
+
 - **Type**: [card | button | nav | form | list | modal | ...]
 - **Bounds**: [approximate position and size]
 - **Styles**:
@@ -72,12 +77,15 @@ This value is used by the image generator to ensure section background images bl
 - **States**: [default, hover, active, disabled — if detectable]
 
 ## Color Palette
+
 [Extracted color values with usage context]
 
 ## Spacing System
+
 [Detected spacing patterns and consistency notes]
 
 ## Layout Pattern
+
 [Flexbox/Grid recommendations for the overall layout]
 
 ## Image Assets
@@ -87,6 +95,7 @@ This value is used by the image generator to ensure section background images bl
 **Why**: Generating individual component images (e.g., just the character illustration) creates a "pasted-on" look with unnatural boundaries. A section-level background image ensures all visual elements blend naturally.
 
 ### Asset: [section-name]-bg
+
 - **Type**: [section-bg | hero-bg | card-bg | footer-bg | full-page-bg]
 - **Section**: [which section/component this background belongs to]
 - **Dimensions**: [section width x height in px — full width of the section]
@@ -100,6 +109,7 @@ This value is used by the image generator to ensure section background images bl
 ## Incremental Mode
 
 When the user requests analysis of specific components only:
+
 1. Analyze only the selected area of the screenshot
 2. Output a focused component analysis (not full page)
 3. Include prop interface suggestions for integration with parent components
@@ -118,6 +128,7 @@ When the user requests analysis of specific components only:
 6. **Text gradients**: Detect gradient text and document as `background-clip: text` patterns
 
 For each component with gradients, add a `Gradients` field under Styles:
+
 ```markdown
 - **Gradients**:
   - Layer 1: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%) — overlay

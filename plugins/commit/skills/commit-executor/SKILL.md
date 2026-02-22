@@ -1,10 +1,10 @@
 ---
 name: commit-executor
 description: |
-  【触发条件】Commit workflow final step: execute git commit.
-  【核心产出】${run_dir}/commit-result.json
-  【不触发】用户取消提交或前置步骤失败时
-  【先问什么】If hook fails, ask to skip or fix.
+  [Trigger] Commit workflow final step: execute git commit.
+  [Output] ${run_dir}/commit-result.json.
+  [Skip] When user cancels commit or prior steps fail.
+  [Ask] If hook fails, ask to skip or fix.
 allowed-tools:
   - Bash
   - Read

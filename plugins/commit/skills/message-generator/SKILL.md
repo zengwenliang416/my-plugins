@@ -1,10 +1,10 @@
 ---
 name: message-generator
 description: |
-  【触发条件】Commit workflow step 3: generate commit message.
-  【核心产出】${run_dir}/commit-message.md
-  【不触发】缺少变更分析结果且用户不愿先补齐分析时
-  【先问什么】If analysis missing, ask to run analyzer first.
+  [Trigger] Commit workflow step 3: generate commit message.
+  [Output] ${run_dir}/commit-message.md.
+  [Skip] When change analysis is missing and user refuses to run analysis first.
+  [Ask] If analysis missing, ask to run analyzer first.
 allowed-tools:
   - Read
   - Write

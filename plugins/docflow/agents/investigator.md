@@ -11,6 +11,7 @@ tools:
   - WebFetch
 model: sonnet
 color: cyan
+memory: project
 ---
 
 You are `investigator`, an elite agent specializing in rapid, evidence-based codebase analysis.

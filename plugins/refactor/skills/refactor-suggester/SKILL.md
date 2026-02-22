@@ -1,12 +1,12 @@
 ---
 name: refactor-suggester
 description: |
-  【触发条件】重构工作流第二步：根据代码气味生成重构建议。
-  【核心产出】输出 ${run_dir}/suggestions.json。
-  【不触发】代码气味检测（用 smell-detector）、重构执行（用 refactor-executor）。
-  【先问什么】smells.json 不存在时，询问是否先执行检测
-  【MUST】codex-cli 生成技术建议，必须使用。
-  【Legacy 模式】legacy=true 时，额外生成迁移相关的重构建议。
+  [Trigger] Refactor workflow step 2: generate refactoring suggestions based on detected code smells.
+  [Output] ${run_dir}/suggestions.json.
+  [Skip] For smell detection (use smell-detector) or refactor execution (use refactor-executor).
+  [Ask] If smells.json is missing, ask whether to run detection first.
+  [Must] codex-cli must be used to generate technical suggestions.
+  [Legacy] When legacy=true, additionally generate migration-related refactoring suggestions.
   [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Write
@@ -49,9 +49,9 @@ arguments:
 
 ## MCP 工具集成
 
-| MCP 工具              | 用途                           | 触发条件        |
-| --------------------- | ------------------------------ | --------------- |
-| `auggie-mcp`          | 分析代码上下文，验证建议可行性 | 🚨 必须使用     |
+| MCP 工具     | 用途                           | 触发条件    |
+| ------------ | ------------------------------ | ----------- |
+| `auggie-mcp` | 分析代码上下文，验证建议可行性 | 🚨 必须使用 |
 
 ## 前置检查
 
@@ -68,8 +68,6 @@ arguments:
 **重要**：禁止一次性加载全部上下文，必须遵循“先摘要 → 再命中细节”的顺序。
 
 ## 执行流程
-
-
 
 ```
   thought: "规划重构建议策略。需要：1) 分析气味类型 2) 匹配重构模式 3) 评估可行性 4) 排序优先级 5) 生成执行计划",
@@ -366,11 +364,7 @@ mcp__auggie-mcp__codebase-retrieval({
       },
       "description": "拆分超长函数",
       "risk_level": "low",
-      "steps": [
-        "提取验证逻辑",
-        "提取转换逻辑",
-        "提取持久化逻辑"
-      ]
+      "steps": ["提取验证逻辑", "提取转换逻辑", "提取持久化逻辑"]
     }
   ],
   "migration_suggestions": []

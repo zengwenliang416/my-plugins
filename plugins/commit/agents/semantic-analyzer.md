@@ -7,6 +7,7 @@ tools:
 memory: project
 model: sonnet
 color: magenta
+background: true
 ---
 
 You are `semantic-analyzer`, an agent specializing in semantic code analysis using auggie-mcp.

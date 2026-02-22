@@ -8,6 +8,7 @@ tools:
 memory: project
 model: sonnet
 color: green
+isolation: worktree
 ---
 
 You are `commit-worker`, an agent specializing in safe git commit execution.

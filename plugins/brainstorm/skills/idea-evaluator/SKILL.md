@@ -1,10 +1,10 @@
 ---
 name: idea-evaluator
 description: |
-  【触发条件】 Brainstorm Phase 3: Evaluate and filter ideas
-  【核心产出】 ${run_dir}/evaluation.md (with mindmap and evaluation matrix)
-  【不触发】 ideas-pool.md does not exist or idea count < 5
-  【先问什么】 When criteria missing, ask priority dimension (impact/feasibility/innovation)
+  [Trigger] Brainstorm Phase 3: evaluate and filter ideas.
+  [Output] ${run_dir}/evaluation.md with mindmap and evaluation matrix.
+  [Skip] When ideas-pool.md does not exist or idea count < 5.
+  [Ask] When criteria missing, ask priority dimension (impact/feasibility/innovation).
   [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/calculate_scores.ts`).
 allowed-tools:
   - Read
@@ -33,10 +33,10 @@ npx tsx scripts/calculate_scores.ts [args]
 
 ## MCP Tool Integration
 
-| Tool                  | Purpose                                           | Required |
-| --------------------- | ------------------------------------------------- | -------- |
-| `auggie-mcp`          | Retrieve code context for feasibility assessment  | Yes      |
-| `context7`            | Query technical constraints and best practices    | Yes      |
+| Tool         | Purpose                                          | Required |
+| ------------ | ------------------------------------------------ | -------- |
+| `auggie-mcp` | Retrieve code context for feasibility assessment | Yes      |
+| `context7`   | Query technical constraints and best practices   | Yes      |
 
 ## Parameters
 
@@ -72,7 +72,6 @@ Parse: idea ID, title, description, source (codex/gemini), existing scores.
 - Operations: growth strategy, retention
 
 **Rules:** Each idea belongs to one primary group, may have secondary tag.
-
 
 **Required MCP call:**
 

@@ -1,5 +1,5 @@
 {
   "name": "hooks",
-  "description": "通用钩子集合：意图评估、日志备份、代码质量、智能路由、安全防护、会话管理",
+  "description": "General-purpose hook collection: intent evaluation, log backup, code quality, smart routing, security, session management",
   "version": "1.0.0"
 }

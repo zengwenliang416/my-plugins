@@ -1,10 +1,10 @@
 ---
 name: gemini-cli
 description: |
-  【触发条件】Brainstorm 需要用户体验与创意视角的方案发散时
-  【核心产出】用户价值导向的创意候选项与体验建议
-  【不触发】仅关注后端实现细节且无需 UX 创意输入时
-  【先问什么】目标用户、使用场景、体验优先级与创新方向
+  [Trigger] When brainstorm needs UX and creative perspective for idea divergence.
+  [Output] User-value-oriented creative candidates and experience suggestions.
+  [Skip] When focusing solely on backend implementation with no UX input needed.
+  [Ask] Target users, usage scenarios, experience priorities, and innovation direction.
   [Resource Usage] Use `scripts/brainstorm_gemini.ts` with references/ and assets/ materials.
 allowed-tools:
   - Bash

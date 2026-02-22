@@ -1,10 +1,10 @@
 ---
 name: codex-cli
 description: |
-  【触发条件】重构工作流中需要后端代码分析、气味检测、重构 patch 生成、安全性评估时使用。
-  【核心产出】只读沙箱分析代码 → 输出 unified diff patch → Claude 审查重构后应用
-  【不触发】前端 UI/CSS 重构（改用 gemini-cli）、简单格式化
-  【先问什么】无需询问，由其他 skills 调用
+  [Trigger] When refactor workflow needs backend code analysis, smell detection, patch generation, or safety review.
+  [Output] Read-only sandbox analysis → unified diff patch → Claude review then apply.
+  [Skip] For frontend UI/CSS refactoring (use gemini-cli) or simple formatting.
+  [Ask] No user input needed; invoked by other skills.
   [Resource Usage] Use references/, assets/, and scripts/ (`scripts/invoke-codex.ts`).
 allowed-tools:
   - Bash

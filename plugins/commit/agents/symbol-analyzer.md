@@ -7,6 +7,7 @@ tools:
 memory: project
 model: sonnet
 color: yellow
+background: true
 ---
 
 You are `symbol-analyzer`, an agent specializing in symbol-level code analysis using LSP.

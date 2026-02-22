@@ -3,24 +3,24 @@
 <!-- Machine-readable metadata for unified-eval.sh -->
 <available-skills>
 
-| Skill           | Trigger                | Description                |
-| --------------- | ---------------------- | -------------------------- |
-| `/tpd:init`     | "初始化", "init tpd"   | 初始化 OpenSpec 环境       |
-| `/tpd:thinking` | "深度思考", "分析问题" | 约束集探索（独立阶段）     |
-| `/tpd:plan`     | "制定计划", "规划"     | 零决策计划生成（独立阶段） |
-| `/tpd:dev`      | "开发", "实现"         | 最小相位实现（独立阶段）   |
+| Skill           | Trigger                | Description                                |
+| --------------- | ---------------------- | ------------------------------------------ |
+| `/tpd:init`     | "初始化", "init tpd"   | Initialize OpenSpec environment            |
+| `/tpd:thinking` | "深度思考", "分析问题" | Constraint-set exploration (solo phase)    |
+| `/tpd:plan`     | "制定计划", "规划"     | Zero-decision plan generation (solo phase) |
+| `/tpd:dev`      | "开发", "实现"         | Minimal-phase implementation (solo phase)  |
 
 </available-skills>
 
 ## Overview
 
-TPD v2: 独立四阶段工作流（thinking → plan → dev），支持并行分析与 OpenSpec 数据交接。
+TPD v2: Independent four-phase workflow (thinking → plan → dev) with parallel analysis and OpenSpec data handoff.
 
-四个阶段完全独立，通过 OpenSpec 的 proposal_id 串联：
+All four phases are fully independent, linked by OpenSpec's proposal_id:
 
-- 每个阶段可单独执行
-- 数据交换通过 `openspec/changes/<proposal_id>/` 目录
-- 无需按顺序执行（但推荐 thinking → plan → dev）
+- Each phase can be executed standalone
+- Data exchange via `openspec/changes/<proposal_id>/` directory
+- No required execution order (but thinking → plan → dev is recommended)
 
 ## Quick Start
 
@@ -41,13 +41,13 @@ TPD v2: 独立四阶段工作流（thinking → plan → dev），支持并行�
 ## Phase Data Flow
 
 ```
-init ─────→ OpenSpec 初始化
+init ─────→ OpenSpec initialization
                 ↓ (openspec/)
-thinking ─────→ 约束集输出 → openspec/changes/<proposal_id>/
-                ↓ (proposal_id 串联)
-plan ─────────→ 零决策计划 → openspec/changes/<proposal_id>/
-                ↓ (proposal_id 串联)
-dev ──────────→ 最小可验证相位实现
+thinking ─────→ constraint-set output → openspec/changes/<proposal_id>/
+                ↓ (proposal_id linkage)
+plan ─────────→ zero-decision plan → openspec/changes/<proposal_id>/
+                ↓ (proposal_id linkage)
+dev ──────────→ minimal verifiable phase implementation
 ```
 
 ## Key Artifacts

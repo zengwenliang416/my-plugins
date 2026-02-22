@@ -1,11 +1,11 @@
 ---
 name: idea-generator
 description: |
-  【触发条件】 Brainstorm Phase 2: Multi-model parallel idea generation
-  【核心产出】 ${run_dir}/ideas-pool.md (minimum 20 ideas)
-  【不触发】 research-brief.md does not exist
-  【先问什么】 When method param missing, ask preferred divergence method (scamper/hats/auto)
-  [Required] Must call codex-cli and gemini-cli in parallel
+  [Trigger] Brainstorm Phase 2: multi-model parallel idea generation.
+  [Output] ${run_dir}/ideas-pool.md with minimum 20 ideas.
+  [Skip] When research-brief.md does not exist.
+  [Ask] When method param missing, ask preferred divergence method (scamper/hats/auto).
+  [Required] Must call codex-cli and gemini-cli in parallel.
   [Resource Usage] Use references/, assets/, and scripts/ (`scripts/merge_ideas.ts`, `../codex-cli/scripts/brainstorm_codex.ts`, `../gemini-cli/scripts/brainstorm_gemini.ts`).
 allowed-tools:
   - Read
@@ -36,10 +36,10 @@ npx tsx scripts/merge_ideas.ts [args]
 
 ## MCP Tool Integration
 
-| Tool                  | Purpose                                             | Required |
-| --------------------- | --------------------------------------------------- | -------- |
-| `auggie-mcp`          | Retrieve code structure for technical context       | Yes      |
-| `context7`            | Query technical docs for implementation inspiration | Yes      |
+| Tool         | Purpose                                             | Required |
+| ------------ | --------------------------------------------------- | -------- |
+| `auggie-mcp` | Retrieve code structure for technical context       | Yes      |
+| `context7`   | Query technical docs for implementation inspiration | Yes      |
 
 ## Parameters
 
@@ -62,7 +62,6 @@ research_brief=$(cat "${run_dir}/research-brief.md")
 ```
 
 Extract: topic, core problem, divergence directions, key trends/cases.
-
 
 **Required MCP call:**
 

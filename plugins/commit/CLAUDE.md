@@ -11,34 +11,34 @@
 
 ## Overview
 
-规范提交工作流：调查变更 → 并行分析 → 合成 → 分支 → 消息 → 提交。
+Structured commit workflow: investigate changes → parallel analysis → synthesize → branch → message → commit.
 
-特点：
+Features:
 
-- **并行分析**: 同时运行语义分析和符号分析，更快更准确
-- **智能分支**: 自动创建 feature/fix/chore 分支
-- **Conventional Commits**: 自动生成规范提交消息
-- **Changelog**: 自动更新 CHANGELOG.md
+- **Parallel analysis**: Runs semantic and symbol analysis simultaneously for speed and accuracy
+- **Smart branching**: Auto-creates feature/fix/chore branches
+- **Conventional Commits**: Auto-generates standardized commit messages
+- **Changelog**: Auto-updates CHANGELOG.md
 
 ## Quick Start
 
 ```bash
-# 基本提交
+# Basic commit
 /commit
 
-# 跳过 git hooks
+# Skip git hooks
 /commit --no-verify
 
-# 修改上次提交
+# Amend last commit
 /commit --amend
 
-# 指定类型和范围
+# Specify type and scope
 /commit --type feat --scope auth
 
-# 跳过 CHANGELOG
+# Skip CHANGELOG
 /commit --no-changelog
 
-# 使用当前分支（不创建新分支）
+# Use current branch (no new branch)
 /commit --skip-branch
 ```
 
@@ -61,18 +61,18 @@
 
 ## Key Artifacts
 
-运行目录: `openspec/changes/${CHANGE_ID}/`
+Run directory: `openspec/changes/${CHANGE_ID}/`
 
-| Artifact                   | Description      |
-| -------------------------- | ---------------- |
-| `changes-raw.json`         | 原始变更数据     |
-| `investigation-summary.md` | 调查摘要         |
-| `semantic-analysis.json`   | 语义分析结果     |
-| `symbol-analysis.json`     | 符号分析结果     |
-| `changes-analysis.json`    | 合成后的分析结果 |
-| `branch-info.json`         | 分支信息         |
-| `commit-message.md`        | 生成的提交消息   |
-| `changelog-entry.md`       | CHANGELOG 条目   |
+| Artifact                   | Description              |
+| -------------------------- | ------------------------ |
+| `changes-raw.json`         | Raw change data          |
+| `investigation-summary.md` | Investigation summary    |
+| `semantic-analysis.json`   | Semantic analysis result |
+| `symbol-analysis.json`     | Symbol analysis result   |
+| `changes-analysis.json`    | Synthesized analysis     |
+| `branch-info.json`         | Branch information       |
+| `commit-message.md`        | Generated commit message |
+| `changelog-entry.md`       | CHANGELOG entry          |
 
 ## Commit Types
 
@@ -92,12 +92,12 @@
 
 ## Agent Types
 
-| Agent               | Purpose                  |
-| ------------------- | ------------------------ |
-| change-investigator | 快速调查 git 变更        |
-| semantic-analyzer   | 语义分析（意图理解）     |
-| symbol-analyzer     | 符号分析（LSP 精确定位） |
-| commit-worker       | 执行 git commit 操作     |
+| Agent               | Purpose                                  |
+| ------------------- | ---------------------------------------- |
+| change-investigator | Quickly investigate git changes          |
+| semantic-analyzer   | Semantic analysis (intent understanding) |
+| symbol-analyzer     | Symbol analysis (LSP precise location)   |
+| commit-worker       | Execute git commit operations            |
 
 ---
 

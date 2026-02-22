@@ -1,10 +1,10 @@
 ---
 name: commit
 description: |
-  【触发条件】用户要求提交代码（commit / save changes / wrap up）
-  【核心产出】规范化 commit message，并在确认后执行 git commit
-  【不触发】无代码变更或用户仅询问概念问题
-  【先问什么】是否需要暂存文件、是否直接使用生成消息
+  [Trigger] User requests code commit (commit / save changes / wrap up).
+  [Output] Standardized commit message; executes git commit after confirmation.
+  [Skip] When there are no code changes or user is asking conceptual questions only.
+  [Ask] Whether to stage files and whether to use the generated message directly.
 allowed-tools:
   - Bash
   - Read

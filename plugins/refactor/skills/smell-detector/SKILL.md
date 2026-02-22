@@ -1,12 +1,12 @@
 ---
 name: smell-detector
 description: |
-  【触发条件】重构工作流第一步：检测目标代码中的代码气味。
-  【核心产出】输出 ${run_dir}/smells.json 和 ${run_dir}/smells-report.md。
-  【不触发】直接重构（用 refactor-executor）、影响分析（用 impact-analyzer）。
-  【先问什么】目标路径过于宽泛时，询问具体范围
-  【MUST】auggie-mcp 语义分析 + LSP 符号分析，必须使用。
-  【Legacy 模式】legacy=true 时，额外检测遗留系统特有气味。
+  [Trigger] Refactor workflow step 1: detect code smells in the target codebase.
+  [Output] ${run_dir}/smells.json and ${run_dir}/smells-report.md.
+  [Skip] For direct refactoring (use refactor-executor) or impact analysis (use impact-analyzer).
+  [Ask] When target path is too broad, ask for a specific scope.
+  [Must] auggie-mcp semantic analysis + LSP symbol analysis must be used.
+  [Legacy] When legacy=true, additionally detect legacy-system-specific smells.
   [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Write
@@ -54,9 +54,9 @@ arguments:
 
 ## MCP 工具集成
 
-| MCP 工具              | 用途                             | 触发条件        |
-| --------------------- | -------------------------------- | --------------- |
-| `auggie-mcp`          | 语义分析代码结构和依赖关系       | 🚨 必须首先使用 |
+| MCP 工具     | 用途                       | 触发条件        |
+| ------------ | -------------------------- | --------------- |
+| `auggie-mcp` | 语义分析代码结构和依赖关系 | 🚨 必须首先使用 |
 
 ## 上下文加载策略（渐进式，节省 token）
 
@@ -68,8 +68,6 @@ arguments:
 **重要**：避免一次性读取全部说明与大样例，使用“先概要、后细节”的按需加载流程。
 
 ## 执行流程
-
-
 
 ```
   thought: "规划代码气味检测策略。需要：1) 分析目标范围 2) 确定检测维度 3) 设定阈值标准 4) 规划符号分析 5) 规划报告结构",

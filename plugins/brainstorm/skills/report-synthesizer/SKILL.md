@@ -1,10 +1,10 @@
 ---
 name: report-synthesizer
 description: |
-  【触发条件】 Brainstorm Phase 4: Generate final report
-  【核心产出】 ${run_dir}/brainstorm-report.md
-  【不触发】 evaluation.md does not exist
-  【先问什么】 Report format preference (brief/detailed)
+  [Trigger] Brainstorm Phase 4: generate final report.
+  [Output] ${run_dir}/brainstorm-report.md.
+  [Skip] When evaluation.md does not exist.
+  [Ask] Report format preference (brief/detailed).
   [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/generate_report.ts`).
 allowed-tools:
   - Read
@@ -33,10 +33,10 @@ npx tsx scripts/generate_report.ts [args]
 
 ## MCP Tool Integration
 
-| Tool                  | Purpose                                       | Required |
-| --------------------- | --------------------------------------------- | -------- |
-| `auggie-mcp`          | Verify technical proposals against codebase   | Yes      |
-| `context7`            | Supplement best practice recommendations      | Yes      |
+| Tool         | Purpose                                     | Required |
+| ------------ | ------------------------------------------- | -------- |
+| `auggie-mcp` | Verify technical proposals against codebase | Yes      |
+| `context7`   | Supplement best practice recommendations    | Yes      |
 
 ## Parameters
 
@@ -75,7 +75,6 @@ If format param missing, use AskUserQuestion:
 
 - **brief**: Concise version (quick sharing)
 - **detailed**: Full version (deep analysis)
-
 
 **Required MCP call:**
 

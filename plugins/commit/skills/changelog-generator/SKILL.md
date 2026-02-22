@@ -1,11 +1,11 @@
 ---
 name: changelog-generator
 description: |
-  【触发条件】Commit workflow Phase 5.5: update CHANGELOG.md.
-  【核心产出】Updated CHANGELOG.md + ${run_dir}/changelog-entry.md
-  【不触发】用户传入 --no-changelog 或确认跳过更新日志时
-  【先问什么】目标版本号、是否写入 Unreleased 区段、是否批量提交模式
-  【🚨 Mandatory】Must run unless --no-changelog.
+  [Trigger] Commit workflow Phase 5.5: update CHANGELOG.md.
+  [Output] Updated CHANGELOG.md + ${run_dir}/changelog-entry.md.
+  [Skip] When user passes --no-changelog or confirms skipping.
+  [Ask] Target version, whether to write to Unreleased section, whether in batch commit mode.
+  [Mandatory] Must run unless --no-changelog.
 allowed-tools:
   - Bash
   - Read

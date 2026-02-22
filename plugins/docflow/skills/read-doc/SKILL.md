@@ -1,10 +1,10 @@
 ---
 name: read-doc
 description: |
-  【触发条件】用户要求快速理解项目、阅读现有 llmdoc
-  【核心产出】项目概览摘要（目标、架构、流程、参考文档）
-  【不触发】llmdoc 尚未初始化且用户要求立即编码
-  【先问什么】关注的业务域、需要概览还是深入某模块
+  [Trigger] User requests quick project understanding or reading existing llmdoc.
+  [Output] Project overview summary (goals, architecture, workflows, reference docs).
+  [Skip] When llmdoc is not initialized and user wants to code immediately.
+  [Ask] Business domain of interest and whether overview or deep-dive is needed.
 context: fork
 allowed-tools:
   - Read

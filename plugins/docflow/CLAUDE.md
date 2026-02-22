@@ -1,4 +1,4 @@
-Always answer in 简体中文
+Always answer in Chinese (Simplified).
 
 <system-reminder>
 
@@ -32,16 +32,16 @@ If `llmdoc/` does not exist, ignore llmdoc-related requirements for this project
 
 The following commands/skills are available in docflow:
 
-| Skill/Command | Trigger | Description |
-| --- | --- | --- |
-| `/docflow:init-doc` | "init llmdoc", "initialize docs", "初始化文档" | Initialize llmdoc for a new project |
+| Skill/Command         | Trigger                                         | Description                            |
+| --------------------- | ----------------------------------------------- | -------------------------------------- |
+| `/docflow:init-doc`   | "init llmdoc", "initialize docs", "初始化文档"  | Initialize llmdoc for a new project    |
 | `/docflow:with-scout` | "investigate first", "先调研再执行", "复杂任务" | Investigation-first execution workflow |
-| `/docflow:what` | "clarify request", "需求不清晰", "先澄清" | Clarify vague requests with options |
-| `/investigate` | "what is", "how does X work", "analyze" | Quick doc-first codebase investigation |
-| `/read-doc` | "understand project", "read docs" | Read llmdoc and summarize project |
-| `/update-doc` | "update docs", "sync documentation" | Update llmdoc after code changes |
-| `/doc-workflow` | "documentation workflow", "how to document" | Explain llmdoc workflow |
-| `/commit` | "commit", "save changes", "wrap up" | Generate and execute commit message |
+| `/docflow:what`       | "clarify request", "需求不清晰", "先澄清"       | Clarify vague requests with options    |
+| `/investigate`        | "what is", "how does X work", "analyze"         | Quick doc-first codebase investigation |
+| `/read-doc`           | "understand project", "read docs"               | Read llmdoc and summarize project      |
+| `/update-doc`         | "update docs", "sync documentation"             | Update llmdoc after code changes       |
+| `/doc-workflow`       | "documentation workflow", "how to document"     | Explain llmdoc workflow                |
+| `/commit`             | "commit", "save changes", "wrap up"             | Generate and execute commit message    |
 
 </available-skills>
 

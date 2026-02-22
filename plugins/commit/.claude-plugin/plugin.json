@@ -1,5 +1,5 @@
 {
   "name": "commit",
-  "description": "规范提交工作流：调查变更 → 并行分析 → 合成 → 分支 → 消息 → 提交",
+  "description": "Standardized commit workflow: collect → analyze → generate message → update changelog → execute",
   "version": "2.0.0"
 }

@@ -1,11 +1,11 @@
 ---
 name: impact-analyzer
 description: |
-  【触发条件】重构工作流第三步：分析重构建议的影响范围。
-  【核心产出】输出 ${run_dir}/impact-analysis.md。
-  【不触发】检测气味（用 smell-detector）、执行重构（用 refactor-executor）。
-  【先问什么】suggestions.json 不存在时，询问是否先执行建议生成
-  【MUST】LSP.findReferences 追踪引用，必须使用。
+  [Trigger] Refactor workflow step 3: analyze impact scope of refactoring suggestions.
+  [Output] ${run_dir}/impact-analysis.md.
+  [Skip] For smell detection (use smell-detector) or refactor execution (use refactor-executor).
+  [Ask] If suggestions.json is missing, ask whether to run suggester first.
+  [Must] LSP.findReferences must be used to trace references.
   [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Write
@@ -42,9 +42,9 @@ arguments:
 
 ## MCP 工具集成
 
-| MCP 工具              | 用途                         | 触发条件        |
-| --------------------- | ---------------------------- | --------------- |
-| `auggie-mcp`          | 分析模块依赖关系和架构影响   | 🚨 必须使用     |
+| MCP 工具     | 用途                       | 触发条件    |
+| ------------ | -------------------------- | ----------- |
+| `auggie-mcp` | 分析模块依赖关系和架构影响 | 🚨 必须使用 |
 
 ## 前置检查
 
@@ -52,8 +52,6 @@ arguments:
 2. 如果不存在，提示用户先执行 refactor-suggester
 
 ## 执行流程
-
-
 
 ```
   thought: "规划影响范围分析策略。需要：1) 解析重构建议 2) 追踪符号引用 3) 分析测试覆盖 4) 评估风险等级 5) 生成影响报告",

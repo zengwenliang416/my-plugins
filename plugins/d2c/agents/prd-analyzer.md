@@ -10,6 +10,7 @@ tools:
   - Glob
   - Bash
   - SendMessage
+memory: project
 ---
 
 # PRD Analyzer Agent
@@ -32,12 +33,14 @@ You are a senior product analyst specializing in translating product requirement
 ## Output
 
 ### Always produced:
+
 `${RUN_DIR}/structured-requirements.md`:
 
 ```markdown
 # Structured Requirements
 
 ## Document Overview
+
 - **Title**: [PRD title]
 - **Scope**: [pages/features covered]
 - **Module Count**: [number of distinct modules]
@@ -45,27 +48,33 @@ You are a senior product analyst specializing in translating product requirement
 ## Modules
 
 ### Module: [Name]
+
 **Description**: [module purpose]
 **Pages**: [related pages/screens]
 
 #### Requirements
+
 1. [Structured requirement with conditions and expected behavior]
 2. [...]
 
 #### Interactions
+
 - [User action] → [System response]
 - [...]
 
 #### States
+
 - [State name]: [description and trigger conditions]
 - [...]
 
 #### API Dependencies
+
 - [Data needed from backend — described functionally, not as specific endpoints]
 - [...]
 ```
 
 ### Produced when chunking is triggered:
+
 `${RUN_DIR}/chunks.json`:
 
 ```json
@@ -96,17 +105,20 @@ You are a senior product analyst specializing in translating product requirement
 ## Chunking Rules
 
 **Threshold for multi-agent mode:**
+
 - 3+ distinct feature modules, OR
 - 5000+ characters of requirement content, OR
 - 3+ tables with 5+ rows each
 
 **Chunking strategy:**
+
 1. Split by document heading structure (H2/H3 as module boundaries)
 2. Keep related tables within the same chunk
 3. Preserve cross-references between chunks in `dependencies`
 4. Each chunk MUST be self-contained enough for independent code generation
 
 **Below threshold:**
+
 - Process entire PRD in single-agent mode
 - Still output `structured-requirements.md` but skip `chunks.json`
 

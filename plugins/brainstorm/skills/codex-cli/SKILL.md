@@ -1,10 +1,10 @@
 ---
 name: codex-cli
 description: |
-  【触发条件】Brainstorm 需要技术视角进行创意发散与可行性评估时
-  【核心产出】技术架构视角的候选方案、约束分析与实现路径建议
-  【不触发】仅需用户体验创意或不需要外部模型支持时
-  【先问什么】是否优先考虑可落地性、成本、风险或创新性
+  [Trigger] When brainstorm needs technical perspective for idea divergence and feasibility assessment.
+  [Output] Technical architecture candidates, constraint analysis, and implementation path suggestions.
+  [Skip] When only UX creativity is needed or no external model support is required.
+  [Ask] Whether to prioritize feasibility, cost, risk, or innovation.
   [Resource Usage] Use `scripts/brainstorm_codex.ts` together with references/ and assets/ materials.
 allowed-tools:
   - Bash

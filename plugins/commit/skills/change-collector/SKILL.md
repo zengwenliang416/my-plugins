@@ -1,10 +1,10 @@
 ---
 name: change-collector
 description: |
-  【触发条件】Commit workflow step 1: collect git changes.
-  【核心产出】${run_dir}/changes-raw.json
-  【不触发】当前目录不是 git 仓库且用户拒绝初始化时
-  【先问什么】If not a git repo, ask to initialize.
+  [Trigger] Commit workflow step 1: collect git changes.
+  [Output] ${run_dir}/changes-raw.json.
+  [Skip] When current directory is not a git repo and user refuses to initialize.
+  [Ask] If not a git repo, ask to initialize.
   [Resource Usage] Use references/, assets/, scripts/ (entry: `scripts/get-git-status.ts`).
 allowed-tools:
   - Bash

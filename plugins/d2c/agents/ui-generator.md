@@ -11,6 +11,8 @@ tools:
   - Grep
   - Glob
   - SendMessage
+memory: project
+isolation: worktree
 ---
 
 # UI Generator Agent
@@ -56,11 +58,13 @@ generated-code/
 When `visual-analysis.md` contains an `## Image Assets` section, generate image assets BEFORE writing component code.
 
 The lead orchestrator invokes the skill:
+
 ```
 Skill(skill="d2c:image-generator", args="assets_file=${RUN_DIR}/visual-analysis.md output_dir=${RUN_DIR}/generated-code/assets design_screenshot=${SCREENSHOT_PATH}")
 ```
 
 After skill completion, this agent:
+
 1. Read `${RUN_DIR}/generated-code/assets/asset-manifest.json` to get generated file paths
 2. Apply section-background CSS pattern for each asset (see below)
 3. If an asset has `"status": "failed"`, use a CSS gradient fallback and add a TODO comment
@@ -72,11 +76,12 @@ Also write `${RUN_DIR}/fidelity-report.md` comparing generated structure against
 **CRITICAL STRATEGY**: Generated images are SECTION-LEVEL BACKGROUNDS, not individual component images. Each image contains all non-code visual elements (illustrations, decorations, gradients) for an entire section. Code only renders semantic/interactive elements (text, buttons, forms) on top.
 
 ### CSS Implementation
+
 ```css
 .hero-section {
   position: relative;
   min-height: [section height from analysis];
-  background: url('./assets/hero-section-bg.png') center/cover no-repeat;
+  background: url("./assets/hero-section-bg.png") center/cover no-repeat;
 }
 
 /* All text/interactive elements sit on top of the background */
@@ -87,6 +92,7 @@ Also write `${RUN_DIR}/fidelity-report.md` comparing generated structure against
 ```
 
 ### React Example
+
 ```jsx
 <section className={styles.heroSection}>
   <div className={styles.content}>
@@ -98,11 +104,14 @@ Also write `${RUN_DIR}/fidelity-report.md` comparing generated structure against
 ```
 
 ### Rules
+
 1. **NEVER use `<img>` tags for section backgrounds** — always use CSS `background-image`
 2. **Code overlay zones**: Position text/buttons within the clean areas specified in `Code Overlay Zones` from the visual analysis
 3. **Gradient layering**: If the section also has code-reproducible gradients, layer them with the background image:
    ```css
-   background: linear-gradient(...), url('./assets/section-bg.png') center/cover no-repeat;
+   background:
+     linear-gradient(...),
+     url("./assets/section-bg.png") center/cover no-repeat;
    ```
 4. **Responsive**: Use `background-size: cover` and `background-position: center` for responsive behavior
 5. **Fallback**: If image generation failed, use the extracted gradient/color as pure CSS fallback
@@ -112,6 +121,7 @@ Also write `${RUN_DIR}/fidelity-report.md` comparing generated structure against
 ## Tech Stack Rules
 
 ### React
+
 - Functional components with hooks
 - JSX with semantic HTML elements (button, nav, header, section, article, main, aside, footer, ul/li)
 - CSS Modules for styling (`.module.css`)
@@ -119,6 +129,7 @@ Also write `${RUN_DIR}/fidelity-report.md` comparing generated structure against
 - Export default for page components, named exports for sub-components
 
 ### Vue
+
 - Vue 3 Single File Components (`.vue`)
 - Composition API (`<script setup>`)
 - Scoped styles (`<style scoped>`)
@@ -133,14 +144,15 @@ Also write `${RUN_DIR}/fidelity-report.md` comparing generated structure against
 2. **Multi-layer gradients**: Use comma-separated `background` shorthand or `background-image` stacking
 3. **Gradient overlays on images**: Combine gradient and `url()` in a single `background` property:
    ```css
-   background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%),
-               url('./assets/hero-bg.png') center/cover no-repeat;
+   background:
+     linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.6) 100%),
+     url("./assets/hero-bg.png") center/cover no-repeat;
    ```
 4. **Text gradients**: Use `background-clip: text` with `-webkit-text-fill-color: transparent`
 5. **Gradient borders**: Use `border-image` or pseudo-element overlay technique
 6. **CSS custom properties**: Extract repeated gradient colors into `variables.css`:
    ```css
-   --gradient-primary: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+   --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
    ```
 
 **Anti-pattern**: NEVER replace a gradient with a single solid color approximation. If the analysis documents a gradient, the code MUST have that gradient.
@@ -160,6 +172,7 @@ Also write `${RUN_DIR}/fidelity-report.md` comparing generated structure against
 ## Incremental Mode
 
 When generating code for selected components only:
+
 1. Generate only the requested component files
 2. Include clear prop interfaces for parent integration
 3. Add TODO comments at integration points
@@ -172,21 +185,26 @@ After code generation, write `${RUN_DIR}/fidelity-report.md`:
 # Fidelity Report
 
 ## Overall Assessment
+
 [HIGH | MEDIUM | LOW] fidelity match
 
 ## Component Coverage
+
 - [x] ComponentA — generated
 - [x] ComponentB — generated
 - [ ] ComponentC — skipped (reason)
 
 ## Deviations
+
 ### [Component Name]
+
 - **Issue**: [description of deviation]
 - **Design value**: [expected]
 - **Generated value**: [actual]
 - **Suggested fix**: [how to correct]
 
 ## Style Accuracy
+
 - Colors: [X/Y matched]
 - Spacing: [X/Y matched]
 - Typography: [X/Y matched]

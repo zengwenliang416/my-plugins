@@ -1,10 +1,10 @@
 ---
 name: doc-workflow
 description: |
-  【触发条件】用户询问文档体系、llmdoc 工作流、如何维护文档
-  【核心产出】针对当前项目的 llmdoc 使用指南与下一步建议
-  【不触发】纯代码实现请求且不涉及文档流程
-  【先问什么】是否已初始化 llmdoc、希望读文档还是更新文档
+  [Trigger] User asks about the documentation system, llmdoc workflow, or doc maintenance.
+  [Output] llmdoc usage guide and next-step recommendations for the current project.
+  [Skip] When request is purely code implementation with no documentation workflow involved.
+  [Ask] Whether llmdoc is initialized and whether user wants to read or update docs.
   [Resource Usage] Use references/.
 allowed-tools:
   - Read
@@ -29,6 +29,7 @@ This skill provides guidance on the llmdoc documentation system and available do
 Recommend running `/docflow:init-doc` to initialize the documentation system.
 
 Explain the benefits:
+
 - Documentation-driven development
 - LLM-optimized retrieval maps
 - Consistent project understanding
@@ -37,12 +38,12 @@ Explain the benefits:
 
 Explain the available workflows:
 
-| Task | Command/Skill | Description |
-|------|--------------|-------------|
-| Read docs | `/read-doc` | Quick project understanding |
-| Update docs | `/update-doc` | Sync docs after code changes |
-| Investigate | `/investigate` | Doc-first codebase research |
-| Initialize | `/docflow:init-doc` | One-time setup (already done) |
+| Task        | Command/Skill       | Description                   |
+| ----------- | ------------------- | ----------------------------- |
+| Read docs   | `/read-doc`         | Quick project understanding   |
+| Update docs | `/update-doc`       | Sync docs after code changes  |
+| Investigate | `/investigate`      | Doc-first codebase research   |
+| Initialize  | `/docflow:init-doc` | One-time setup (already done) |
 
 ### llmdoc Structure
 

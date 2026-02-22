@@ -1,10 +1,10 @@
 ---
 name: investigate
 description: |
-  【触发条件】用户要求解释代码、定位实现、分析系统工作方式
-  【核心产出】文档优先的调查报告（直接回复，不落盘）
-  【不触发】明确要求直接修改代码的执行任务
-  【先问什么】要调查的模块范围、问题维度、是否需要外部信息
+  [Trigger] User requests code explanation, implementation location, or system behavior analysis.
+  [Output] Documentation-first investigation report (delivered directly, no file written).
+  [Skip] When task explicitly requires direct code modification.
+  [Ask] Module scope to investigate, problem dimension, and whether external info is needed.
   [Resource Usage] Use references/.
 context: fork
 allowed-tools:
@@ -55,17 +55,21 @@ Output a concise report with this structure:
 
 ```markdown
 #### Code Sections
+
 - `path/to/file.ext:line~line` (SymbolName): Brief description
 
 #### Report
 
 **Conclusions:**
+
 > Key findings...
 
 **Relations:**
+
 > File/module relationships...
 
 **Result:**
+
 > Direct answer to the question...
 ```
 

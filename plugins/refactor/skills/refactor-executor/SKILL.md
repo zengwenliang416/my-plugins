@@ -1,11 +1,11 @@
 ---
 name: refactor-executor
 description: |
-  【触发条件】重构工作流第四步：安全执行重构操作。
-  【核心产出】输出 ${run_dir}/changes.md 和 ${run_dir}/refactor-result.json。
-  【不触发】检测气味（用 smell-detector）、影响分析（用 impact-analyzer）。
-  【先问什么】impact-analysis.md 不存在时，询问是否先执行影响分析
-  【MUST】codex-cli 执行重构，必须使用。
+  [Trigger] Refactor workflow step 4: safely execute refactoring operations.
+  [Output] ${run_dir}/changes.md and ${run_dir}/refactor-result.json.
+  [Skip] For smell detection (use smell-detector) or impact analysis (use impact-analyzer).
+  [Ask] If impact-analysis.md is missing, ask whether to run impact analysis first.
+  [Must] codex-cli must be used to execute refactoring.
   [Resource Usage] Use references/, assets/.
 allowed-tools:
   - Write
@@ -49,9 +49,9 @@ arguments:
 
 ## MCP 工具集成
 
-| MCP 工具              | 用途                         | 触发条件        |
-| --------------------- | ---------------------------- | --------------- |
-| `auggie-mcp`          | 验证重构结果，确保语义正确   | 🚨 每次执行必用 |
+| MCP 工具     | 用途                       | 触发条件        |
+| ------------ | -------------------------- | --------------- |
+| `auggie-mcp` | 验证重构结果，确保语义正确 | 🚨 每次执行必用 |
 
 ## 前置检查
 
@@ -70,8 +70,6 @@ arguments:
 ---
 
 ## 执行流程
-
-
 
 ```
   thought: "规划重构执行策略。需要：1) 按风险排序 2) 制定执行顺序 3) 设定回滚点 4) 规划验证步骤 5) 处理依赖关系",

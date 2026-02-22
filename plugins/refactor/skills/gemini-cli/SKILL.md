@@ -1,10 +1,10 @@
 ---
 name: gemini-cli
 description: |
-  【触发条件】重构工作流中需要前端组件重构、CSS 优化、UI 结构改进时使用。
-  【核心产出】输出重构后的 React/Vue/HTML/CSS 代码，上下文限制 32k tokens
-  【不触发】后端逻辑重构、API 重构、数据库操作（改用 codex-cli）
-  【先问什么】无需询问，由其他 skills 调用
+  [Trigger] When refactor workflow needs frontend component refactoring, CSS optimization, or UI restructuring.
+  [Output] Refactored React/Vue/HTML/CSS code; context limit is 32k tokens.
+  [Skip] For backend logic, API, or database refactoring (use codex-cli instead).
+  [Ask] No user input needed; invoked by other skills.
   [Resource Usage] Use references/, assets/, and scripts/ (`scripts/invoke-gemini.ts`).
 allowed-tools:
   - Bash

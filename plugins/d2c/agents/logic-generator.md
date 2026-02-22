@@ -12,6 +12,8 @@ tools:
   - Glob
   - SendMessage
   - mcp__auggie-mcp__codebase-retrieval
+memory: project
+isolation: worktree
 ---
 
 # Logic Generator Agent
@@ -49,20 +51,24 @@ Write findings to `${RUN_DIR}/project-context.md`:
 # Project Context
 
 ## API Patterns
+
 - HTTP client: [axios/fetch/custom wrapper]
 - Base config: [import path and usage]
 - Request pattern: [code example]
 - Error handling: [pattern]
 
 ## State Management
+
 - Library: [useState/Redux/Vuex/Pinia/...]
 - Store pattern: [code example]
 
 ## Routing
+
 - Router: [react-router/vue-router/...]
 - Navigation pattern: [code example]
 
 ## Common Utilities
+
 - [utility name]: [import path and usage]
 ```
 
@@ -71,6 +77,7 @@ Write findings to `${RUN_DIR}/project-context.md`:
 Write logic code to `${RUN_DIR}/logic-code/`:
 
 ### Standalone mode (/p2c):
+
 ```
 logic-code/
 ├── services/
@@ -83,7 +90,9 @@ logic-code/
 ```
 
 ### Integration mode (/d2c-full):
+
 Modify existing components in `${RUN_DIR}/generated-code/` to add:
+
 - Event handlers on interactive elements
 - State hooks/composables for dynamic data
 - API call integration for data fetching
@@ -104,6 +113,7 @@ Modify existing components in `${RUN_DIR}/generated-code/` to add:
 ## Multi-Agent Concurrent Mode
 
 When receiving a chunk assignment (from chunked PRD):
+
 1. Read only the assigned chunk content
 2. Read the full `project-context.md` (shared across all agents)
 3. Generate logic code for the assigned module only

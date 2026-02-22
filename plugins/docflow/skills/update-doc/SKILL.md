@@ -1,10 +1,10 @@
 ---
 name: update-doc
 description: |
-  【触发条件】用户要求同步文档，或代码变更后需要更新 llmdoc
-  【核心产出】受影响文档更新清单 + 索引同步结果
-  【不触发】没有任何代码/需求变化且文档已最新
-  【先问什么】变更范围、目标模块、是否允许增量更新
+  [Trigger] User requests doc sync, or llmdoc needs updating after code changes.
+  [Output] Updated document list for affected docs + index sync result.
+  [Skip] When there are no code/requirement changes and docs are already current.
+  [Ask] Change scope, target module, and whether incremental update is allowed.
 context: fork
 allowed-tools:
   - Read
