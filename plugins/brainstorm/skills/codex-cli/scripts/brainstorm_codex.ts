@@ -1,8 +1,9 @@
 #!/usr/bin/env npx tsx
 /**
  * Codex CLI wrapper for brainstorming.
+ * Calls `codex exec` directly in non-interactive mode.
  * Usage:
- *   npx ts-node --esm brainstorm_codex.ts --prompt "..." [--method scamper|hats|auto] [--role brainstorm]
+ *   npx tsx brainstorm_codex.ts --prompt "..." [--role brainstorm]
  */
 
 import { spawnSync } from "child_process";
@@ -12,99 +13,50 @@ import { fileURLToPath } from "url";
 
 interface Args {
   prompt: string;
-  method: string;
   role: string;
 }
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-function usage(): void {
-  console.log(
-    "Usage: npx ts-node --esm brainstorm_codex.ts --prompt <text> [--method scamper|hats|auto] [--role brainstorm]"
-  );
-}
-
 function parseArgs(argv: string[]): Args {
-  const args: Args = {
-    prompt: "",
-    method: "auto",
-    role: "brainstorm",
-  };
-
+  const args: Args = { prompt: "", role: "brainstorm" };
   for (let i = 0; i < argv.length; i++) {
     const current = argv[i];
-    if (current === "--prompt") {
-      args.prompt = argv[++i] || "";
-    } else if (current === "--method") {
-      args.method = argv[++i] || "auto";
-    } else if (current === "--role") {
-      args.role = argv[++i] || "brainstorm";
-    } else if (current === "--help" || current === "-h") {
-      usage();
+    if (current === "--prompt") args.prompt = argv[++i] || "";
+    else if (current === "--role") args.role = argv[++i] || "brainstorm";
+    else if (current === "--method")
+      ++i; // skip legacy param
+    else if (current === "--help" || current === "-h") {
+      console.log(
+        "Usage: npx tsx brainstorm_codex.ts --prompt <text> [--role brainstorm]",
+      );
       process.exit(0);
     }
   }
-
-  if (!args.prompt.trim()) {
-    throw new Error("--prompt is required");
-  }
-
+  if (!args.prompt.trim()) throw new Error("--prompt is required");
   return args;
-}
-
-function resolveWrapperBinary(): string {
-  if (process.env.CODEAGENT_WRAPPER?.trim()) {
-    return process.env.CODEAGENT_WRAPPER.trim();
-  }
-  // Legacy ~/.claude/bin fallback is deprecated; rely on PATH by default.
-  return "codeagent-wrapper";
 }
 
 function readLocalRolePrompt(role: string): string | null {
   if (!role) return null;
   const localPath = resolve(__dirname, "../references/roles", `${role}.md`);
-  if (!existsSync(localPath)) {
-    return null;
-  }
-  return readFileSync(localPath, "utf-8").trim();
-}
-
-function mergeRolePrompt(rolePrompt: string, taskPrompt: string): string {
-  return `${rolePrompt}\n\n---\n\n${taskPrompt}`.trim();
+  return existsSync(localPath) ? readFileSync(localPath, "utf-8").trim() : null;
 }
 
 function run(): void {
   const parsed = parseArgs(process.argv.slice(2));
-  const wrapper = resolveWrapperBinary();
-  const localRolePrompt = readLocalRolePrompt(parsed.role);
-  const finalPrompt = localRolePrompt
-    ? mergeRolePrompt(localRolePrompt, parsed.prompt)
+  const rolePrompt = readLocalRolePrompt(parsed.role);
+  const finalPrompt = rolePrompt
+    ? `${rolePrompt}\n\n---\n\n${parsed.prompt}`.trim()
     : parsed.prompt;
 
-  // Keep method argument for compatibility with existing callers.
-  void parsed.method;
+  const args = ["exec", finalPrompt, "-s", "read-only"];
+  const result = spawnSync("codex", args, { stdio: "inherit" });
 
-  const commandArgs = ["codex"];
-  if (!localRolePrompt) {
-    commandArgs.push("--role", parsed.role);
-  }
-  commandArgs.push("--prompt", finalPrompt, "--sandbox", "read-only");
-
-  const result = spawnSync(
-    wrapper,
-    commandArgs,
-    {
-      stdio: "inherit",
-      shell: process.platform === "win32",
-    }
-  );
-
-  if (result.error) {
-    throw result.error;
-  }
+  if (result.error) throw result.error;
   if (result.status !== 0) {
-    throw new Error(`codeagent-wrapper exited with status ${result.status ?? "unknown"}`);
+    throw new Error(`codex exited with status ${result.status ?? "unknown"}`);
   }
 }
 

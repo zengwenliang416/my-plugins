@@ -1,178 +1,67 @@
 #!/usr/bin/env npx tsx
 /**
- * Gemini wrapper for context-memory skill execution.
+ * Gemini CLI wrapper for context-memory skill execution.
+ * Calls `gemini` directly in non-interactive (headless) mode.
  * Usage:
- *   npx tsx invoke-gemini.ts --prompt "<prompt>" [--role <role>] [--workdir <path>] [--session <id>]
+ *   npx tsx invoke-gemini.ts --prompt "<prompt>" [--role <role>] [--workdir <path>]
  */
 
 import { spawnSync } from "child_process";
 import { existsSync, readFileSync } from "fs";
-import { homedir } from "os";
-import { dirname, join, resolve } from "path";
+import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
 interface ParsedArgs {
   role: string;
   prompt: string;
   workdir: string;
-  session: string;
-  passthrough: string[];
 }
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-function usage(): void {
-  console.log(
-    "Usage: npx tsx invoke-gemini.ts --prompt <prompt> [--role <role>] [--workdir <path>] [--session <id>]",
-  );
-}
-
 function parseArgs(argv: string[]): ParsedArgs {
-  const parsed: ParsedArgs = {
-    role: "doc-generator",
-    prompt: "",
-    workdir: "",
-    session: "",
-    passthrough: [],
-  };
-
+  const parsed: ParsedArgs = { role: "doc-generator", prompt: "", workdir: "" };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
-    if (arg === "--role") {
-      parsed.role = argv[++i] || parsed.role;
-    } else if (arg === "--prompt") {
-      parsed.prompt = argv[++i] || "";
-    } else if (arg === "--workdir") {
-      parsed.workdir = argv[++i] || "";
-    } else if (arg === "--session") {
-      parsed.session = argv[++i] || "";
-    } else if (arg === "--help" || arg === "-h") {
-      usage();
+    if (arg === "--role") parsed.role = argv[++i] || parsed.role;
+    else if (arg === "--prompt") parsed.prompt = argv[++i] || "";
+    else if (arg === "--workdir") parsed.workdir = argv[++i] || "";
+    else if (arg === "--help" || arg === "-h") {
+      console.log(
+        "Usage: npx tsx invoke-gemini.ts --prompt <prompt> [--role <role>] [--workdir <path>]",
+      );
       process.exit(0);
-    } else {
-      parsed.passthrough.push(arg);
     }
   }
-
-  if (!parsed.prompt.trim()) {
-    throw new Error("--prompt is required");
-  }
-
+  if (!parsed.prompt.trim()) throw new Error("--prompt is required");
   return parsed;
-}
-
-function resolveWrapperBinary(): string {
-  if (process.env.CODEAGENT_WRAPPER?.trim()) {
-    return process.env.CODEAGENT_WRAPPER.trim();
-  }
-  return "codeagent-wrapper";
-}
-
-function resolvePromptsDir(): string {
-  if (process.env.CLAUDE_PROMPTS_DIR?.trim()) {
-    return process.env.CLAUDE_PROMPTS_DIR.trim();
-  }
-  return join(homedir(), ".claude", "prompts");
-}
-
-function localRolePromptPath(role: string): string {
-  return resolve(__dirname, "../references/roles", `${role}.md`);
 }
 
 function readLocalRolePrompt(role: string): string | null {
   if (!role) return null;
-  const promptPath = localRolePromptPath(role);
-  if (!existsSync(promptPath)) {
-    return null;
-  }
-  return readFileSync(promptPath, "utf-8").trim();
-}
-
-function globalRolePromptExists(model: string, role: string): boolean {
-  if (!role) return false;
-  const promptPath = resolve(resolvePromptsDir(), model, `${role}.md`);
-  return existsSync(promptPath);
-}
-
-function rolePromptExists(model: string, role: string): boolean {
-  if (!role) return false;
-  if (existsSync(localRolePromptPath(role))) {
-    return true;
-  }
-  return globalRolePromptExists(model, role);
-}
-
-function mergeRolePrompt(rolePrompt: string, taskPrompt: string): string {
-  return `${rolePrompt}\n\n---\n\n${taskPrompt}`.trim();
-}
-
-function resolveRoleAlias(role: string): string {
-  if (!role) return role;
-  if (rolePromptExists("gemini", role)) {
-    return role;
-  }
-
-  const aliasMap: Record<string, string> = {
-    "doc-generator": "analyzer",
-    "style-analyzer": "analyzer",
-    "api-extractor": "analyzer",
-  };
-
-  const alias = aliasMap[role];
-  if (alias && rolePromptExists("gemini", alias)) {
-    console.error(
-      `[context-memory:gemini-cli] role '${role}' prompt missing, fallback to '${alias}'.`,
-    );
-    return alias;
-  }
-
-  if (rolePromptExists("gemini", "analyzer")) {
-    console.error(
-      `[context-memory:gemini-cli] role '${role}' prompt missing, fallback to 'analyzer'.`,
-    );
-    return "analyzer";
-  }
-
-  return role;
+  const promptPath = resolve(__dirname, "../references/roles", `${role}.md`);
+  return existsSync(promptPath)
+    ? readFileSync(promptPath, "utf-8").trim()
+    : null;
 }
 
 function main(): void {
   const parsed = parseArgs(process.argv.slice(2));
-  const wrapper = resolveWrapperBinary();
-  const localRolePrompt = readLocalRolePrompt(parsed.role);
-  const resolvedRole = localRolePrompt ? "" : resolveRoleAlias(parsed.role);
-  const finalPrompt = localRolePrompt
-    ? mergeRolePrompt(localRolePrompt, parsed.prompt)
+  const rolePrompt = readLocalRolePrompt(parsed.role);
+  const finalPrompt = rolePrompt
+    ? `${rolePrompt}\n\n---\n\n${parsed.prompt}`.trim()
     : parsed.prompt;
 
-  const args = ["gemini"];
-  if (resolvedRole) {
-    args.push("--role", resolvedRole);
-  }
-  args.push("--prompt", finalPrompt);
-  if (parsed.workdir) {
-    args.push("--workdir", parsed.workdir);
-  }
-  if (parsed.session) {
-    args.push("--session", parsed.session);
-  }
-  if (parsed.passthrough.length > 0) {
-    args.push(...parsed.passthrough);
-  }
-
-  const result = spawnSync(wrapper, args, {
+  const args = ["-p", finalPrompt, "--approval-mode", "plan", "-o", "text"];
+  const result = spawnSync("gemini", args, {
     stdio: "inherit",
-    shell: process.platform === "win32",
+    cwd: parsed.workdir || undefined,
   });
 
-  if (result.error) {
-    throw result.error;
-  }
+  if (result.error) throw result.error;
   if (result.status !== 0) {
-    throw new Error(
-      `codeagent-wrapper exited with status ${result.status ?? "unknown"}`,
-    );
+    throw new Error(`gemini exited with status ${result.status ?? "unknown"}`);
   }
 }
 
