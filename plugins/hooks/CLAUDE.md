@@ -16,7 +16,6 @@ Add the following to your project's `.claude/CLAUDE.md` for optimal Hooks integr
 | read-limit         | PreToolUse        | 大文件自动注入 limit 参数          |
 | db-guard           | PreToolUse        | 危险 SQL 检测，阻止破坏性操作      |
 | git-conflict-guard | PreToolUse        | Git 冲突标记检测，阻止提交冲突代码 |
-| killshell-guard    | PreToolUse        | 保护 codeagent-wrapper 进程        |
 | auto-backup        | PreToolUse        | 写入前自动备份（异步）             |
 | mcp-logger         | PreToolUse        | MCP 调用日志记录（异步）           |
 | auto-format        | PostToolUse       | 代码自动格式化（写入后）           |
@@ -72,16 +71,16 @@ The `git-conflict-guard` hook automatically detects conflict markers before `git
 
 ## Hook Categories
 
-| Category      | Hooks                                                           | Purpose          |
-| ------------- | --------------------------------------------------------------- | ---------------- |
-| Security      | privacy-firewall, db-guard, git-conflict-guard, killshell-guard | 阻止危险操作     |
-| Optimization  | read-limit                                                      | 输入预处理优化   |
-| Quality       | auto-format                                                     | 代码质量保障     |
-| Logging       | auto-backup, mcp-logger                                         | 调试和审计       |
-| Permission    | auto-approve, file-permission                                   | 权限自动化       |
-| Evaluation    | unified-eval                                                    | 智能插件路由     |
-| Notification  | smart-notify                                                    | 工作流事件通知   |
-| Orchestration | teammate-idle, task-completed                                   | Agent Teams 协调 |
+| Category      | Hooks                                          | Purpose          |
+| ------------- | ---------------------------------------------- | ---------------- |
+| Security      | privacy-firewall, db-guard, git-conflict-guard | 阻止危险操作     |
+| Optimization  | read-limit                                     | 输入预处理优化   |
+| Quality       | auto-format                                    | 代码质量保障     |
+| Logging       | auto-backup, mcp-logger                        | 调试和审计       |
+| Permission    | auto-approve, file-permission                  | 权限自动化       |
+| Evaluation    | unified-eval                                   | 智能插件路由     |
+| Notification  | smart-notify                                   | 工作流事件通知   |
+| Orchestration | teammate-idle, task-completed                  | Agent Teams 协调 |
 
 ## Agent Teams Integration
 

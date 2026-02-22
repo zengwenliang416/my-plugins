@@ -45,16 +45,6 @@
         ]
       },
       {
-        "matcher": "KillShell",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/security/killshell-guard.sh",
-            "timeout": 5
-          }
-        ]
-      },
-      {
         "matcher": "Write",
         "hooks": [
           {
