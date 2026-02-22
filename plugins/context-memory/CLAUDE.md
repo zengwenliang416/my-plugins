@@ -1,5 +1,7 @@
 # Context-Memory Plugin
 
+Always answer in Chinese (Simplified).
+
 <available-skills>
 
 | Skill                    | Trigger                            | Description                        |
@@ -76,18 +78,37 @@ Skill("context-memory:module-discovery", {run_dir: "openspec/changes/my-change/"
 
 ## Agent Team
 
-- `codex-core`: Role-routed Codex agent (`analyzer`, `doc-generator`, `auditor`)
-- `gemini-core`: Role-routed Gemini agent (`doc-generator`, `style-analyzer`, `api-extractor`)
-- `project-scanner`: Investigation agent (`scan`, `detect`, `analyze-deps`)
-- `doc-worker`: Execution agent for file writing and SKILL packaging
+- `gemini-core`: PROXY agent — MUST invoke `gemini-cli` skill for all content generation (`doc-generator`, `style-analyzer`, `api-extractor`). Never generates content inline.
+- `codex-core`: PROXY agent — MUST invoke `codex-cli` skill for all content generation (`analyzer`, `doc-generator`, `auditor`). Never generates content inline.
+- `project-scanner`: Investigation agent (`scan`, `detect`, `analyze-deps`). Falls back to Glob/Grep when auggie-mcp unavailable.
+- `doc-worker`: Execution agent for file writing and SKILL packaging. Runs in same workspace as other agents (no worktree isolation).
+
+## Multi-Model Pipeline
+
+```
+Command (memory.md)
+  → Agent (gemini-core / codex-core)
+    → Skill (gemini-cli / codex-cli)
+      → Script (invoke-gemini.ts / invoke-codex.ts)
+        → codeagent-wrapper
+          → External Model (Gemini / Codex)
+```
+
+Each skill includes:
+
+- Role-specific prompt templates in `references/roles/{role}.md`
+- 3-step workflow: Build Prompt → Call Script → Capture Output
+- Constraints table enforcing script invocation (no inline generation)
 
 ## Multi-Model Fallback
 
 ```
-Gemini (preferred, faster) → Codex (fallback) → Claude inline (last resort)
+Gemini + Codex (parallel, preferred)
+  → Single model (if one fails)
+    → Claude inline (last resort, if both fail)
 ```
 
-All external model output is reviewed by Claude before writing.
+All external model output is reviewed by Claude lead before writing.
 
 ## Artifact Storage
 

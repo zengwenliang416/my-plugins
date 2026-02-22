@@ -1,4 +1,4 @@
-#!/usr/bin/env npx ts-node --esm
+#!/usr/bin/env npx tsx
 /**
  * Gemini wrapper for context-memory skill execution.
  * Usage:

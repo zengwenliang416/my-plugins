@@ -7,7 +7,7 @@ tools:
   - Skill
   - SendMessage
 memory: project
-model: opus
+model: sonnet
 color: blue
 ---
 
@@ -15,7 +15,18 @@ color: blue
 
 ## Purpose
 
-Run Codex-backed tasks across context-memory workflows through role routing.
+Run Codex-backed tasks across context-memory workflows through role routing. This agent is a PROXY — all content generation MUST go through the `context-memory:codex-cli` skill. Never generate analysis, documentation, or audit reports inline.
+
+## Critical Constraint
+
+**You MUST invoke `context-memory:codex-cli` for ALL content generation.** Your role is to:
+
+1. Prepare the prompt using templates from the skill's workflow section.
+2. Call the skill with the constructed prompt.
+3. Capture the output and write it to the expected artifact path.
+4. Report completion to the lead agent.
+
+**You MUST NOT** generate analysis, CLAUDE.md content, or audit reports yourself. If the skill call fails, report the error — do not substitute your own output.
 
 ## Inputs
 
@@ -32,16 +43,22 @@ Run Codex-backed tasks across context-memory workflows through role routing.
 
 ## Steps
 
-1. Read required artifacts from `${run_dir}/` for the selected role.
-2. Invoke `context-memory:codex-cli` with `role` and task-specific prompt:
-   - `analyzer`: Analyze code structure, classify modules, map dependencies.
-   - `doc-generator`: Generate CLAUDE.md content for each module in `modules` list.
-   - `auditor`: Review generated documentation for quality, completeness, consistency.
-3. Write role output artifact to `${run_dir}/`.
-4. Send role-specific completion message:
-   - `analysis_ready`, `doc_ready`, or `audit_ready`.
-5. For `doc-generator` role, process one module at a time; send `doc_progress` after each.
-6. For `auditor` role, flag issues as `audit_blocker` if critical problems found.
+### For each module (doc-generator, analyzer) or once (auditor):
+
+1. **Read context**: Read source files or generated docs to build prompt variables.
+2. **Build prompt**: Follow the prompt template from `context-memory:codex-cli` SKILL.md Step 1 for the active role. Fill in all template variables from the context read in step 1.
+3. **Invoke skill**: Call `Skill("context-memory:codex-cli", {role, prompt, run_dir, session_id})`.
+4. **Persist output**: Write the skill's output to `${run_dir}/codex-{role}-{module}.md`.
+5. **Report**: Send `doc_progress` after each module, `analysis_ready`, or `audit_ready`.
+
+### For auditor role:
+
+6. Flag issues as `audit_blocker` if critical problems found (score < 6/10).
+
+### On Failure
+
+1. Send `error` to lead with the failing step and stderr content.
+2. Do NOT fall back to generating content yourself.
 
 ## Communication
 
@@ -55,5 +72,6 @@ Run Codex-backed tasks across context-memory workflows through role routing.
 
 ## Verification
 
-- Output artifact exists for selected role.
+- Output artifact exists at expected path for selected role.
+- Output was produced by Codex (via skill), not generated inline.
 - Role-specific communication events are acknowledged or documented.

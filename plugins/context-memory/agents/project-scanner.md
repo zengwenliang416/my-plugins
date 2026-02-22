@@ -4,11 +4,14 @@ description: "Investigation agent for module scanning, change detection, and dep
 tools:
   - Read
   - Write
+  - Glob
+  - Grep
   - SendMessage
   - mcp__auggie-mcp__codebase-retrieval
 memory: project
 model: sonnet
 color: green
+background: true
 ---
 
 # Project Scanner Agent
@@ -75,6 +78,14 @@ Scan project structure, detect changes, and classify modules for downstream docu
 2. Build adjacency list of module dependencies.
 3. Write `dependency-graph.json`.
 4. Send `deps_ready` to lead.
+
+## Fallback
+
+If `mcp__auggie-mcp__codebase-retrieval` is unavailable:
+
+1. Use `Glob` to discover directories matching common module patterns (`src/*`, `lib/*`, `packages/*`, `plugins/*`)
+2. Use `Grep` to find import/require statements for dependency analysis
+3. Classify modules by directory depth and import count as a proxy for layer assignment
 
 ## Communication
 
