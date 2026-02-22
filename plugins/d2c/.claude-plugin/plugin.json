@@ -1,0 +1,5 @@
+{
+  "name": "d2c",
+  "version": "1.0.0",
+  "description": "D2C (Design to Code) + P2C (PRD to Code) plugin for C-end AI coding — generates semantic UI component code from design screenshots and logic code from PRD documents using local files only"
+}
