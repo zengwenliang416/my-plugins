@@ -9,8 +9,8 @@ description: |
 allowed-tools:
   - Read
   - Write
-  - Skill
   - Bash
+  - WebSearch
   - AskUserQuestion
   - mcp__auggie-mcp__codebase-retrieval
   - mcp__context7__resolve-library-id
@@ -21,17 +21,10 @@ allowed-tools:
 
 Parse brainstorm topic and execute external research to provide information foundation for ideation.
 
-## Script Entry
-
-```bash
-npx tsx scripts/execute_search.ts [args]
-```
-
 ## Resource Usage
 
 - Reference docs: `references/research-brief-template.md`
 - Assets: `assets/search-strategy.json`
-- Execution script: `scripts/execute_search.ts`
 
 ## MCP Tool Integration
 
@@ -101,32 +94,26 @@ mcp__context7__query-docs({
 
 ### Step 3: Execute External Search
 
-Use `grok-search` skill for 3-5 searches:
-
-Optional batch runner:
-
-```bash
-npx tsx scripts/execute_search.ts --topic "{topic}" --mode {basic|deep} --output-dir "{run_dir}"
-```
+Use `WebSearch` tool for 3-5 searches:
 
 **Basic searches (always execute):**
 
 1. **Trends:**
 
 ```
-Skill(skill="brainstorm:grok-search", args="search \"{topic} trends 2026\" --max-results 5")
+WebSearch(query="{topic} trends 2026", max_results=5)
 ```
 
 2. **Case studies:**
 
 ```
-Skill(skill="brainstorm:grok-search", args="search \"{topic} case study examples\" --max-results 5")
+WebSearch(query="{topic} case study examples", max_results=5)
 ```
 
 3. **Cross-domain:**
 
 ```
-Skill(skill="brainstorm:grok-search", args="search \"{topic} inspiration from other industries\" --max-results 5")
+WebSearch(query="{topic} inspiration from other industries", max_results=5)
 ```
 
 **Deep searches (only when deep=true):**
@@ -134,13 +121,13 @@ Skill(skill="brainstorm:grok-search", args="search \"{topic} inspiration from ot
 4. **Problems:**
 
 ```
-Skill(skill="brainstorm:grok-search", args="search \"{topic} challenges problems pain points\" --max-results 5")
+WebSearch(query="{topic} challenges problems pain points", max_results=5)
 ```
 
 5. **Opportunities:**
 
 ```
-Skill(skill="brainstorm:grok-search", args="search \"{topic} opportunities innovations startups\" --max-results 5")
+WebSearch(query="{topic} opportunities innovations startups", max_results=5)
 ```
 
 ### Step 4: Generate Research Brief

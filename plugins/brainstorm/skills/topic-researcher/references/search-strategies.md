@@ -10,16 +10,16 @@ Applicable to: New product design, feature innovation, product improvement
 
 ```bash
 # Industry innovation
-grok-search search "{product_type} innovation 2026" --max-results 5
+WebSearch query= "{product_type} innovation 2026" --max-results 5
 
 # Startup trends
-grok-search search "{product_type} startup ideas funding 2025-2026" --max-results 5
+WebSearch query= "{product_type} startup ideas funding 2025-2026" --max-results 5
 
 # User pain points
-grok-search search "{product_type} user complaints reviews problems" --max-results 5
+WebSearch query= "{product_type} user complaints reviews problems" --max-results 5
 
 # Competitor analysis
-grok-search search "{product_type} competitors comparison features" --max-results 5
+WebSearch query= "{product_type} competitors comparison features" --max-results 5
 ```
 
 ### Process Optimization
@@ -28,16 +28,16 @@ Applicable to: Workflow improvement, efficiency enhancement, automation
 
 ```bash
 # Best practices
-grok-search search "{process} best practices case study" --max-results 5
+WebSearch query= "{process} best practices case study" --max-results 5
 
 # Automation tools
-grok-search search "{process} automation tools comparison 2026" --max-results 5
+WebSearch query= "{process} automation tools comparison 2026" --max-results 5
 
 # Bottleneck analysis
-grok-search search "{process} bottleneck inefficiency solutions" --max-results 5
+WebSearch query= "{process} bottleneck inefficiency solutions" --max-results 5
 
 # Industry benchmarks
-grok-search search "{process} industry benchmark metrics KPI" --max-results 5
+WebSearch query= "{process} industry benchmark metrics KPI" --max-results 5
 ```
 
 ### Market Trends
@@ -46,16 +46,16 @@ Applicable to: Market analysis, consumer insights, trend forecasting
 
 ```bash
 # Market reports
-grok-search search "{market} market trends 2026 report forecast" --max-results 5
+WebSearch query= "{market} market trends 2026 report forecast" --max-results 5
 
 # Consumer behavior
-grok-search search "{market} consumer behavior changes preferences" --max-results 5
+WebSearch query= "{market} consumer behavior changes preferences" --max-results 5
 
 # Emerging technologies
-grok-search search "{market} emerging technology impact disruption" --max-results 5
+WebSearch query= "{market} emerging technology impact disruption" --max-results 5
 
 # Regulatory updates
-grok-search search "{market} regulation policy changes 2026" --max-results 5
+WebSearch query= "{market} regulation policy changes 2026" --max-results 5
 ```
 
 ### Technology Exploration
@@ -64,16 +64,16 @@ Applicable to: Technology selection, architecture design, technical innovation
 
 ```bash
 # Technology trends
-grok-search search "{technology} trends 2026 roadmap" --max-results 5
+WebSearch query= "{technology} trends 2026 roadmap" --max-results 5
 
 # Implementation cases
-grok-search search "{technology} implementation case study production" --max-results 5
+WebSearch query= "{technology} implementation case study production" --max-results 5
 
 # Performance comparison
-grok-search search "{technology} benchmark comparison performance" --max-results 5
+WebSearch query= "{technology} benchmark comparison performance" --max-results 5
 
 # Ecosystem
-grok-search search "{technology} ecosystem tools libraries frameworks" --max-results 5
+WebSearch query= "{technology} ecosystem tools libraries frameworks" --max-results 5
 ```
 
 ### User Experience
@@ -82,16 +82,16 @@ Applicable to: UX improvement, design innovation, usability research
 
 ```bash
 # Design trends
-grok-search search "{domain} UX design trends 2026" --max-results 5
+WebSearch query= "{domain} UX design trends 2026" --max-results 5
 
 # User research
-grok-search search "{domain} user research insights findings" --max-results 5
+WebSearch query= "{domain} user research insights findings" --max-results 5
 
 # Accessibility
-grok-search search "{domain} accessibility WCAG improvements" --max-results 5
+WebSearch query= "{domain} accessibility WCAG improvements" --max-results 5
 
 # Emotional design
-grok-search search "{domain} emotional design user delight" --max-results 5
+WebSearch query= "{domain} emotional design user delight" --max-results 5
 ```
 
 ## Search Result Filtering Strategies
@@ -138,7 +138,7 @@ grok-search search "{domain} emotional design user delight" --max-results 5
 
 ```bash
 # Learn from other industries
-grok-search search "{problem} solution in {other_industry}" --max-results 5
+WebSearch query= "{problem} solution in {other_industry}" --max-results 5
 
 # Examples:
 # "checkout optimization in gaming industry"

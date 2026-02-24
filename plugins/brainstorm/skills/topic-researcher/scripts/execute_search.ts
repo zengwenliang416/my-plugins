@@ -1,14 +1,15 @@
 #!/usr/bin/env npx tsx
 /**
- * Execute external searches for topic research.
+ * Execute external searches for topic research using WebSearch tool.
+ * This script is a placeholder — actual search execution happens via
+ * the WebSearch tool in the topic-researcher skill workflow.
+ *
  * Usage:
- *   npx ts-node --esm execute_search.ts --topic "topic" --mode basic|deep --output-dir ./output
+ *   npx tsx execute_search.ts --topic "topic" --mode basic|deep --output-dir ./output
  */
 
-import { execFileSync } from "child_process";
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from "fs";
-import { dirname, join, resolve } from "path";
-import { fileURLToPath } from "url";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { join, resolve } from "path";
 
 type Mode = "basic" | "deep";
 
@@ -18,12 +19,14 @@ interface Args {
   outputDir: string;
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 function usage(): void {
   console.log(
-    "Usage: npx ts-node --esm execute_search.ts --topic <topic> [--mode basic|deep] [--output-dir <dir>]"
+    "Usage: npx tsx execute_search.ts --topic <topic> [--mode basic|deep] [--output-dir <dir>]",
+  );
+  console.log("");
+  console.log("NOTE: This script generates search query templates.");
+  console.log(
+    "Actual searching is performed by the WebSearch tool in the skill workflow.",
   );
 }
 
@@ -60,82 +63,59 @@ function parseArgs(argv: string[]): Args {
   return args;
 }
 
-function runExternalSearch(searchScript: string, query: string): string {
-  const npxCommand = process.platform === "win32" ? "npx.cmd" : "npx";
-  return execFileSync(
-    npxCommand,
-    ["tsx", searchScript, "search", query, "--max-results", "5"],
-    { encoding: "utf-8" }
-  );
+interface SearchQuery {
+  label: string;
+  query: string;
 }
 
-function saveSearchResult(searchScript: string, outputDir: string, fileName: string, query: string): void {
-  const result = runExternalSearch(searchScript, query);
-  writeFileSync(join(outputDir, fileName), result, "utf-8");
+function buildQueries(topic: string, mode: Mode): SearchQuery[] {
+  const queries: SearchQuery[] = [
+    { label: "trends", query: `${topic} trends 2026` },
+    { label: "cases", query: `${topic} case study success story` },
+    {
+      label: "cross-industry",
+      query: `${topic} inspiration from other industries`,
+    },
+  ];
+
+  if (mode === "deep") {
+    queries.push(
+      { label: "problems", query: `${topic} challenges problems pain points` },
+      {
+        label: "opportunities",
+        query: `${topic} opportunities innovations startups`,
+      },
+    );
+  }
+
+  return queries;
 }
 
 function run(): void {
   const args = parseArgs(process.argv.slice(2));
-  const searchScript = resolve(__dirname, "../../grok-search/scripts/grok-search.ts");
-  if (!existsSync(searchScript)) {
-    throw new Error(`Search script not found: ${searchScript}`);
-  }
-
   const outputDir = resolve(args.outputDir);
   mkdirSync(outputDir, { recursive: true });
 
-  console.log(`Starting topic research for: ${args.topic}`);
+  console.log(`Topic: ${args.topic}`);
   console.log(`Mode: ${args.mode}`);
   console.log("");
 
-  console.log("[1/3] Searching trends...");
-  saveSearchResult(searchScript, outputDir, "search-trends.json", `${args.topic} trends 2026`);
+  const queries = buildQueries(args.topic, args.mode);
+  const manifest = queries.map((q, i) => ({
+    index: i + 1,
+    label: q.label,
+    query: q.query,
+    tool: "WebSearch",
+  }));
 
-  console.log("[2/3] Searching case studies...");
-  saveSearchResult(
-    searchScript,
-    outputDir,
-    "search-cases.json",
-    `${args.topic} case study success story`
-  );
+  const manifestPath = join(outputDir, "search-queries.json");
+  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), "utf-8");
+  console.log(`Search query manifest saved to: ${manifestPath}`);
 
-  console.log("[3/3] Searching cross-industry inspiration...");
-  saveSearchResult(
-    searchScript,
-    outputDir,
-    "search-cross.json",
-    `${args.topic} inspiration from other industries`
-  );
-
-  if (args.mode === "deep") {
-    console.log("");
-    console.log("Deep mode: running additional searches...");
-
-    console.log("[4/5] Searching pain points...");
-    saveSearchResult(
-      searchScript,
-      outputDir,
-      "search-problems.json",
-      `${args.topic} challenges problems pain points`
+  for (const entry of manifest) {
+    console.log(
+      `  [${entry.index}/${manifest.length}] ${entry.label}: WebSearch("${entry.query}")`,
     );
-
-    console.log("[5/5] Searching opportunities...");
-    saveSearchResult(
-      searchScript,
-      outputDir,
-      "search-opportunities.json",
-      `${args.topic} opportunities innovations startups`
-    );
-  }
-
-  console.log("");
-  console.log(`Search completed. Results saved to: ${outputDir}`);
-
-  const files = readdirSync(outputDir)
-    .filter((name) => name.startsWith("search-") && name.endsWith(".json"))
-    .sort();
-  for (const name of files) {
-    console.log(`- ${join(outputDir, name)}`);
   }
 }
 
