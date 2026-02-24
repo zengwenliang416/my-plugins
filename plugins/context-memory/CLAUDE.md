@@ -22,8 +22,8 @@ Context-memory manages project knowledge: CLAUDE.md generation, SKILL packaging,
 
 # Direct skill invocation examples
 Skill("context-memory:context-loader", {task: "implement auth"})
-Skill("context-memory:doc-full-updater", {run_dir: "openspec/changes/my-change/"})
-Skill("context-memory:module-discovery", {run_dir: "openspec/changes/my-change/"})
+Skill("context-memory:doc-full-updater", {run_dir: ".claude/runs/my-run/"})
+Skill("context-memory:module-discovery", {run_dir: ".claude/runs/my-run/"})
 ```
 
 ## Skills Inventory
@@ -113,7 +113,7 @@ All external model output is reviewed by Claude lead before writing.
 ## Artifact Storage
 
 ```
-openspec/changes/{run_id}/       # Run artifacts (ephemeral)
+.claude/runs/{run_id}/       # Run artifacts (ephemeral)
 .claude/skills/{package}/        # SKILL packages (persistent)
 .claude/memory/
   sessions/{id}.json             # Session snapshots

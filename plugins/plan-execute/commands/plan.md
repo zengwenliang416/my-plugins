@@ -38,13 +38,12 @@ Parse these flags from the user's command:
 ### Step 1: Initialize Run Directory
 
 ```bash
-RUN_ID=${run_id_flag || $(date +%Y%m%d-%H%M%S)}
-CHANGE_ID="${RUN_ID}"
-RUN_DIR="openspec/changes/${CHANGE_ID}"
+RUN_ID=${run_id_flag || "plan-exec-$(date +%Y%m%d-%H%M%S)"}
+RUN_DIR=".claude/runs/${RUN_ID}"
 mkdir -p ${RUN_DIR}/plan
 ```
 
-Spec-only policy: plan-execute artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+Run artifacts MUST be consolidated under `.claude/runs/${RUN_ID}/`.
 
 ### Step 2: Write Input Document
 

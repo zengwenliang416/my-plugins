@@ -54,14 +54,13 @@ allowed-tools:
    if [[ "$ARGUMENTS" =~ --run-id=([^ ]+) ]]; then
        RUN_ID="${BASH_REMATCH[1]}"
    else
-       RUN_ID=$(date -u +%Y%m%dT%H%M%SZ)
+       RUN_ID="brainstorm-$(date +%Y%m%d-%H%M%S)"
    fi
-   CHANGE_ID="${RUN_ID}"
-   RUN_DIR="openspec/changes/${CHANGE_ID}"
+   RUN_DIR=".claude/runs/${RUN_ID}"
    mkdir -p "$RUN_DIR"
    ```
 
-Spec-only policy: brainstorm artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+Run artifacts MUST be consolidated under `.claude/runs/${RUN_ID}/`.
 
 3. Use AskUserQuestion to confirm execution plan
 

@@ -61,13 +61,12 @@ Phase 4: Report (Lead)
 Create a timestamped run directory:
 
 ```bash
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-CHANGE_ID="${TIMESTAMP}"
-RUN_DIR="openspec/changes/${CHANGE_ID}"
+RUN_ID="investigate-$(date +%Y%m%d-%H%M%S)"
+RUN_DIR=".claude/runs/${RUN_ID}"
 mkdir -p ${RUN_DIR}
 ```
 
-Spec-only policy: bug-investigation artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+Run artifacts MUST be consolidated under `.claude/runs/${RUN_ID}/`.
 
 ### Step 1.2: Parse Input
 

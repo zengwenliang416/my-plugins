@@ -342,7 +342,7 @@ The validation log MUST include:
 {
   "batch_id": 1,
   "risk_level": "SAFE",
-  "run_dir": "openspec/changes/20260208-143022"
+  "run_dir": ".claude/runs/refactor-team-20260208-143022"
 }
 ```
 

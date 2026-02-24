@@ -52,7 +52,7 @@ Manage workflow execution state: save snapshots for resumability, load previous 
 {
   "id": "wf-{timestamp}",
   "saved_at": "ISO-8601",
-  "run_dir": "openspec/changes/my-change/",
+  "run_dir": ".claude/runs/my-run/",
   "status": "in_progress",
   "phase": "doc-generation",
   "completed_steps": ["module-discovery", "layer-3-docs"],
@@ -60,7 +60,7 @@ Manage workflow execution state: save snapshots for resumability, load previous 
   "artifacts": [
     {
       "name": "modules.json",
-      "path": "openspec/changes/my-change/modules.json"
+      "path": ".claude/runs/my-run/modules.json"
     }
   ],
   "resume_command": "/context-memory:memory claude-update full --run-id my-change"

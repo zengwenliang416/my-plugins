@@ -65,7 +65,7 @@ Multi-perspective parallel code review system using Agent Team with Fan-Out/Fan-
 
 ### Phase 1: Init
 
-- Create run directory: `openspec/changes/${CHANGE_ID}/`
+- Create run directory: `.claude/runs/${RUN_ID}/`
 - Parse arguments (target path, scope, severity filter)
 - Collect changes from git or specified files
 
@@ -91,7 +91,7 @@ Multi-perspective parallel code review system using Agent Team with Fan-Out/Fan-
 ## Output Structure
 
 ```
-openspec/changes/${CHANGE_ID}/
+.claude/runs/${RUN_ID}/
 ├── input.md                 # Change summary
 ├── review-security.md       # Security findings
 ├── review-quality.md        # Quality findings

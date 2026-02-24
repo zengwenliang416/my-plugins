@@ -41,13 +41,12 @@ test-writer (RED) → implementer (GREEN) → coverage-validator → Lead Delive
 1. **Create run directory**
 
    ```bash
-   RUN_ID=$(date +%Y%m%d-%H%M%S)
-   CHANGE_ID="${RUN_ID}"
-   RUN_DIR="openspec/changes/${CHANGE_ID}"
+   RUN_ID="tdd-$(date +%Y%m%d-%H%M%S)"
+   RUN_DIR=".claude/runs/${RUN_ID}"
    mkdir -p "${RUN_DIR}"
    ```
 
-Spec-only policy: tdd artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+Run artifacts MUST be consolidated under `.claude/runs/${RUN_ID}/`.
 
 2. **Parse input**
    - Extract feature/bug description from `${args}`
@@ -279,7 +278,7 @@ Spec-only policy: tdd artifacts MUST be consolidated under `openspec/changes/${C
 
 3. **Summary to User**
    Output:
-   - Location of run directory: `openspec/changes/${CHANGE_ID}/`
+   - Location of run directory: `.claude/runs/${RUN_ID}/`
    - Quality metrics summary
    - Files modified
    - Next steps
@@ -338,7 +337,7 @@ Require **100% coverage** (override threshold).
 ```
 ✅ TDD Pipeline Completed
 
-Run Directory: openspec/changes/20260208-143022/
+Run Directory: .claude/runs/tdd-20260208-143022/
 
 Quality Metrics:
 - Tests Written: 12
@@ -375,7 +374,7 @@ Next Steps:
 ```
 ✅ TDD Pipeline Completed
 
-Run Directory: openspec/changes/20260208-151543/
+Run Directory: .claude/runs/tdd-20260208-151543/
 
 Quality Metrics:
 - Tests Written: 3 (1 new regression test)

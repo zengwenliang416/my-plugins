@@ -44,13 +44,12 @@ You are the **Lead** orchestrating a team-based refactoring pipeline with safety
 1. Create run directory:
 
    ```bash
-   RUN_ID=$(date +%Y%m%d-%H%M%S)
-   CHANGE_ID="${RUN_ID}"
-   run_dir="openspec/changes/${CHANGE_ID}"
+   RUN_ID="refactor-team-$(date +%Y%m%d-%H%M%S)"
+   run_dir=".claude/runs/${RUN_ID}"
    mkdir -p ${run_dir}
    ```
 
-Spec-only policy: refactor-team artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+Run artifacts MUST be consolidated under `.claude/runs/${RUN_ID}/`.
 
 2. Parse arguments:
    - Extract `<target>` (file, directory, module name)

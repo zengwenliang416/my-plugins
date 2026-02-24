@@ -48,7 +48,7 @@ Phases linked by artifacts in shared run directory.
 ## Phase Data Flow
 
 ```
-openspec/changes/${CHANGE_ID}/
+.claude/runs/${RUN_ID}/
 ├── input.md                    # plan phase writes
 ├── plan/                       # plan phase writes
 │   ├── 001-<slug>.md          #   each with YAML frontmatter

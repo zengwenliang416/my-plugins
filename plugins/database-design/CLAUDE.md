@@ -70,7 +70,7 @@ Lead receives requirements →
 ## Output Structure
 
 ```
-openspec/changes/${CHANGE_ID}/
+.claude/runs/${RUN_ID}/
 ├── input.md                    # Parsed requirements
 ├── schema-proposal.md          # Designer's initial proposal
 ├── performance-analysis.md     # Optimizer's analysis

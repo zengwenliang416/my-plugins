@@ -20,7 +20,7 @@ Single entry point for all context-memory workflows. Routes to the appropriate s
 
 ## Required Constraints
 
-- All file writes go to `openspec/changes/{run_id}/` or `.claude/memory/`
+- All file writes go to `.claude/runs/{run_id}/` or `.claude/memory/`
 - Multi-model outputs are reviewed by Claude before delivery
 - Session IDs are preserved for multi-turn model interactions
 
@@ -72,8 +72,8 @@ When invoked without arguments, present this interactive menu via `AskUserQuesti
 ### Step 0: Parse Arguments
 
 ```bash
-run_id="${args[--run-id]:-$(date +%Y%m%d_%H%M%S)-memory}"
-run_dir="openspec/changes/${run_id}"
+run_id="${args[--run-id]:-memory-$(date +%Y%m%d-%H%M%S)}"
+run_dir=".claude/runs/${run_id}"
 mkdir -p "${run_dir}"
 ```
 

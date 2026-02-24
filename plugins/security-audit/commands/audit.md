@@ -60,13 +60,12 @@ Phase 5: Report                     → Security report + summary
 ### Run Directory Creation
 
 ```bash
-TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
-CHANGE_ID="${TIMESTAMP}"
-RUN_DIR="openspec/changes/${CHANGE_ID}"
+RUN_ID="audit-$(date +%Y%m%d-%H%M%S)"
+RUN_DIR=".claude/runs/${RUN_ID}"
 mkdir -p "$RUN_DIR"
 ```
 
-Spec-only policy: security-audit artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+Run artifacts MUST be consolidated under `.claude/runs/${RUN_ID}/`.
 
 ### Target Scope Discovery
 
@@ -467,7 +466,7 @@ Next steps:
 ## Run Directory Structure
 
 ```
-openspec/changes/${CHANGE_ID}/
+.claude/runs/${RUN_ID}/
 ├── target-scope.md                     # Phase 1: Target discovery
 ├── scan-code.md                        # Phase 2A: Code scanner findings
 ├── scan-dependencies.md                # Phase 2A: Dependency checker findings
