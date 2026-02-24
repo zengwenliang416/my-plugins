@@ -61,7 +61,7 @@ Features:
 
 ## Key Artifacts
 
-Run directory: `.claude/runs/${RUN_ID}/`
+Run directory: `openspec/changes/${CHANGE_ID}/`
 
 | Artifact                   | Description              |
 | -------------------------- | ------------------------ |

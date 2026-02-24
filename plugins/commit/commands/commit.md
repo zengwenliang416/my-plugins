@@ -70,12 +70,13 @@ allowed-tools: [Task, Skill, AskUserQuestion, Read, Bash]
 ### Phase 1: Initialize
 
 ```bash
-RUN_ID="commit-$(date +%Y%m%d-%H%M%S)"
-RUN_DIR=".claude/runs/${RUN_ID}"
+RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)"
+CHANGE_ID="${RUN_ID}"
+RUN_DIR="openspec/changes/${CHANGE_ID}"
 mkdir -p "${RUN_DIR}"
 ```
 
-Run artifacts MUST be consolidated under `.claude/runs/${RUN_ID}/`.
+Spec-only policy: commit workflow artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
 
 ### Phase 2: Investigate
 

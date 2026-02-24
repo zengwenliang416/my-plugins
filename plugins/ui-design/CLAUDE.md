@@ -6,7 +6,7 @@ Always answer in Chinese (Simplified).
 - `/ui-design`: End-to-end UI/UX design and implementation workflow.
 
 ## Workflow Phases
-1. Init: Parse arguments and initialize `.claude/runs/<run_id>/`.
+1. Init: Parse arguments and initialize `openspec/changes/<run_id>/`.
 2. Scenario Confirm: Confirm `scenario` and `tech_stack` via `AskUserQuestion`.
 3. Reference Analysis Team: Analyze visual, color, and component references in parallel and summarize.
 4. Requirements: Generate `requirements.md`; for `optimize` scenario, also generate `code-analysis.md`.

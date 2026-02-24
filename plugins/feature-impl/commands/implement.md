@@ -54,12 +54,13 @@ Parse these flags from the user's command:
 1. **Create run directory**:
 
    ```bash
-   RUN_ID="implement-$(date +%Y%m%d-%H%M%S)"
-   RUN_DIR=".claude/runs/${RUN_ID}"
+   RUN_ID=$(date +%Y%m%d-%H%M%S)
+   CHANGE_ID="${RUN_ID}"
+   RUN_DIR="openspec/changes/${CHANGE_ID}"
    mkdir -p "${RUN_DIR}"
    ```
 
-Run artifacts MUST be consolidated under `.claude/runs/${RUN_ID}/`.
+Spec-only policy: feature-impl artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
 
 2. **Parse input**:
    - Extract feature description from user command

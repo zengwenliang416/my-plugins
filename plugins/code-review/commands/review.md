@@ -56,12 +56,13 @@ Lead (You) distributes code changes →
 1. Create run directory:
 
    ```bash
-   RUN_ID="review-$(date +%Y%m%d-%H%M%S)"
-   RUN_DIR=".claude/runs/${RUN_ID}"
+   RUN_ID=$(date +%Y%m%d-%H%M%S)
+   CHANGE_ID="${RUN_ID}"
+   RUN_DIR="openspec/changes/${CHANGE_ID}"
    mkdir -p ${RUN_DIR}
    ```
 
-Run artifacts MUST be consolidated under `.claude/runs/${RUN_ID}/`.
+Spec-only policy: code-review artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
 
 2. Parse arguments:
    - Extract `target` path (optional)
@@ -335,9 +336,9 @@ Run artifacts MUST be consolidated under `.claude/runs/${RUN_ID}/`.
 
    ## Detailed Reports
 
-   - Security: `.claude/runs/${RUN_ID}/review-security.md`
-   - Quality: `.claude/runs/${RUN_ID}/review-quality.md`
-   - Performance: `.claude/runs/${RUN_ID}/review-performance.md`
+   - Security: `openspec/changes/${CHANGE_ID}/review-security.md`
+   - Quality: `openspec/changes/${CHANGE_ID}/review-quality.md`
+   - Performance: `openspec/changes/${CHANGE_ID}/review-performance.md`
    ```
 
 2. **Display summary to user**:

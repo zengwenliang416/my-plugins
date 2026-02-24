@@ -47,10 +47,11 @@ You MUST ONLY invoke these agent types:
 ### Step 1: Load Run Artifacts
 
 ```bash
-RUN_DIR=".claude/runs/${RUN_ID}"
+CHANGE_ID="${RUN_ID}"
+RUN_DIR="openspec/changes/${CHANGE_ID}"
 ```
 
-Run artifacts MUST be consolidated under `.claude/runs/${RUN_ID}/`.
+Spec-only policy: plan-execute artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
 
 **Validate prerequisites:**
 

@@ -118,7 +118,7 @@ Each specialist reviews others' findings to identify attack chains:
 ## Output Structure
 
 ```
-.claude/runs/${RUN_ID}/
+openspec/changes/${CHANGE_ID}/
 ├── target-scope.md                    # Phase 1: Target discovery
 ├── scan-code.md                       # Phase 2: Code scanner findings
 ├── scan-dependencies.md               # Phase 2: Dependency checker findings

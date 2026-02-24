@@ -77,7 +77,7 @@ A production-grade feature implementation pipeline using Agent Team orchestratio
 
 ### Phase 1: Initialization (Lead)
 
-- Create run directory: `.claude/runs/${RUN_ID}/`
+- Create run directory: `openspec/changes/${CHANGE_ID}/`
 - Parse feature description and command flags
 - Write `input.md` with normalized requirements
 
@@ -152,7 +152,7 @@ Lead uses `TaskOutput(block=true)` to wait for all agents (no timeout).
 ## Output Structure
 
 ```
-.claude/runs/${RUN_ID}/
+openspec/changes/${CHANGE_ID}/
 ├── input.md                  # Normalized requirements
 ├── plan.md                   # Implementation plan
 ├── implementation-log.md     # Implementation summary

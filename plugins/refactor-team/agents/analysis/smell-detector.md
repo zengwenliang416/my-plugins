@@ -283,7 +283,7 @@ If target is invalid:
 {
   "target": "src/auth",
   "scope": "dead-code",
-  "run_dir": ".claude/runs/refactor-team-20260208-143022"
+  "run_dir": "openspec/changes/20260208-143022"
 }
 ```
 

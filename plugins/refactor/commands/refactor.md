@@ -68,12 +68,12 @@ allowed-tools:
    - **TARGET_STACK**: target tech stack description (used in --legacy mode)
 
 2. Generate run directory path:
-   - RUN_ID: `refactor-$(date +%Y%m%d-%H%M%S)`
-   - RUN_DIR: `.claude/runs/${RUN_ID}`
+   - RUN_ID: current UTC timestamp, format YYYYMMDDTHHMMSSZ
+   - RUN_DIR: `openspec/changes/${RUN_ID}`
 
 3. Use AskUserQuestion to confirm execution plan
 
-Run artifacts MUST be consolidated under `.claude/runs/${RUN_ID}/`.
+Spec-only policy: refactor artifacts MUST be consolidated under `openspec/changes/${RUN_ID}`.
 
 **If LEGACY=true, show legacy modernization plan**:
 
@@ -329,7 +329,7 @@ Output completion summary:
 ## Run Directory Structure
 
 ```
-.claude/runs/refactor-20260115-100000/
+openspec/changes/20260115T100000Z/
 ├── state.json              # Workflow state
 ├── target.txt              # Refactor target
 ├── smells.json             # Phase 2: code smell data

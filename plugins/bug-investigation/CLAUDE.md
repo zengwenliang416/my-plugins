@@ -86,7 +86,7 @@ Lead receives bug report →
 All investigation artifacts are stored in:
 
 ```
-.claude/runs/${RUN_ID}/
+openspec/changes/${CHANGE_ID}/
   ├─ bug-report.md              # Initial bug description
   ├─ analysis-logs.md           # Log analyst findings
   ├─ analysis-code.md           # Code tracer findings

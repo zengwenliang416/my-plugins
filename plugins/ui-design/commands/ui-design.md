@@ -75,9 +75,9 @@ Communication rules:
    if [[ -n "${RUN_ID_ARG}" ]]; then
      RUN_ID="${RUN_ID_ARG}"
    else
-     RUN_ID="ui-design-$(date +%Y%m%d-%H%M%S)"
+     RUN_ID=$(date -u +%Y%m%dT%H%M%SZ)
    fi
-   RUN_DIR=".claude/runs/${RUN_ID}"
+   RUN_DIR="openspec/changes/${RUN_ID}"
    TEAM_DIR="${RUN_DIR}/team"
    mkdir -p "${RUN_DIR}" "${TEAM_DIR}"
    : > "${TEAM_DIR}/phase-events.jsonl"
