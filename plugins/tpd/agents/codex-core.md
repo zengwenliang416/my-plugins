@@ -4,6 +4,7 @@ description: "Unified Codex core agent for constraint, architecture, implementat
 tools:
   - Read
   - Write
+  - Edit
   - Skill
   - SendMessage
 memory: project
@@ -43,7 +44,7 @@ Your outputs will be directly compared against Gemini's parallel analysis. Gemin
    - `role=${role}`
    - `mode=${mode}` when `role=implementer`
    - `focus=${focus}` when provided
-3. Write role output artifact.
+3. **Persist output (MANDATORY)**: After `tpd:codex-cli` completes, capture the full CLI output from the skill result and use the **Write** tool to save it to the role-specific path listed in Outputs (e.g., `${run_dir}/codex-plan.md` for `role=architect`). Then **verify the file exists** with Read. If the file is missing or empty, retry the write. Do NOT proceed until the artifact file is confirmed on disk.
 4. Send role-specific completion message:
    - `constraint_ready`, `arch_ready`, `analysis_ready`, `prototype_ready`, or `audit_blocker`.
 5. For `constraint` and `architect` roles, send one directed peer question to `gemini-core` and process ACK.
@@ -61,5 +62,6 @@ Your outputs will be directly compared against Gemini's parallel analysis. Gemin
 
 ## Verification
 
-- Output artifact exists for selected role.
+- Output artifact exists on disk for selected role (confirmed via Read).
+- File is non-empty and contains the expected content format.
 - Role-specific communication events are acknowledged or documented.

@@ -73,9 +73,9 @@ npx tsx scripts/invoke-codex.ts \
   --sandbox read-only
 ```
 
-### Step 3: Capture Output
+### Step 3: Return Output
 
-Parse the structured output and write to `${run_dir}/codex-{role}.md`.
+The CLI output is streamed to stdout via the Bash tool result. The **calling agent** (codex-core) is responsible for persisting the output to `${run_dir}/codex-{role}.md` using its Write tool. This skill MUST NOT swallow or discard the CLI output.
 
 ---
 
@@ -216,7 +216,7 @@ JSON object:
 | MUST call invoke-codex.ts script            | Generate analysis inline without calling |
 | MUST use role-specific prompt template      | Send generic/empty prompts to Codex      |
 | MUST use `--sandbox read-only`              | Use write sandbox or `--yolo` mode       |
-| MUST persist output to run_dir files        | Discard Codex output                     |
+| MUST return CLI output via stdout to caller | Discard or swallow Codex output          |
 | Prototype output MUST be reviewed by Claude | Apply prototype patches without review   |
 
 ## Collaboration

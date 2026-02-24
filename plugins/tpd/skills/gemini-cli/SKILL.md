@@ -72,9 +72,9 @@ npx tsx scripts/invoke-gemini.ts \
   --workdir "$WORKDIR"
 ```
 
-### Step 3: Capture Output
+### Step 3: Return Output
 
-Parse the structured output and write to `${run_dir}/gemini-{role}.md`.
+The CLI output is streamed to stdout via the Bash tool result. The **calling agent** (gemini-core) is responsible for persisting the output to `${run_dir}/gemini-{role}.md` using its Write tool. This skill MUST NOT swallow or discard the CLI output.
 
 ---
 
@@ -214,7 +214,7 @@ JSON object:
 | ------------------------------------------- | ---------------------------------------- |
 | MUST call invoke-gemini.ts script           | Generate analysis inline without calling |
 | MUST use role-specific prompt template      | Send generic/empty prompts to Gemini     |
-| MUST persist output to run_dir files        | Discard Gemini output                    |
+| MUST return CLI output via stdout to caller | Discard or swallow Gemini output         |
 | MUST validate role before invocation        | Use roles not in the table above         |
 | Prototype output MUST be reviewed by Claude | Apply prototype patches without review   |
 
