@@ -28,6 +28,7 @@ command=$(echo "$input" | jq -r '.tool_input.command // empty')
 tool_use_id=$(echo "$input" | jq -r '.tool_use_id // empty')
 
 if [[ -z "$command" ]]; then
+    echo "{}"
     exit 0
 fi
 
@@ -89,7 +90,14 @@ for pattern in "${prod_patterns[@]}"; do
             log_warn "   连接: 匹配 $pattern"
             log_warn "   命令: $command"
 
-            echo "{\"decision\": \"block\", \"reason\": \"检测到生产环境数据库写操作，请确认后手动执行。\"}"
+            cat <<PROD_EOF
+{
+  "hookSpecificOutput": {
+    "permissionDecision": "deny",
+    "permissionDecisionReason": "检测到生产环境数据库写操作 (匹配 $pattern)，请确认后手动执行。"
+  }
+}
+PROD_EOF
             exit 0
         fi
     fi
@@ -106,4 +114,5 @@ if [[ -f "$WHITELIST_FILE" ]]; then
 fi
 
 # 没有检测到危险操作，放行
+echo "{}"
 exit 0

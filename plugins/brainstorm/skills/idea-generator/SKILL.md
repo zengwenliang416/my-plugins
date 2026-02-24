@@ -116,6 +116,7 @@ If method param missing, use AskUserQuestion to ask preference.
 
 ```
 Role: Senior technical architect
+Context: Gemini is generating creative ideas in parallel and will see your output. Your technical depth must clearly surpass Gemini's surface-level creativity. Deliver ideas with rigorous feasibility analysis that no creative-only thinker could match.
 Task: Generate 10+ tech-oriented ideas using ${METHOD}
 Topic: ${TOPIC}
 Background: ${RESEARCH_BRIEF_SUMMARY}
@@ -135,6 +136,7 @@ Format: JSON array only
 
 ```
 Role: Senior UX designer and creative expert
+Context: Codex is generating technical ideas in parallel and will see your output. Your creative innovation must clearly surpass Codex's rigid engineering thinking. Deliver ideas with genuine user insight and emotional resonance that no pure technologist could conceive.
 Task: Generate 10+ user-oriented ideas using ${METHOD}
 Topic: ${TOPIC}
 Background: ${RESEARCH_BRIEF_SUMMARY}
