@@ -58,13 +58,20 @@ Final schema + migration SQL
 1. Create run directory:
 
 ```bash
-RUN_ID=$(date +%Y%m%d_%H%M%S)
-CHANGE_ID="${RUN_ID}"
+# Derive CHANGE_ID: kebab-case from design requirements
+# Examples: "design-db-user-management", "design-db-ecommerce-catalog"
+# Fallback: "design-db-$(date +%Y%m%d-%H%M%S)"
+CHANGE_ID="design-db-${slug_from_requirements}"
 RUN_DIR="openspec/changes/${CHANGE_ID}"
 mkdir -p "$RUN_DIR"
 ```
 
-Spec-only policy: database-design artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+**OpenSpec scaffold** — write immediately after `mkdir`:
+
+- `${RUN_DIR}/proposal.md`: `# Change:` title, `## Why` (schema design purpose), `## What Changes` (schema + migration deliverables), `## Impact`
+- `${RUN_DIR}/tasks.md`: one numbered section per phase (Init, Independent Proposals, Debate, Synthesis, Migration) with `- [ ]` items
+
+Mark items `[x]` as each phase completes.
 
 2. Parse requirements:
    - Extract entities, relationships, constraints

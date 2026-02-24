@@ -56,13 +56,20 @@ Lead (You) distributes code changes →
 1. Create run directory:
 
    ```bash
-   RUN_ID=$(date +%Y%m%d-%H%M%S)
-   CHANGE_ID="${RUN_ID}"
+   # Derive CHANGE_ID: kebab-case from review target
+   # Examples: "review-auth-module", "review-payment-service"
+   # Fallback: "review-$(date +%Y%m%d-%H%M%S)"
+   CHANGE_ID="review-${slug_from_target}"
    RUN_DIR="openspec/changes/${CHANGE_ID}"
    mkdir -p ${RUN_DIR}
    ```
 
-Spec-only policy: code-review artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+**OpenSpec scaffold** — write immediately after `mkdir`:
+
+- `${RUN_DIR}/proposal.md`: `# Change:` title, `## Why` (review purpose), `## What Changes` (review deliverables), `## Impact`
+- `${RUN_DIR}/tasks.md`: one numbered section per phase (Init, Team Review, Cross-Validation, Synthesis, Report) with `- [ ]` items
+
+Mark items `[x]` as each phase completes.
 
 2. Parse arguments:
    - Extract `target` path (optional)

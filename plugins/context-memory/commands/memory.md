@@ -72,9 +72,22 @@ When invoked without arguments, present this interactive menu via `AskUserQuesti
 ### Step 0: Parse Arguments
 
 ```bash
-run_id="${args[--run-id]:-$(date +%Y%m%d_%H%M%S)-memory}"
+# If --run-id provided, use as CHANGE_ID (resume mode)
+# Otherwise derive from action: kebab-case
+# Examples: "memory-doc-generation", "memory-style-extraction"
+# Fallback: "memory-$(date +%Y%m%d-%H%M%S)"
+run_id="${args[--run-id]:-memory-${slug_from_action}}"
 run_dir="openspec/changes/${run_id}"
 mkdir -p "${run_dir}"
+```
+
+**OpenSpec scaffold** — write immediately after `mkdir`:
+
+- `${run_dir}/proposal.md`: `# Change:` title, `## Why` (memory action purpose), `## What Changes` (memory deliverables), `## Impact`
+- `${run_dir}/tasks.md`: one numbered section per selected action with `- [ ]` items
+
+Mark items `[x]` as each step completes.
+
 ```
 
 If an `action` argument is provided, skip to Step 2 with that action.
@@ -88,20 +101,22 @@ Use `AskUserQuestion` with categories above. Present as grouped options.
 Map selected action to the corresponding skill invocation:
 
 ```
-action=load           → Skill("context-memory:context-loader", {task, run_dir})
-action=compact        → Skill("context-memory:session-compactor", {run_dir})
-action=claude-plan    → Skill("context-memory:doc-planner", {run_dir})
-action=claude-generate full    → launch team workflow (see Step 3)
+
+action=load → Skill("context-memory:context-loader", {task, run_dir})
+action=compact → Skill("context-memory:session-compactor", {run_dir})
+action=claude-plan → Skill("context-memory:doc-planner", {run_dir})
+action=claude-generate full → launch team workflow (see Step 3)
 action=claude-generate related → launch team workflow (see Step 3)
-action=claude-update full      → launch team workflow (see Step 3)
-action=claude-update related   → launch team workflow (see Step 3)
-action=swagger        → Skill("context-memory:swagger-generator", {run_dir})
-action=tech-rules     → Skill("context-memory:tech-rules-generator", {run_dir})
-action=skill-index    → Skill("context-memory:skill-indexer", {run_dir})
-action=code-map       → Skill("context-memory:code-map-generator", {run_dir})
-action=skill-load     → Skill("context-memory:skill-loader")
-action=style          → Skill("context-memory:style-memory", {run_dir})
-action=workflow       → Skill("context-memory:workflow-memory", {run_dir})
+action=claude-update full → launch team workflow (see Step 3)
+action=claude-update related → launch team workflow (see Step 3)
+action=swagger → Skill("context-memory:swagger-generator", {run_dir})
+action=tech-rules → Skill("context-memory:tech-rules-generator", {run_dir})
+action=skill-index → Skill("context-memory:skill-indexer", {run_dir})
+action=code-map → Skill("context-memory:code-map-generator", {run_dir})
+action=skill-load → Skill("context-memory:skill-loader")
+action=style → Skill("context-memory:style-memory", {run_dir})
+action=workflow → Skill("context-memory:workflow-memory", {run_dir})
+
 ```
 
 ### Step 3: Team Workflows (for multi-model actions)
@@ -128,9 +143,11 @@ For `claude-generate` and `claude-update` actions, orchestrate via Agent Team:
 #### Fallback Chain
 
 ```
+
 Gemini + Codex (parallel, preferred)
-  → Single model (if one fails)
-    → Claude inline (last resort, if both fail)
+→ Single model (if one fails)
+→ Claude inline (last resort, if both fail)
+
 ```
 
 #### Error Handling
@@ -145,3 +162,4 @@ Gemini + Codex (parallel, preferred)
 - Report artifacts created
 - Show next recommended actions
 - If team workflow, include quality audit summary
+```

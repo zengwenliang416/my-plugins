@@ -44,13 +44,20 @@ You are the **Lead** orchestrating a team-based refactoring pipeline with safety
 1. Create run directory:
 
    ```bash
-   RUN_ID=$(date +%Y%m%d-%H%M%S)
-   CHANGE_ID="${RUN_ID}"
+   # Derive CHANGE_ID: kebab-case from refactor target
+   # Examples: "refactor-auth-dead-code", "refactor-utils-duplicates"
+   # Fallback: "refactor-$(date +%Y%m%d-%H%M%S)"
+   CHANGE_ID="refactor-${slug_from_target}"
    run_dir="openspec/changes/${CHANGE_ID}"
    mkdir -p ${run_dir}
    ```
 
-Spec-only policy: refactor-team artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+**OpenSpec scaffold** — write immediately after `mkdir`:
+
+- `${run_dir}/proposal.md`: `# Change:` title, `## Why` (refactoring purpose), `## What Changes` (refactoring scope), `## Impact`
+- `${run_dir}/tasks.md`: one numbered section per phase (Init, Analysis, Batched Refactoring, Validation, Delivery) with `- [ ]` items
+
+Mark items `[x]` as each phase completes.
 
 2. Parse arguments:
    - Extract `<target>` (file, directory, module name)

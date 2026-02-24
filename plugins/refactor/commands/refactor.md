@@ -19,7 +19,7 @@ allowed-tools:
 /refactor src/utils/helper.ts --mode=auto    # Auto-execute safe refactors
 /refactor --mode=interactive src/            # Interactive step-by-step refactor
 /refactor --focus=smell src/                 # Smell detection only
-/refactor --run-id=20260115T100000Z          # Resume from checkpoint
+/refactor --run-id=refactor-auth-service     # Resume from checkpoint
 ```
 
 ### Legacy System Modernization Mode
@@ -67,13 +67,20 @@ allowed-tools:
    - **SOURCE_STACK**: source tech stack description (used in --legacy mode)
    - **TARGET_STACK**: target tech stack description (used in --legacy mode)
 
-2. Generate run directory path:
-   - RUN_ID: current UTC timestamp, format YYYYMMDDTHHMMSSZ
-   - RUN_DIR: `openspec/changes/${RUN_ID}`
+2. **Derive CHANGE_ID and create run directory**:
+   - If `--run-id` provided, use as CHANGE_ID (resume mode)
+   - Otherwise derive from TARGET: kebab-case, verb-led
+   - Examples: `refactor-auth-service`, `refactor-utils-cleanup`
+   - Fallback: `refactor-$(date +%Y%m%d-%H%M%S)`
+   - `RUN_DIR="openspec/changes/${CHANGE_ID}"`
+   - `mkdir -p "${RUN_DIR}"`
 
-3. Use AskUserQuestion to confirm execution plan
+3. **Write OpenSpec scaffold** to `${RUN_DIR}/`:
+   - `proposal.md`: `# Change:` title, `## Why`, `## What Changes`, `## Impact`
+   - `tasks.md`: one numbered section per phase (Init, Smell Detection, Suggestions, Impact Analysis, Execution) with `- [ ]` items
+   - Mark items `[x]` as each phase completes.
 
-Spec-only policy: refactor artifacts MUST be consolidated under `openspec/changes/${RUN_ID}`.
+4. Use AskUserQuestion to confirm execution plan
 
 **If LEGACY=true, show legacy modernization plan**:
 
@@ -329,7 +336,7 @@ Output completion summary:
 ## Run Directory Structure
 
 ```
-openspec/changes/20260115T100000Z/
+openspec/changes/refactor-auth-service/
 ├── state.json              # Workflow state
 ├── target.txt              # Refactor target
 ├── smells.json             # Phase 2: code smell data

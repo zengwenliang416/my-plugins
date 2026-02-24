@@ -22,25 +22,76 @@ Generate executable logic code from PRD documents, enhanced with real project co
 - `prd_paths`: One or more paths to PRD files — Markdown or plain text (required)
 - `--project`: Path to target project for codebase context retrieval (optional)
 - `--stack`: Target tech stack — `react` (default) or `vue`
-- `--output`: Output directory (default: `./p2c-output/`)
+- `--output`: Output directory override (default: `openspec/changes/p2c-${slug}/`)
 
 ## Execution Flow
 
 ### Phase 0: Init
 
 1. Parse arguments and validate PRD file paths exist
-2. Create run directory: `${OUTPUT_DIR}/`
-3. Write `${RUN_DIR}/input.md` with:
+2. Derive `CHANGE_ID` = `p2c-${slug}` where `slug` is a kebab-case identifier from the PRD name or primary module (e.g., `p2c-user-auth`, `p2c-checkout-flow`)
+3. Set `RUN_DIR`:
+   - If `--output` specified: use that path as `RUN_DIR`
+   - Otherwise: `openspec/changes/${CHANGE_ID}/`
+4. Create `${RUN_DIR}/` directory
+5. Scaffold OpenSpec artifacts:
+   - `${RUN_DIR}/proposal.md` — auto-generated change proposal:
+     ```markdown
+     # Change: P2C — ${slug}
+
+     ## Why
+
+     Generate logic code from PRD documents with project context.
+
+     ## What Changes
+
+     - New logic code under logic-code/
+
+     ## Impact
+
+     - Affected specs: none (new artifacts only)
+     ```
+   - `${RUN_DIR}/tasks.md` — phase checklist:
+     ```markdown
+     ## 1. Init
+
+     - [ ] 1.1 Parse arguments and validate inputs
+     - [ ] 1.2 Scaffold OpenSpec change directory
+
+     ## 2. PRD Analysis
+
+     - [ ] 2.1 Run prd-analyzer agent
+     - [ ] 2.2 Determine single/multi-agent mode
+
+     ## 3. Context Retrieval
+
+     - [ ] 3.1 Query project codebase (if --project specified)
+     - [ ] 3.2 Compile project-context.md
+
+     ## 4. Logic Generation
+
+     - [ ] 4.1 Run logic-generator agent(s)
+     - [ ] 4.2 Consolidate outputs (if multi-agent)
+
+     ## 5. Delivery
+
+     - [ ] 5.1 Present delivery summary
+     - [ ] 5.2 User confirms acceptance
+     ```
+6. Write `${RUN_DIR}/input.md` with:
    - PRD file paths
    - Target project path (if provided)
    - Selected tech stack
+   - CHANGE_ID
 
 ### Phase 1: PRD Analysis
 
 1. Spawn `prd-analyzer` agent via Task tool:
+
    ```
    Task(subagent_type="d2c:prd-analyzer")
    ```
+
    - Pass all PRD files for structured parsing
    - Agent outputs:
      - `${RUN_DIR}/structured-requirements.md` — always
@@ -78,6 +129,7 @@ Generate executable logic code from PRD documents, enhanced with real project co
    ```
    Task(subagent_type="d2c:logic-generator")
    ```
+
    - Pass: structured-requirements.md + project-context.md + tech stack
    - Agent outputs: `${RUN_DIR}/logic-code/`
 
@@ -85,10 +137,12 @@ Generate executable logic code from PRD documents, enhanced with real project co
 
 1. Read `chunks.json` for module-to-chunk mapping
 2. Spawn parallel `logic-generator` agents — one per page/module:
+
    ```
    For each page in chunks.json:
      Task(subagent_type="d2c:logic-generator", run_in_background=true)
    ```
+
    - Each agent receives: its chunk content + project-context.md + tech stack
    - Each agent outputs to: `${RUN_DIR}/logic-code/{module-name}/`
 

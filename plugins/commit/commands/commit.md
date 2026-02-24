@@ -70,13 +70,20 @@ allowed-tools: [Task, Skill, AskUserQuestion, Read, Bash]
 ### Phase 1: Initialize
 
 ```bash
-RUN_ID="$(date -u +%Y%m%dT%H%M%SZ)"
-CHANGE_ID="${RUN_ID}"
+# Derive CHANGE_ID: kebab-case from branch name or change scope
+# Examples: "commit-feat-auth-login", "commit-fix-checkout-bug"
+# Fallback: "commit-$(date +%Y%m%d-%H%M%S)"
+CHANGE_ID="commit-${slug_from_scope}"
 RUN_DIR="openspec/changes/${CHANGE_ID}"
 mkdir -p "${RUN_DIR}"
 ```
 
-Spec-only policy: commit workflow artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+**OpenSpec scaffold** — write immediately after `mkdir`:
+
+- `${RUN_DIR}/proposal.md`: `# Change:` title, `## Why` (commit purpose), `## What Changes` (changes being committed), `## Impact`
+- `${RUN_DIR}/tasks.md`: one numbered section per phase (Initialize, Investigate, Analyze, Synthesize, Branch, Commit) with `- [ ]` items
+
+Mark items `[x]` as each phase completes.
 
 ### Phase 2: Investigate
 

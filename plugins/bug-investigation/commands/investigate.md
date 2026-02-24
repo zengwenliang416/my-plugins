@@ -61,13 +61,20 @@ Phase 4: Report (Lead)
 Create a timestamped run directory:
 
 ```bash
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-CHANGE_ID="${TIMESTAMP}"
+# Derive CHANGE_ID: kebab-case from bug description
+# Examples: "investigate-checkout-500-error", "investigate-login-timeout"
+# Fallback: "investigate-$(date +%Y%m%d-%H%M%S)"
+CHANGE_ID="investigate-${slug_from_description}"
 RUN_DIR="openspec/changes/${CHANGE_ID}"
 mkdir -p ${RUN_DIR}
 ```
 
-Spec-only policy: bug-investigation artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+**OpenSpec scaffold** — write immediately after `mkdir`:
+
+- `${RUN_DIR}/proposal.md`: `# Change:` title, `## Why` (investigation purpose), `## What Changes` (investigation deliverables), `## Impact`
+- `${RUN_DIR}/tasks.md`: one numbered section per phase (Init, Parallel Investigation, Cross-Validation, Synthesis, Report) with `- [ ]` items
+
+Mark items `[x]` as each phase completes.
 
 ### Step 1.2: Parse Input
 

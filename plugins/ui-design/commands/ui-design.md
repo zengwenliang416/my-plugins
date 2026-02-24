@@ -20,15 +20,18 @@ allowed-tools:
 # /ui-design
 
 ## Purpose
+
 Generate UI/UX design artifacts and implementation code through Team-first orchestration with explicit communication and quality gates.
 
 ## Agent Types
+
 - `ui-design:analysis-core`
 - `ui-design:design-core`
 - `ui-design:generation-core`
 - `ui-design:validation-core`
 
 ## Message Protocol
+
 All team messages use this envelope:
 
 ```json
@@ -44,16 +47,19 @@ All team messages use this envelope:
 ```
 
 Communication rules:
+
 - Directed messages with `requires_ack=true` must be acknowledged.
 - Lead appends all message envelopes to `${TEAM_DIR}/mailbox.jsonl`.
 - On task failure, sender includes failing step id and stderr summary in `payload`.
 
 ## Progress Visibility
+
 - Lead writes phase start/end events to `${TEAM_DIR}/phase-events.jsonl`.
 - If a wait exceeds 60 seconds, append a heartbeat snapshot to `${TEAM_DIR}/heartbeat.jsonl`.
 - Before and after each major phase, print a short phase marker.
 
 ## Required Artifacts
+
 - `${RUN_DIR}/input.md`
 - `${RUN_DIR}/requirements.md`
 - `${RUN_DIR}/style-recommendations.md`
@@ -69,29 +75,44 @@ Communication rules:
 - `${RUN_DIR}/team/mailbox.jsonl`
 
 ## Phase 1: Init
+
 1. Parse flags: `--image`, `--ref`, `--scenario`, `--tech-stack`, `--run-id`.
 2. Resolve run id:
+
    ```bash
+   # If --run-id provided, resume existing run
+   # Otherwise derive CHANGE_ID: kebab-case from design description
+   # Examples: "ui-design-dashboard-redesign", "ui-design-login-page"
+   # Fallback: "ui-design-$(date +%Y%m%d-%H%M%S)"
    if [[ -n "${RUN_ID_ARG}" ]]; then
-     RUN_ID="${RUN_ID_ARG}"
+     CHANGE_ID="${RUN_ID_ARG}"
    else
-     RUN_ID=$(date -u +%Y%m%dT%H%M%SZ)
+     CHANGE_ID="ui-design-${slug_from_description}"
    fi
-   RUN_DIR="openspec/changes/${RUN_ID}"
+   RUN_DIR="openspec/changes/${CHANGE_ID}"
    TEAM_DIR="${RUN_DIR}/team"
    mkdir -p "${RUN_DIR}" "${TEAM_DIR}"
    : > "${TEAM_DIR}/phase-events.jsonl"
    : > "${TEAM_DIR}/heartbeat.jsonl"
    : > "${TEAM_DIR}/mailbox.jsonl"
    ```
-3. Write `${RUN_DIR}/input.md` with task description and flags.
+
+3. **Write OpenSpec scaffold** to `${RUN_DIR}/`:
+   - `proposal.md`: `# Change:` title, `## Why` (design purpose), `## What Changes` (design deliverables), `## Impact`
+   - `tasks.md`: one numbered section per phase (Init, Scenario Confirm, Reference Analysis, Requirements, Style, Design Pipeline, Delivery) with `- [ ]` items
+   - Mark items `[x]` as each phase completes.
+
+4. Write `${RUN_DIR}/input.md` with task description and flags.
 
 ## Phase 2: Scenario Confirmation (Hard Stop)
+
 Use `AskUserQuestion` to confirm:
+
 - scenario (`from_scratch` or `optimize`)
 - tech stack (`react` or `vue`)
 
 ## Phase 2.5: Reference Analysis Team
+
 1. Create team:
    ```text
    TeamCreate(team_name="ui-ref-analysis", description="reference analysis team")
@@ -105,6 +126,7 @@ Use `AskUserQuestion` to confirm:
 5. Send shutdown broadcast and `TeamDelete()`.
 
 ## Phase 3: Requirement Analysis
+
 1. Run requirement extraction:
    ```text
    Task(subagent_type="ui-design:analysis-core", prompt="run_dir=${RUN_DIR} mode=requirements scenario=${SCENARIO}")
@@ -116,6 +138,7 @@ Use `AskUserQuestion` to confirm:
 3. Verify `${RUN_DIR}/requirements.md`.
 
 ## Phase 4: Style Recommendation
+
 1. Run style recommendation:
    ```text
    Task(subagent_type="ui-design:design-core", prompt="run_dir=${RUN_DIR} mode=style")
@@ -123,9 +146,11 @@ Use `AskUserQuestion` to confirm:
 2. Verify `${RUN_DIR}/style-recommendations.md`.
 
 ## Phase 5: Variant Selection (Hard Stop)
+
 Use `AskUserQuestion` to select final variant(s) from A/B/C.
 
 ## Phase 6-9: Design Pipeline Team
+
 1. Create team:
    ```text
    TeamCreate(team_name="ui-design-pipeline", description="designer-reviewer-coder pipeline")
@@ -145,19 +170,23 @@ Use `AskUserQuestion` to select final variant(s) from A/B/C.
 6. Send shutdown broadcast and `TeamDelete()`.
 
 ## Phase 10: Delivery
+
 Print final summary:
+
 - selected variant(s) and delivery variant
 - UX pass rate and quality score
 - artifact paths
 - resume command: `/ui-design --run-id=${RUN_ID}`
 
 ## Quality Gates
+
 - UX pass rate >= 80%
 - high-priority UX issues = 0
 - fix loop <= 2 rounds per variant
 - quality score >= 7.5/10
 
 ## Fallback Rules
+
 - If Team API fails, run equivalent steps with sequential `Task` calls.
 - If one reference specialist fails, continue with remaining outputs and mark confidence downgrade.
 - If code generation fails, keep design artifacts and return exact failure details.

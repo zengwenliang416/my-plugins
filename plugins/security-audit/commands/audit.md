@@ -60,13 +60,20 @@ Phase 5: Report                     → Security report + summary
 ### Run Directory Creation
 
 ```bash
-TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
-CHANGE_ID="${TIMESTAMP}"
+# Derive CHANGE_ID: kebab-case from audit target
+# Examples: "audit-payment-service", "audit-auth-endpoints"
+# Fallback: "audit-$(date +%Y%m%d-%H%M%S)"
+CHANGE_ID="audit-${slug_from_target}"
 RUN_DIR="openspec/changes/${CHANGE_ID}"
 mkdir -p "$RUN_DIR"
 ```
 
-Spec-only policy: security-audit artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+**OpenSpec scaffold** — write immediately after `mkdir`:
+
+- `${RUN_DIR}/proposal.md`: `# Change:` title, `## Why` (audit purpose), `## What Changes` (audit deliverables), `## Impact`
+- `${RUN_DIR}/tasks.md`: one numbered section per phase (Init, Parallel Scanning, Cross-Validation, Synthesis, Report) with `- [ ]` items
+
+Mark items `[x]` as each phase completes.
 
 ### Target Scope Discovery
 

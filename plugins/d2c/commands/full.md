@@ -30,7 +30,7 @@ Run the full D2C + P2C pipeline: generate UI component code from design screensh
 - `--description`: Natural language requirement description to supplement or replace PRD (optional)
 - `--project`: Path to target project for codebase context retrieval (optional)
 - `--stack`: Target tech stack — `react` (default) or `vue`
-- `--output`: Output directory (default: `./d2c-full-output/`)
+- `--output`: Output directory override (default: `openspec/changes/d2c-full-${slug}/`)
 
 ## Execution Flow
 
@@ -41,8 +41,70 @@ Run the full D2C + P2C pipeline: generate UI component code from design screensh
    - `--prd` provided → use existing PRD (parse mode)
    - `--prd` NOT provided → generate PRD from screenshots + optional description (generate mode)
    - Both `--prd` and `--description` → merge description into existing PRD
-3. Create run directory: `${OUTPUT_DIR}/`
-4. Write `${RUN_DIR}/input.md` with all parameters
+3. Derive `CHANGE_ID` = `d2c-full-${slug}` where `slug` is a kebab-case identifier from the design name or primary feature (e.g., `d2c-full-landing-page`, `d2c-full-settings`)
+4. Set `RUN_DIR`:
+   - If `--output` specified: use that path as `RUN_DIR`
+   - Otherwise: `openspec/changes/${CHANGE_ID}/`
+5. Create `${RUN_DIR}/` directory
+6. Scaffold OpenSpec artifacts:
+   - `${RUN_DIR}/proposal.md` — auto-generated change proposal:
+     ```markdown
+     # Change: D2C-Full — ${slug}
+
+     ## Why
+
+     Generate complete component code (UI + logic) from design screenshots and PRD.
+
+     ## What Changes
+
+     - New generated components under generated-code/
+     - Logic integration into UI components
+
+     ## Impact
+
+     - Affected specs: none (new artifacts only)
+     ```
+   - `${RUN_DIR}/tasks.md` — phase checklist:
+     ```markdown
+     ## 1. Init
+
+     - [ ] 1.1 Parse arguments and validate inputs
+     - [ ] 1.2 Scaffold OpenSpec change directory
+
+     ## 2. Design Analysis
+
+     - [ ] 2.1 Run design-analyzer agent
+     - [ ] 2.2 User confirms analysis
+
+     ## 3. Image Assets
+
+     - [ ] 3.1 Generate image assets (if needed)
+
+     ## 4. UI Code Generation
+
+     - [ ] 4.1 Load tech-stack reference
+     - [ ] 4.2 Run ui-generator agent
+
+     ## 5. PRD Resolution
+
+     - [ ] 5.1 Generate or parse PRD
+     - [ ] 5.2 Structure requirements
+
+     ## 6. Context Retrieval
+
+     - [ ] 6.1 Query project codebase (if --project specified)
+
+     ## 7. Logic Integration
+
+     - [ ] 7.1 Run logic-generator agent(s)
+     - [ ] 7.2 Merge logic into UI components
+
+     ## 8. Delivery
+
+     - [ ] 8.1 Present delivery summary
+     - [ ] 8.2 User confirms acceptance
+     ```
+7. Write `${RUN_DIR}/input.md` with all parameters and CHANGE_ID
 
 ### Phase 1: Design Analysis [Hard Stop]
 
@@ -67,9 +129,11 @@ Run the full D2C + P2C pipeline: generate UI component code from design screensh
 #### Path A: PRD Generation (no `--prd` provided)
 
 1. Spawn `prd-generator` agent:
+
    ```
    Task(subagent_type="d2c:prd-generator")
    ```
+
    - Pass: design screenshots + visual-analysis.md + optional --description
    - Agent infers interactions, states, navigation, API needs from design
    - Agent outputs: `${RUN_DIR}/generated-prd.md`
@@ -88,6 +152,7 @@ Run the full D2C + P2C pipeline: generate UI component code from design screensh
    ```
    Task(subagent_type="d2c:prd-analyzer")
    ```
+
    - Pass: PRD files + visual-analysis.md + generated-code/ structure
    - Agent maps requirements to existing UI components
    - Output: `${RUN_DIR}/structured-requirements.md` + optional `chunks.json`
@@ -103,9 +168,11 @@ Run the full D2C + P2C pipeline: generate UI component code from design screensh
 This phase **modifies the existing UI components** to add business logic.
 
 1. Spawn `logic-generator` agent(s):
+
    ```
    Task(subagent_type="d2c:logic-generator")
    ```
+
    - Pass: generated-code/ + structured-requirements.md + project-context.md
    - Agent MODIFIES existing component files to add:
      - Event handlers on interactive elements

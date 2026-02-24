@@ -20,7 +20,7 @@ Generate a structured PRD from design screenshots, user descriptions, or both. T
 
 - `screenshot_paths`: One or more paths to design screenshot images (optional if --description provided)
 - `--description`: Natural language description of requirements — inline text or path to a file (optional if screenshots provided)
-- `--output`: Output directory (default: `./gen-prd-output/`)
+- `--output`: Output directory override (default: `openspec/changes/gen-prd-${slug}/`)
 
 At least one source (screenshots or description) MUST be provided.
 
@@ -33,8 +33,50 @@ At least one source (screenshots or description) MUST be provided.
    - Screenshots only → `design-only` mode
    - Description only → `description-only` mode
    - Both → `merged` mode
-3. Create run directory
-4. Write `${RUN_DIR}/input.md`
+3. Derive `CHANGE_ID` = `gen-prd-${slug}` where `slug` is a kebab-case identifier from the description topic or first screenshot filename (e.g., `gen-prd-onboarding`, `gen-prd-admin-panel`)
+4. Set `RUN_DIR`:
+   - If `--output` specified: use that path as `RUN_DIR`
+   - Otherwise: `openspec/changes/${CHANGE_ID}/`
+5. Create `${RUN_DIR}/` directory
+6. Scaffold OpenSpec artifacts:
+   - `${RUN_DIR}/proposal.md` — auto-generated change proposal:
+     ```markdown
+     # Change: Gen-PRD — ${slug}
+
+     ## Why
+
+     Generate structured PRD from design screenshots and/or descriptions.
+
+     ## What Changes
+
+     - New generated-prd.md artifact
+
+     ## Impact
+
+     - Affected specs: none (new artifacts only)
+     ```
+   - `${RUN_DIR}/tasks.md` — phase checklist:
+     ```markdown
+     ## 1. Init
+
+     - [ ] 1.1 Parse arguments and validate inputs
+     - [ ] 1.2 Scaffold OpenSpec change directory
+
+     ## 2. PRD Generation
+
+     - [ ] 2.1 Run prd-generator agent
+
+     ## 3. User Review
+
+     - [ ] 3.1 Present PRD summary and gaps
+     - [ ] 3.2 User accepts, edits, or regenerates
+
+     ## 4. Delivery
+
+     - [ ] 4.1 Finalize generated-prd.md
+     - [ ] 4.2 Display usage hints for /p2c or /d2c-full
+     ```
+7. Write `${RUN_DIR}/input.md`
 
 ### Phase 1: PRD Generation
 
@@ -42,6 +84,7 @@ At least one source (screenshots or description) MUST be provided.
    ```
    Task(subagent_type="d2c:prd-generator")
    ```
+
    - Pass screenshots and/or description
    - Agent outputs `${RUN_DIR}/generated-prd.md`
 
@@ -62,6 +105,7 @@ At least one source (screenshots or description) MUST be provided.
 
 1. Final `${RUN_DIR}/generated-prd.md` is ready
 2. Display usage hint:
+
    ```
    To generate logic code from this PRD:
      /p2c ${RUN_DIR}/generated-prd.md --project <your-project-path>

@@ -27,25 +27,79 @@ Generate semantic, component-based UI code from design screenshots.
 - `screenshot_paths`: One or more paths to design screenshot images (required)
 - `--stack`: Target tech stack — `react` (default) or `vue`
 - `--incremental`: Enable incremental mode — analyze first, then user selects components to generate
-- `--output`: Output directory (default: `./d2c-output/`)
+- `--output`: Output directory override (default: `openspec/changes/d2c-${slug}/`)
 
 ## Execution Flow
 
 ### Phase 0: Init
 
 1. Parse arguments and validate screenshot paths exist
-2. Create run directory: `${OUTPUT_DIR}/`
-3. Write `${RUN_DIR}/input.md` with:
+2. Derive `CHANGE_ID` = `d2c-${slug}` where `slug` is a kebab-case identifier from the design name or first screenshot filename (e.g., `d2c-login-page`, `d2c-dashboard`)
+3. Set `RUN_DIR`:
+   - If `--output` specified: use that path as `RUN_DIR`
+   - Otherwise: `openspec/changes/${CHANGE_ID}/`
+4. Create `${RUN_DIR}/` directory
+5. Scaffold OpenSpec artifacts:
+   - `${RUN_DIR}/proposal.md` — auto-generated change proposal:
+     ```markdown
+     # Change: D2C — ${slug}
+
+     ## Why
+
+     Generate UI component code from design screenshots.
+
+     ## What Changes
+
+     - New generated components under generated-code/
+
+     ## Impact
+
+     - Affected specs: none (new artifacts only)
+     ```
+   - `${RUN_DIR}/tasks.md` — phase checklist:
+     ```markdown
+     ## 1. Init
+
+     - [ ] 1.1 Parse arguments and validate inputs
+     - [ ] 1.2 Scaffold OpenSpec change directory
+
+     ## 2. Design Analysis
+
+     - [ ] 2.1 Run design-analyzer agent
+     - [ ] 2.2 User confirms analysis
+
+     ## 3. Image Assets
+
+     - [ ] 3.1 Generate image assets (if needed)
+
+     ## 4. UI Code Generation
+
+     - [ ] 4.1 Load tech-stack reference
+     - [ ] 4.2 Run ui-generator agent
+
+     ## 5. Fidelity Check
+
+     - [ ] 5.1 Review fidelity report
+
+     ## 6. Delivery
+
+     - [ ] 6.1 Present delivery summary
+     - [ ] 6.2 User confirms acceptance
+     ```
+6. Write `${RUN_DIR}/input.md` with:
    - Screenshot paths
    - Selected tech stack
    - Mode (full or incremental)
+   - CHANGE_ID
 
 ### Phase 1: Design Analysis [Hard Stop]
 
 1. Spawn `design-analyzer` agent via Task tool:
+
    ```
    Task(subagent_type="d2c:design-analyzer")
    ```
+
    - Pass all screenshot images for visual analysis
    - Agent reads images and outputs `${RUN_DIR}/visual-analysis.md`
 
@@ -65,9 +119,11 @@ Generate semantic, component-based UI code from design screenshots.
 **Conditional** — only runs if `visual-analysis.md` contains an `## Image Assets` section.
 
 1. Invoke `image-generator` skill:
+
    ```
    Skill(skill="d2c:image-generator", args="assets_file=${RUN_DIR}/visual-analysis.md output_dir=${RUN_DIR}/generated-code/assets design_screenshot=${SCREENSHOT_PATHS[0]}")
    ```
+
    - Generates 4K images for each identified asset (backgrounds, maps, illustrations)
    - Uses design screenshot as style reference for visual consistency
 
@@ -84,6 +140,7 @@ Generate semantic, component-based UI code from design screenshots.
    ```
    Task(subagent_type="d2c:ui-generator")
    ```
+
    - Pass: visual-analysis.md + tech stack reference + original screenshots
    - In incremental mode: pass component-selection.md
    - Agent outputs:

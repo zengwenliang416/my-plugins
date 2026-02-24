@@ -38,13 +38,21 @@ Parse these flags from the user's command:
 ### Step 1: Initialize Run Directory
 
 ```bash
-RUN_ID=${run_id_flag || $(date +%Y%m%d-%H%M%S)}
-CHANGE_ID="${RUN_ID}"
+# If --run-id provided, resume existing run
+# Otherwise derive CHANGE_ID: kebab-case from feature description
+# Examples: "plan-jwt-auth-migration", "plan-redis-caching"
+# Fallback: "plan-$(date +%Y%m%d-%H%M%S)"
+CHANGE_ID=${run_id_flag || "plan-${slug_from_description}"}
 RUN_DIR="openspec/changes/${CHANGE_ID}"
 mkdir -p ${RUN_DIR}/plan
 ```
 
-Spec-only policy: plan-execute artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+**OpenSpec scaffold** — write immediately after `mkdir`:
+
+- `${RUN_DIR}/proposal.md`: `# Change:` title, `## Why` (plan purpose), `## What Changes` (investigation + plan deliverables), `## Impact`
+- `${RUN_DIR}/tasks.md`: one numbered section per phase (Init, Investigation, Plan Generation, Confirmation) with `- [ ]` items
+
+Mark items `[x]` as each phase completes.
 
 ### Step 2: Write Input Document
 

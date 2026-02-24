@@ -23,7 +23,7 @@ allowed-tools:
 /brainstorm "optimize checkout flow" --method=scamper
 
 # Resume session
-/brainstorm --run-id=20260118T090000Z
+/brainstorm --run-id=brainstorm-smart-home-trends
 ```
 
 ## Execution Rules
@@ -51,17 +51,23 @@ allowed-tools:
 2. Create run directory:
 
    ```bash
+   # If --run-id provided, resume existing run
+   # Otherwise derive CHANGE_ID: kebab-case from TOPIC
+   # Examples: "brainstorm-smart-home-trends", "brainstorm-checkout-optimization"
+   # Fallback: "brainstorm-$(date +%Y%m%d-%H%M%S)"
    if [[ "$ARGUMENTS" =~ --run-id=([^ ]+) ]]; then
-       RUN_ID="${BASH_REMATCH[1]}"
+       CHANGE_ID="${BASH_REMATCH[1]}"
    else
-       RUN_ID=$(date -u +%Y%m%dT%H%M%SZ)
+       CHANGE_ID="brainstorm-${slug_from_TOPIC}"
    fi
-   CHANGE_ID="${RUN_ID}"
    RUN_DIR="openspec/changes/${CHANGE_ID}"
    mkdir -p "$RUN_DIR"
    ```
 
-Spec-only policy: brainstorm artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+**OpenSpec scaffold** — write immediately after `mkdir`:
+
+- `${RUN_DIR}/proposal.md`: `# Change:` title, `## Why` (brainstorm purpose), `## What Changes` (deliverables), `## Impact`
+- `${RUN_DIR}/tasks.md`: one numbered section per phase (Research, Ideation, Evaluation, Report) with `- [ ]` checkable items
 
 3. Use AskUserQuestion to confirm execution plan
 

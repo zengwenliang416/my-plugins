@@ -54,13 +54,20 @@ Parse these flags from the user's command:
 1. **Create run directory**:
 
    ```bash
-   RUN_ID=$(date +%Y%m%d-%H%M%S)
-   CHANGE_ID="${RUN_ID}"
+   # Derive CHANGE_ID: kebab-case from feature description
+   # Examples: "implement-jwt-auth", "implement-dark-mode-support"
+   # Fallback: "implement-$(date +%Y%m%d-%H%M%S)"
+   CHANGE_ID="implement-${slug_from_feature}"
    RUN_DIR="openspec/changes/${CHANGE_ID}"
    mkdir -p "${RUN_DIR}"
    ```
 
-Spec-only policy: feature-impl artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+**OpenSpec scaffold** — write immediately after `mkdir`:
+
+- `${RUN_DIR}/proposal.md`: `# Change:` title, `## Why` (feature purpose), `## What Changes` (implementation deliverables), `## Impact` (affected code)
+- `${RUN_DIR}/tasks.md`: one numbered section per phase (Init, Planning, Implementation, Validation, Delivery) with `- [ ]` items
+
+Mark items `[x]` as each phase completes.
 
 2. **Parse input**:
    - Extract feature description from user command

@@ -41,13 +41,20 @@ test-writer (RED) → implementer (GREEN) → coverage-validator → Lead Delive
 1. **Create run directory**
 
    ```bash
-   RUN_ID=$(date +%Y%m%d-%H%M%S)
-   CHANGE_ID="${RUN_ID}"
+   # Derive CHANGE_ID: kebab-case from feature/bug description
+   # Examples: "tdd-search-functionality", "tdd-user-registration"
+   # Fallback: "tdd-$(date +%Y%m%d-%H%M%S)"
+   CHANGE_ID="tdd-${slug_from_description}"
    RUN_DIR="openspec/changes/${CHANGE_ID}"
    mkdir -p "${RUN_DIR}"
    ```
 
-Spec-only policy: tdd artifacts MUST be consolidated under `openspec/changes/${CHANGE_ID}/`.
+**OpenSpec scaffold** — write immediately after `mkdir`:
+
+- `${RUN_DIR}/proposal.md`: `# Change:` title, `## Why` (TDD purpose), `## What Changes` (test + implementation), `## Impact`
+- `${RUN_DIR}/tasks.md`: one numbered section per phase (Init, Interface Design, TDD Pipeline, Delivery) with `- [ ]` items
+
+Mark items `[x]` as each phase completes.
 
 2. **Parse input**
    - Extract feature/bug description from `${args}`
@@ -97,6 +104,7 @@ Spec-only policy: tdd artifacts MUST be consolidated under `openspec/changes/${C
    ```
 
 3. **HARD STOP: Confirm with user**
+
    ```
    AskUserQuestion("Please review the proposed interface design in ${run_dir}/interfaces.md. Approve to proceed with TDD pipeline? (yes/no)")
    ```
@@ -338,7 +346,7 @@ Require **100% coverage** (override threshold).
 ```
 ✅ TDD Pipeline Completed
 
-Run Directory: openspec/changes/20260208-143022/
+Run Directory: openspec/changes/tdd-search-functionality/
 
 Quality Metrics:
 - Tests Written: 12
@@ -375,7 +383,7 @@ Next Steps:
 ```
 ✅ TDD Pipeline Completed
 
-Run Directory: openspec/changes/20260208-151543/
+Run Directory: openspec/changes/tdd-login-special-chars/
 
 Quality Metrics:
 - Tests Written: 3 (1 new regression test)
