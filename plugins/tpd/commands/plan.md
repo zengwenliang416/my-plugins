@@ -13,8 +13,6 @@ allowed-tools:
   - TaskCreate
   - TaskUpdate
   - TaskList
-  - TaskGet
-  - TaskOutput
   - SendMessage
   - Glob
   - Grep
@@ -105,6 +103,17 @@ Optional artifacts:
 
 ## Steps
 
+## Task Result Handling
+
+Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
+
+**FORBIDDEN — never do this:**
+- MUST NOT call `TaskOutput` — this tool does not exist
+- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
+
+**CORRECT — always use direct return:**
+- The result comes from the `Task` call itself, no extra step needed
+
 ### Step 0: Initialize
 
 1. Resolve proposal id:
@@ -136,22 +145,26 @@ Optional artifacts:
    Skill(skill="tpd:requirement-parser", args="run_dir=${PLAN_DIR}")
    ```
 3. Verify `requirements.md`.
-4. Create task `context-explorer` with `mode=plan-context`.
-5. Wait for output and verify `context.md`.
-6. If wait exceeds 60 seconds, append heartbeat snapshots.
-7. Broadcast context completion and log message envelope.
+4. Spawn context-explorer teammate:
+   ```text
+   Task(name="context-explorer", subagent_type="tpd:context-explorer", team_name="tpd-plan-${PROPOSAL_ID}", prompt="mode=plan-context run_dir=${PLAN_DIR} thinking_dir=${THINKING_DIR}")
+   ```
+   # Task call blocks until the teammate finishes.
+   # Result is returned directly — no TaskOutput needed.
+5. Verify `context.md`.
+6. Broadcast context completion and log message envelope.
 
 ### Step 2: Parallel Architecture Planning with Communication
 
-1. Create tasks `codex-core` and `gemini-core` in parallel with `role=architect`.
-2. Require both tasks to:
-   - read `requirements.md` and `context.md`,
-   - send one directed message to peer (`arch_question`) and process ACK,
-   - send one `heartbeat` update,
-   - **use the Write tool** to persist plan draft to `${PLAN_DIR}/codex-plan.md` or `${PLAN_DIR}/gemini-plan.md` respectively, then **verify with Read** that the file exists and is non-empty.
-3. Wait for both tasks.
-4. If wait exceeds 60 seconds, append heartbeat and hook snapshots.
-5. Verify `codex-plan.md` and `gemini-plan.md` exist and are non-empty. If either is missing, check the task output for content and write it manually as fallback.
+1. Spawn `codex-core` and `gemini-core` teammates in a single message (parallel execution):
+   ```text
+   Task(name="codex-core", subagent_type="tpd:codex-core", team_name="tpd-plan-${PROPOSAL_ID}", prompt="role=architect run_dir=${PLAN_DIR} Read requirements.md and context.md. Send one directed message to peer (arch_question) and process ACK. Send one heartbeat update. Use Write to persist plan draft to ${PLAN_DIR}/codex-plan.md, then verify with Read that the file exists and is non-empty.")
+   Task(name="gemini-core", subagent_type="tpd:gemini-core", team_name="tpd-plan-${PROPOSAL_ID}", prompt="role=architect run_dir=${PLAN_DIR} Read requirements.md and context.md. Send one directed message to peer (arch_question) and process ACK. Send one heartbeat update. Use Write to persist plan draft to ${PLAN_DIR}/gemini-plan.md, then verify with Read that the file exists and is non-empty.")
+   ```
+   # All teammates launched in a single message (parallel execution).
+   # Each Task call blocks until the teammate finishes.
+   # Results are returned directly — no TaskOutput needed.
+2. Verify `codex-plan.md` and `gemini-plan.md` exist and are non-empty. If either is missing, check the direct return value from the Task call for content and write it manually as fallback.
 
 ### Step 3: Ambiguity Resolution
 

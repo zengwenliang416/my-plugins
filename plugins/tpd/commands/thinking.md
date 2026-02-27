@@ -13,8 +13,6 @@ allowed-tools:
   - TaskCreate
   - TaskUpdate
   - TaskList
-  - TaskGet
-  - TaskOutput
   - SendMessage
   - mcp__auggie-mcp__codebase-retrieval
 ---
@@ -97,6 +95,17 @@ Optional outputs:
 
 ## Steps
 
+## Task Result Handling
+
+Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
+
+**FORBIDDEN — never do this:**
+- MUST NOT call `TaskOutput` — this tool does not exist
+- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
+
+**CORRECT — always use direct return:**
+- The result comes from the `Task` call itself, no extra step needed
+
 ### Step 0: Initialize
 
 1. Resolve OpenSpec state:
@@ -133,24 +142,35 @@ Optional outputs:
    ```text
    TeamCreate(team_name="tpd-thinking-${PROPOSAL_ID}", description="Thinking boundary and constraint team")
    ```
-2. Create boundary tasks (2-4 tasks, each on a distinct boundary) using `context-explorer` with `mode=boundary`.
-3. Broadcast phase start and log message envelope to `mailbox.jsonl`.
-4. Wait for task completion.
-5. If wait exceeds 60 seconds, poll with `TaskList` and append heartbeat snapshots.
-6. If `~/.claude/logs/hook-events/task-completed.jsonl` or `~/.claude/logs/hook-events/teammate-idle.jsonl` exists, append latest lines to `hooks-snapshot.jsonl`.
-7. Verify at least one `explore-*.json` artifact.
+2. Track boundary work items:
+   ```text
+   TaskCreate(subject="Explore boundary: <boundary-name>", description="Investigate <boundary> context", activeForm="Exploring <boundary> boundary")
+   ```
+   Repeat for each distinct boundary (2-4 items).
+3. Spawn boundary exploration teammates (launch all in a single message for parallel execution):
+   ```text
+   Task(name="explorer-1", subagent_type="tpd:context-explorer", team_name="tpd-thinking-${PROPOSAL_ID}", prompt="mode=boundary boundary=<boundary-1> run_dir=${THINKING_DIR}")
+   Task(name="explorer-2", subagent_type="tpd:context-explorer", team_name="tpd-thinking-${PROPOSAL_ID}", prompt="mode=boundary boundary=<boundary-2> run_dir=${THINKING_DIR}")
+   ```
+   # All teammates launched in a single message (parallel execution).
+   # Each Task call blocks until the teammate finishes.
+   # Results are returned directly — no TaskOutput needed.
+4. Broadcast phase start and log message envelope to `mailbox.jsonl`.
+5. If `~/.claude/logs/hook-events/task-completed.jsonl` or `~/.claude/logs/hook-events/teammate-idle.jsonl` exists, append latest lines to `hooks-snapshot.jsonl`.
+6. Verify at least one `explore-*.json` artifact.
 
 ### Step 3: Constraint Analysis and Agent Communication
 
 1. Skip this step when `DEPTH=light`.
-2. Create two tasks: `codex-core` and `gemini-core` with `role=constraint`.
-3. Require each task to:
-   - read all boundary artifacts,
-   - send one directed message to peer (`constraint_question`),
-   - wait for ACK and respond (`constraint_answer`),
-   - **use the Write tool** to persist output to `${THINKING_DIR}/codex-thought.md` or `${THINKING_DIR}/gemini-thought.md` respectively, then **verify with Read** that the file exists and is non-empty,
-   - send one `heartbeat` message before completion.
-4. Wait for both tasks and verify artifacts exist. If either `*-thought.md` is missing, check the task output for content and write it manually as fallback.
+2. Spawn `codex-core` and `gemini-core` teammates in a single message (parallel execution):
+   ```text
+   Task(name="codex-core", subagent_type="tpd:codex-core", team_name="tpd-thinking-${PROPOSAL_ID}", prompt="role=constraint run_dir=${THINKING_DIR} Read all boundary artifacts. Send one directed message to peer (constraint_question), wait for ACK and respond (constraint_answer). Use Write to persist output to ${THINKING_DIR}/codex-thought.md, then verify with Read that the file exists and is non-empty. Send one heartbeat message before completion.")
+   Task(name="gemini-core", subagent_type="tpd:gemini-core", team_name="tpd-thinking-${PROPOSAL_ID}", prompt="role=constraint run_dir=${THINKING_DIR} Read all boundary artifacts. Send one directed message to peer (constraint_question), wait for ACK and respond (constraint_answer). Use Write to persist output to ${THINKING_DIR}/gemini-thought.md, then verify with Read that the file exists and is non-empty. Send one heartbeat message before completion.")
+   ```
+   # All teammates launched in a single message (parallel execution).
+   # Each Task call blocks until the teammate finishes.
+   # Results are returned directly — no TaskOutput needed.
+3. Verify artifacts exist. If either `*-thought.md` is missing, check the direct return value from the Task call for content and write it manually as fallback.
 
 ### Step 4: Synthesis
 

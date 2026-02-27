@@ -9,7 +9,6 @@ allowed-tools:
     "Bash",
     "Glob",
     "Grep",
-    "TaskOutput",
     "AskUserQuestion",
     "mcp__auggie-mcp__codebase-retrieval",
   ]
@@ -23,9 +22,9 @@ You are the Lead orchestrator for the plan phase of the plan-execute pipeline. Y
 
 You MUST ONLY invoke this agent type:
 
-| Agent Name   | subagent_type             | Purpose                                   |
-| ------------ | ------------------------- | ----------------------------------------- |
-| investigator | plan-execute:investigator | Codebase exploration + plan file creation |
+| Agent Name   | subagent_type                           | Purpose                                   |
+| ------------ | --------------------------------------- | ----------------------------------------- |
+| investigator | plan-execute:investigation:investigator | Codebase exploration + plan file creation |
 
 ## Command Flags
 
@@ -54,6 +53,17 @@ mkdir -p ${RUN_DIR}/plan
 
 Mark items `[x]` as each phase completes.
 
+## Task Result Handling
+
+Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
+
+**FORBIDDEN — never do this:**
+- MUST NOT call `TaskOutput` — this tool does not exist
+- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
+
+**CORRECT — always use direct return:**
+- The result comes from the `Task` call itself, no extra step needed
+
 ### Step 2: Write Input Document
 
 Write the user's request to `${RUN_DIR}/input.md`:
@@ -80,7 +90,8 @@ Spawn a single investigator agent via Task:
 
 ````
 Task(
-  subagent_type="plan-execute:investigator",
+  name="investigator",
+  subagent_type="plan-execute:investigation:investigator",
   prompt=f"""
   You are the codebase investigator for a plan-execute pipeline.
 
@@ -175,11 +186,8 @@ Write `{RUN_DIR}/plan/plan-index.md`:
 
 ### Step 4: Wait for Investigator
 
-```
-
-TaskOutput(task_id=investigator_task, block=true) # No timeout
-
-```
+# Task call blocks until the teammate finishes.
+# Results are returned directly — no TaskOutput needed.
 
 ### Step 5: Validate Output
 

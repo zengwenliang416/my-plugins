@@ -14,8 +14,6 @@ allowed-tools:
     "TaskCreate",
     "TaskUpdate",
     "TaskList",
-    "TaskGet",
-    "TaskOutput",
     "SendMessage",
     "AskUserQuestion",
     "mcp__auggie-mcp__codebase-retrieval",
@@ -52,6 +50,17 @@ Final schema + migration SQL
 ```
 
 ## Execution Protocol
+
+## Task Result Handling
+
+Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
+
+**FORBIDDEN — never do this:**
+- MUST NOT call `TaskOutput` — this tool does not exist
+- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
+
+**CORRECT — always use direct return:**
+- The result comes from the `Task` call itself, no extra step needed
 
 ### Phase 1: Initialization (Lead)
 
@@ -284,23 +293,58 @@ Each agent writes to ${RUN_DIR}/final-position-{agent}.md:
 - Recommended resolution strategy
 ````
 
-3. Spawn agents:
+3. Spawn agents using Task tool (launch independent tasks in a single message for concurrent execution):
 
 ```
-TaskCreate(task_1)
-TaskCreate(task_2)
-TaskCreate(task_3)
-TaskCreate(task_4)
-TaskCreate(task_5)
+# Task 1 + Task 2: Independent proposals — launch in parallel
+Task(
+  name="schema-designer",
+  subagent_type="database-design:design:schema-designer",
+  team_name="database-design-team",
+  prompt="[Task 1 prompt: Schema Proposal — see above]"
+)
+Task(
+  name="query-optimizer",
+  subagent_type="database-design:design:query-optimizer",
+  team_name="database-design-team",
+  prompt="[Task 2 prompt: Performance Analysis — see above]"
+)
+
+# Task 3: Debate Round 1 - Challenges (after proposals complete)
+Task(
+  name="query-optimizer",
+  subagent_type="database-design:design:query-optimizer",
+  team_name="database-design-team",
+  prompt="[Task 3 prompt: Debate Round 1 - Send Challenges — see above]"
+)
+
+# Task 4: Debate Round 1 - Responses (after challenges)
+Task(
+  name="schema-designer",
+  subagent_type="database-design:design:schema-designer",
+  team_name="database-design-team",
+  prompt="[Task 4 prompt: Debate Round 1 - Respond to Challenges — see above]"
+)
+
+# Task 5: Debate Round 2 - Final Review (after responses)
+# Launch both agents in parallel for final positions
+Task(
+  name="schema-designer",
+  subagent_type="database-design:design:schema-designer",
+  team_name="database-design-team",
+  prompt="[Task 5a prompt: Final position for schema-designer — see above]"
+)
+Task(
+  name="query-optimizer",
+  subagent_type="database-design:design:query-optimizer",
+  team_name="database-design-team",
+  prompt="[Task 5b prompt: Final position for query-optimizer — see above]"
+)
 ```
 
-4. Wait for completion:
+# Task call blocks until the teammate finishes.
 
-```
-TaskOutput(task_5, block=true)  # NO timeout parameter
-```
-
-**CRITICAL**: Use `block=true` without timeout to allow full debate completion.
+# Results are returned directly — no TaskOutput needed.
 
 ### Phase 3: Debate Protocol Validation (Lead)
 
@@ -610,10 +654,10 @@ Review debate:
 
 **CRITICAL**: Only invoke these agent types:
 
-| Agent Name      | subagent_type                   | Purpose                                             |
-| --------------- | ------------------------------- | --------------------------------------------------- |
-| schema-designer | database-design:schema-designer | Schema design, data integrity, constraints, RLS     |
-| query-optimizer | database-design:query-optimizer | Query performance, indexing, anti-pattern detection |
+| Agent Name      | subagent_type                          | Purpose                                             |
+| --------------- | -------------------------------------- | --------------------------------------------------- |
+| schema-designer | database-design:design:schema-designer | Schema design, data integrity, constraints, RLS     |
+| query-optimizer | database-design:design:query-optimizer | Query performance, indexing, anti-pattern detection |
 
 **Forbidden**:
 
@@ -629,8 +673,8 @@ Review debate:
    - MUST address all HIGH severity challenges
 
 2. **Task Execution**:
-   - MUST use `TaskOutput(block=true)` without timeout
-   - MUST create tasks with proper dependencies
+   - MUST spawn teammates using Task tool with team_name parameter
+   - MUST launch parallel teammates in a single message for concurrent execution
    - MUST shutdown team after completion
 
 3. **Output Quality**:
@@ -648,9 +692,8 @@ Review debate:
 
 **Agent timeout**:
 
-- Check TaskGet for task status
 - Review agent outputs for partial results
-- Create new task to complete work
+- Spawn new teammate via Task tool to complete work
 
 **Debate stalemate** (>5 rounds on same issue):
 
@@ -718,8 +761,8 @@ Before proceeding to next phase:
 
 - [ ] Team created
 - [ ] 5 tasks defined with dependencies
-- [ ] Agents spawned as background
-- [ ] TaskOutput blocking until completion
+- [ ] Agents spawned via Task tool with team_name parameter
+- [ ] Task tool blocks until teammate completion
 
 **Phase 3**:
 

@@ -15,7 +15,6 @@ allowed-tools:
   - TaskUpdate
   - TaskList
   - TaskGet
-  - TaskOutput
   - SendMessage
   - AskUserQuestion
   - mcp__auggie-mcp__codebase-retrieval
@@ -35,6 +34,17 @@ test-writer (RED) → implementer (GREEN) → coverage-validator → Lead Delive
 ```
 
 ## Phases
+
+## Task Result Handling
+
+Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
+
+**FORBIDDEN — never do this:**
+- MUST NOT call `TaskOutput` — this tool does not exist
+- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
+
+**CORRECT — always use direct return:**
+- The result comes from the `Task` call itself, no extra step needed
 
 ### Phase 1: Initialization (Lead Inline Orchestration)
 
@@ -123,96 +133,154 @@ Mark items `[x]` as each phase completes.
    })
    ```
 
-2. **Create Pipeline Tasks**
+2. **Create tracking tasks** (for visibility in task list)
 
-   **Task 1: Write Failing Tests (test-writer)**
+   Use `TaskCreate` to create task list items for tracking, then set dependencies with `TaskUpdate`:
 
    ```
-   TaskCreate({
+   TaskCreate({ subject: "RED: Write failing tests", description: "test-writer writes comprehensive test suite", activeForm: "Writing failing tests" })
+   TaskCreate({ subject: "RED: Verify tests fail", description: "test-writer verifies all tests fail", activeForm: "Verifying RED phase" })
+   TaskCreate({ subject: "GREEN: Implement minimal code", description: "implementer writes minimal code to pass tests", activeForm: "Implementing minimal code" })
+   TaskCreate({ subject: "GREEN: Verify tests pass", description: "implementer verifies all tests pass", activeForm: "Verifying GREEN phase" })
+   TaskCreate({ subject: "REFACTOR: Improve code", description: "implementer refactors while keeping tests green", activeForm: "Refactoring code" })
+   TaskCreate({ subject: "VALIDATE: Coverage check", description: "coverage-validator verifies coverage thresholds", activeForm: "Validating coverage" })
+
+   # Set sequential dependencies via TaskUpdate(taskId, addBlockedBy)
+   ```
+
+3. **Execute Sequential Pipeline**
+
+   The pipeline is strictly sequential: RED → GREEN → REFACTOR → VALIDATE. Each `Task` call blocks until the teammate finishes, so the next phase starts only after the previous completes.
+
+   **Step 1: Write Failing Tests (test-writer)**
+
+   ```
+   Task(
+     name: "test-writer-red",
+     subagent_type: "tdd:testing:test-writer",
      team_name: "tdd-pipeline",
-     task_description: "Write comprehensive test suite for ${feature_description}. Tests MUST fail initially (RED phase). Include unit, integration, and E2E tests. Cover edge cases: null, empty, invalid types, boundaries, errors, race conditions. Write test-plan.md.",
-     assigned_to_agent: "test-writer",
-     context: "${run_dir}/input.md, ${run_dir}/interfaces.md"
-   })
+     prompt: "You are test-writer-red on team tdd-pipeline.
+
+   Your task: Write comprehensive test suite for ${feature_description}. Tests MUST fail initially (RED phase).
+
+   ## Context
+   - Input: ${run_dir}/input.md
+   - Interfaces: ${run_dir}/interfaces.md
+
+   ## Requirements
+   - Include unit, integration, and E2E tests as appropriate
+   - Cover edge cases: null, empty, invalid types, boundaries, errors, race conditions
+   - Tests MUST fail since implementation does not exist yet
+
+   ## Output
+   Write test plan to ${run_dir}/test-plan.md with:
+   - Test file paths
+   - Test descriptions
+   - Expected failure reasons
+
+   Then run the test suite and verify ALL tests fail (RED phase).
+   Document failure reasons in test-plan.md.
+
+   When done, send a message to lead with your RED phase summary."
+   )
    ```
 
-   **Task 2: Verify Tests Fail — RED Phase (test-writer)**
+   **Step 2: Implement Minimal Code (implementer)**
 
    ```
-   TaskCreate({
+   Task(
+     name: "implementer-green",
+     subagent_type: "tdd:execution:implementer",
      team_name: "tdd-pipeline",
-     task_description: "Run test suite and verify ALL tests fail (RED phase). Document failure reasons in test-plan.md.",
-     assigned_to_agent: "test-writer",
-     blocked_by: [task_1_id],
-     context: "Tests from Task 1"
-   })
+     prompt: "You are implementer-green on team tdd-pipeline.
+
+   Your task: Write MINIMAL code to make all tests pass (GREEN phase). No over-engineering.
+
+   ## Context
+   - Test plan: ${run_dir}/test-plan.md
+   - Interfaces: ${run_dir}/interfaces.md
+
+   ## Requirements
+   - Follow existing project patterns
+   - Write the simplest code that makes tests pass
+   - No premature optimization
+
+   ## Output
+   Write implementation log to ${run_dir}/implementation-log.md with:
+   - Files created/modified
+   - Implementation approach
+
+   Then run the test suite and verify ALL tests pass (GREEN phase).
+   Document results in implementation-log.md.
+
+   When done, send a message to lead with your GREEN phase summary."
+   )
    ```
 
-   **Task 3: Implement Minimal Code — GREEN Phase (implementer)**
+   **Step 3: Refactor (implementer)**
 
    ```
-   TaskCreate({
+   Task(
+     name: "implementer-refactor",
+     subagent_type: "tdd:execution:implementer",
      team_name: "tdd-pipeline",
-     task_description: "Write MINIMAL code to make all tests pass (GREEN phase). No over-engineering. Follow existing project patterns. Write implementation-log.md.",
-     assigned_to_agent: "implementer",
-     blocked_by: [task_2_id],
-     context: "${run_dir}/test-plan.md, ${run_dir}/interfaces.md"
-   })
+     prompt: "You are implementer-refactor on team tdd-pipeline.
+
+   Your task: Refactor code for clarity and maintainability while keeping tests green.
+
+   ## Context
+   - Implementation log: ${run_dir}/implementation-log.md
+   - Green tests from previous phase
+
+   ## Requirements
+   - Run tests after each change to ensure they stay green
+   - Improve naming, extract common patterns, simplify logic
+   - Do NOT add new functionality
+
+   ## Output
+   Update ${run_dir}/implementation-log.md with refactoring changes.
+
+   When done, send a message to lead with your REFACTOR phase summary."
+   )
    ```
 
-   **Task 4: Verify Tests Pass (implementer)**
+   **Step 4: Coverage Validation (coverage-validator)**
 
    ```
-   TaskCreate({
+   Task(
+     name: "coverage-validator",
+     subagent_type: "tdd:validation:coverage-validator",
      team_name: "tdd-pipeline",
-     task_description: "Run test suite and verify ALL tests pass (GREEN phase). Document results in implementation-log.md.",
-     assigned_to_agent: "implementer",
-     blocked_by: [task_3_id],
-     context: "Implementation from Task 3"
-   })
+     prompt: "You are coverage-validator on team tdd-pipeline.
+
+   Your task: Run coverage analysis and verify thresholds are met.
+
+   ## Context
+   - Test plan: ${run_dir}/test-plan.md
+   - Implementation log: ${run_dir}/implementation-log.md
+
+   ## Coverage Thresholds
+   - Branches >= ${coverage_threshold}%
+   - Functions >= ${coverage_threshold}%
+   - Lines >= ${coverage_threshold}%
+   - Statements >= ${coverage_threshold}%
+
+   ## Requirements
+   1. Run coverage analysis
+   2. Detect test smells (implementation testing, brittle selectors, interdependence, magic numbers, incomplete mocking)
+   3. If below threshold, send COVERAGE_FIX_REQUEST to lead
+
+   ## Output
+   Write coverage report to ${run_dir}/coverage-report.md with:
+   - Coverage percentages by category
+   - Uncovered paths
+   - Test smell findings
+
+   When done, send a message to lead with your coverage summary."
+   )
    ```
 
-   **Task 5: Refactor (implementer)**
-
-   ```
-   TaskCreate({
-     team_name: "tdd-pipeline",
-     task_description: "Refactor code for clarity and maintainability while keeping tests green. Run tests after each change. Update implementation-log.md.",
-     assigned_to_agent: "implementer",
-     blocked_by: [task_4_id],
-     context: "Green tests from Task 4"
-   })
-   ```
-
-   **Task 6: Coverage Validation (coverage-validator)**
-
-   ```
-   TaskCreate({
-     team_name: "tdd-pipeline",
-     task_description: "Run coverage analysis. Verify: branches >= ${coverage_threshold}%, functions >= ${coverage_threshold}%, lines >= ${coverage_threshold}%, statements >= ${coverage_threshold}%. Detect test smells. Write coverage-report.md. If below threshold, send COVERAGE_FIX_REQUEST.",
-     assigned_to_agent: "coverage-validator",
-     blocked_by: [task_5_id],
-     context: "${run_dir}/test-plan.md, ${run_dir}/implementation-log.md"
-   })
-   ```
-
-3. **Spawn Agents**
-
-   ```
-   # Agent restrictions enforced by subagent_type
-   test-writer: tdd:test-writer
-   implementer: tdd:implementer
-   coverage-validator: tdd:coverage-validator
-   ```
-
-4. **Execute Pipeline**
-
-   ```
-   TaskOutput(task_id: task_6_id, block: true)
-   # NO timeout — pipeline must complete
-   ```
-
-5. **Structured Fix Loop**
+4. **Structured Fix Loop**
 
    If `coverage-validator` sends `COVERAGE_FIX_REQUEST`:
 
@@ -227,9 +295,9 @@ Mark items `[x]` as each phase completes.
    ```
 
    Then:
-   - **test-writer** adds tests for uncovered paths
-   - **implementer** adjusts implementation if needed
-   - **coverage-validator** re-validates
+   - Spawn **test-writer** to add tests for uncovered paths
+   - Spawn **implementer** to adjust implementation if needed
+   - Spawn **coverage-validator** to re-validate
 
    When fixed, `test-writer` sends:
 
@@ -243,18 +311,18 @@ Mark items `[x]` as each phase completes.
 
    **Max 2 rounds**. If still below threshold after round 2, escalate to user.
 
-6. **Shutdown**
+5. **Shutdown**
    ```
-   TeamDelete("tdd-pipeline")
+   TeamDelete()
    ```
 
 ### Phase 4: Delivery (Lead Inline Orchestration)
 
 1. **Verify Quality Gates**
-   - ✅ All tests pass (GREEN phase)
-   - ✅ Coverage >= ${coverage_threshold}% (branches, functions, lines, statements)
-   - ✅ No test smells detected
-   - ✅ Critical code has 100% coverage (if applicable)
+   - All tests pass (GREEN phase)
+   - Coverage >= ${coverage_threshold}% (branches, functions, lines, statements)
+   - No test smells detected
+   - Critical code has 100% coverage (if applicable)
 
 2. **Generate Delivery Report**
 
@@ -294,23 +362,23 @@ Mark items `[x]` as each phase completes.
 
 ## Agent Type Restrictions
 
-| Agent Name         | subagent_type          | Purpose                              |
-| ------------------ | ---------------------- | ------------------------------------ |
-| test-writer        | tdd:test-writer        | Write failing tests first            |
-| implementer        | tdd:implementer        | Minimal implementation to pass tests |
-| coverage-validator | tdd:coverage-validator | Verify coverage thresholds           |
+| Agent Name         | subagent_type                     | Purpose                              |
+| ------------------ | --------------------------------- | ------------------------------------ |
+| test-writer        | tdd:testing:test-writer           | Write failing tests first            |
+| implementer        | tdd:execution:implementer         | Minimal implementation to pass tests |
+| coverage-validator | tdd:validation:coverage-validator | Verify coverage thresholds           |
 
 ## Constraints
 
 ### Mandatory Enforcement
 
-- ❌ MUST NOT write implementation before tests exist
-- ❌ MUST NOT skip RED phase verification (tests MUST fail initially)
-- ❌ MUST NOT skip GREEN phase verification (tests MUST pass after implementation)
-- ❌ MUST NOT invoke agent types outside restrictions table
-- ✅ MUST use `TaskOutput(block=true)` — NO timeout
-- ✅ MUST verify coverage >= threshold before delivery
-- ✅ MUST detect and report test smells
+- MUST NOT write implementation before tests exist
+- MUST NOT skip RED phase verification (tests MUST fail initially)
+- MUST NOT skip GREEN phase verification (tests MUST pass after implementation)
+- MUST NOT invoke agent types outside restrictions table
+- MUST spawn teammates using Task tool with team_name parameter
+- MUST verify coverage >= threshold before delivery
+- MUST detect and report test smells
 
 ### Test Smells to Detect
 

@@ -6,9 +6,8 @@ allowed-tools:
   - TeamCreate
   - TeamDelete
   - TaskCreate
-  - TaskOutput
   - TaskList
-  - TaskGet
+  - TaskUpdate
   - SendMessage
   - AskUserQuestion
   - Read
@@ -72,6 +71,17 @@ All collaboration MUST use structured `SendMessage` payloads.
 6. `DOC_CONFLICT_RESOLVE` / `DOC_CONFLICT_FIXED`
    - Used when two recorder outputs overlap or conflict.
 
+## Task Result Handling
+
+Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
+
+**FORBIDDEN — never do this:**
+- MUST NOT call `TaskOutput` — this tool does not exist
+- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
+
+**CORRECT — always use direct return:**
+- The result comes from the `Task` call itself, no extra step needed
+
 ## Actions
 
 0. **Step 0: Baseline scan**
@@ -86,13 +96,42 @@ All collaboration MUST use structured `SendMessage` payloads.
 
 2. **Step 2: Global investigation (parallel scout)**
    - Split project investigation into up to 4 scopes.
-   - Launch one `TaskCreate` per scope using `subagent_type: "docflow:scout"`.
+   - MUST spawn teammates using `Task` tool with `team_name` parameter.
+   - MUST launch parallel teammates in a single message for concurrent execution.
+   - MUST NOT construct task IDs manually — use message-based coordination.
    - Require each scout to send `SCOUT_REPORT_READY` to the lead when report is written.
-   - `scout` must run in foreground mode (no background polling).
-   - Wait for all scout tasks:
-     ```
-     TaskOutput(task_id, block=true)  # no timeout
-     ```
+
+   **Example** (adapt name/prompt to actual scopes):
+
+   ```
+   Task(
+     name: "scout-auth",
+     subagent_type: "docflow:scout",
+     team_name: "docflow-init-team",
+     prompt: "You are scout-auth on team docflow-init-team.
+
+   Your task: Investigate the auth scope of this project.
+   scope: auth
+
+   When done, send a SCOUT_REPORT_READY message to lead with your findings."
+   )
+
+   Task(
+     name: "scout-api",
+     subagent_type: "docflow:scout",
+     team_name: "docflow-init-team",
+     prompt: "You are scout-api on team docflow-init-team.
+
+   Your task: Investigate the api scope of this project.
+   scope: api
+
+   When done, send a SCOUT_REPORT_READY message to lead with your findings."
+   )
+
+   # All scouts launch in parallel (single message).
+   # Each Task call blocks until the teammate finishes.
+   # Results are returned directly — no TaskOutput needed.
+   ```
 
 3. **Step 3: Scout cross-check round (agent communication)**
    - Pair scouts for peer review using `SCOUT_CROSSCHECK_REQUEST`.
@@ -107,16 +146,53 @@ All collaboration MUST use structured `SendMessage` payloads.
 
 5. **Step 5: Foundational docs (parallel recorder)**
    - Send one shared `DOC_PLAN_READY` message to all recorder tasks first.
-   - Create 3 recorder tasks via `TaskCreate` using `subagent_type: "docflow:recorder"`:
-     - Recorder A: `overview/project-overview.md`
-     - Recorder B: `reference/coding-conventions.md`
-     - Recorder C: `reference/git-conventions.md`
+   - MUST spawn recorders using `Task` tool with `team_name` parameter.
+   - MUST launch all 3 recorders in a single message for concurrent execution.
    - All recorder tasks must run in `content-only` mode.
    - Require each recorder to send `DOC_DRAFT_READY`.
-   - Wait for all recorder tasks to finish before continuing.
+
+   ```
+   Task(
+     name: "recorder-overview",
+     subagent_type: "docflow:recorder",
+     team_name: "docflow-init-team",
+     prompt: "You are recorder-overview on team docflow-init-team.
+
+   Your task: Generate overview/project-overview.md in content-only mode.
+
+   When done, send a DOC_DRAFT_READY message to lead."
+   )
+
+   Task(
+     name: "recorder-coding",
+     subagent_type: "docflow:recorder",
+     team_name: "docflow-init-team",
+     prompt: "You are recorder-coding on team docflow-init-team.
+
+   Your task: Generate reference/coding-conventions.md in content-only mode.
+
+   When done, send a DOC_DRAFT_READY message to lead."
+   )
+
+   Task(
+     name: "recorder-git",
+     subagent_type: "docflow:recorder",
+     team_name: "docflow-init-team",
+     prompt: "You are recorder-git on team docflow-init-team.
+
+   Your task: Generate reference/git-conventions.md in content-only mode.
+
+   When done, send a DOC_DRAFT_READY message to lead."
+   )
+
+   # All 3 recorders launch in parallel (single message).
+   # Each Task call blocks until the teammate finishes.
+   # Results are returned directly — no TaskOutput needed.
+   ```
 
 6. **Step 6: Concept docs (parallel recorder)**
-   - For each selected concept, create one recorder task with scoped prompt.
+   - For each selected concept, spawn one recorder teammate using `Task` tool with `team_name` parameter.
+   - MUST launch all concept recorders in a single message for concurrent execution.
    - Generate a compact document set:
      - Optional 1 `overview` file
      - Required 1-2 core `architecture` files
@@ -124,13 +200,44 @@ All collaboration MUST use structured `SendMessage` payloads.
      - Optional 1-2 concise `reference` files
    - Keep `content-only` mode.
    - If overlap detected, send `DOC_CONFLICT_RESOLVE` and wait for `DOC_CONFLICT_FIXED`.
-   - Wait for all concept recorder tasks (`TaskOutput(..., block=true)`).
+
+   **Example** (adapt name/prompt to actual concepts):
+
+   ```
+   Task(
+     name: "recorder-auth",
+     subagent_type: "docflow:recorder",
+     team_name: "docflow-init-team",
+     prompt: "You are recorder-auth on team docflow-init-team.
+
+   Your task: Generate architecture and guide docs for the Authentication concept in content-only mode.
+
+   When done, send a DOC_DRAFT_READY message to lead."
+   )
+
+   # Launch one Task per concept in a single message (parallel execution).
+   # Each Task call blocks until the teammate finishes.
+   # Results are returned directly — no TaskOutput needed.
+   ```
 
 7. **Step 7: Cleanup**
    - Delete temporary scout reports under `llmdoc/agent/`.
 
 8. **Step 8: Final indexing**
-   - Invoke one final recorder task in `full` mode to regenerate `llmdoc/index.md`.
+   - Spawn one final recorder using `Task` tool in `full` mode to regenerate `llmdoc/index.md`.
+
+   ```
+   Task(
+     name: "recorder-index",
+     subagent_type: "docflow:recorder",
+     team_name: "docflow-init-team",
+     prompt: "You are recorder-index on team docflow-init-team.
+
+   Your task: Regenerate llmdoc/index.md in full mode based on all generated docs.
+
+   When done, send a DOC_DRAFT_READY message to lead."
+   )
+   ```
 
 9. **Step 9: Shutdown Team**
    - Tear down team resources:

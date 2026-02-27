@@ -14,8 +14,6 @@ allowed-tools:
     "TaskCreate",
     "TaskUpdate",
     "TaskList",
-    "TaskGet",
-    "TaskOutput",
     "SendMessage",
     "AskUserQuestion",
     "mcp__auggie-mcp__codebase-retrieval",
@@ -36,11 +34,10 @@ Phase 1: Init (Lead)
 
 Phase 2: Parallel Investigation (Lead inline orchestration)
   → TeamCreate("bug-investigation-team")
-  → Create 6 tasks (3 investigation + 3 cross-validation)
-  → Spawn 3 specialists as background agents
-  → TaskOutput(block=true) — NO timeout
-  → Broadcast all reports for cross-validation
-  → TaskOutput(block=true) for cross-validation
+  → Spawn 3 specialists using Task tool (parallel execution)
+  → Results returned directly — no TaskOutput needed
+  → Spawn 3 cross-validation agents using Task tool (parallel execution)
+  → Results returned directly — no TaskOutput needed
   → Shutdown, TeamDelete
 
 Phase 3: Synthesis (Lead)
@@ -53,6 +50,17 @@ Phase 4: Report (Lead)
   → Write investigation-report.md
   → Display to user
 ```
+
+## Task Result Handling
+
+Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
+
+**FORBIDDEN — never do this:**
+- MUST NOT call `TaskOutput` — this tool does not exist
+- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
+
+**CORRECT — always use direct return:**
+- The result comes from the `Task` call itself, no extra step needed
 
 ## Phase 1: Initialization
 
@@ -123,62 +131,67 @@ Create `${RUN_DIR}/bug-report.md`:
 TeamCreate("bug-investigation-team")
 ```
 
-### Step 2.2: Create Investigation Tasks
+### Step 2.2: Spawn 3 Investigation Agents (launch all in a single message for parallel execution)
 
-Create 3 parallel investigation tasks:
-
-**Task 1: Log Analysis**
+**Agent 1: Log Analysis**
 
 ```
-TaskCreate(
-  title: "Log Analysis",
-  instructions: "Analyze logs and error messages to identify patterns and timeline",
-  subagent_type: "bug-investigation:log-analyst",
-  context: {
-    bug_report: "${RUN_DIR}/bug-report.md",
-    run_dir: "${RUN_DIR}",
-    error_messages: [extracted errors],
-    log_paths: [extracted log paths]
-  }
+Task(
+  name: "log-analyst",
+  subagent_type: "bug-investigation:analysis:log-analyst",
+  team_name: "bug-investigation-team",
+  prompt: "You are log-analyst on team bug-investigation-team.
+
+Your task: Analyze logs and error messages to identify patterns and timeline.
+
+Input: Read ${RUN_DIR}/bug-report.md for the bug description, error messages, and log paths.
+Output: Write findings to ${RUN_DIR}/analysis-logs.md.
+
+When done, send a message to lead summarizing your findings."
 )
 ```
 
-**Task 2: Code Tracing**
+**Agent 2: Code Tracing**
 
 ```
-TaskCreate(
-  title: "Code Tracing",
-  instructions: "Trace code execution path and identify root cause",
-  subagent_type: "bug-investigation:code-tracer",
-  context: {
-    bug_report: "${RUN_DIR}/bug-report.md",
-    run_dir: "${RUN_DIR}",
-    file_hints: [extracted file paths],
-    error_locations: [extracted from stack traces]
-  }
+Task(
+  name: "code-tracer",
+  subagent_type: "bug-investigation:analysis:code-tracer",
+  team_name: "bug-investigation-team",
+  prompt: "You are code-tracer on team bug-investigation-team.
+
+Your task: Trace code execution path and identify root cause.
+
+Input: Read ${RUN_DIR}/bug-report.md for the bug description, file hints, and error locations.
+Output: Write findings to ${RUN_DIR}/analysis-code.md.
+
+When done, send a message to lead summarizing your findings."
 )
 ```
 
-**Task 3: Bug Reproduction**
+**Agent 3: Bug Reproduction**
 
 ```
-TaskCreate(
-  title: "Bug Reproduction",
-  instructions: "Create minimal reproduction steps and failing test",
-  subagent_type: "bug-investigation:reproducer",
-  context: {
-    bug_report: "${RUN_DIR}/bug-report.md",
-    run_dir: "${RUN_DIR}",
-    description: [bug description]
-  }
+Task(
+  name: "reproducer",
+  subagent_type: "bug-investigation:analysis:reproducer",
+  team_name: "bug-investigation-team",
+  prompt: "You are reproducer on team bug-investigation-team.
+
+Your task: Create minimal reproduction steps and failing test.
+
+Input: Read ${RUN_DIR}/bug-report.md for the bug description.
+Output: Write findings to ${RUN_DIR}/analysis-reproduction.md.
+
+When done, send a message to lead summarizing your findings."
 )
 ```
 
-### Step 2.3: Wait for Investigation Results
+All teammates launched in a single message (parallel execution).
+Each Task call blocks until the teammate finishes.
+Results are returned directly — no TaskOutput needed.
 
-```
-TaskOutput(block=true)  # NO timeout - wait indefinitely
-```
+### Step 2.3: Read Investigation Results
 
 Read the 3 analysis reports:
 
@@ -186,65 +199,79 @@ Read the 3 analysis reports:
 - `${RUN_DIR}/analysis-code.md`
 - `${RUN_DIR}/analysis-reproduction.md`
 
-### Step 2.4: Create Cross-Validation Tasks
+### Step 2.4: Spawn 3 Cross-Validation Agents (launch all in a single message for parallel execution)
 
-Create 3 cross-validation tasks (blocked by initial investigation):
-
-**Task 4: Cross-Validate Log Analysis**
+**Agent 4: Cross-Validate Log Analysis**
 
 ```
-TaskCreate(
-  title: "Cross-Validate Log Analysis",
-  instructions: "Review code-tracer and reproducer findings. Verify if log evidence supports their root cause.",
-  subagent_type: "bug-investigation:log-analyst",
-  context: {
-    my_findings: "${RUN_DIR}/analysis-logs.md",
-    code_findings: "${RUN_DIR}/analysis-code.md",
-    repro_findings: "${RUN_DIR}/analysis-reproduction.md"
-  },
-  blocked_by: [task1_id, task2_id, task3_id]
+Task(
+  name: "log-analyst-cv",
+  subagent_type: "bug-investigation:analysis:log-analyst",
+  team_name: "bug-investigation-team",
+  prompt: "You are log-analyst-cv on team bug-investigation-team.
+
+Your task: Cross-validate from log analysis perspective. Review code-tracer and reproducer findings. Verify if log evidence supports their root cause.
+
+Input:
+- Your perspective's findings: ${RUN_DIR}/analysis-logs.md
+- Code tracer findings: ${RUN_DIR}/analysis-code.md
+- Reproducer findings: ${RUN_DIR}/analysis-reproduction.md
+
+Output: Write CONFIRM/CHALLENGE with evidence to ${RUN_DIR}/cv-logs.md.
+
+When done, send a message to lead summarizing your cross-validation results."
 )
 ```
 
-**Task 5: Cross-Validate Code Tracing**
+**Agent 5: Cross-Validate Code Tracing**
 
 ```
-TaskCreate(
-  title: "Cross-Validate Code Tracing",
-  instructions: "Review log-analyst and reproducer findings. Verify if code analysis matches log timeline and reproduction.",
-  subagent_type: "bug-investigation:code-tracer",
-  context: {
-    my_findings: "${RUN_DIR}/analysis-code.md",
-    log_findings: "${RUN_DIR}/analysis-logs.md",
-    repro_findings: "${RUN_DIR}/analysis-reproduction.md"
-  },
-  blocked_by: [task1_id, task2_id, task3_id]
+Task(
+  name: "code-tracer-cv",
+  subagent_type: "bug-investigation:analysis:code-tracer",
+  team_name: "bug-investigation-team",
+  prompt: "You are code-tracer-cv on team bug-investigation-team.
+
+Your task: Cross-validate from code tracing perspective. Review log-analyst and reproducer findings. Verify if code analysis matches log timeline and reproduction.
+
+Input:
+- Your perspective's findings: ${RUN_DIR}/analysis-code.md
+- Log analyst findings: ${RUN_DIR}/analysis-logs.md
+- Reproducer findings: ${RUN_DIR}/analysis-reproduction.md
+
+Output: Write CONFIRM/CHALLENGE with evidence to ${RUN_DIR}/cv-code.md.
+
+When done, send a message to lead summarizing your cross-validation results."
 )
 ```
 
-**Task 6: Cross-Validate Reproduction**
+**Agent 6: Cross-Validate Reproduction**
 
 ```
-TaskCreate(
-  title: "Cross-Validate Reproduction",
-  instructions: "Review log-analyst and code-tracer findings. Verify if reproduction confirms their root cause.",
-  subagent_type: "bug-investigation:reproducer",
-  context: {
-    my_findings: "${RUN_DIR}/analysis-reproduction.md",
-    log_findings: "${RUN_DIR}/analysis-logs.md",
-    code_findings: "${RUN_DIR}/analysis-code.md"
-  },
-  blocked_by: [task1_id, task2_id, task3_id]
+Task(
+  name: "reproducer-cv",
+  subagent_type: "bug-investigation:analysis:reproducer",
+  team_name: "bug-investigation-team",
+  prompt: "You are reproducer-cv on team bug-investigation-team.
+
+Your task: Cross-validate from reproduction perspective. Review log-analyst and code-tracer findings. Verify if reproduction confirms their root cause.
+
+Input:
+- Your perspective's findings: ${RUN_DIR}/analysis-reproduction.md
+- Log analyst findings: ${RUN_DIR}/analysis-logs.md
+- Code tracer findings: ${RUN_DIR}/analysis-code.md
+
+Output: Write CONFIRM/CHALLENGE with evidence to ${RUN_DIR}/cv-reproduction.md.
+
+When done, send a message to lead summarizing your cross-validation results."
 )
 ```
 
-### Step 2.5: Wait for Cross-Validation
+All teammates launched in a single message (parallel execution).
+Each Task call blocks until the teammate finishes.
+Results are returned directly — no TaskOutput needed.
 
-```
-TaskOutput(block=true)  # NO timeout - wait indefinitely
-```
-
-### Step 2.6: Shutdown Team
+### Step 2.5: Shutdown Team
 
 ```
 TeamDelete("bug-investigation-team")
@@ -373,11 +400,11 @@ Show the user:
 
 ## Agent Type Restrictions
 
-| Agent Name  | subagent_type                 | Purpose                            |
-| ----------- | ----------------------------- | ---------------------------------- |
-| log-analyst | bug-investigation:log-analyst | Log/error analysis                 |
-| code-tracer | bug-investigation:code-tracer | Code path tracing                  |
-| reproducer  | bug-investigation:reproducer  | Bug reproduction + regression test |
+| Agent Name  | subagent_type                          | Purpose                            |
+| ----------- | -------------------------------------- | ---------------------------------- |
+| log-analyst | bug-investigation:analysis:log-analyst | Log/error analysis                 |
+| code-tracer | bug-investigation:analysis:code-tracer | Code path tracing                  |
+| reproducer  | bug-investigation:analysis:reproducer  | Bug reproduction + regression test |
 
 ## Critical Constraints
 
@@ -390,9 +417,9 @@ Show the user:
    - Do not perform log analysis, code tracing, or reproduction yourself
    - Delegate to specialist agents
 
-3. **MUST use TaskOutput(block=true) with NO timeout**
-   - Wait indefinitely for agents to complete
-   - Do not proceed to next phase until all outputs are ready
+3. **MUST spawn teammates using Task tool with team_name parameter**
+   - Launch parallel teammates in a single message for concurrent execution
+   - Each Task call blocks until the teammate finishes
 
 4. **MUST triangulate root cause from multiple perspectives**
    - Compare findings from all 3 agents
@@ -408,7 +435,7 @@ Show the user:
 
 ### If specialist agent fails:
 
-1. Check TaskOutput for error message
+1. Check returned error from Task call
 2. Retry with additional context
 3. If retry fails, continue with 2/3 consensus
 4. Document missing perspective in final report

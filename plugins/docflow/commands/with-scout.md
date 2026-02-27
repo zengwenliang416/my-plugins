@@ -6,9 +6,7 @@ allowed-tools:
   - TeamCreate
   - TeamDelete
   - TaskCreate
-  - TaskOutput
   - TaskList
-  - TaskGet
   - TaskUpdate
   - SendMessage
   - Read
@@ -77,6 +75,17 @@ All team collaboration MUST use structured `SendMessage` payloads.
    - Used for bounded correction loop after lead validation.
    - Max 2 rounds, unresolved issues escalate to user.
 
+## Task Result Handling
+
+Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
+
+**FORBIDDEN — never do this:**
+- MUST NOT call `TaskOutput` — this tool does not exist
+- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
+
+**CORRECT — always use direct return:**
+- The result comes from the `Task` call itself, no extra step needed
+
 ## Actions
 
 1. **Step 1: Deconstruct goal**
@@ -89,14 +98,45 @@ All team collaboration MUST use structured `SendMessage` payloads.
      ```
 
 3. **Step 3: Parallel investigation**
-   - Launch multiple `TaskCreate` tasks using `subagent_type: "docflow:investigator"`.
-   - One task should own one focused question.
-   - Each investigator returns a focused markdown report.
+   - Decompose the goal into N independently investigable questions (from Step 1).
+   - MUST spawn teammates using `Task` tool with `team_name` parameter.
+   - MUST launch parallel teammates in a single message for concurrent execution.
+   - MUST NOT construct task IDs manually — use message-based coordination.
+
+   **Example** (adapt name/prompt to actual questions):
+
+   ```
+   Task(
+     name: "investigator-1",
+     subagent_type: "docflow:investigator",
+     team_name: "docflow-scout-team",
+     prompt: "You are investigator-1 on team docflow-scout-team.
+
+   Your task: Investigate [question 1 with context and file hints].
+   question_id: q1
+
+   When done, send an INVESTIGATION_READY message to lead with your findings."
+   )
+
+   Task(
+     name: "investigator-2",
+     subagent_type: "docflow:investigator",
+     team_name: "docflow-scout-team",
+     prompt: "You are investigator-2 on team docflow-scout-team.
+
+   Your task: Investigate [question 2 with context and file hints].
+   question_id: q2
+
+   When done, send an INVESTIGATION_READY message to lead with your findings."
+   )
+
+   # Both tasks launch in parallel (single message).
+   # Each Task call blocks until the teammate finishes.
+   # Results are returned directly — no TaskOutput needed.
+   # Do NOT use TaskOutput or construct task IDs manually.
+   ```
+
    - Each investigator MUST send `INVESTIGATION_READY` to lead after report completion.
-   - Wait for all investigation tasks:
-     ```
-     TaskOutput(task_id, block=true)  # no timeout
-     ```
 
 4. **Step 4: Investigation cross-validation**
    - Use `INVESTIGATION_REVIEW_REQUEST` to assign peer verification for key findings.
@@ -113,13 +153,30 @@ All team collaboration MUST use structured `SendMessage` payloads.
 
 7. **Step 7: Execute with worker**
    - Share execution package with `EXECUTION_PLAN_SHARED`.
-   - Create one or more execution tasks via `TaskCreate` using `subagent_type: "docflow:worker"`.
-   - Each worker must receive:
-     - objective
-     - context
-     - ordered execution steps
+   - Spawn one or more workers using `Task` tool with `team_name` parameter.
+   - MUST launch parallel workers in a single message for concurrent execution.
+
+   **Example** (adapt name/prompt to actual execution plan):
+
+   ```
+   Task(
+     name: "worker-1",
+     subagent_type: "docflow:worker",
+     team_name: "docflow-scout-team",
+     prompt: "You are worker-1 on team docflow-scout-team.
+
+   Your task: [objective with context and ordered execution steps].
+
+   When done, send an EXECUTION_RESULT message to lead with your results."
+   )
+
+   # Each Task call blocks until the teammate finishes.
+   # Results are returned directly — no TaskOutput needed.
+   # Do NOT use TaskOutput or construct task IDs manually.
+   ```
+
+   - Each worker must receive: objective, context, ordered execution steps.
    - Require `EXECUTION_RESULT` from each worker.
-   - Wait for all worker tasks with `TaskOutput(..., block=true)`.
 
 8. **Step 8: Execution fix loop (if needed)**
    - If lead detects blocking issues, send `EXECUTION_FIX_REQUEST` with exact deltas.
@@ -130,8 +187,9 @@ All team collaboration MUST use structured `SendMessage` payloads.
    - Summarize investigation path, key evidence, and execution results.
 
 10. **Step 10: Shutdown Team**
-   - Optionally send `shutdown_request` to active teammates.
-   - Tear down team resources:
-     ```
-     TeamDelete("docflow-scout-team")
-     ```
+
+- Optionally send `shutdown_request` to active teammates.
+- Tear down team resources:
+  ```
+  TeamDelete("docflow-scout-team")
+  ```

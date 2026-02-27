@@ -24,8 +24,8 @@ allowed-tools: [Task, Skill, AskUserQuestion, Read, Bash]
 1   Initialize      → mkdir RUN_DIR
 2   Investigate     → Task("change-investigator")    ─┐
 3   Parallel Analyze                                   │
-    ├─ Task("semantic-analyzer", run_in_background)    │ PARALLEL
-    └─ Task("symbol-analyzer", run_in_background)     ─┤
+    ├─ Task("semantic-analyzer")    │ PARALLEL (single message)
+    └─ Task("symbol-analyzer")    ─┤
 4   Synthesize      → Skill("analysis-synthesizer")  ─┘
 5   Branch          → Skill("branch-creator")
 6   Confirm         → AskUserQuestion ⏸️ HARD STOP
@@ -64,6 +64,17 @@ allowed-tools: [Task, Skill, AskUserQuestion, Read, Bash]
 | `--branch <name>` | Custom branch name |
 
 ---
+
+## Task Result Handling
+
+Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
+
+**FORBIDDEN — never do this:**
+- MUST NOT call `TaskOutput` — this tool does not exist
+- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
+
+**CORRECT — always use direct return:**
+- The result comes from the `Task` call itself, no extra step needed
 
 ## Phase Details
 
@@ -106,19 +117,19 @@ Output: `${RUN_DIR}/changes-raw.json`, `${RUN_DIR}/investigation-summary.md`
 Task(
   subagent_type="commit:semantic-analyzer",
   prompt="Execute semantic-analyzer agent. Read plugins/commit/agents/semantic-analyzer.md for instructions. run_dir=${RUN_DIR}",
-  description="semantic analysis",
-  run_in_background=true
+  description="semantic analysis"
 )
 
 Task(
   subagent_type="commit:symbol-analyzer",
   prompt="Execute symbol-analyzer agent. Read plugins/commit/agents/symbol-analyzer.md for instructions. run_dir=${RUN_DIR}",
-  description="symbol analysis",
-  run_in_background=true
+  description="symbol analysis"
 )
 ```
 
-**Wait for BOTH to complete before Phase 4.**
+Both Task calls launched in a single message run concurrently.
+Each Task call blocks until the teammate finishes.
+Results are returned directly — no TaskOutput needed.
 
 Output: `${RUN_DIR}/semantic-analysis.json`, `${RUN_DIR}/symbol-analysis.json`
 
