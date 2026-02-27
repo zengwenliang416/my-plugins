@@ -118,6 +118,12 @@ Before final delivery, all gates must pass:
 - ✅ DELETION_LOG complete and accurate
 - ✅ Validation log shows all batches approved
 
+## Task Tool Rules
+
+- **MUST** use blocking `Task` calls — results are returned directly
+- **MUST NOT** use `TaskOutput` (this tool does not exist)
+- **MUST NOT** manually construct task IDs (e.g., `agent-name@worktree-id`)
+
 ## Safety Features
 
 1. **Risk-based batching**: SAFE changes first, RISKY changes last

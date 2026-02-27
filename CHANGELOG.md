@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Add Task Result Handling section to all team-based plugin commands (plugins)
+- Add Task Tool Rules prohibition to all plugin CLAUDE.md files (plugins)
+- Restructure sync-plugins script for new agent type paths (scripts)
+- Fix outdated TaskOutput reference in project overview (llmdoc)
 - Migrate skill scripts from Bash to TypeScript for better type safety and cross-platform compatibility (skills)
 - Update commit workflow documentation with branch-creator integration (commit)
 - Translate commit skill documentation to English (skills)

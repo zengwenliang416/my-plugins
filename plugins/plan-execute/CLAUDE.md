@@ -84,15 +84,16 @@ Sequential per-issue pipeline within a single team:
 
 ```
 For each issue in CSV where dev_state != "done":
-  TaskCreate(implementer, blocked_by: [prev_issue_commit])
-  TaskCreate(reviewer, blocked_by: [implementer])
-  Wait → Fix loop (max 2 rounds) → Lead commits → Next
+  Task(name="implementer", subagent_type="plan-execute:execution:implementer", team_name=..., prompt=...)
+  Task(name="reviewer", subagent_type="plan-execute:validation:reviewer", team_name=..., prompt=...)
+  Fix loop (max 2 rounds) → Lead commits → Next
 ```
 
 Fix loop protocol: `REVIEW_FIX_REQUEST` / `REVIEW_FIX_APPLIED` / `REVIEW_PASS` / `REVIEW_ESCALATION`
 
 ## Constraints
 
+- **MUST** use blocking Task calls — results are returned directly, no TaskOutput needed
 - MUST NOT invoke any agent types outside the Agent Types table
 - MUST execute issues sequentially (later issues may depend on earlier changes)
 - MUST use structured fix loop with max 2 rounds

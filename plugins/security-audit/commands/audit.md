@@ -13,8 +13,6 @@ allowed-tools:
   - TaskCreate
   - TaskUpdate
   - TaskList
-  - TaskGet
-  - TaskOutput
   - SendMessage
   - AskUserQuestion
   - mcp__auggie-mcp__codebase-retrieval
@@ -46,6 +44,17 @@ Phase 5: Report                     → Security report + summary
 ```
 
 ---
+
+## Task Result Handling
+
+Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
+
+**FORBIDDEN — never do this:**
+- MUST NOT call `TaskOutput` — this tool does not exist
+- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
+
+**CORRECT — always use direct return:**
+- The result comes from the `Task` call itself, no extra step needed
 
 ## Phase 1: Init
 
@@ -138,7 +147,7 @@ Write discovery results to `${RUN_DIR}/target-scope.md`:
 TeamCreate(team_name="security-audit-team", description="Cross-layer security audit with debate pattern")
 ```
 
-Create 6 tasks with dependencies:
+Create 6 tracking tasks with dependencies:
 
 ```
 # Phase A: Independent scanning (parallel)
@@ -155,47 +164,37 @@ TaskCreate(subject="Cross-validate from config perspective", description="Review
 TaskUpdate(taskId="6", addBlockedBy=["1", "2", "3"])
 ```
 
-### Step 2: Spawn 3 Specialist Agents (parallel, background)
+### Step 2: Spawn 3 Specialist Agents (parallel)
 
 ```
-Task(subagent_type="security-audit:code-scanner", name="code-scanner", team_name="security-audit-team",
+Task(subagent_type="security-audit:scanning:code-scanner", name="code-scanner", team_name="security-audit-team",
   description="Static code security scanner",
   prompt="You are code-scanner on team security-audit-team.
   Read plugins/security-audit/agents/scanning/code-scanner.md for your full instructions.
   run_dir=${RUN_DIR}
   Phase A: Claim task 1, analyze code for OWASP Top 10 vulnerabilities, write scan-code.md, mark completed.
-  Phase B: When task 4 unblocks, claim it, read scan-dependencies.md and scan-config.md, identify exploitable attack paths, write cross-validation-code.md, mark completed.",
-  run_in_background=true)
+  Phase B: When task 4 unblocks, claim it, read scan-dependencies.md and scan-config.md, identify exploitable attack paths, write cross-validation-code.md, mark completed.")
 
-Task(subagent_type="security-audit:dependency-checker", name="dependency-checker", team_name="security-audit-team",
+Task(subagent_type="security-audit:scanning:dependency-checker", name="dependency-checker", team_name="security-audit-team",
   description="Dependency vulnerability checker",
   prompt="You are dependency-checker on team security-audit-team.
   Read plugins/security-audit/agents/scanning/dependency-checker.md for your full instructions.
   run_dir=${RUN_DIR}
   Phase A: Claim task 2, run npm audit and analyze dependencies, write scan-dependencies.md, mark completed.
-  Phase B: When task 5 unblocks, claim it, read scan-code.md and scan-config.md, verify if vulnerable deps are used, write cross-validation-dependencies.md, mark completed.",
-  run_in_background=true)
+  Phase B: When task 5 unblocks, claim it, read scan-code.md and scan-config.md, verify if vulnerable deps are used, write cross-validation-dependencies.md, mark completed.")
 
-Task(subagent_type="security-audit:config-auditor", name="config-auditor", team_name="security-audit-team",
+Task(subagent_type="security-audit:scanning:config-auditor", name="config-auditor", team_name="security-audit-team",
   description="Configuration security auditor",
   prompt="You are config-auditor on team security-audit-team.
   Read plugins/security-audit/agents/scanning/config-auditor.md for your full instructions.
   run_dir=${RUN_DIR}
   Phase A: Claim task 3, audit configuration for secrets and misconfigurations, write scan-config.md, mark completed.
-  Phase B: When task 6 unblocks, claim it, read scan-code.md and scan-dependencies.md, identify misconfiguration exploitation paths, write cross-validation-config.md, mark completed.",
-  run_in_background=true)
+  Phase B: When task 6 unblocks, claim it, read scan-code.md and scan-dependencies.md, identify misconfiguration exploitation paths, write cross-validation-config.md, mark completed.")
 ```
 
-### Step 3: Wait for All Agents to Complete
-
-**MUST wait** — do NOT take over specialist work. Lead's only job here is waiting.
-
-```
-# Block-wait for all 3 background agents to finish (no timeout)
-TaskOutput(task_id=code_scanner_id, block=true)
-TaskOutput(task_id=dependency_checker_id, block=true)
-TaskOutput(task_id=config_auditor_id, block=true)
-```
+All teammates launched in a single message (parallel execution).
+Each Task call blocks until the teammate finishes.
+Results are returned directly — no TaskOutput needed.
 
 After all 3 return, verify via TaskList that all 6 tasks (Phase A + Phase B) are completed.
 
@@ -491,11 +490,11 @@ openspec/changes/${CHANGE_ID}/
 
 This command uses the following agent types:
 
-| Agent Type                          | Usage                                  |
-| ----------------------------------- | -------------------------------------- |
-| `security-audit:code-scanner`       | Phase 2: Static code analysis          |
-| `security-audit:dependency-checker` | Phase 2: CVE and supply chain scanning |
-| `security-audit:config-auditor`     | Phase 2: Configuration security audit  |
+| Agent Type                                   | Usage                                  |
+| -------------------------------------------- | -------------------------------------- |
+| `security-audit:scanning:code-scanner`       | Phase 2: Static code analysis          |
+| `security-audit:scanning:dependency-checker` | Phase 2: CVE and supply chain scanning |
+| `security-audit:scanning:config-auditor`     | Phase 2: Configuration security audit  |
 
 All agents participate in both Phase A (independent scan) and Phase B (cross-validation).
 
@@ -507,7 +506,7 @@ All agents participate in both Phase A (independent scan) and Phase B (cross-val
 - **MUST NOT** add improvised phases or steps
 - **MUST NOT** take over specialist work (Lead only orchestrates & synthesizes)
 - **MUST** use TeamCreate/TeamDelete for team lifecycle
-- **MUST** wait with TaskOutput(block=true) — no timeout
+- **MUST** use blocking Task calls — results are returned directly, no TaskOutput needed
 - **MUST** complete cross-validation before synthesis
 - **MUST** provide PoC for CRITICAL/HIGH findings
 - **MUST** include remediation steps for all findings

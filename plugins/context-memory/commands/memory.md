@@ -7,9 +7,7 @@ allowed-tools:
   - Bash
   - Skill
   - AskUserQuestion
-  - TeamCreate
-  - TaskCreate
-  - SendMessage
+  - Task
 ---
 
 # /context-memory:memory
@@ -119,26 +117,27 @@ action=workflow → Skill("context-memory:workflow-memory", {run_dir})
 
 ```
 
-### Step 3: Team Workflows (for multi-model actions)
+### Step 3: Multi-Model Workflows (for claude-generate/claude-update actions)
 
-For `claude-generate` and `claude-update` actions, orchestrate via Agent Team:
+For `claude-generate` and `claude-update` actions, orchestrate via parallel `Task` calls:
 
-1. **Init**: `TeamCreate("context-memory-${action}")`
-2. **Scan**: `Task(project-scanner, mode=scan)` → `${run_dir}/modules.json`
-3. **Generate** (per module layer, 3→2→1):
-   - Try **primary path** (multi-model parallel):
-     - `Task(gemini-core, role=doc-generator)` in parallel with `Task(codex-core, role=doc-generator)`
-     - Wait for both; collect `${run_dir}/gemini-docs-{module}.md` and `${run_dir}/codex-docs-{module}.md`
+1. **Scan**: `Task(subagent_type="context-memory:project-scanner", name="scanner", prompt="run_dir=${run_dir} mode=scan")` → `${run_dir}/modules.json`
+2. **Generate** (per module layer, 3→2→1):
+   - Try **primary path** — launch parallel Task calls in a single message:
+     - `Task(subagent_type="context-memory:gemini-core", name="gemini-gen", prompt="run_dir=${run_dir} role=doc-generator module=${module}")`
+     - `Task(subagent_type="context-memory:codex-core", name="codex-gen", prompt="run_dir=${run_dir} role=doc-generator module=${module}")`
+     - Both run concurrently. Each blocks until completion.
+     - Collect `${run_dir}/gemini-docs-{module}.md` and `${run_dir}/codex-docs-{module}.md`
    - If **both fail** → **fallback**: Claude lead generates docs inline using Read + project context
    - If **one succeeds** → use the successful output as sole source
-4. **Merge**: For each module, Claude lead reads available outputs and produces `${run_dir}/merged-docs-{module}.md`:
+3. **Merge**: For each module, Claude lead reads available outputs and produces `${run_dir}/merged-docs-{module}.md`:
    - Compare structure, completeness, and accuracy
    - Take the best sections from each source
    - Ensure consistent format: sections, code examples, dependency notes
-5. **Write**: `Task(doc-worker, plan=write-claude-md)` reads `merged-docs-{module}.md` → writes `{module}/CLAUDE.md`
-6. **Audit**: `Task(codex-core, role=auditor)` → `${run_dir}/codex-audit.md`
+4. **Write**: `Task(subagent_type="context-memory:doc-worker", name="writer", prompt="run_dir=${run_dir} plan=write-claude-md")` reads `merged-docs-{module}.md` → writes `{module}/CLAUDE.md`
+5. **Audit**: `Task(subagent_type="context-memory:codex-core", name="auditor", prompt="run_dir=${run_dir} role=auditor")` → `${run_dir}/codex-audit.md`
    - If auditor unavailable, Claude lead performs inline quality review
-7. **Cleanup**: `TeamDelete` + summary report
+6. **Summary**: Report artifacts created and audit results
 
 #### Fallback Chain
 
@@ -155,7 +154,6 @@ Gemini + Codex (parallel, preferred)
 - Each Task call has implicit timeout (agent turn limit)
 - If scan fails → abort workflow, report error to user
 - If all doc-generation fails for a module → skip module, log warning
-- TeamDelete is called in ALL exit paths (success, partial failure, abort)
 
 ### Step 4: Delivery
 

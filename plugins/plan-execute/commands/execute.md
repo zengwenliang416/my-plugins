@@ -15,8 +15,6 @@ allowed-tools:
     "TaskCreate",
     "TaskUpdate",
     "TaskList",
-    "TaskGet",
-    "TaskOutput",
     "SendMessage",
     "AskUserQuestion",
     "mcp__auggie-mcp__codebase-retrieval",
@@ -31,10 +29,10 @@ You are the Lead orchestrator for the execute phase. Your job is to process ever
 
 You MUST ONLY invoke these agent types:
 
-| Agent Name  | subagent_type            | Purpose                                  |
-| ----------- | ------------------------ | ---------------------------------------- |
-| implementer | plan-execute:implementer | Per-issue code implementation            |
-| reviewer    | plan-execute:reviewer    | Per-issue review + acceptance validation |
+| Agent Name  | subagent_type                      | Purpose                                  |
+| ----------- | ---------------------------------- | ---------------------------------------- |
+| implementer | plan-execute:execution:implementer | Per-issue code implementation            |
+| reviewer    | plan-execute:validation:reviewer   | Per-issue review + acceptance validation |
 
 ## Command Flags
 
@@ -43,6 +41,17 @@ You MUST ONLY invoke these agent types:
 - `--dry-run`: Show what would be executed without making changes
 
 ## Execution Flow
+
+## Task Result Handling
+
+Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
+
+**FORBIDDEN — never do this:**
+- MUST NOT call `TaskOutput` — this tool does not exist
+- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
+
+**CORRECT — always use direct return:**
+- The result comes from the `Task` call itself, no extra step needed
 
 ### Step 1: Load Run Artifacts
 
@@ -93,9 +102,11 @@ Read the corresponding plan file from `${RUN_DIR}/plan/{plan_file}` to get full 
 #### 4c. Spawn Implementer
 
 ```
-TaskCreate(
-  subject=f"Implement #{issue_id}: {title}",
-  description=f"""
+Task(
+  name="implementer",
+  subagent_type="plan-execute:execution:implementer",
+  team_name="plan-execute-run",
+  prompt=f"""
   You are implementing issue #{issue_id} from the plan-execute pipeline.
 
   ## Issue Details
@@ -128,31 +139,24 @@ TaskCreate(
   - Files changed (with brief description)
   - Any deviations from plan
   - Edge cases handled
-  """,
-  activeForm=f"Implementing #{issue_id}: {title}"
-)
-# Assign to implementer agent via Task spawn
-Task(
-  subagent_type="plan-execute:implementer",
-  team_name="plan-execute-run",
-  name="implementer"
+  """
 )
 ```
 
-Wait for implementer to complete:
+# Task call blocks until the teammate finishes.
 
-```
-TaskOutput(task_id=implementer_task, block=true)  # No timeout
-```
+# Results are returned directly — no TaskOutput needed.
 
 Update `dev_state` to `done` in CSV.
 
 #### 4d. Spawn Reviewer (unless --skip-review)
 
 ```
-TaskCreate(
-  subject=f"Review #{issue_id}: {title}",
-  description=f"""
+Task(
+  name="reviewer",
+  subagent_type="plan-execute:validation:reviewer",
+  team_name="plan-execute-run",
+  prompt=f"""
   You are reviewing issue #{issue_id} from the plan-execute pipeline.
 
   ## Issue Details
@@ -185,21 +189,13 @@ TaskCreate(
   If escalation needed after 2 rounds:
   - Send REVIEW_ESCALATION to team lead via SendMessage:
     {{"type": "REVIEW_ESCALATION", "issue_id": "{issue_id}", "remaining_issues": [...]}}
-  """,
-  activeForm=f"Reviewing #{issue_id}: {title}"
-)
-Task(
-  subagent_type="plan-execute:reviewer",
-  team_name="plan-execute-run",
-  name="reviewer"
+  """
 )
 ```
 
-Wait for reviewer to complete:
+# Task call blocks until the teammate finishes.
 
-```
-TaskOutput(task_id=reviewer_task, block=true)  # No timeout
-```
+# Results are returned directly — no TaskOutput needed.
 
 **Handle review result:**
 
@@ -302,7 +298,7 @@ Present a clear summary:
 - **MUST** have Lead handle all git commits (never delegate to agents)
 - **MUST** update CSV state after each step (supports resume)
 - **MUST** use structured fix loop with max 2 rounds
-- **MUST** wait with TaskOutput(block=true) with no timeout
+- **MUST** spawn teammates using Task tool with team_name parameter (Task tool blocks until teammate completion)
 - **MUST** escalate to user after 2 failed fix rounds
 - **MUST** stage only scope-declared files for each commit
 

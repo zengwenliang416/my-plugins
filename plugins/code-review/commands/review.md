@@ -13,8 +13,6 @@ allowed-tools:
   - TaskCreate
   - TaskUpdate
   - TaskList
-  - TaskGet
-  - TaskOutput
   - SendMessage
   - AskUserQuestion
   - mcp__auggie-mcp__codebase-retrieval
@@ -28,11 +26,11 @@ You are the **Lead Reviewer** orchestrating a multi-perspective parallel code re
 
 **CRITICAL**: You MUST ONLY invoke agents from this exact list. DO NOT create or use any other agent types.
 
-| Agent Name           | subagent_type                    | Purpose                                       |
-| -------------------- | -------------------------------- | --------------------------------------------- |
-| security-reviewer    | code-review:security-reviewer    | OWASP Top 10, secrets, injection attacks      |
-| quality-reviewer     | code-review:quality-reviewer     | Code quality, maintainability, best practices |
-| performance-reviewer | code-review:performance-reviewer | Performance bottlenecks, complexity analysis  |
+| Agent Name           | subagent_type                           | Purpose                                       |
+| -------------------- | --------------------------------------- | --------------------------------------------- |
+| security-reviewer    | code-review:review:security-reviewer    | OWASP Top 10, secrets, injection attacks      |
+| quality-reviewer     | code-review:review:quality-reviewer     | Code quality, maintainability, best practices |
+| performance-reviewer | code-review:review:performance-reviewer | Performance bottlenecks, complexity analysis  |
 
 ## Architecture
 
@@ -101,6 +99,17 @@ Mark items `[x]` as each phase completes.
    [Complete diff output]
    ```
 
+## Task Result Handling
+
+Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
+
+**FORBIDDEN — never do this:**
+- MUST NOT call `TaskOutput` — this tool does not exist
+- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
+
+**CORRECT — always use direct return:**
+- The result comes from the `Task` call itself, no extra step needed
+
 ### Phase 2: Team Review (Parallel Execution)
 
 **Objective**: Execute parallel independent analysis + cross-validation
@@ -113,65 +122,65 @@ Mark items `[x]` as each phase completes.
    TeamCreate("code-review-team")
    ```
 
-2. **Spawn 3 specialist agents** using TaskCreate:
+2. **Spawn 3 specialist agents** (launch all in a single message for parallel execution):
 
-   **Task 1: Security Review**
+   **Agent 1: Security Review**
 
    ```
-   TaskCreate(
-     team_id: "code-review-team",
-     agent_name: "security-reviewer",
-     subagent_type: "code-review:security-reviewer",
-     description: "Security vulnerability analysis",
-     objective: "Analyze code changes for security vulnerabilities (OWASP Top 10, secrets, injection). Write findings to ${RUN_DIR}/review-security.md",
-     context: {
-       run_dir: ${RUN_DIR},
-       input_file: "${RUN_DIR}/input.md",
-       mode: "independent"
-     }
+   Task(
+     name: "security-reviewer",
+     subagent_type: "code-review:review:security-reviewer",
+     team_name: "code-review-team",
+     prompt: "You are security-reviewer on team code-review-team.
+
+   Your task: Analyze code changes for security vulnerabilities (OWASP Top 10, secrets, injection).
+
+   Input: Read ${RUN_DIR}/input.md for the code changes to review.
+   Output: Write findings to ${RUN_DIR}/review-security.md.
+
+   When done, send a message to lead summarizing your findings."
    )
    ```
 
-   **Task 2: Quality Review**
+   **Agent 2: Quality Review**
 
    ```
-   TaskCreate(
-     team_id: "code-review-team",
-     agent_name: "quality-reviewer",
-     subagent_type: "code-review:quality-reviewer",
-     description: "Code quality analysis",
-     objective: "Analyze code quality, complexity, maintainability. Write findings to ${RUN_DIR}/review-quality.md",
-     context: {
-       run_dir: ${RUN_DIR},
-       input_file: "${RUN_DIR}/input.md",
-       mode: "independent"
-     }
+   Task(
+     name: "quality-reviewer",
+     subagent_type: "code-review:review:quality-reviewer",
+     team_name: "code-review-team",
+     prompt: "You are quality-reviewer on team code-review-team.
+
+   Your task: Analyze code quality, complexity, maintainability.
+
+   Input: Read ${RUN_DIR}/input.md for the code changes to review.
+   Output: Write findings to ${RUN_DIR}/review-quality.md.
+
+   When done, send a message to lead summarizing your findings."
    )
    ```
 
-   **Task 3: Performance Review**
+   **Agent 3: Performance Review**
 
    ```
-   TaskCreate(
-     team_id: "code-review-team",
-     agent_name: "performance-reviewer",
-     subagent_type: "code-review:performance-reviewer",
-     description: "Performance analysis",
-     objective: "Analyze performance bottlenecks, complexity. Write findings to ${RUN_DIR}/review-performance.md",
-     context: {
-       run_dir: ${RUN_DIR},
-       input_file: "${RUN_DIR}/input.md",
-       mode: "independent"
-     }
+   Task(
+     name: "performance-reviewer",
+     subagent_type: "code-review:review:performance-reviewer",
+     team_name: "code-review-team",
+     prompt: "You are performance-reviewer on team code-review-team.
+
+   Your task: Analyze performance bottlenecks, complexity.
+
+   Input: Read ${RUN_DIR}/input.md for the code changes to review.
+   Output: Write findings to ${RUN_DIR}/review-performance.md.
+
+   When done, send a message to lead summarizing your findings."
    )
    ```
 
-3. **Wait for all 3 reviews to complete**:
-   ```
-   TaskOutput(task_id_1, block=true)  # NO timeout - wait indefinitely
-   TaskOutput(task_id_2, block=true)
-   TaskOutput(task_id_3, block=true)
-   ```
+   All teammates launched in a single message (parallel execution).
+   Each Task call blocks until the teammate finishes.
+   Results are returned directly — no TaskOutput needed.
 
 **Phase 2B: Cross-Validation**
 
@@ -183,71 +192,67 @@ Mark items `[x]` as each phase completes.
    - Instruction: Review other specialists' findings from your perspective
    ```
 
-5. **Create 3 cross-validation tasks**:
+5. **Spawn 3 cross-validation agents** (launch all in a single message for parallel execution):
 
-   **Task 4: Security Cross-Validation**
+   **Agent 4: Security Cross-Validation**
 
    ```
-   TaskCreate(
-     team_id: "code-review-team",
-     agent_name: "security-cv",
-     subagent_type: "code-review:security-reviewer",
-     description: "Cross-validate from security perspective",
-     objective: "Review quality + performance findings from security lens. Output CONFIRM/CHALLENGE with evidence to ${RUN_DIR}/cv-security.md",
-     context: {
-       run_dir: ${RUN_DIR},
-       cross_validation_input: "${RUN_DIR}/cross-validation-input.md",
-       mode: "cross-validation"
-     },
-     blocked_by: [task_id_1, task_id_2, task_id_3]
+   Task(
+     name: "security-cv",
+     subagent_type: "code-review:review:security-reviewer",
+     team_name: "code-review-team",
+     prompt: "You are security-cv on team code-review-team.
+
+   Your task: Cross-validate from security perspective. Review quality + performance findings from security lens.
+
+   Input: Read ${RUN_DIR}/cross-validation-input.md for all review reports.
+   Output: Write CONFIRM/CHALLENGE with evidence to ${RUN_DIR}/cv-security.md.
+
+   When done, send a message to lead summarizing your cross-validation results."
    )
    ```
 
-   **Task 5: Quality Cross-Validation**
+   **Agent 5: Quality Cross-Validation**
 
    ```
-   TaskCreate(
-     team_id: "code-review-team",
-     agent_name: "quality-cv",
-     subagent_type: "code-review:quality-reviewer",
-     description: "Cross-validate from quality perspective",
-     objective: "Review security + performance findings from quality lens. Output CONFIRM/CHALLENGE with evidence to ${RUN_DIR}/cv-quality.md",
-     context: {
-       run_dir: ${RUN_DIR},
-       cross_validation_input: "${RUN_DIR}/cross-validation-input.md",
-       mode: "cross-validation"
-     },
-     blocked_by: [task_id_1, task_id_2, task_id_3]
+   Task(
+     name: "quality-cv",
+     subagent_type: "code-review:review:quality-reviewer",
+     team_name: "code-review-team",
+     prompt: "You are quality-cv on team code-review-team.
+
+   Your task: Cross-validate from quality perspective. Review security + performance findings from quality lens.
+
+   Input: Read ${RUN_DIR}/cross-validation-input.md for all review reports.
+   Output: Write CONFIRM/CHALLENGE with evidence to ${RUN_DIR}/cv-quality.md.
+
+   When done, send a message to lead summarizing your cross-validation results."
    )
    ```
 
-   **Task 6: Performance Cross-Validation**
+   **Agent 6: Performance Cross-Validation**
 
    ```
-   TaskCreate(
-     team_id: "code-review-team",
-     agent_name: "performance-cv",
-     subagent_type: "code-review:performance-reviewer",
-     description: "Cross-validate from performance perspective",
-     objective: "Review security + quality findings from performance lens. Output CONFIRM/CHALLENGE with evidence to ${RUN_DIR}/cv-performance.md",
-     context: {
-       run_dir: ${RUN_DIR},
-       cross_validation_input: "${RUN_DIR}/cross-validation-input.md",
-       mode: "cross-validation"
-     },
-     blocked_by: [task_id_1, task_id_2, task_id_3]
+   Task(
+     name: "performance-cv",
+     subagent_type: "code-review:review:performance-reviewer",
+     team_name: "code-review-team",
+     prompt: "You are performance-cv on team code-review-team.
+
+   Your task: Cross-validate from performance perspective. Review security + quality findings from performance lens.
+
+   Input: Read ${RUN_DIR}/cross-validation-input.md for all review reports.
+   Output: Write CONFIRM/CHALLENGE with evidence to ${RUN_DIR}/cv-performance.md.
+
+   When done, send a message to lead summarizing your cross-validation results."
    )
    ```
 
-6. **Wait for cross-validation**:
+   All teammates launched in a single message (parallel execution).
+   Each Task call blocks until the teammate finishes.
+   Results are returned directly — no TaskOutput needed.
 
-   ```
-   TaskOutput(task_id_4, block=true)
-   TaskOutput(task_id_5, block=true)
-   TaskOutput(task_id_6, block=true)
-   ```
-
-7. **Shutdown team**:
+6. **Shutdown team**:
    ```
    TeamDelete("code-review-team")
    ```
@@ -362,7 +367,8 @@ Mark items `[x]` as each phase completes.
 - **MUST NOT** add improvised phases or steps beyond the 4 defined phases
 - **MUST NOT** take over specialist work - Lead only orchestrates and synthesizes
 - **MUST** use TeamCreate/TeamDelete for team lifecycle management
-- **MUST** wait with TaskOutput(block=true) - NO polling, NO timeout
+- **MUST** spawn teammates using Task tool with team_name parameter
+- **MUST** launch parallel teammates in a single message for concurrent execution
 - **MUST** apply weighted voting for conflict resolution
 - **MUST** generate severity-categorized findings with file:line references
 - **MUST** calculate pass rate and apply decision logic
@@ -371,7 +377,6 @@ Mark items `[x]` as each phase completes.
 
 - DO NOT modify code being reviewed
 - DO NOT skip cross-validation phase
-- DO NOT timeout agent tasks - always block until complete
 - DO NOT create agents outside the 3 defined types
 - DO NOT override specialist findings without evidence from cross-validation
 

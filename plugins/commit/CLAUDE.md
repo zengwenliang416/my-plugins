@@ -9,6 +9,12 @@
 
 </available-skills>
 
+## Task Tool Rules
+
+- **MUST** use blocking `Task` calls — results are returned directly
+- **MUST NOT** use `TaskOutput` (this tool does not exist)
+- **MUST NOT** manually construct task IDs (e.g., `agent-name@worktree-id`)
+
 ## Overview
 
 Structured commit workflow: investigate changes → parallel analysis → synthesize → branch → message → commit.
@@ -48,8 +54,8 @@ Features:
 1   Initialize      → mkdir RUN_DIR
 2   Investigate     → Task("change-investigator")    ─┐
 3   Parallel Analyze                                   │
-    ├─ Task("semantic-analyzer", run_in_background)    │ PARALLEL
-    └─ Task("symbol-analyzer", run_in_background)     ─┤
+    ├─ Task("semantic-analyzer")    │ PARALLEL (single message)
+    └─ Task("symbol-analyzer")    ─┤
 4   Synthesize      → Skill("analysis-synthesizer")  ─┘
 5   Branch          → Skill("branch-creator")
 6   Confirm         → AskUserQuestion ⏸️ HARD STOP

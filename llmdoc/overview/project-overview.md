@@ -84,7 +84,7 @@ graph TB
 
 ### Agent Team Collaboration
 
-- **Team Lifecycle:** Team-based workflows use `TeamCreate` → `TaskCreate`/`TaskOutput` → `TeamDelete`
+- **Team Lifecycle:** Team-based workflows use `TeamCreate` → `Task` (blocking) → `TeamDelete`
 - **Structured Messaging:** Agents coordinate through explicit `SendMessage` contracts (status, review, fix-loop signals)
 - **Bounded Repair Loops:** Blocking issues are resolved with capped retry rounds before user escalation
 

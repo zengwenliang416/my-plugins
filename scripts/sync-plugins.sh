@@ -12,6 +12,7 @@
 #   -y, --yes         Skip all confirmations (non-interactive)
 #   -d, --dry-run     Show what would be done without doing it
 #   -q, --quiet       Minimal output (implies --yes)
+#   -f, --force       Force sync even if already up-to-date
 #   -h, --help        Show this help message
 #
 # Examples:
@@ -22,7 +23,7 @@
 #   ./scripts/sync-plugins.sh -s                 # interactive selection
 #   ./scripts/sync-plugins.sh -d                 # dry-run mode
 
-set -e
+set -euo pipefail
 
 # ============================================================================
 # Configuration
@@ -39,7 +40,6 @@ MARKETPLACE_NAME="ccg-workflows"
 # Colors & Symbols
 # ============================================================================
 
-# Check if terminal supports colors
 if [[ -t 1 ]] && [[ "${TERM:-}" != "dumb" ]]; then
   RED='\033[0;31m'
   GREEN='\033[0;32m'
@@ -55,13 +55,10 @@ else
   RED='' GREEN='' YELLOW='' BLUE='' MAGENTA='' CYAN='' WHITE='' DIM='' BOLD='' NC=''
 fi
 
-# Symbols
 SYM_CHECK="✓"
 SYM_CROSS="✗"
 SYM_ARROW="→"
 SYM_DOT="•"
-SYM_SYNC="⟳"
-SYM_PKG="📦"
 SYM_CMD="📋"
 SYM_AGENT="🤖"
 SYM_SKILL="⚡"
@@ -77,6 +74,7 @@ DO_INSTALL=false
 DO_LIST=false
 DO_SELECT=false
 DO_DRY_RUN=false
+DO_FORCE=false
 QUIET_MODE=false
 AUTO_YES=false
 PLUGIN_NAMES=()
@@ -85,11 +83,20 @@ SKIP_COUNT=0
 FAIL_COUNT=0
 START_TIME=0
 
+# JSON parser selection
+HAS_JQ=false
+if command -v jq &>/dev/null; then
+  HAS_JQ=true
+fi
+
+# Cache temp files (populated by init_marketplace_data)
+_CACHE_META_FILE=""   # TSV: name\tversion\tdescription
+_CACHE_INFO_FILE=""   # TSV: name\tcmd\tagent\tskill\thooks
+
 # ============================================================================
 # Utility Functions
 # ============================================================================
 
-# Get terminal width
 get_term_width() {
   if command -v tput &>/dev/null; then
     tput cols 2>/dev/null || echo 80
@@ -98,23 +105,6 @@ get_term_width() {
   fi
 }
 
-# Print a horizontal line
-print_line() {
-  local char="${1:-─}"
-  local width=$(get_term_width)
-  printf '%*s\n' "$width" '' | tr ' ' "$char"
-}
-
-# Print centered text
-print_centered() {
-  local text="$1"
-  local width=$(get_term_width)
-  local text_len=${#text}
-  local padding=$(( (width - text_len) / 2 ))
-  printf "%*s%s\n" $padding '' "$text"
-}
-
-# Print header
 print_header() {
   local title="$1"
   echo ""
@@ -124,7 +114,6 @@ print_header() {
   echo ""
 }
 
-# Print section header
 print_section() {
   local title="$1"
   echo ""
@@ -132,47 +121,27 @@ print_section() {
   echo ""
 }
 
-# Print info message
 info() {
   [[ "$QUIET_MODE" == true ]] && return
   echo -e "${BLUE}${SYM_INFO}${NC} $1"
 }
 
-# Print success message
 success() {
   echo -e "${GREEN}${SYM_CHECK}${NC} $1"
 }
 
-# Print warning message
 warn() {
   echo -e "${YELLOW}${SYM_DOT}${NC} $1"
 }
 
-# Print error message
 error() {
   echo -e "${RED}${SYM_CROSS}${NC} $1" >&2
 }
 
-# Print progress spinner
-spin() {
-  local pid=$1
-  local msg="$2"
-  local spinstr='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏'
-  local i=0
-
-  while kill -0 "$pid" 2>/dev/null; do
-    local char="${spinstr:$i:1}"
-    printf "\r%b%s%b %s" "$CYAN" "$char" "$NC" "$msg"
-    i=$(( (i + 1) % ${#spinstr} ))
-    sleep 0.1
-  done
-  printf "\r"
-}
-
-# Progress bar
 progress_bar() {
   local current=$1
   local total=$2
+  [[ "$total" -eq 0 ]] && return
   local width=30
   local percent=$((current * 100 / total))
   local filled=$((current * width / total))
@@ -184,7 +153,6 @@ progress_bar() {
   printf "%b]%b %b%3d%%%b " "$DIM" "$NC" "$WHITE" $percent "$NC"
 }
 
-# Format duration
 format_duration() {
   local seconds=$1
   if ((seconds < 60)); then
@@ -194,10 +162,9 @@ format_duration() {
   fi
 }
 
-# Confirm prompt (returns 0 for yes, 1 for no)
 confirm() {
   local prompt="$1"
-  local default="${2:-y}"  # y or n
+  local default="${2:-y}"
 
   [[ "$AUTO_YES" == true ]] && return 0
 
@@ -211,7 +178,6 @@ confirm() {
   [[ "$response" =~ ^[Yy]$ ]]
 }
 
-# Ask yes/no/quit
 ask_ynq() {
   local prompt="$1"
 
@@ -235,7 +201,6 @@ ask_ynq() {
   esac
 }
 
-# Show plugin preview table
 show_plugin_preview() {
   local plugins=("$@")
 
@@ -244,18 +209,16 @@ show_plugin_preview() {
 
   local i=1
   for plugin in "${plugins[@]}"; do
-    local info=($(get_plugin_info "$plugin"))
-    local cmd_count=${info[0]:-0}
-    local agent_count=${info[1]:-0}
-    local skill_count=${info[2]:-0}
-    local has_hooks=${info[3]:-no}
+    local info_str
+    info_str=$(get_plugin_info_cached "$plugin")
+    local cmd_count agent_count skill_count has_hooks
+    read -r cmd_count agent_count skill_count has_hooks <<< "$info_str"
 
     local hooks_icon="${DIM}─${NC}"
     [[ "$has_hooks" == "yes" ]] && hooks_icon="${YELLOW}${SYM_HOOK}${NC}"
 
-    # Use %b for interpreting escape sequences
     printf "  %b%2d%b  %b%-15s%b %4s   %6s   %4s    %b\n" \
-      "$CYAN" $i "$NC" "$GREEN" "$plugin" "$NC" "$cmd_count" "$agent_count" "$skill_count" "$hooks_icon"
+      "$CYAN" $i "$NC" "$GREEN" "$plugin" "$NC" "${cmd_count:-0}" "${agent_count:-0}" "${skill_count:-0}" "$hooks_icon"
     i=$((i + 1))
   done
   echo ""
@@ -265,44 +228,92 @@ show_plugin_preview() {
 # Plugin Functions
 # ============================================================================
 
-# Get plugins from marketplace.json
+# Pre-load all marketplace metadata into a temp TSV file
+init_marketplace_data() {
+  if [[ ! -f "$MARKETPLACE_JSON" ]]; then
+    error "marketplace.json not found: $MARKETPLACE_JSON"
+    exit 1
+  fi
+
+  _CACHE_META_FILE=$(mktemp /tmp/ccg-meta.XXXXXX)
+  _CACHE_INFO_FILE=$(mktemp /tmp/ccg-info.XXXXXX)
+
+  # Register cleanup
+  trap 'rm -f "$_CACHE_META_FILE" "$_CACHE_INFO_FILE"' EXIT
+
+  if [[ "$HAS_JQ" == true ]]; then
+    jq -r '.plugins[] | [.name, (.version // ""), (.description // "")] | @tsv' \
+      "$MARKETPLACE_JSON" > "$_CACHE_META_FILE"
+  else
+    awk '
+      /"name":/ { gsub(/.*"name": *"/, ""); gsub(/".*/, ""); name=$0 }
+      /"version":/ { gsub(/.*"version": *"/, ""); gsub(/".*/, ""); ver=$0 }
+      /"description":/ { gsub(/.*"description": *"/, ""); gsub(/".*/, ""); desc=$0 }
+      /}/ && name != "" { print name "\t" ver "\t" desc; name=""; ver=""; desc="" }
+    ' "$MARKETPLACE_JSON" > "$_CACHE_META_FILE"
+  fi
+}
+
+_meta_field() {
+  local plugin="$1"
+  local field="$2"  # 2=version, 3=description
+  awk -F'\t' -v name="$plugin" -v col="$field" '$1 == name { print $col; exit }' "$_CACHE_META_FILE"
+}
+
 get_plugins() {
   if [[ ! -f "$MARKETPLACE_JSON" ]]; then
     error "marketplace.json not found: $MARKETPLACE_JSON"
     exit 1
   fi
-  awk '/"plugins":/,/]/' "$MARKETPLACE_JSON" | grep '"name"' | sed 's/.*"name": *"\([^"]*\)".*/\1/'
+  if [[ "$HAS_JQ" == true ]]; then
+    jq -r '.plugins[].name' "$MARKETPLACE_JSON"
+  else
+    awk '/"plugins":/,/]/' "$MARKETPLACE_JSON" | grep '"name"' | sed 's/.*"name": *"\([^"]*\)".*/\1/'
+  fi
 }
 
-# Get plugin description
 get_plugin_description() {
   local plugin="$1"
-  awk -v name="$plugin" '
-    /"name":/ && $0 ~ "\"" name "\"" { found=1; next }
-    found && /"description":/ {
-      gsub(/.*"description": *"/, "")
-      gsub(/".*/, "")
-      print
-      exit
-    }
-  ' "$MARKETPLACE_JSON"
+  if [[ -n "$_CACHE_META_FILE" && -f "$_CACHE_META_FILE" ]]; then
+    _meta_field "$plugin" 3
+    return
+  fi
+  if [[ "$HAS_JQ" == true ]]; then
+    jq -r --arg name "$plugin" '.plugins[] | select(.name == $name) | .description // ""' "$MARKETPLACE_JSON"
+  else
+    awk -v name="$plugin" '
+      /"name":/ && $0 ~ "\"" name "\"" { found=1; next }
+      found && /"description":/ {
+        gsub(/.*"description": *"/, "")
+        gsub(/".*/, "")
+        print
+        exit
+      }
+    ' "$MARKETPLACE_JSON"
+  fi
 }
 
-# Get plugin version from marketplace.json
 get_marketplace_version() {
   local plugin="$1"
-  awk -v name="$plugin" '
-    /"name":/ && $0 ~ "\"" name "\"" { found=1; next }
-    found && /"version":/ {
-      gsub(/.*"version": *"/, "")
-      gsub(/".*/, "")
-      print
-      exit
-    }
-  ' "$MARKETPLACE_JSON"
+  if [[ -n "$_CACHE_META_FILE" && -f "$_CACHE_META_FILE" ]]; then
+    _meta_field "$plugin" 2
+    return
+  fi
+  if [[ "$HAS_JQ" == true ]]; then
+    jq -r --arg name "$plugin" '.plugins[] | select(.name == $name) | .version // ""' "$MARKETPLACE_JSON"
+  else
+    awk -v name="$plugin" '
+      /"name":/ && $0 ~ "\"" name "\"" { found=1; next }
+      found && /"version":/ {
+        gsub(/.*"version": *"/, "")
+        gsub(/".*/, "")
+        print
+        exit
+      }
+    ' "$MARKETPLACE_JSON"
+  fi
 }
 
-# Get plugin version from plugin.json
 get_plugin_meta_version() {
   local plugin="$1"
   local meta_file="${SOURCE_DIR}/${plugin}/.claude-plugin/plugin.json"
@@ -311,7 +322,6 @@ get_plugin_meta_version() {
   awk -F'"' '/"version":/ { print $4; exit }' "$meta_file"
 }
 
-# Resolve plugin version (marketplace preferred, fallback to metadata)
 resolve_plugin_version() {
   local plugin="$1"
   local market_version
@@ -336,7 +346,6 @@ resolve_plugin_version() {
   echo "$version"
 }
 
-# Get plugin info (commands, skills, hooks count)
 get_plugin_info() {
   local plugin="$1"
   local src="${SOURCE_DIR}/${plugin}"
@@ -364,7 +373,29 @@ get_plugin_info() {
   echo "$cmd_count $agent_count $skill_count $has_hooks"
 }
 
-# List all plugins with table format
+# Returns cached plugin info (cmd agent skill hooks), computing once per plugin
+get_plugin_info_cached() {
+  local plugin="$1"
+
+  if [[ -n "$_CACHE_INFO_FILE" && -f "$_CACHE_INFO_FILE" ]]; then
+    local cached
+    cached=$(awk -F'\t' -v name="$plugin" '$1 == name { print $2; exit }' "$_CACHE_INFO_FILE")
+    if [[ -n "$cached" ]]; then
+      echo "$cached"
+      return
+    fi
+  fi
+
+  local result
+  result=$(get_plugin_info "$plugin")
+
+  if [[ -n "$_CACHE_INFO_FILE" && -f "$_CACHE_INFO_FILE" ]]; then
+    printf '%s\t%s\n' "$plugin" "$result" >> "$_CACHE_INFO_FILE"
+  fi
+
+  echo "$result"
+}
+
 list_plugins() {
   print_header "Available Plugins"
 
@@ -373,19 +404,17 @@ list_plugins() {
     plugins+=("$plugin")
   done < <(get_plugins)
 
-  # Table header
   printf "  %b%b%-15s %-6s %-7s %-7s %-6s %s%b\n" "$BOLD" "$WHITE" "NAME" "CMDS" "AGENTS" "SKILLS" "HOOKS" "DESCRIPTION" "$NC"
   echo -e "  ${DIM}$(printf '─%.0s' {1..75})${NC}"
 
   for plugin in "${plugins[@]}"; do
-    local desc=$(get_plugin_description "$plugin")
-    local info=($(get_plugin_info "$plugin"))
-    local cmd_count=${info[0]:-0}
-    local agent_count=${info[1]:-0}
-    local skill_count=${info[2]:-0}
-    local has_hooks=${info[3]:-no}
+    local desc
+    desc=$(get_plugin_description "$plugin")
+    local info_str
+    info_str=$(get_plugin_info_cached "$plugin")
+    local cmd_count agent_count skill_count has_hooks
+    read -r cmd_count agent_count skill_count has_hooks <<< "$info_str"
 
-    # Truncate description if too long
     if [[ ${#desc} -gt 35 ]]; then
       desc="${desc:0:32}..."
     fi
@@ -394,7 +423,7 @@ list_plugins() {
     [[ "$has_hooks" == "yes" ]] && hooks_icon="${YELLOW}${SYM_HOOK}${NC}"
 
     printf "  %b%-15s%b %b%4s%b    %b%4s%b    %b%4s%b    %b   %s\n" \
-      "$GREEN" "$plugin" "$NC" "$CYAN" "$cmd_count" "$NC" "$BLUE" "$agent_count" "$NC" "$MAGENTA" "$skill_count" "$NC" "$hooks_icon" "$desc"
+      "$GREEN" "$plugin" "$NC" "$CYAN" "${cmd_count:-0}" "$NC" "$BLUE" "${agent_count:-0}" "$NC" "$MAGENTA" "${skill_count:-0}" "$NC" "$hooks_icon" "$desc"
   done
 
   echo ""
@@ -402,7 +431,6 @@ list_plugins() {
   echo ""
 }
 
-# Interactive plugin selection
 select_plugins() {
   local plugins=()
   while IFS= read -r plugin; do
@@ -411,14 +439,14 @@ select_plugins() {
 
   print_header "Select Plugins to Sync"
 
-  local selected=()
   local i=1
 
   echo -e "  ${DIM}Enter numbers separated by space, 'a' for all, 'q' to quit${NC}"
   echo ""
 
   for plugin in "${plugins[@]}"; do
-    local desc=$(get_plugin_description "$plugin")
+    local desc
+    desc=$(get_plugin_description "$plugin")
     [[ ${#desc} -gt 40 ]] && desc="${desc:0:37}..."
     printf "  %b%2d%b) %b%-15s%b %s\n" "$CYAN" $i "$NC" "$GREEN" "$plugin" "$NC" "$desc"
     i=$((i + 1))
@@ -439,7 +467,9 @@ select_plugins() {
     return
   fi
 
-  for num in $selection; do
+  local selection_arr
+  read -ra selection_arr <<< "$selection"
+  for num in "${selection_arr[@]}"; do
     if [[ "$num" =~ ^[0-9]+$ ]] && ((num >= 1 && num <= ${#plugins[@]})); then
       PLUGIN_NAMES+=("${plugins[$((num-1))]}")
     fi
@@ -451,7 +481,6 @@ select_plugins() {
   fi
 }
 
-# Sync a single plugin
 sync_plugin() {
   local plugin="$1"
   local src="${SOURCE_DIR}/${plugin}"
@@ -459,19 +488,24 @@ sync_plugin() {
   version=$(resolve_plugin_version "$plugin")
   local dst="${CACHE_DIR}/${plugin}/${version}"
 
+  if [[ -z "$dst" || "$dst" == "/" ]]; then
+    error "Invalid destination path for $plugin"
+    FAIL_COUNT=$((FAIL_COUNT + 1))
+    return 1
+  fi
+
   if [[ ! -d "$src" ]]; then
     error "Plugin not found: $plugin"
     FAIL_COUNT=$((FAIL_COUNT + 1))
     return 1
   fi
 
-  local info=($(get_plugin_info "$plugin"))
-  local cmd_count=${info[0]:-0}
-  local agent_count=${info[1]:-0}
-  local skill_count=${info[2]:-0}
-  local has_hooks=${info[3]:-no}
+  local info_str
+  info_str=$(get_plugin_info_cached "$plugin")
+  local cmd_count agent_count skill_count has_hooks
+  read -r cmd_count agent_count skill_count has_hooks <<< "$info_str"
 
-  if [[ $cmd_count -eq 0 && $agent_count -eq 0 && $skill_count -eq 0 && "$has_hooks" == "no" ]]; then
+  if [[ ${cmd_count:-0} -eq 0 && ${agent_count:-0} -eq 0 && ${skill_count:-0} -eq 0 && "$has_hooks" == "no" ]]; then
     warn "Skipped ${YELLOW}$plugin${NC} (no commands/agents/skills/hooks)"
     SKIP_COUNT=$((SKIP_COUNT + 1))
     return 0
@@ -485,23 +519,33 @@ sync_plugin() {
     return 0
   fi
 
-  # Perform sync
+  # Up-to-date check (skipped with --force)
+  local sync_marker="$dst/.sync-timestamp"
+  if [[ "$DO_FORCE" != true && -f "$sync_marker" ]]; then
+    local src_newer
+    src_newer=$(find "$src" -type f -newer "$sync_marker" 2>/dev/null | head -1)
+    if [[ -z "$src_newer" ]]; then
+      [[ "$QUIET_MODE" != true ]] && info "Up-to-date: ${GREEN}$plugin${NC}"
+      SKIP_COUNT=$((SKIP_COUNT + 1))
+      return 0
+    fi
+  fi
+
   rm -rf "$dst"
   mkdir -p "$dst"
   cp -r "${src}"/. "$dst/"
+  date +%s > "$dst/.sync-timestamp"
 
-  # Build info string
-  local info_str=""
-  [[ $cmd_count -gt 0 ]] && info_str+="${SYM_CMD}${cmd_count} "
-  [[ $agent_count -gt 0 ]] && info_str+="${SYM_AGENT}${agent_count} "
-  [[ $skill_count -gt 0 ]] && info_str+="${SYM_SKILL}${skill_count} "
-  [[ "$has_hooks" == "yes" ]] && info_str+="${SYM_HOOK}"
+  local info_label=""
+  [[ ${cmd_count:-0} -gt 0 ]] && info_label+="${SYM_CMD}${cmd_count} "
+  [[ ${agent_count:-0} -gt 0 ]] && info_label+="${SYM_AGENT}${agent_count} "
+  [[ ${skill_count:-0} -gt 0 ]] && info_label+="${SYM_SKILL}${skill_count} "
+  [[ "$has_hooks" == "yes" ]] && info_label+="${SYM_HOOK}"
 
-  success "Synced ${GREEN}$plugin${NC} ${DIM}($info_str)${NC}"
+  success "Synced ${GREEN}$plugin${NC} ${DIM}($info_label)${NC}"
   SYNC_COUNT=$((SYNC_COUNT + 1))
 }
 
-# Install plugins
 install_plugins() {
   local plugins=("$@")
 
@@ -515,7 +559,6 @@ install_plugins() {
     return 0
   fi
 
-  # Add marketplace
   info "Adding local marketplace..."
   if claude plugin marketplace add "${PROJECT_ROOT}" 2>/dev/null; then
     success "Marketplace added: ${CYAN}${MARKETPLACE_NAME}${NC}"
@@ -525,7 +568,6 @@ install_plugins() {
 
   echo ""
 
-  # Install each plugin with progress
   local total=${#plugins[@]}
   local current=0
 
@@ -533,19 +575,24 @@ install_plugins() {
     current=$((current + 1))
     [[ "$QUIET_MODE" != true ]] && progress_bar $current $total
 
-    if claude plugin install "${plugin}@${MARKETPLACE_NAME}" 2>/dev/null; then
+    local install_err
+    if install_err=$(claude plugin install "${plugin}@${MARKETPLACE_NAME}" 2>&1); then
       printf "%b%s%b %s\n" "$GREEN" "$SYM_CHECK" "$NC" "$plugin"
     else
-      printf "%b%s%b %s %b(already installed)%b\n" "$YELLOW" "$SYM_DOT" "$NC" "$plugin" "$DIM" "$NC"
+      if [[ "$install_err" == *"already"* ]]; then
+        printf "%b%s%b %s %b(already installed)%b\n" "$YELLOW" "$SYM_DOT" "$NC" "$plugin" "$DIM" "$NC"
+      else
+        printf "%b%s%b %s %b(%s)%b\n" "$RED" "$SYM_CROSS" "$NC" "$plugin" "$DIM" "$install_err" "$NC"
+      fi
     fi
   done
 
   echo ""
 }
 
-# Print summary
 print_summary() {
-  local end_time=$(date +%s)
+  local end_time
+  end_time=$(date +%s)
   local duration=$((end_time - START_TIME))
 
   print_section "Summary"
@@ -557,7 +604,6 @@ print_summary() {
   echo ""
 }
 
-# Print help
 print_help() {
   echo ""
   echo -e "${BOLD}${WHITE}sync-plugins.sh${NC} - Sync and install Claude Code plugins"
@@ -572,6 +618,7 @@ print_help() {
   echo -e "  ${GREEN}-y, --yes${NC}        Skip all confirmations"
   echo -e "  ${GREEN}-d, --dry-run${NC}    Show what would be done without doing it"
   echo -e "  ${GREEN}-q, --quiet${NC}      Minimal output (implies --yes)"
+  echo -e "  ${GREEN}-f, --force${NC}      Force sync even if already up-to-date"
   echo -e "  ${GREEN}-h, --help${NC}       Show this help message"
   echo ""
   echo -e "${BOLD}EXAMPLES:${NC}"
@@ -582,6 +629,7 @@ print_help() {
   echo "  ./scripts/sync-plugins.sh -s             # interactive selection"
   echo "  ./scripts/sync-plugins.sh -s -i          # select and install"
   echo "  ./scripts/sync-plugins.sh -d             # dry-run mode"
+  echo "  ./scripts/sync-plugins.sh -f             # force re-sync all"
   echo ""
 }
 
@@ -592,32 +640,17 @@ print_help() {
 main() {
   START_TIME=$(date +%s)
 
-  # Parse arguments
   while [[ $# -gt 0 ]]; do
     case $1 in
-      -i|--install)
-        DO_INSTALL=true
-        shift
-        ;;
-      -l|--list)
-        DO_LIST=true
-        shift
-        ;;
-      -s|--select)
-        DO_SELECT=true
-        shift
-        ;;
-      -y|--yes)
-        AUTO_YES=true
-        shift
-        ;;
-      -d|--dry-run)
-        DO_DRY_RUN=true
-        shift
-        ;;
+      -i|--install)   DO_INSTALL=true;  shift ;;
+      -l|--list)      DO_LIST=true;     shift ;;
+      -s|--select)    DO_SELECT=true;   shift ;;
+      -y|--yes)       AUTO_YES=true;    shift ;;
+      -d|--dry-run)   DO_DRY_RUN=true;  shift ;;
+      -f|--force)     DO_FORCE=true;    shift ;;
       -q|--quiet)
         QUIET_MODE=true
-        AUTO_YES=true  # quiet implies yes
+        AUTO_YES=true
         shift
         ;;
       -h|--help)
@@ -636,41 +669,42 @@ main() {
     esac
   done
 
-  # Handle --list
+  # Pre-load marketplace metadata (eliminates per-plugin subprocess spawning)
+  init_marketplace_data
+
   if [[ "$DO_LIST" == true ]]; then
     list_plugins
     exit 0
   fi
 
-  # Handle --select
   if [[ "$DO_SELECT" == true ]]; then
     select_plugins
   fi
 
-  # Get all plugins if none specified
   if [[ ${#PLUGIN_NAMES[@]} -eq 0 ]]; then
     while IFS= read -r plugin; do
       PLUGIN_NAMES+=("$plugin")
     done < <(get_plugins)
   fi
 
-  # Print header
+  if [[ ${#PLUGIN_NAMES[@]} -eq 0 ]]; then
+    error "No plugins found in marketplace.json"
+    exit 1
+  fi
+
   [[ "$QUIET_MODE" != true ]] && print_header "Plugin Sync"
 
-  # Dry-run notice
   if [[ "$DO_DRY_RUN" == true ]]; then
     echo -e "  ${YELLOW}${BOLD}DRY-RUN MODE${NC} - No changes will be made"
     echo ""
   fi
 
-  # Show preview and ask for confirmation (unless --yes or --select)
   if [[ "$AUTO_YES" != true && "$DO_SELECT" != true && "$QUIET_MODE" != true ]]; then
     echo -e "  ${BOLD}Plugins to sync:${NC}"
     echo ""
     show_plugin_preview "${PLUGIN_NAMES[@]}"
 
     if ! ask_ynq "Proceed with sync?"; then
-      # User said no, offer selection mode
       echo ""
       if confirm "Would you like to select specific plugins instead?" "y"; then
         PLUGIN_NAMES=()
@@ -685,17 +719,14 @@ main() {
     echo ""
   fi
 
-  # Sync plugins
   print_section "Syncing Plugins"
 
   for plugin in "${PLUGIN_NAMES[@]}"; do
     sync_plugin "$plugin"
   done
 
-  # Print summary
   [[ "$QUIET_MODE" != true ]] && print_summary
 
-  # Ask about installation (unless --install already specified or --yes)
   if [[ "$DO_INSTALL" == true ]]; then
     install_plugins "${PLUGIN_NAMES[@]}"
   elif [[ "$AUTO_YES" != true && "$QUIET_MODE" != true && $SYNC_COUNT -gt 0 ]]; then
@@ -713,7 +744,6 @@ main() {
     echo ""
   fi
 
-  # Exit with error if any failed
   [[ $FAIL_COUNT -gt 0 ]] && exit 1
   exit 0
 }

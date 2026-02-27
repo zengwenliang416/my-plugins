@@ -137,7 +137,7 @@ code-reviewer re-checks fixed items only → max 2 rounds
 If still failing → REVIEW_ESCALATION to Lead → AskUserQuestion
 ```
 
-Lead uses `TaskOutput(block=true)` to wait for all agents (no timeout).
+Lead spawns all teammates using `Task` tool — each call blocks until the teammate finishes.
 
 ### Phase 4: Delivery (Lead)
 
@@ -177,12 +177,13 @@ openspec/changes/${CHANGE_ID}/
 
 ## Constraints
 
+- **MUST** use blocking Task calls — results are returned directly, no TaskOutput needed
 - MUST NOT invoke any agent types outside the Agent Type Restrictions table
 - MUST NOT skip the planning phase (unless user explicitly requests)
 - MUST HARD STOP at plan confirmation
 - MUST NOT let Lead take over specialist work
 - MUST use structured fix loop (REVIEW_FIX_REQUEST/REVIEW_FIX_APPLIED) with max 2 rounds
-- MUST wait with TaskOutput(block=true) with no timeout
+- MUST spawn teammates using Task tool with team_name parameter
 
 ## Best Practices
 

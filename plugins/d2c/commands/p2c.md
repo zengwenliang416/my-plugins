@@ -26,6 +26,17 @@ Generate executable logic code from PRD documents, enhanced with real project co
 
 ## Execution Flow
 
+## Task Result Handling
+
+Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
+
+**FORBIDDEN — never do this:**
+- MUST NOT call `TaskOutput` — this tool does not exist
+- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
+
+**CORRECT — always use direct return:**
+- The result comes from the `Task` call itself, no extra step needed
+
 ### Phase 0: Init
 
 1. Parse arguments and validate PRD file paths exist
@@ -36,6 +47,7 @@ Generate executable logic code from PRD documents, enhanced with real project co
 4. Create `${RUN_DIR}/` directory
 5. Scaffold OpenSpec artifacts:
    - `${RUN_DIR}/proposal.md` — auto-generated change proposal:
+
      ```markdown
      # Change: P2C — ${slug}
 
@@ -51,7 +63,9 @@ Generate executable logic code from PRD documents, enhanced with real project co
 
      - Affected specs: none (new artifacts only)
      ```
+
    - `${RUN_DIR}/tasks.md` — phase checklist:
+
      ```markdown
      ## 1. Init
 
@@ -78,6 +92,7 @@ Generate executable logic code from PRD documents, enhanced with real project co
      - [ ] 5.1 Present delivery summary
      - [ ] 5.2 User confirms acceptance
      ```
+
 6. Write `${RUN_DIR}/input.md` with:
    - PRD file paths
    - Target project path (if provided)
@@ -126,6 +141,7 @@ Generate executable logic code from PRD documents, enhanced with real project co
 #### Single-Agent Mode (simple PRD):
 
 1. Spawn one `logic-generator` agent:
+
    ```
    Task(subagent_type="d2c:logic-generator")
    ```
@@ -136,19 +152,18 @@ Generate executable logic code from PRD documents, enhanced with real project co
 #### Multi-Agent Mode (complex PRD):
 
 1. Read `chunks.json` for module-to-chunk mapping
-2. Spawn parallel `logic-generator` agents — one per page/module:
+2. Launch parallel `logic-generator` teammates in a single message for concurrent execution — one per page/module:
 
    ```
    For each page in chunks.json:
-     Task(subagent_type="d2c:logic-generator", run_in_background=true)
+     Task(subagent_type="d2c:logic-generator", name="logic-${module-name}", prompt="run_dir=${RUN_DIR} chunk=${chunk} tech_stack=${TECH_STACK}")
    ```
 
+   - Each Task call blocks until the teammate finishes. Results are returned directly — no TaskOutput needed.
    - Each agent receives: its chunk content + project-context.md + tech stack
    - Each agent outputs to: `${RUN_DIR}/logic-code/{module-name}/`
 
-3. Wait for all agents to complete via `TaskOutput(block=true)`
-
-4. Consolidate outputs:
+3. Consolidate outputs:
    - Merge logic-summary.md files
    - Resolve cross-module import paths
    - Write consolidated `${RUN_DIR}/logic-summary.md`

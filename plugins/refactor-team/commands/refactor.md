@@ -16,7 +16,6 @@ allowed-tools:
     "TaskUpdate",
     "TaskList",
     "TaskGet",
-    "TaskOutput",
     "SendMessage",
     "AskUserQuestion",
     "mcp__auggie-mcp__codebase-retrieval",
@@ -31,13 +30,24 @@ You are the **Lead** orchestrating a team-based refactoring pipeline with safety
 
 **CRITICAL**: You MUST ONLY invoke these agent types. Any other type is FORBIDDEN:
 
-| Agent Name      | subagent_type                 | Purpose               |
-| --------------- | ----------------------------- | --------------------- |
-| smell-detector  | refactor-team:smell-detector  | Code smell detection  |
-| refactorer      | refactor-team:refactorer      | Safe code refactoring |
-| safety-reviewer | refactor-team:safety-reviewer | Regression validation |
+| Agent Name      | subagent_type                            | Purpose               |
+| --------------- | ---------------------------------------- | --------------------- |
+| smell-detector  | refactor-team:analysis:smell-detector    | Code smell detection  |
+| refactorer      | refactor-team:execution:refactorer       | Safe code refactoring |
+| safety-reviewer | refactor-team:validation:safety-reviewer | Regression validation |
 
 ## Workflow Phases
+
+## Task Result Handling
+
+Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
+
+**FORBIDDEN — never do this:**
+- MUST NOT call `TaskOutput` — this tool does not exist
+- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
+
+**CORRECT — always use direct return:**
+- The result comes from the `Task` call itself, no extra step needed
 
 ### Phase 1: Init (Lead)
 
@@ -79,46 +89,43 @@ Mark items `[x]` as each phase completes.
 
 **CRITICAL**: Spawn smell-detector as a **Task**, NOT a Team.
 
-1. Create detection task:
+1. Spawn smell-detector:
 
    ```
-   TaskCreate(
-     type="refactor-team:smell-detector",
-     objective="Detect code smells in ${target} with scope: ${scope}",
-     context={
-       target: [parsed target],
-       scope: [dead-code|duplicates|complexity|all],
-       run_dir: ${run_dir}
-     },
-     instructions="
-       1. Run detection tools (knip, depcheck, ts-prune as applicable)
-       2. Categorize findings by risk: SAFE, CAREFUL, RISKY
-       3. Write ${run_dir}/smells-report.md with:
-          - Summary of findings
-          - Risk-categorized smell list
-          - Evidence for each finding
-       4. Format:
-          ## SAFE (Low Risk)
-          - [Finding with evidence]
+   Task(
+     name: "smell-detector",
+     subagent_type: "refactor-team:analysis:smell-detector",
+     prompt: "You are smell-detector analyzing code smells.
 
-          ## CAREFUL (Medium Risk)
-          - [Finding with evidence]
+   ## Target
+   ${target} with scope: ${scope}
 
-          ## RISKY (High Risk)
-          - [Finding with evidence]
-     "
+   ## Instructions
+   1. Run detection tools (knip, depcheck, ts-prune as applicable)
+   2. Categorize findings by risk: SAFE, CAREFUL, RISKY
+   3. Write ${run_dir}/smells-report.md with:
+      - Summary of findings
+      - Risk-categorized smell list
+      - Evidence for each finding
+   4. Format:
+      ## SAFE (Low Risk)
+      - [Finding with evidence]
+
+      ## CAREFUL (Medium Risk)
+      - [Finding with evidence]
+
+      ## RISKY (High Risk)
+      - [Finding with evidence]
+
+   When done, output your findings summary."
    )
    ```
 
-2. Wait for completion:
+   The Task call blocks until smell-detector finishes. The result is returned directly.
 
-   ```
-   output = TaskOutput(task_id, block=true)
-   ```
+2. Read `${run_dir}/smells-report.md`
 
-3. Read `${run_dir}/smells-report.md`
-
-4. **HARD STOP**: Ask user for confirmation:
+3. **HARD STOP**: Ask user for confirmation:
 
    ```
    AskUserQuestion(
@@ -128,7 +135,7 @@ Mark items `[x]` as each phase completes.
    )
    ```
 
-5. Parse user response and create refactoring batches based on confirmed scope.
+4. Parse user response and create refactoring batches based on confirmed scope.
 
 ### Phase 3: Refactoring Pipeline Team
 
@@ -137,91 +144,122 @@ Mark items `[x]` as each phase completes.
 1. **Create team**:
 
    ```
-   team_id = TeamCreate("refactor-pipeline")
+   TeamCreate(
+     team_name: "refactor-pipeline",
+     description: "Batched refactoring pipeline for ${target}"
+   )
    ```
 
-2. **Create batched tasks** (example for 3 batches):
+2. **Execute batched refactoring** sequentially by risk level: SAFE first, then CAREFUL, then RISKY.
 
-   Batch by risk level: SAFE first, then CAREFUL, then RISKY.
+   Each batch consists of a refactorer followed by a safety-reviewer. Each `Task` call blocks until the teammate finishes, so the next step starts only after the previous completes.
+
+   **Batch 1: SAFE — Refactor**
 
    ```
-   task_1 = TaskCreate(
-     type="refactor-team:refactorer",
-     objective="Refactor batch 1: SAFE category",
-     context={
-       batch_id: 1,
-       risk_level: "SAFE",
-       smells: [list of SAFE findings],
-       run_dir: ${run_dir}
-     },
-     instructions="
-       1. Apply refactoring for each smell in batch
-       2. Safety protocol:
-          - grep for references before removal
-          - check dynamic imports
-          - review git history
-       3. Track changes in ${run_dir}/changes-log.md
-       4. Handle REFACTOR_ISSUE messages (max 2 rounds)
-       5. Format changes as:
-          ## Batch 1 (SAFE)
-          - File: [path]
-            - Action: [removed/modified]
-            - Reason: [smell type]
-            - LOC: [lines of code removed]
-     "
-   )
+   Task(
+     name: "refactorer-batch-1",
+     subagent_type: "refactor-team:execution:refactorer",
+     team_name: "refactor-pipeline",
+     prompt: "You are refactorer-batch-1 on team refactor-pipeline.
 
-   task_2 = TaskCreate(
-     type="refactor-team:safety-reviewer",
-     objective="Validate batch 1: SAFE category",
-     context={
-       batch_id: 1,
-       risk_level: "SAFE",
-       run_dir: ${run_dir}
-     },
-     depends_on=[task_1],
-     instructions="
-       1. Run tests: npm test (or project test command)
-       2. Check TypeScript: tsc --noEmit
-       3. Verify no broken imports: grep -r 'Cannot find module'
-       4. Write ${run_dir}/validation-log.md
-       5. If issues found:
-          - SendMessage to refactorer:
-            {type: 'REFACTOR_ISSUE', batch: 1, issue: '...', affected_file: '...', round: 1}
-          - Wait for REFACTOR_FIXED response
-          - Re-validate (max 2 rounds)
-       6. If 2 rounds fail: ROLLBACK batch (git restore)
-       7. If all pass: Approve batch
-     "
-   )
+   Your task: Refactor batch 1 (SAFE category).
 
-   task_3 = TaskCreate(
-     type="refactor-team:refactorer",
-     objective="Refactor batch 2: CAREFUL category",
-     context={
-       batch_id: 2,
-       risk_level: "CAREFUL",
-       smells: [list of CAREFUL findings],
-       run_dir: ${run_dir}
-     },
-     depends_on=[task_2],
-     instructions=[same as task_1, adjusted for batch 2]
-   )
+   ## Smells to Fix
+   {list_of_SAFE_findings}
 
-   task_4 = TaskCreate(
-     type="refactor-team:safety-reviewer",
-     objective="Validate batch 2: CAREFUL category",
-     context={
-       batch_id: 2,
-       risk_level: "CAREFUL",
-       run_dir: ${run_dir}
-     },
-     depends_on=[task_3],
-     instructions=[same as task_2, adjusted for batch 2]
-   )
+   ## Safety Protocol
+   - grep for references before removal
+   - check dynamic imports
+   - review git history
 
-   # ... continue for RISKY batch if user approved
+   ## Output
+   Track changes in ${run_dir}/changes-log.md with format:
+   ## Batch 1 (SAFE)
+   - File: [path]
+     - Action: [removed/modified]
+     - Reason: [smell type]
+     - LOC: [lines of code removed]
+
+   ## Fix Loop Protocol
+   If you receive a REFACTOR_ISSUE message:
+   1. Parse the JSON
+   2. Apply fix
+   3. Send REFACTOR_FIXED response (max 2 rounds)
+
+   When done, send a message to lead with your batch 1 summary."
+   )
    ```
+
+   **Batch 1: SAFE — Validate**
+
+   ```
+   Task(
+     name: "safety-reviewer-batch-1",
+     subagent_type: "refactor-team:validation:safety-reviewer",
+     team_name: "refactor-pipeline",
+     prompt: "You are safety-reviewer-batch-1 on team refactor-pipeline.
+
+   Your task: Validate batch 1 (SAFE category) refactoring.
+
+   ## Validation Steps
+   1. Run tests: npm test (or project test command)
+   2. Check TypeScript: tsc --noEmit
+   3. Verify no broken imports
+
+   ## Output
+   Write to ${run_dir}/validation-log.md
+
+   ## If Issues Found
+   Send REFACTOR_ISSUE to refactorer-batch-1:
+   {\"type\": \"REFACTOR_ISSUE\", \"batch\": 1, \"issue\": \"...\", \"affected_file\": \"...\", \"round\": 1}
+   Wait for REFACTOR_FIXED response, then re-validate (max 2 rounds).
+
+   ## Rollback Policy
+   If 2 rounds fail: ROLLBACK batch (git restore) and report failure.
+
+   When done, send a message to lead with validation results."
+   )
+   ```
+
+   **Batch 2: CAREFUL — Refactor** (starts only after Batch 1 validation completes)
+
+   ```
+   Task(
+     name: "refactorer-batch-2",
+     subagent_type: "refactor-team:execution:refactorer",
+     team_name: "refactor-pipeline",
+     prompt: "You are refactorer-batch-2 on team refactor-pipeline.
+
+   Your task: Refactor batch 2 (CAREFUL category).
+
+   ## Smells to Fix
+   {list_of_CAREFUL_findings}
+
+   [same safety protocol and output format as batch 1, adjusted for batch 2]
+
+   When done, send a message to lead with your batch 2 summary."
+   )
+   ```
+
+   **Batch 2: CAREFUL — Validate**
+
+   ```
+   Task(
+     name: "safety-reviewer-batch-2",
+     subagent_type: "refactor-team:validation:safety-reviewer",
+     team_name: "refactor-pipeline",
+     prompt: "You are safety-reviewer-batch-2 on team refactor-pipeline.
+
+   Your task: Validate batch 2 (CAREFUL category) refactoring.
+
+   [same validation steps as batch 1, adjusted for batch 2]
+
+   When done, send a message to lead with validation results."
+   )
+   ```
+
+   Continue the same pattern for RISKY batch if user approved.
 
 3. **Structured fix loop protocol**:
 
@@ -252,18 +290,11 @@ Mark items `[x]` as each phase completes.
 
 4. **Monitor pipeline**:
 
-   ```
-   while pipeline_running:
-     status = TaskList(team_id)
-     if any task failed:
-       handle_failure()
-     if all tasks completed:
-       break
-   ```
+   Since each Task call blocks, the Lead naturally monitors progress between steps. If any batch validation fails after 2 rounds of fixes, skip that batch (rollback) and proceed to the next.
 
 5. **Shutdown team**:
    ```
-   TeamDelete(team_id)
+   TeamDelete()
    ```
 
 ### Phase 4: Delivery (Lead)
@@ -331,10 +362,10 @@ Mark items `[x]` as each phase completes.
 
    ## Quality Gates
 
-   - ✅ All tests pass
-   - ✅ No new TypeScript errors
-   - ✅ No broken imports
-   - ✅ DELETION_LOG complete
+   - All tests pass
+   - No new TypeScript errors
+   - No broken imports
+   - DELETION_LOG complete
 
    ## Artifacts
 
@@ -387,7 +418,7 @@ Mark items `[x]` as each phase completes.
 - Batch refactoring by risk level (SAFE → CAREFUL → RISKY)
 - Validate after each batch before proceeding
 - Create DELETION_LOG.md for all removals
-- Use TaskOutput(block=true) — no timeout
+- Spawn teammates using Task tool with team_name parameter
 - Rollback batch if 2 fix rounds fail
 - Create backup branch before RISKY changes
 

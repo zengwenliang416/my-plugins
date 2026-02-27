@@ -94,6 +94,7 @@ Phase 6: Delivery [Hard Stop]
 
 ## Constraints
 
+- **MUST** use blocking Task calls — results are returned directly, no TaskOutput needed
 - All inputs MUST be local files (screenshots, PRD markdown, project code)
 - No external API integrations (Figma, Feishu, etc.)
 - **Image generation MUST use `d2c:image-generator` skill only** — NEVER call MCP image tools (`mcp__banana-image__*`) directly

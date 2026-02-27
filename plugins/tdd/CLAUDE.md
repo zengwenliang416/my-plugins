@@ -160,8 +160,9 @@ Lead verifies quality gates and generates summary report.
 
 ## Constraints
 
+- **MUST** use blocking Task calls — results are returned directly, no TaskOutput needed
 - ❌ MUST NOT write implementation before tests exist
 - ❌ MUST NOT skip RED phase verification
 - ❌ MUST NOT skip GREEN phase verification
 - ❌ MUST NOT invoke agent types outside restrictions
-- ✅ MUST use TaskOutput(block=true) for pipeline execution
+- ✅ MUST spawn teammates using Task tool with team_name parameter for pipeline execution

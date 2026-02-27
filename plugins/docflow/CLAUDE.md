@@ -62,10 +62,11 @@ Docflow now runs in Claude Code Agent Team mode for multi-agent workflows.
 ## Team Lifecycle (mandatory)
 
 1. Create team first: `TeamCreate("<docflow-team-name>")`
-2. Create per-agent tasks with explicit `subagent_type`
-3. Wait using `TaskOutput(..., block=true)` (NO timeout)
-4. Send shutdown signals if needed
-5. Delete team: `TeamDelete("<docflow-team-name>")`
+2. Spawn teammates using `Task` tool with `name`, `subagent_type`, `team_name`, `prompt`
+3. Launch parallel teammates in a single message for concurrent execution
+4. Coordinate via `SendMessage` — Task calls block and return results directly
+5. Send shutdown signals if needed
+6. Delete team: `TeamDelete("<docflow-team-name>")`
 
 ## Allowed subagent types
 
@@ -75,6 +76,12 @@ Docflow now runs in Claude Code Agent Team mode for multi-agent workflows.
 - `docflow:worker`
 
 Do NOT use other subagent types in docflow commands.
+
+## Task Tool Rules
+
+- **MUST** use blocking `Task` calls — results are returned directly
+- **MUST NOT** use `TaskOutput` (this tool does not exist)
+- **MUST NOT** manually construct task IDs (e.g., `agent-name@worktree-id`)
 
 ## Communication protocol (mandatory)
 
