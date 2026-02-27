@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Harden investigator agent with mandatory behavior rules and fallback report template (docflow)
 - Add Task Result Handling section to all team-based plugin commands (plugins)
 - Add Task Tool Rules prohibition to all plugin CLAUDE.md files (plugins)
 - Restructure sync-plugins script for new agent type paths (scripts)
