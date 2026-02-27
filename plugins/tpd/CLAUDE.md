@@ -87,6 +87,12 @@ TPD now uses 3 merged agents:
 
 Team orchestration is defined directly in `plugins/tpd/commands/{thinking,plan,dev}.md`.
 
+## Task Tool Rules
+
+- **MUST** use blocking `Task` calls — results are returned directly
+- **MUST NOT** use `TaskOutput` (this tool does not exist)
+- **MUST NOT** manually construct task IDs (e.g., `agent-name@worktree-id`)
+
 ---
 
 ## Recommended CLAUDE.md Configuration

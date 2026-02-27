@@ -226,7 +226,7 @@ Example:
 - **MUST NOT** add improvised phases or steps
 - **MUST NOT** take over specialist work (Lead only orchestrates & synthesizes)
 - **MUST** use TeamCreate/TeamDelete for team lifecycle
-- **MUST** wait with TaskOutput(block=true) — no timeout
+- **MUST** use blocking Task calls — results are returned directly, no TaskOutput needed
 - **MUST** complete cross-validation before synthesis
 - **MUST** provide PoC for CRITICAL/HIGH findings
 - **MUST** include remediation steps for all findings

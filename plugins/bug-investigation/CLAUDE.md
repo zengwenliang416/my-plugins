@@ -33,6 +33,12 @@ With log path:
 /bug-investigation --logs="logs/error.log" Production crash at 3am
 ```
 
+## Task Tool Rules
+
+- **MUST** use blocking `Task` calls — results are returned directly
+- **MUST NOT** use `TaskOutput` (this tool does not exist)
+- **MUST NOT** manually construct task IDs (e.g., `agent-name@worktree-id`)
+
 ## Architecture
 
 The plugin implements a Fan-Out pattern with triangulation:

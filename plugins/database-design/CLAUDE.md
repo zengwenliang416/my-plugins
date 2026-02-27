@@ -167,7 +167,13 @@ Recommendation: CREATE INDEX idx_users_email ON users(email)
 ## Troubleshooting
 
 **Issue**: Agents timeout during debate
-**Solution**: Use `TaskOutput(block=true)` - no timeout parameter
+**Solution**: Task tool blocks until teammate finishes — no timeout needed
+
+## Task Tool Rules
+
+- **MUST** use blocking `Task` calls — results are returned directly
+- **MUST NOT** use `TaskOutput` (this tool does not exist)
+- **MUST NOT** manually construct task IDs (e.g., `agent-name@worktree-id`)
 
 **Issue**: Conflicting recommendations
 **Solution**: Lead applies conflict resolution with domain-specific weights
