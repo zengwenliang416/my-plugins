@@ -45,6 +45,14 @@ Fallback chain (strict order):
 2. Single model — if one fails
 3. Claude inline — **ONLY if BOTH external models fail**, and you MUST log the failure reason
 
+### FORBIDDEN Anti-Patterns
+
+| ❌ Forbidden                                             | ✅ Required Instead                                                |
+| -------------------------------------------------------- | ------------------------------------------------------------------ |
+| Spawning `general-purpose` agents to update CLAUDE.md    | Call `Skill("context-memory:gemini-cli/codex-cli", ...)` per module |
+| Batching modules into generic agents for inline gen      | Process per module through gemini-cli + codex-cli skills           |
+| Generating CLAUDE.md content without external model call | ALWAYS route through gemini-cli or codex-cli first                 |
+
 ## Architecture
 
 ```

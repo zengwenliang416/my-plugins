@@ -44,6 +44,14 @@ Fallback chain (strict order):
 2. `codex-cli` only — for `internal` changes (faster)
 3. Claude inline — **ONLY for `config` changes**, or if BOTH external models fail (log failure reason)
 
+### FORBIDDEN Anti-Patterns
+
+| ❌ Forbidden                                             | ✅ Required Instead                                                |
+| -------------------------------------------------------- | ------------------------------------------------------------------ |
+| Spawning `general-purpose` agents to update CLAUDE.md    | Call `Skill("context-memory:codex-cli/gemini-cli", ...)` per module |
+| Batching modules into generic agents for inline gen      | Process per module through codex-cli + gemini-cli skills           |
+| Using Claude inline for `api`/`internal` change types    | ALWAYS use external models for non-config changes                  |
+
 ## Architecture
 
 ```

@@ -119,7 +119,28 @@ action=workflow → Skill("context-memory:workflow-memory", {run_dir})
 
 ### Step 3: Multi-Model Workflows (for claude-generate/claude-update actions)
 
-For `claude-generate` and `claude-update` actions, orchestrate via parallel `Task` calls:
+#### MANDATORY Agent Type Restrictions
+
+You MUST ONLY invoke these agent types in this workflow.
+
+| Step     | `subagent_type`                  | Purpose          |
+| -------- | -------------------------------- | ---------------- |
+| Scan     | `context-memory:project-scanner` | Module discovery |
+| Generate | `context-memory:gemini-core`     | Gemini doc-gen   |
+| Generate | `context-memory:codex-core`      | Codex doc-gen    |
+| Write    | `context-memory:doc-worker`      | File writing     |
+| Audit    | `context-memory:codex-core`      | Quality review   |
+
+#### FORBIDDEN Anti-Patterns
+
+| ❌ Forbidden                                         | ✅ Required Instead                                        |
+| ---------------------------------------------------- | ---------------------------------------------------------- |
+| Spawning `general-purpose` agents for doc generation | Use `context-memory:gemini-core` + `context-memory:codex-core` |
+| Batching multiple modules into one generic agent     | Route each module through the agents above per layer       |
+| Generating CLAUDE.md content inline (skipping agents)| ALL content generation through gemini-core/codex-core      |
+| Skipping external model invocation                   | ALWAYS attempt gemini-core + codex-core before fallback    |
+
+For `claude-generate` and `claude-update` actions, orchestrate via parallel `Agent` calls:
 
 1. **Scan**: `Task(subagent_type="context-memory:project-scanner", name="scanner", prompt="run_dir=${run_dir} mode=scan")` → `${run_dir}/modules.json`
 2. **Generate** (per module layer, 3→2→1):
