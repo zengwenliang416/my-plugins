@@ -74,7 +74,20 @@ Otherwise, read the project's root `CLAUDE.md` (or `package.json` / `README.md`)
 
 **⛔ Do NOT create directories, write files, or execute any workflow before the user selects an action.**
 
-Use `AskUserQuestion` to ask the user which workflow to run. Present the categories from the Menu Structure above. Wait for the user's response, then proceed to Step 3.
+Call `AskUserQuestion` with EXACTLY these parameters (all fields are required):
+
+- **question**: "请选择要执行的工作流类型"
+- **header**: "Workflow"
+- **multiSelect**: false
+- **options** (exactly 4):
+  1. label: "CLAUDE.md", description: "生成或更新 CLAUDE.md 文档"
+  2. label: "API & Rules", description: "生成 OpenAPI 文档或技术栈规则"
+  3. label: "SKILL Package", description: "索引打包 SKILL 或生成代码地图"
+  4. label: "Context", description: "加载上下文、压缩会话、样式提取"
+
+After the user selects a category, call `AskUserQuestion` AGAIN with the specific actions for that category (2-4 options, same format with question/header/multiSelect/options all provided).
+
+Wait for the user's response, then proceed to Step 3.
 
 ### Step 3: Setup Run Directory
 
