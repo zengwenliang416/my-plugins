@@ -4,7 +4,7 @@ description: |
   Codex wrapper skill for code analysis, documentation generation, and quality auditing.
   [Trigger] Agent or skill needs Codex model for analysis/generation/audit tasks.
   [Output] Model response via codeagent-wrapper + ${run_dir}/codex-${role}.log
-  [Skip] When task can be handled by Claude inline without external model.
+  [Skip] Never — Codex is mandatory for analysis tasks. Report error if unavailable.
   [Ask] Which role to use (analyzer, doc-generator, auditor) if not specified.
   [Resource Usage] Use `scripts/invoke-codex.ts` with `references/roles/` prompt templates.
 allowed-tools:

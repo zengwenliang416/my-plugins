@@ -22,7 +22,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 function parseArgs(argv: string[]): ParsedArgs {
-  const parsed: ParsedArgs = { role: "doc-generator", prompt: "", workdir: "", session: "" };
+  const parsed: ParsedArgs = {
+    role: "doc-generator",
+    prompt: "",
+    workdir: "",
+    session: "",
+  };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === "--role") parsed.role = argv[++i] || parsed.role;
@@ -55,7 +60,7 @@ function main(): void {
     ? `${rolePrompt}\n\n---\n\n${parsed.prompt}`.trim()
     : parsed.prompt;
 
-  const args = ["-p", finalPrompt, "--approval-mode", "plan", "-o", "text"];
+  const args = ["-p", finalPrompt, "-o", "text"];
   if (parsed.session) args.push("--session", parsed.session);
   const result = spawnSync("gemini", args, {
     stdio: "inherit",

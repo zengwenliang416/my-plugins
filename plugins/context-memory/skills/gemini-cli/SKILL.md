@@ -4,7 +4,7 @@ description: |
   Gemini wrapper skill for documentation generation, style analysis, and API extraction.
   [Trigger] Agent or skill needs Gemini model for doc-gen/style/api tasks.
   [Output] Model response via codeagent-wrapper + ${run_dir}/gemini-${role}.log
-  [Skip] When task can be handled by Claude inline without external model.
+  [Skip] Never — Gemini is mandatory for content generation. Report error if unavailable.
   [Ask] Which role to use (doc-generator, style-analyzer, api-extractor) if not specified.
   [Resource Usage] Use `scripts/invoke-gemini.ts` with `references/roles/` prompt templates.
 allowed-tools:
