@@ -4,27 +4,60 @@ Always answer in Chinese (Simplified).
 
 <available-skills>
 
-| Skill                    | Trigger                            | Description                        |
-| ------------------------ | ---------------------------------- | ---------------------------------- |
-| `/context-memory:memory` | "memory", "上下文管理", "文档生成" | Interactive memory workflow router |
+| Skill                        | Trigger                                  | Description                                     |
+| ---------------------------- | ---------------------------------------- | ----------------------------------------------- |
+| `/context-memory:doc`        | "文档生成", "CLAUDE.md", "generate docs" | Generate, update, or plan CLAUDE.md via Gemini  |
+| `/context-memory:load`       | "加载上下文", "load context"             | Load project context for a task                 |
+| `/context-memory:compact`    | "压缩会话", "compact session"            | Compact session insights into persistent memory |
+| `/context-memory:swagger`    | "swagger", "OpenAPI"                     | Generate OpenAPI/Swagger docs from code         |
+| `/context-memory:tech-rules` | "技术规则", "tech rules"                 | Generate tech stack rules                       |
+| `/context-memory:code-map`   | "代码地图", "code map"                   | Generate code maps with Mermaid diagrams        |
+| `/context-memory:skill`      | "skill包", "skill package"               | Index, package, and load SKILL packages         |
+| `/context-memory:memory`     | "memory", "上下文管理"                   | Show all available commands (help)              |
 
 </available-skills>
 
 ## Overview
 
-Context-memory manages project knowledge: CLAUDE.md generation, SKILL packaging, style/workflow memory, session compaction, and tech rules. One router command orchestrates 18 skills with 4 agents.
+Context-memory manages project knowledge: CLAUDE.md generation, SKILL packaging, style/workflow memory, session compaction, and tech rules. 7 standalone commands + 18 skills + 4 agents.
 
 ## Quick Start
 
 ```bash
-# Interactive router (recommended entry point)
-/context-memory:memory
+# CLAUDE.md documentation (most common)
+/context-memory:doc generate --scope full
+/context-memory:doc update --scope related
+/context-memory:doc plan
 
-# Direct skill invocation examples
-Skill("context-memory:context-loader", {task: "implement auth"})
-Skill("context-memory:doc-full-updater", {run_dir: "openspec/changes/my-change/"})
-Skill("context-memory:module-discovery", {run_dir: "openspec/changes/my-change/"})
+# Context management
+/context-memory:load "implement user authentication"
+/context-memory:compact
+
+# Code intelligence
+/context-memory:code-map
+/context-memory:swagger
+/context-memory:tech-rules
+
+# SKILL packages
+/context-memory:skill index
+/context-memory:skill load
+
+# Help — list all commands
+/context-memory:memory
 ```
+
+## Commands
+
+| Command      | Purpose                                    |
+| ------------ | ------------------------------------------ |
+| `doc`        | CLAUDE.md plan/generate/update via Gemini  |
+| `load`       | Load project context for a task            |
+| `compact`    | Compact session into persistent memory     |
+| `swagger`    | Generate OpenAPI/Swagger docs              |
+| `tech-rules` | Generate tech stack rules                  |
+| `code-map`   | Generate code maps with Mermaid diagrams   |
+| `skill`      | Index and package or load SKILL packages   |
+| `memory`     | Help command — list all available commands |
 
 ## Skills Inventory
 
@@ -85,21 +118,18 @@ Skill("context-memory:module-discovery", {run_dir: "openspec/changes/my-change/"
 
 ## Gemini Pipeline
 
-Doc generation uses Gemini via the agent → skill → script chain:
+Doc generation uses Gemini via the agent -> skill -> script chain:
 
 ```
 Agent (gemini-core)
-  → Skill (gemini-cli)
-    → Script (invoke-gemini.ts)
-      → CLI: gemini -p "<prompt>" --approval-mode plan -o text
+  -> Skill (gemini-cli)
+    -> Script (invoke-gemini.ts)
+      -> CLI: gemini -p "<prompt>" --approval-mode plan -o text
 ```
 
-### Fallback Chain
+### No Fallback — Fail Fast
 
-```
-Gemini (preferred)
-  → Claude inline (if Gemini fails)
-```
+Gemini is the only content generator. If Gemini fails, report the error to the user for diagnosis. Claude MUST NOT generate CLAUDE.md content as a substitute.
 
 All Gemini output is reviewed by Claude lead before writing.
 
