@@ -100,10 +100,12 @@ Optional outputs:
 Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
 
 **FORBIDDEN — never do this:**
+
 - MUST NOT call `TaskOutput` — this tool does not exist
 - MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
 
 **CORRECT — always use direct return:**
+
 - The result comes from the `Task` call itself, no extra step needed
 
 ### Step 0: Initialize
@@ -134,7 +136,7 @@ Each `Task` call **blocks** until the teammate finishes and returns the result d
    ```
 2. Verify `complexity-analysis.md` exists.
 3. Resolve `DEPTH` (`light|deep|ultra`).
-4. If score is medium and depth is auto, confirm with user once.
+4. If score is medium and depth is auto: **⏸️ HARD STOP**: MUST call `AskUserQuestion` to confirm depth selection. Do NOT proceed until user responds.
 
 ### Step 2: Create Team and Boundary Tasks
 
@@ -179,7 +181,7 @@ Each `Task` call **blocks** until the teammate finishes and returns the result d
    Skill(skill="tpd:thought-synthesizer", args="run_dir=${THINKING_DIR} depth=${DEPTH}")
    ```
 2. Verify `synthesis.md`.
-3. If unresolved questions remain, ask user and append clarifications.
+3. If unresolved questions remain: **⏸️ HARD STOP**: MUST call `AskUserQuestion` to present unresolved questions. Do NOT proceed until user responds. Append clarifications to `synthesis.md`.
 
 ### Step 5: Conclusion and Handoff
 

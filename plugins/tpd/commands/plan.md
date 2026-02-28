@@ -108,10 +108,12 @@ Optional artifacts:
 Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
 
 **FORBIDDEN — never do this:**
+
 - MUST NOT call `TaskOutput` — this tool does not exist
 - MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
 
 **CORRECT — always use direct return:**
+
 - The result comes from the `Task` call itself, no extra step needed
 
 ### Step 0: Initialize
@@ -169,7 +171,7 @@ Each `Task` call **blocks** until the teammate finishes and returns the result d
 ### Step 3: Ambiguity Resolution
 
 1. Compare two architecture drafts.
-2. If unresolved differences remain, ask user one focused question per decision.
+2. If unresolved differences remain: **⏸️ HARD STOP**: MUST call `AskUserQuestion` with one focused question per decision. Do NOT proceed until user responds to each ambiguity.
 3. Write all decisions and rationale to `decision-log.md`.
 
 ### Step 4: Synthesis Pipeline

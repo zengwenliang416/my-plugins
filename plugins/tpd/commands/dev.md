@@ -91,10 +91,12 @@ Optional artifacts:
 Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
 
 **FORBIDDEN — never do this:**
+
 - MUST NOT call `TaskOutput` — this tool does not exist
 - MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
 
 **CORRECT — always use direct return:**
+
 - The result comes from the `Task` call itself, no extra step needed
 
 ### Step 0: Resolve OpenSpec and Artifacts
@@ -131,7 +133,7 @@ Each `Task` call **blocks** until the teammate finishes and returns the result d
 1. Read `openspec/changes/${PROPOSAL_ID}/tasks.md`.
 2. Pick 1-3 tasks forming a verifiable closed loop.
 3. Write `tasks-scope.md` with constraints and test requirements from `pbt.md`.
-4. Ask user to confirm scope.
+4. **⏸️ HARD STOP**: MUST call `AskUserQuestion` to present selected scope. Do NOT proceed until user confirms. Show task IDs, descriptions, and estimated complexity.
 
 ### Step 2: Create Team and Analysis Tasks
 
@@ -191,7 +193,7 @@ Each `Task` call **blocks** until the teammate finishes and returns the result d
 
 1. Update completed items in `tasks.md`.
 2. Write `tasks-progress.md`.
-3. Ask user whether to continue next minimal phase.
+3. **⏸️ HARD STOP**: MUST call `AskUserQuestion` to ask whether to continue next minimal phase. Do NOT proceed until user responds. Options: "Continue next phase" / "Done for now" / "Review changes first".
 4. When all tasks are done, run:
    ```text
    /openspec:archive
