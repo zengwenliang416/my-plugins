@@ -43,7 +43,7 @@ When invoked without arguments, present this interactive menu via `AskUserQuesti
 | `claude-update full`      | **Step 3 team workflow**        | Update all CLAUDE.md         |
 | `claude-update related`   | **Step 3 team workflow**        | Update changed modules       |
 
-**⚠️ `claude-generate` and `claude-update` actions MUST go through Step 4 (agent team workflow). Do NOT call `doc-full-generator`, `doc-related-generator`, `doc-full-updater`, or `doc-incremental-updater` skills directly — they are reference specs only.**
+**⚠️ `claude-generate` and `claude-update` actions MUST go through Step 5 (agent team workflow). Do NOT call `doc-full-generator`, `doc-related-generator`, `doc-full-updater`, or `doc-incremental-updater` skills directly — they are reference specs only.**
 
 ### Category 3: API & Rules
 
@@ -69,17 +69,21 @@ When invoked without arguments, present this interactive menu via `AskUserQuesti
 
 ## Steps
 
-### Step 1: Interactive Selection (MUST run FIRST)
+### Step 1: Gather Context
 
-**⛔ Do NOT create directories, write files, or call any tools before this step completes.**
+If an `action` argument was provided, skip to Step 3 with that action.
 
-If an `action` argument was provided, skip to Step 2 with that action.
+Otherwise, read the project's root `CLAUDE.md` (or `package.json` / `README.md`) to understand the project context. This step is required before presenting the menu.
 
-Otherwise, use `AskUserQuestion` to ask the user which workflow to run. Wait for the user's selection before doing ANYTHING else.
+### Step 2: Interactive Selection
 
-### Step 2: Setup Run Directory
+**⛔ Do NOT create directories, write files, or execute any workflow before the user selects an action.**
 
-After the user has selected an action (from Step 1 or from arguments):
+Use `AskUserQuestion` to ask the user which workflow to run. Present the categories from the Menu Structure above. Wait for the user's response, then proceed to Step 3.
+
+### Step 3: Setup Run Directory
+
+After the user has selected an action (from Step 2 or from arguments):
 
 ```
 run_id = args[--run-id] or "memory-{action-slug}"
@@ -94,7 +98,7 @@ Write OpenSpec scaffold:
 
 Mark items `[x]` as each step completes.
 
-### Step 3: Route to Skill
+### Step 4: Route to Skill
 
 Map selected action to the corresponding skill invocation:
 
@@ -103,10 +107,10 @@ Map selected action to the corresponding skill invocation:
 action=load → Skill("context-memory:context-loader", {task, run_dir})
 action=compact → Skill("context-memory:session-compactor", {run_dir})
 action=claude-plan → Skill("context-memory:doc-planner", {run_dir})
-action=claude-generate full → MANDATORY: go to Step 4 (team workflow with gemini-core + codex-core agents)
-action=claude-generate related → MANDATORY: go to Step 4 (team workflow with gemini-core + codex-core agents)
-action=claude-update full → MANDATORY: go to Step 4 (team workflow with gemini-core + codex-core agents)
-action=claude-update related → MANDATORY: go to Step 4 (team workflow with gemini-core + codex-core agents)
+action=claude-generate full → MANDATORY: go to Step 5 (team workflow with gemini-core + codex-core agents)
+action=claude-generate related → MANDATORY: go to Step 5 (team workflow with gemini-core + codex-core agents)
+action=claude-update full → MANDATORY: go to Step 5 (team workflow with gemini-core + codex-core agents)
+action=claude-update related → MANDATORY: go to Step 5 (team workflow with gemini-core + codex-core agents)
 action=swagger → Skill("context-memory:swagger-generator", {run_dir})
 action=tech-rules → Skill("context-memory:tech-rules-generator", {run_dir})
 action=skill-index → Skill("context-memory:skill-indexer", {run_dir})
@@ -117,7 +121,7 @@ action=workflow → Skill("context-memory:workflow-memory", {run_dir})
 
 ```
 
-### Step 4: Multi-Model Workflows (for claude-generate/claude-update actions)
+### Step 5: Multi-Model Workflows (for claude-generate/claude-update actions)
 
 **⛔ STOP — Read this before proceeding.**
 
@@ -201,7 +205,7 @@ Gemini + Codex (parallel, preferred)
 - If scan fails → abort workflow, report error to user
 - If all doc-generation fails for a module → skip module, log warning
 
-### Step 5: Delivery
+### Step 6: Delivery
 
 - Report artifacts created
 - Show next recommended actions
