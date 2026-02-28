@@ -30,6 +30,16 @@ arguments:
 
 Generate CLAUDE.md files only for modules affected by recent changes and their dependents. Faster alternative to doc-full-generator when most modules already have documentation.
 
+## Critical Constraint: External Model Required
+
+**You MUST use `Skill("context-memory:gemini-cli", ...)` for ALL CLAUDE.md content generation.** Do NOT generate CLAUDE.md content inline — your role is to prepare prompts and route to external models.
+
+Fallback chain (strict order):
+
+1. `Skill("context-memory:gemini-cli", {role: "doc-generator", ...})` — primary
+2. `Skill("context-memory:codex-cli", {role: "doc-generator", ...})` — if gemini fails
+3. Claude inline — **ONLY if BOTH external models fail**, and you MUST log the failure reason
+
 ## Steps
 
 ### Phase 1: Change Detection

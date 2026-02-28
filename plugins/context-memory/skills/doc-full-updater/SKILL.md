@@ -35,6 +35,16 @@ arguments:
 
 Update all project CLAUDE.md files using multi-model analysis (Codex + Gemini), processing modules in layer order (3→2→1) so lower-layer docs inform higher-layer generation.
 
+## Critical Constraint: External Model Required
+
+**You MUST use `Skill("context-memory:gemini-cli", ...)` and `Skill("context-memory:codex-cli", ...)` for ALL CLAUDE.md content generation and auditing.** Do NOT generate or update CLAUDE.md content inline — your role is to prepare prompts, route to external models, and merge their outputs.
+
+Fallback chain (strict order):
+
+1. Both `gemini-cli` + `codex-cli` in parallel — preferred
+2. Single model — if one fails
+3. Claude inline — **ONLY if BOTH external models fail**, and you MUST log the failure reason
+
 ## Architecture
 
 ```

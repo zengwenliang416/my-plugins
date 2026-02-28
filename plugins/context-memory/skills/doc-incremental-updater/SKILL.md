@@ -34,6 +34,16 @@ arguments:
 
 Update only the CLAUDE.md files affected by recent code changes. Uses change-detector to identify affected modules, then runs targeted multi-model updates.
 
+## Critical Constraint: External Model Required
+
+**You MUST use `Skill("context-memory:codex-cli", ...)` and/or `Skill("context-memory:gemini-cli", ...)` for CLAUDE.md content generation.** Do NOT generate CLAUDE.md content inline (except for `config` change type which permits inline updates).
+
+Fallback chain (strict order):
+
+1. Both `codex-cli` + `gemini-cli` in parallel — for `api` changes
+2. `codex-cli` only — for `internal` changes (faster)
+3. Claude inline — **ONLY for `config` changes**, or if BOTH external models fail (log failure reason)
+
 ## Architecture
 
 ```
