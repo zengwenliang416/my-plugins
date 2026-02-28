@@ -94,7 +94,32 @@ If an `action` argument is provided, skip to Step 2 with that action.
 
 ### Step 1: Interactive Selection
 
-Use `AskUserQuestion` with categories above. Present as grouped options.
+Use two-step `AskUserQuestion` flow:
+
+**Step 1a: Select category** (single question, 4 options — combine Context+Memory into one):
+
+```json
+{
+  "questions": [{
+    "question": "Which workflow do you want to run?",
+    "header": "Category",
+    "options": [
+      {"label": "CLAUDE.md", "description": "Generate or update CLAUDE.md documentation"},
+      {"label": "API & Rules", "description": "Generate OpenAPI docs or tech stack rules"},
+      {"label": "SKILL Package", "description": "Index skills, generate code maps, or load packages"},
+      {"label": "Context & Memory", "description": "Load context, compact session, extract style, or archive workflow"}
+    ],
+    "multiSelect": false
+  }]
+}
+```
+
+**Step 1b: Select action** (based on category, present 2-4 specific actions):
+
+- **CLAUDE.md** → options: `claude-plan`, `claude-generate full`, `claude-generate related`, `claude-update full` (if >4, split `update` into separate follow-up)
+- **API & Rules** → options: `swagger`, `tech-rules`
+- **SKILL Package** → options: `skill-index`, `code-map`, `skill-load`
+- **Context & Memory** → options: `load`, `compact`, `style`, `workflow`
 
 ### Step 2: Route to Skill
 
