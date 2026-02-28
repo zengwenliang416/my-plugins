@@ -66,7 +66,7 @@ codex-core(auditor) → quality review
    - Current CLAUDE.md content (if exists)
    - Module file list and structure
    - Already-updated lower-layer CLAUDE.md files (for cross-references)
-     d. Send to both codex-cli (role=doc-generator) and gemini-cli (role=doc-generator).
+     d. Call both `Skill("context-memory:codex-cli", {role: "doc-generator", prompt: <update_prompt>, run_dir, session_id})` and `Skill("context-memory:gemini-cli", {role: "doc-generator", prompt: <update_prompt>, run_dir, session_id})` in parallel.
      e. Merge outputs: take the more complete version, supplement with unique details from the other.
      f. Write merged content to `${run_dir}/merged-docs-{module_name}.md`.
 
@@ -77,7 +77,7 @@ codex-core(auditor) → quality review
 
 ### Phase 4: Quality Audit
 
-7. Send all generated CLAUDE.md files to codex-cli (role=auditor) for review.
+7. Call `Skill("context-memory:codex-cli", {role: "auditor", prompt: <audit_prompt>, run_dir, session_id})` to review all generated CLAUDE.md files.
 8. Write audit report to `${run_dir}/audit-report.md`.
 9. If audit finds critical issues, flag them but do not auto-fix.
 

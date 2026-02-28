@@ -40,8 +40,8 @@ Update only the CLAUDE.md files affected by recent code changes. Uses change-det
 change-detector → changed-modules.json
     ↓
 For each changed/impacted module:
-    ├─ codex-cli(doc-generator) ─┐ PARALLEL
-    └─ gemini-cli(doc-generator) ─┘
+    ├─ Skill:codex-cli(doc-generator) ─┐ PARALLEL
+    └─ Skill:gemini-cli(doc-generator) ─┘
     → Claude merges incremental diff
     → Write updated CLAUDE.md
 ```
@@ -63,8 +63,8 @@ For each changed/impacted module:
    - Current CLAUDE.md content
    - Specific changes made (diff summary)
    - Change type (api, internal, config, test)
-     d. For `api` changes: use both codex-cli and gemini-cli.
-     e. For `internal` changes: use codex-cli only (faster).
+     d. For `api` changes: call both `Skill("context-memory:codex-cli", {role: "doc-generator", ...})` and `Skill("context-memory:gemini-cli", {role: "doc-generator", ...})`.
+     e. For `internal` changes: call `Skill("context-memory:codex-cli", {role: "doc-generator", ...})` only (faster).
      f. For `config` changes: use Claude inline (simple updates).
      g. For `test` changes: skip CLAUDE.md update (tests don't affect docs).
 

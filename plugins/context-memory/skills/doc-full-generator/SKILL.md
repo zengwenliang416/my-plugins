@@ -82,8 +82,8 @@ Each generated CLAUDE.md should contain:
    - Key file contents (summarized)
    - Lower-layer CLAUDE.md files (for cross-references)
    - Template structure
-     d. Send to gemini-cli (role=doc-generator) as primary generator.
-     e. If gemini fails, fall back to codex-cli (role=doc-generator).
+     d. Call `Skill("context-memory:gemini-cli", {role: "doc-generator", prompt: <generation_prompt>, run_dir, session_id})` as primary generator.
+     e. If gemini fails, fall back to `Skill("context-memory:codex-cli", {role: "doc-generator", prompt: <generation_prompt>, run_dir, session_id})`.
      f. Write result to `${run_dir}/generated-{module_name}.md`.
 
 ### Phase 3: Cross-Reference Pass

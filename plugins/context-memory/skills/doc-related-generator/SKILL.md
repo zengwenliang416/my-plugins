@@ -49,7 +49,7 @@ Generate CLAUDE.md files only for modules affected by recent changes and their d
 7. For each module needing generation:
    a. Use `mcp__auggie-mcp__codebase-retrieval` for module context.
    b. Read module files and structure.
-   c. Send to gemini-cli (role=doc-generator) with focused prompt.
+   c. Call `Skill("context-memory:gemini-cli", {role: "doc-generator", prompt: <focused_prompt>, run_dir, session_id})` to generate.
    d. Write to `${run_dir}/generated-{module_name}.md`.
 
 ### Phase 4: Writing
