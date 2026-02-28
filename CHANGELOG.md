@@ -9,11 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Remove `--approval-mode plan` from invoke-gemini.ts — headless mode works without it (context-memory)
+- Remove Claude inline fallback from gemini-cli and codex-cli — fail-fast if Gemini unavailable (context-memory)
+- Enforce MANDATORY Hard Stop for AskUserQuestion across all plugins to prevent models from skipping menus (brainstorm, d2c, refactor, ui-design)
 - Disambiguate skill/agent references in doc-generation skills to prevent LLM misrouting (context-memory)
 - Enforce external model usage with mandatory constraint blocks in doc-generation skills (context-memory)
 
 ### Changed
 
+- Split /memory router into 7 independent commands: /doc, /load, /compact, /swagger, /tech-rules, /code-map, /skill (context-memory)
+- Downgrade /memory to lightweight help command listing available commands (context-memory)
 - Harden investigator agent with mandatory behavior rules and fallback report template (docflow)
 - Add Task Result Handling section to all team-based plugin commands (plugins)
 - Add Task Tool Rules prohibition to all plugin CLAUDE.md files (plugins)
