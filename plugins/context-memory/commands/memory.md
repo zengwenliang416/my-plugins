@@ -94,32 +94,34 @@ If an `action` argument is provided, skip to Step 2 with that action.
 
 ### Step 1: Interactive Selection
 
-Use two-step `AskUserQuestion` flow:
+**MANDATORY**: You MUST call the `AskUserQuestion` tool and WAIT for the user's response before proceeding. Do NOT skip this step. Do NOT assume a default action.
 
-**Step 1a: Select category** (single question, 4 options — combine Context+Memory into one):
+Call `AskUserQuestion` with exactly ONE question presenting the top-level categories. Example call:
 
-```json
-{
-  "questions": [{
-    "question": "Which workflow do you want to run?",
-    "header": "Category",
-    "options": [
-      {"label": "CLAUDE.md", "description": "Generate or update CLAUDE.md documentation"},
-      {"label": "API & Rules", "description": "Generate OpenAPI docs or tech stack rules"},
-      {"label": "SKILL Package", "description": "Index skills, generate code maps, or load packages"},
-      {"label": "Context & Memory", "description": "Load context, compact session, extract style, or archive workflow"}
+```
+AskUserQuestion(
+  questions=[{
+    question: "请选择要执行的工作流类型",
+    header: "Workflow",
+    options: [
+      {label: "CLAUDE.md 文档", description: "生成或更新 CLAUDE.md 文档"},
+      {label: "API & 规则", description: "生成 OpenAPI 文档或技术栈规则"},
+      {label: "SKILL 包", description: "索引/打包 SKILL 或生成代码地图"},
+      {label: "上下文 & 记忆", description: "加载上下文、压缩会话、提取样式"}
     ],
-    "multiSelect": false
+    multiSelect: false
   }]
-}
+)
 ```
 
-**Step 1b: Select action** (based on category, present 2-4 specific actions):
+After the user selects a category, call `AskUserQuestion` AGAIN with the specific actions for that category:
 
-- **CLAUDE.md** → options: `claude-plan`, `claude-generate full`, `claude-generate related`, `claude-update full` (if >4, split `update` into separate follow-up)
-- **API & Rules** → options: `swagger`, `tech-rules`
-- **SKILL Package** → options: `skill-index`, `code-map`, `skill-load`
-- **Context & Memory** → options: `load`, `compact`, `style`, `workflow`
+- **CLAUDE.md 文档**: options = `claude-plan` (规划范围), `claude-generate full` (全量生成), `claude-generate related` (变更模块生成), `claude-update full` (全量更新)
+- **API & 规则**: options = `swagger` (OpenAPI 文档), `tech-rules` (技术栈规则)
+- **SKILL 包**: options = `skill-index` (索引打包), `code-map` (代码地图), `skill-load` (加载 SKILL)
+- **上下文 & 记忆**: options = `load` (加载上下文), `compact` (压缩会话), `style` (样式模式), `workflow` (工作流归档)
+
+**⚠️ If AskUserQuestion returns an empty response, ask the user to type their choice directly in chat. Do NOT proceed with a default.**
 
 ### Step 2: Route to Skill
 
