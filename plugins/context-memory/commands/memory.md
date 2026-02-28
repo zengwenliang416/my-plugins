@@ -94,34 +94,39 @@ If an `action` argument is provided, skip to Step 2 with that action.
 
 ### Step 1: Interactive Selection
 
-**MANDATORY**: You MUST call the `AskUserQuestion` tool and WAIT for the user's response before proceeding. Do NOT skip this step. Do NOT assume a default action.
+**MANDATORY**: You MUST present the menu below and WAIT for the user to choose. Do NOT skip this step. Do NOT assume a default action. Do NOT proceed until the user explicitly selects an action.
 
-Call `AskUserQuestion` with exactly ONE question presenting the top-level categories. Example call:
+Output the following menu as plain text, then STOP and wait for the user's next message:
 
 ```
-AskUserQuestion(
-  questions=[{
-    question: "请选择要执行的工作流类型",
-    header: "Workflow",
-    options: [
-      {label: "CLAUDE.md 文档", description: "生成或更新 CLAUDE.md 文档"},
-      {label: "API & 规则", description: "生成 OpenAPI 文档或技术栈规则"},
-      {label: "SKILL 包", description: "索引/打包 SKILL 或生成代码地图"},
-      {label: "上下文 & 记忆", description: "加载上下文、压缩会话、提取样式"}
-    ],
-    multiSelect: false
-  }]
-)
+请选择要执行的操作（输入编号或操作名）：
+
+📂 上下文管理
+  1. load        — 加载项目上下文
+  2. compact     — 压缩会话为持久化记忆
+
+📝 CLAUDE.md 文档
+  3. claude-plan           — 规划文档范围
+  4. claude-generate full  — 为所有模块生成 CLAUDE.md
+  5. claude-generate related — 仅为变更模块生成
+  6. claude-update full    — 更新所有 CLAUDE.md
+  7. claude-update related — 增量更新变更模块
+
+📡 API & 规则
+  8. swagger    — 生成 OpenAPI 文档
+  9. tech-rules — 生成技术栈规则
+
+📦 SKILL 包
+  10. skill-index — 索引并打包 SKILL
+  11. code-map    — 生成代码地图
+  12. skill-load  — 加载 SKILL 包
+
+🧠 记忆
+  13. style    — 提取代码风格模式
+  14. workflow — 归档工作流状态
 ```
 
-After the user selects a category, call `AskUserQuestion` AGAIN with the specific actions for that category:
-
-- **CLAUDE.md 文档**: options = `claude-plan` (规划范围), `claude-generate full` (全量生成), `claude-generate related` (变更模块生成), `claude-update full` (全量更新)
-- **API & 规则**: options = `swagger` (OpenAPI 文档), `tech-rules` (技术栈规则)
-- **SKILL 包**: options = `skill-index` (索引打包), `code-map` (代码地图), `skill-load` (加载 SKILL)
-- **上下文 & 记忆**: options = `load` (加载上下文), `compact` (压缩会话), `style` (样式模式), `workflow` (工作流归档)
-
-**⚠️ If AskUserQuestion returns an empty response, ask the user to type their choice directly in chat. Do NOT proceed with a default.**
+After the user replies with a number (1-14) or action name, map it to the corresponding action and proceed to Step 2.
 
 ### Step 2: Route to Skill
 
