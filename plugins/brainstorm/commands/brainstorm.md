@@ -69,7 +69,7 @@ allowed-tools:
 - `${RUN_DIR}/proposal.md`: `# Change:` title, `## Why` (brainstorm purpose), `## What Changes` (deliverables), `## Impact`
 - `${RUN_DIR}/tasks.md`: one numbered section per phase (Research, Ideation, Evaluation, Report) with `- [ ]` checkable items
 
-3. Use AskUserQuestion to confirm execution plan
+3. **⏸️ HARD STOP**: MUST call `AskUserQuestion` to confirm execution plan. Do NOT proceed until user approves.
 
 ---
 
@@ -118,7 +118,7 @@ Skill(skill="brainstorm:idea-evaluator", args="run_dir=${RUN_DIR}")
 - `${RUN_DIR}/evaluation.md` exists
 - Contains Mermaid mindmap and Top 5 ranking
 
-**Hard stop:** Use AskUserQuestion to show Top 5, confirm before proceeding
+**⏸️ HARD STOP**: MUST call `AskUserQuestion` to show Top 5 ranking. Do NOT proceed until user confirms.
 
 ---
 

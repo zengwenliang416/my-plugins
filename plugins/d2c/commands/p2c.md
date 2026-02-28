@@ -31,10 +31,12 @@ Generate executable logic code from PRD documents, enhanced with real project co
 Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
 
 **FORBIDDEN — never do this:**
+
 - MUST NOT call `TaskOutput` — this tool does not exist
 - MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
 
 **CORRECT — always use direct return:**
+
 - The result comes from the `Task` call itself, no extra step needed
 
 ### Phase 0: Init
@@ -169,6 +171,8 @@ Each `Task` call **blocks** until the teammate finishes and returns the result d
    - Write consolidated `${RUN_DIR}/logic-summary.md`
 
 ### Phase 4: Delivery [Hard Stop]
+
+**MANDATORY**: MUST call `AskUserQuestion` to present delivery summary. Do NOT skip user confirmation.
 
 1. Present delivery summary:
    - Modules covered

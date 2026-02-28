@@ -63,7 +63,7 @@ Generate UI/UX design artifacts and implementation code through Team-first orche
 
 ## Phase 2: Scenario Confirmation (Hard Stop)
 
-Use `AskUserQuestion` to confirm:
+**MANDATORY**: MUST call `AskUserQuestion` to confirm the following. Do NOT proceed until user responds:
 
 - scenario (`from_scratch` or `optimize`)
 - tech stack (`react` or `vue`)
@@ -99,7 +99,7 @@ Use `AskUserQuestion` to confirm:
 
 ## Phase 5: Variant Selection (Hard Stop)
 
-Use `AskUserQuestion` to select final variant(s) from A/B/C.
+**MANDATORY**: MUST call `AskUserQuestion` to select final variant(s) from A/B/C. Do NOT proceed until user selects.
 
 ## Phase 6-9: Design Pipeline
 

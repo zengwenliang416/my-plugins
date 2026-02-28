@@ -48,6 +48,7 @@ Run the full D2C + P2C pipeline: generate UI component code from design screensh
 5. Create `${RUN_DIR}/` directory
 6. Scaffold OpenSpec artifacts:
    - `${RUN_DIR}/proposal.md` — auto-generated change proposal:
+
      ```markdown
      # Change: D2C-Full — ${slug}
 
@@ -64,7 +65,9 @@ Run the full D2C + P2C pipeline: generate UI component code from design screensh
 
      - Affected specs: none (new artifacts only)
      ```
+
    - `${RUN_DIR}/tasks.md` — phase checklist:
+
      ```markdown
      ## 1. Init
 
@@ -104,6 +107,7 @@ Run the full D2C + P2C pipeline: generate UI component code from design screensh
      - [ ] 8.1 Present delivery summary
      - [ ] 8.2 User confirms acceptance
      ```
+
 7. Write `${RUN_DIR}/input.md` with all parameters and CHANGE_ID
 
 ### Phase 1: Design Analysis [Hard Stop]
@@ -138,7 +142,7 @@ Run the full D2C + P2C pipeline: generate UI component code from design screensh
    - Agent infers interactions, states, navigation, API needs from design
    - Agent outputs: `${RUN_DIR}/generated-prd.md`
 
-2. **[Hard Stop]** Present generated PRD summary:
+2. **[Hard Stop] MANDATORY**: MUST call `AskUserQuestion` to present generated PRD summary. Do NOT proceed until user confirms:
    - Module count, requirement count, confidence levels
    - Gaps and assumptions
    - User can: Accept / Edit / Regenerate with more description
@@ -149,6 +153,7 @@ Run the full D2C + P2C pipeline: generate UI component code from design screensh
 #### Path B: PRD Parsing (--prd provided)
 
 1. Spawn `prd-analyzer` agent:
+
    ```
    Task(subagent_type="d2c:prd-analyzer")
    ```
@@ -188,6 +193,8 @@ This phase **modifies the existing UI components** to add business logic.
    - Consolidate after all agents complete
 
 ### Phase 6: Delivery [Hard Stop]
+
+**MANDATORY**: MUST call `AskUserQuestion` to present delivery summary. Do NOT skip user confirmation.
 
 1. Present comprehensive delivery summary:
    - **D2C results**: Components generated, fidelity assessment

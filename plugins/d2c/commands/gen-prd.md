@@ -40,6 +40,7 @@ At least one source (screenshots or description) MUST be provided.
 5. Create `${RUN_DIR}/` directory
 6. Scaffold OpenSpec artifacts:
    - `${RUN_DIR}/proposal.md` — auto-generated change proposal:
+
      ```markdown
      # Change: Gen-PRD — ${slug}
 
@@ -55,7 +56,9 @@ At least one source (screenshots or description) MUST be provided.
 
      - Affected specs: none (new artifacts only)
      ```
+
    - `${RUN_DIR}/tasks.md` — phase checklist:
+
      ```markdown
      ## 1. Init
 
@@ -76,11 +79,13 @@ At least one source (screenshots or description) MUST be provided.
      - [ ] 4.1 Finalize generated-prd.md
      - [ ] 4.2 Display usage hints for /p2c or /d2c-full
      ```
+
 7. Write `${RUN_DIR}/input.md`
 
 ### Phase 1: PRD Generation
 
 1. Spawn `prd-generator` agent via Task tool:
+
    ```
    Task(subagent_type="d2c:prd-generator")
    ```
@@ -89,6 +94,8 @@ At least one source (screenshots or description) MUST be provided.
    - Agent outputs `${RUN_DIR}/generated-prd.md`
 
 ### Phase 2: User Review [Hard Stop]
+
+**MANDATORY**: MUST call `AskUserQuestion` to present PRD summary. Do NOT proceed until user confirms.
 
 1. Present generated PRD summary:
    - Module count

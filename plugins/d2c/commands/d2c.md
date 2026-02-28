@@ -41,6 +41,7 @@ Generate semantic, component-based UI code from design screenshots.
 4. Create `${RUN_DIR}/` directory
 5. Scaffold OpenSpec artifacts:
    - `${RUN_DIR}/proposal.md` — auto-generated change proposal:
+
      ```markdown
      # Change: D2C — ${slug}
 
@@ -56,7 +57,9 @@ Generate semantic, component-based UI code from design screenshots.
 
      - Affected specs: none (new artifacts only)
      ```
+
    - `${RUN_DIR}/tasks.md` — phase checklist:
+
      ```markdown
      ## 1. Init
 
@@ -86,6 +89,7 @@ Generate semantic, component-based UI code from design screenshots.
      - [ ] 6.1 Present delivery summary
      - [ ] 6.2 User confirms acceptance
      ```
+
 6. Write `${RUN_DIR}/input.md` with:
    - Screenshot paths
    - Selected tech stack
@@ -103,7 +107,7 @@ Generate semantic, component-based UI code from design screenshots.
    - Pass all screenshot images for visual analysis
    - Agent reads images and outputs `${RUN_DIR}/visual-analysis.md`
 
-2. Present analysis summary to user via `AskUserQuestion`:
+2. **⏸️ HARD STOP**: MUST call `AskUserQuestion` to present analysis summary. Do NOT proceed until user confirms.
    - Show identified component count
    - Show component tree overview
    - Show extracted color palette
@@ -137,6 +141,7 @@ Generate semantic, component-based UI code from design screenshots.
    - Read `plugins/d2c/skills/tech-stack-adapter/references/${STACK}.md`
 
 2. Spawn `ui-generator` agent via Task tool:
+
    ```
    Task(subagent_type="d2c:ui-generator")
    ```
@@ -157,6 +162,8 @@ Generate semantic, component-based UI code from design screenshots.
    - Show brief summary, proceed to delivery
 
 ### Phase 3: Delivery [Hard Stop]
+
+**MANDATORY**: MUST call `AskUserQuestion` to present delivery summary. Do NOT skip user confirmation.
 
 1. Present delivery summary:
    - Total components generated

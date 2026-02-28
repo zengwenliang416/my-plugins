@@ -80,7 +80,7 @@ allowed-tools:
    - `tasks.md`: one numbered section per phase (Init, Smell Detection, Suggestions, Impact Analysis, Execution) with `- [ ]` items
    - Mark items `[x]` as each phase completes.
 
-4. Use AskUserQuestion to confirm execution plan
+4. **⏸️ HARD STOP**: MUST call `AskUserQuestion` to confirm execution plan. Do NOT proceed until user approves.
 
 **If LEGACY=true, show legacy modernization plan**:
 
@@ -255,7 +255,7 @@ Skill(skill="refactor:impact-analyzer", args="run_dir=${RUN_DIR}")
 - Test coverage scope
 - Risk assessment (low/medium/high/critical)
 
-**⏸️ Hard stop**: Show impact analysis results, continue after user confirmation
+**⏸️ HARD STOP**: MUST call `AskUserQuestion` to show impact analysis results. Do NOT proceed until user confirms.
 
 ---
 
