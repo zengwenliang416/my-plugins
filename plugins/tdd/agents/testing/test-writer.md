@@ -9,7 +9,7 @@ tools:
   - Grep
   - SendMessage
   - mcp__auggie-mcp__codebase-retrieval
-model: sonnet
+model: opus
 color: red
 ---
 

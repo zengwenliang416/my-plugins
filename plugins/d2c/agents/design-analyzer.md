@@ -1,7 +1,7 @@
 ---
 name: design-analyzer
 description: "Visual analysis of design screenshots — extracts layout hierarchy, component boundaries, colors, spacing, typography, and interaction affordances"
-model: sonnet
+model: opus
 color: cyan
 tools:
   - Read

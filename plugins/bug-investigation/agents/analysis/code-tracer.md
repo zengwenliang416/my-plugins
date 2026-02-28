@@ -1,7 +1,7 @@
 ---
 name: code-tracer
 description: "Code path tracing and root cause identification specialist"
-model: sonnet
+model: opus
 color: blue
 allowed-tools:
   [

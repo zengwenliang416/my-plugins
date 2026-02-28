@@ -10,7 +10,7 @@ tools:
   - Glob
   - SendMessage
 memory: project
-model: sonnet
+model: opus
 color: yellow
 ---
 

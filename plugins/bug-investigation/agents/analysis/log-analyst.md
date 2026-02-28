@@ -1,7 +1,7 @@
 ---
 name: log-analyst
 description: "Log and error message analysis specialist for bug investigation"
-model: sonnet
+model: opus
 color: orange
 allowed-tools: ["Read", "Grep", "Glob", "Bash", "Write", "SendMessage"]
 ---

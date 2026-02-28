@@ -8,7 +8,7 @@ tools:
   - Grep
   - Glob
   - SendMessage
-model: sonnet
+model: opus
 color: green
 ---
 

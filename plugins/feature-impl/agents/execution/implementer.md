@@ -1,7 +1,7 @@
 ---
 name: implementer
 description: "Code implementation specialist following architectural plans"
-model: sonnet
+model: opus
 color: green
 tools:
   - Read

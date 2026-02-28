@@ -6,11 +6,11 @@ Design-to-Code and PRD-to-Code workflow for C-end (consumer-facing) AI coding. G
 
 | Agent | Color | Model | Role |
 |-------|-------|-------|------|
-| d2c:design-analyzer | cyan | sonnet | Visual analysis of design screenshots — extract layout, colors, spacing, component hierarchy |
-| d2c:ui-generator | blue | sonnet | Generate semantic UI component code adapted to target tech stack (React/Vue) |
-| d2c:prd-analyzer | green | sonnet | Parse PRD documents, structure requirements, perform intelligent chunking for complex docs |
-| d2c:logic-generator | magenta | sonnet | Generate logic code (interactions, state, routing, API calls) with project context enhancement |
-| d2c:prd-generator | yellow | sonnet | Generate structured PRD from design screenshots and/or user natural language descriptions |
+| d2c:design-analyzer | cyan | opus | Visual analysis of design screenshots — extract layout, colors, spacing, component hierarchy |
+| d2c:ui-generator | blue | opus | Generate semantic UI component code adapted to target tech stack (React/Vue) |
+| d2c:prd-analyzer | green | opus | Parse PRD documents, structure requirements, perform intelligent chunking for complex docs |
+| d2c:logic-generator | magenta | opus | Generate logic code (interactions, state, routing, API calls) with project context enhancement |
+| d2c:prd-generator | yellow | opus | Generate structured PRD from design screenshots and/or user natural language descriptions |
 
 ## Commands
 

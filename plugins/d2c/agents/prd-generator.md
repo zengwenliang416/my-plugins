@@ -1,7 +1,7 @@
 ---
 name: prd-generator
 description: "Generate structured PRD from design screenshots and/or user natural language descriptions"
-model: sonnet
+model: opus
 color: yellow
 tools:
   - Read

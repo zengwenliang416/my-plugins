@@ -11,7 +11,7 @@ tools:
   - LSP
   - Bash
 memory: project
-model: sonnet
+model: opus
 color: cyan
 ---
 

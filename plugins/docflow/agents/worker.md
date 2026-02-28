@@ -12,7 +12,7 @@ tools:
   - WebSearch
   - WebFetch
   - AskUserQuestion
-model: sonnet
+model: opus
 color: pink
 memory: project
 ---

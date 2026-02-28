@@ -1,7 +1,7 @@
 ---
 name: build-resolver
 description: "Build and TypeScript error resolution specialist"
-model: sonnet
+model: opus
 color: red
 tools:
   - Read

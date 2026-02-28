@@ -9,7 +9,7 @@ tools:
   - SendMessage
   - WebSearch
   - WebFetch
-model: sonnet
+model: opus
 color: cyan
 memory: project
 ---

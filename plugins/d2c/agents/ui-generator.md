@@ -1,7 +1,7 @@
 ---
 name: ui-generator
 description: "Generate semantic, component-based UI code from visual analysis, adapted to target tech stack (React/Vue)"
-model: sonnet
+model: opus
 color: blue
 tools:
   - Read

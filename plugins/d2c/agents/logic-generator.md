@@ -1,7 +1,7 @@
 ---
 name: logic-generator
 description: "Generate logic code (interactions, state, routing, API calls) with project codebase context enhancement to eliminate API hallucination"
-model: sonnet
+model: opus
 color: magenta
 tools:
   - Read

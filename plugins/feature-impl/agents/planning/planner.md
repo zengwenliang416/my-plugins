@@ -1,7 +1,7 @@
 ---
 name: planner
 description: "Architecture design and implementation planning specialist"
-model: sonnet
+model: opus
 color: cyan
 tools:
   - Read

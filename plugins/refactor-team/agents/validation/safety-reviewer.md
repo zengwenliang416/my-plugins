@@ -7,7 +7,7 @@ tools:
   - Glob
   - Write
   - SendMessage
-model: sonnet
+model: opus
 color: red
 ---
 

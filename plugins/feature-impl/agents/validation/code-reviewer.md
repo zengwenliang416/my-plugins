@@ -1,7 +1,7 @@
 ---
 name: code-reviewer
 description: "Code quality and security review specialist"
-model: sonnet
+model: opus
 color: blue
 tools:
   - Read

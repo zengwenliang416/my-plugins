@@ -9,7 +9,7 @@ tools:
   - SendMessage
   - mcp__auggie-mcp__codebase-retrieval
 memory: project
-model: sonnet
+model: opus
 color: green
 background: true
 ---

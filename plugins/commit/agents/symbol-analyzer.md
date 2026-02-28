@@ -5,7 +5,7 @@ tools:
   - Read
   - LSP
 memory: project
-model: sonnet
+model: opus
 color: yellow
 background: true
 ---

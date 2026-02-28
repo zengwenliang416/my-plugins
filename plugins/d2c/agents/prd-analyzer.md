@@ -1,7 +1,7 @@
 ---
 name: prd-analyzer
 description: "Parse PRD documents, extract structured requirements, and perform intelligent chunking for complex documents"
-model: sonnet
+model: opus
 color: green
 tools:
   - Read

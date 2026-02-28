@@ -10,7 +10,7 @@ allowed-tools:
     "SendMessage",
     "mcp__auggie-mcp__codebase-retrieval",
   ]
-model: sonnet
+model: opus
 color: yellow
 ---
 

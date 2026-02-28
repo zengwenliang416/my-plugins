@@ -1,7 +1,7 @@
 ---
 name: reproducer
 description: "Bug reproduction and regression test specialist"
-model: sonnet
+model: opus
 color: green
 allowed-tools: ["Read", "Write", "Edit", "Bash", "Grep", "SendMessage"]
 ---

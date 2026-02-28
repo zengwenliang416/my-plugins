@@ -1,7 +1,7 @@
 ---
 name: tdd-guide
 description: "Test-Driven Development specialist ensuring comprehensive test coverage"
-model: sonnet
+model: opus
 color: magenta
 tools:
   - Read

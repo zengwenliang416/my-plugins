@@ -7,7 +7,7 @@ tools:
   - Glob
   - Write
   - mcp__auggie-mcp__codebase-retrieval
-model: sonnet
+model: opus
 color: orange
 ---
 

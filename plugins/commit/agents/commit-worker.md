@@ -6,7 +6,7 @@ tools:
   - Read
   - Write
 memory: project
-model: sonnet
+model: opus
 color: green
 isolation: worktree
 ---

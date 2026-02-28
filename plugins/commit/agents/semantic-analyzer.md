@@ -5,7 +5,7 @@ tools:
   - Read
   - mcp__auggie-mcp__codebase-retrieval
 memory: project
-model: sonnet
+model: opus
 color: magenta
 background: true
 ---

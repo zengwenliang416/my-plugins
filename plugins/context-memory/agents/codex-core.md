@@ -7,7 +7,7 @@ tools:
   - Skill
   - SendMessage
 memory: project
-model: sonnet
+model: opus
 color: blue
 ---
 

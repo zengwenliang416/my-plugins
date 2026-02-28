@@ -7,7 +7,7 @@ tools:
   - Bash
   - Write
   - SendMessage
-model: sonnet
+model: opus
 color: yellow
 ---
 

@@ -7,7 +7,7 @@ tools:
   - Grep
   - Bash
 memory: project
-model: sonnet
+model: opus
 color: cyan
 ---
 

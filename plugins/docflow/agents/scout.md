@@ -11,7 +11,7 @@ tools:
   - SendMessage
   - WebSearch
   - WebFetch
-model: sonnet
+model: opus
 color: blue
 memory: project
 ---
