@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove `--approval-mode plan` from invoke-gemini.ts — headless mode works without it (context-memory)
 - Remove Claude inline fallback from gemini-cli and codex-cli — fail-fast if Gemini unavailable (context-memory)
-- Enforce MANDATORY Hard Stop for AskUserQuestion across all plugins to prevent models from skipping menus (brainstorm, d2c, refactor, ui-design)
+- Enforce MANDATORY Hard Stop for AskUserQuestion across all plugins to prevent models from skipping menus (brainstorm, d2c, refactor, ui-design, tpd)
 - Disambiguate skill/agent references in doc-generation skills to prevent LLM misrouting (context-memory)
 - Enforce external model usage with mandatory constraint blocks in doc-generation skills (context-memory)
 
