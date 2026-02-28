@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Disambiguate skill/agent references in doc-generation skills to prevent LLM misrouting (context-memory)
+- Enforce external model usage with mandatory constraint blocks in doc-generation skills (context-memory)
+
 ### Changed
 
 - Harden investigator agent with mandatory behavior rules and fallback report template (docflow)
