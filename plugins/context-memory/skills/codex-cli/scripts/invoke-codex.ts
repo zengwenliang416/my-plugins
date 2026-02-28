@@ -3,7 +3,7 @@
  * Codex CLI wrapper for context-memory skill execution.
  * Calls `codex exec` directly in non-interactive mode.
  * Usage:
- *   npx tsx invoke-codex.ts --prompt "<prompt>" [--role <role>] [--workdir <path>] [--sandbox <mode>]
+ *   npx tsx invoke-codex.ts --prompt "<prompt>" [--role <role>] [--workdir <path>] [--sandbox <mode>] [--session <id>]
  */
 
 import { spawnSync } from "child_process";
@@ -16,6 +16,7 @@ interface ParsedArgs {
   prompt: string;
   workdir: string;
   sandbox: string;
+  session: string;
 }
 
 const __filename = fileURLToPath(import.meta.url);
@@ -27,6 +28,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     prompt: "",
     workdir: "",
     sandbox: "read-only",
+    session: "",
   };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -34,9 +36,10 @@ function parseArgs(argv: string[]): ParsedArgs {
     else if (arg === "--prompt") parsed.prompt = argv[++i] || "";
     else if (arg === "--workdir") parsed.workdir = argv[++i] || "";
     else if (arg === "--sandbox") parsed.sandbox = argv[++i] || parsed.sandbox;
+    else if (arg === "--session") parsed.session = argv[++i] || "";
     else if (arg === "--help" || arg === "-h") {
       console.log(
-        "Usage: npx tsx invoke-codex.ts --prompt <prompt> [--role <role>] [--workdir <path>] [--sandbox <mode>]",
+        "Usage: npx tsx invoke-codex.ts --prompt <prompt> [--role <role>] [--workdir <path>] [--sandbox <mode>] [--session <id>]",
       );
       process.exit(0);
     }
@@ -62,6 +65,7 @@ function main(): void {
 
   const args = ["exec", finalPrompt, "-s", parsed.sandbox];
   if (parsed.workdir) args.push("-C", parsed.workdir);
+  if (parsed.session) args.push("--session", parsed.session);
   const result = spawnSync("codex", args, { stdio: "inherit" });
 
   if (result.error) throw result.error;

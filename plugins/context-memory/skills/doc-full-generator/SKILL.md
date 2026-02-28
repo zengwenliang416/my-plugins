@@ -37,21 +37,48 @@ Generate CLAUDE.md files for all project modules from scratch. Uses the 3-layer 
 
 ## Critical Constraint: External Model Required
 
-**You MUST use `Skill("context-memory:gemini-cli", ...)` or `Skill("context-memory:codex-cli", ...)` for ALL CLAUDE.md content generation.** Do NOT generate CLAUDE.md content inline — your role is to prepare prompts and route to external models.
+**You MUST call `gemini` or `codex` CLI directly via Bash for ALL CLAUDE.md content generation.** Do NOT generate content inline or spawn generic agents — your role is to prepare prompts and call external model CLIs.
+
+### Direct CLI Invocation (Mandatory)
+
+For each module, write the full prompt to a file, then call the CLI:
+
+**Gemini (primary):**
+
+```bash
+gemini -p "$(cat ${run_dir}/prompts/${module_name}.md)" --approval-mode plan -o text
+```
+
+**Codex (fallback):**
+
+```bash
+codex exec "$(cat ${run_dir}/prompts/${module_name}.md)" -s read-only
+```
 
 Fallback chain (strict order):
 
-1. `Skill("context-memory:gemini-cli", {role: "doc-generator", ...})` — primary
-2. `Skill("context-memory:codex-cli", {role: "doc-generator", ...})` — if gemini fails
-3. Claude inline — **ONLY if BOTH external models fail**, and you MUST log the failure reason
+1. `gemini` CLI via Bash — primary
+2. `codex` CLI via Bash — if gemini fails (non-zero exit)
+3. Claude inline — **ONLY if BOTH CLI calls fail**, and you MUST log the failure reason
+
+### Role Prompt (prepend to every prompt)
+
+**For Gemini:**
+
+> You generate comprehensive CLAUDE.md documentation for code modules. Start with `# {module_name}`. Use tables for file listings and API surfaces. Include file path references (`path:line`). Keep descriptions concise — one sentence per item. Do not invent APIs or features not in the source code. Every exported symbol and every file must be documented.
+
+**For Codex:**
+
+> You generate CLAUDE.md documentation focusing on implementation details and code structure. Start with `# {module_name}`. Use tables. Include file path references. Emphasize code patterns, error handling, data flow, test coverage, and build config. Do not invent information.
 
 ### FORBIDDEN Anti-Patterns
 
-| ❌ Forbidden                                             | ✅ Required Instead                                            |
-| -------------------------------------------------------- | -------------------------------------------------------------- |
-| Spawning `general-purpose` agents to generate CLAUDE.md  | Call `Skill("context-memory:gemini-cli", ...)` for each module |
-| Batching modules into generic agents for inline gen      | Process per module through gemini-cli/codex-cli skills         |
-| Generating CLAUDE.md content without external model call | ALWAYS route through gemini-cli or codex-cli first             |
+| ❌ Forbidden                                            | ✅ Required Instead                                     |
+| ------------------------------------------------------- | ------------------------------------------------------- |
+| Spawning `general-purpose` agents to generate CLAUDE.md | Call `gemini`/`codex` CLI directly via Bash              |
+| Batching modules into generic agents for inline gen     | Process per module through direct CLI calls              |
+| Generating CLAUDE.md content without external model call | ALWAYS call `gemini` or `codex` CLI first               |
+| Using `Skill()` nesting to invoke gemini-cli/codex-cli  | Use `Bash("gemini -p ...")` directly                    |
 
 ## CLAUDE.md Template (standard)
 
@@ -95,14 +122,13 @@ Each generated CLAUDE.md should contain:
 3. For each module in current layer:
    a. Use `mcp__auggie-mcp__codebase-retrieval` to understand module contents.
    b. Read key files (entry points, exports, config).
-   c. Build generation prompt including:
-   - Module file structure
-   - Key file contents (summarized)
-   - Lower-layer CLAUDE.md files (for cross-references)
-   - Template structure
-     d. Call `Skill("context-memory:gemini-cli", {role: "doc-generator", prompt: <generation_prompt>, run_dir, session_id})` as primary generator.
-     e. If gemini fails, fall back to `Skill("context-memory:codex-cli", {role: "doc-generator", prompt: <generation_prompt>, run_dir, session_id})`.
-     f. Write result to `${run_dir}/generated-{module_name}.md`.
+   c. Build generation prompt including role prompt (see above) + module file structure + key file contents (summarized) + lower-layer CLAUDE.md files (for cross-references) + template structure.
+   d. Write prompt to `${run_dir}/prompts/${module_name}.md` via Write tool.
+   e. Call Gemini CLI directly: `Bash("gemini -p \"$(cat ${run_dir}/prompts/${module_name}.md)\" --approval-mode plan -o text")`.
+   f. If gemini fails (non-zero exit), call Codex CLI: `Bash("codex exec \"$(cat ${run_dir}/prompts/${module_name}.md)\" -s read-only")`.
+   g. If both fail, generate inline (last resort) and log failure reason.
+   h. Write result to `${run_dir}/generated-{module_name}.md`.
+   **Parallelism:** Multiple modules in the same layer MAY be processed in parallel Bash calls.
 
 ### Phase 3: Cross-Reference Pass
 

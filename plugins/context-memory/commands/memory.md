@@ -35,13 +35,15 @@ When invoked without arguments, present this interactive menu via `AskUserQuesti
 
 ### Category 2: CLAUDE.md
 
-| Action                    | Skill                     | Description                  |
-| ------------------------- | ------------------------- | ---------------------------- |
-| `claude-plan`             | `doc-planner`             | Plan documentation scope     |
-| `claude-generate full`    | `doc-full-generator`      | Generate all CLAUDE.md files |
-| `claude-generate related` | `doc-related-generator`   | Generate for changed modules |
-| `claude-update full`      | `doc-full-updater`        | Update all CLAUDE.md         |
-| `claude-update related`   | `doc-incremental-updater` | Update changed modules       |
+| Action                    | Routing                         | Description                  |
+| ------------------------- | ------------------------------- | ---------------------------- |
+| `claude-plan`             | Skill: `doc-planner`            | Plan documentation scope     |
+| `claude-generate full`    | **Step 3 team workflow**        | Generate all CLAUDE.md files |
+| `claude-generate related` | **Step 3 team workflow**        | Generate for changed modules |
+| `claude-update full`      | **Step 3 team workflow**        | Update all CLAUDE.md         |
+| `claude-update related`   | **Step 3 team workflow**        | Update changed modules       |
+
+**⚠️ `claude-generate` and `claude-update` actions MUST go through Step 3 (agent team workflow). Do NOT call `doc-full-generator`, `doc-related-generator`, `doc-full-updater`, or `doc-incremental-updater` skills directly — they are reference specs only.**
 
 ### Category 3: API & Rules
 
@@ -103,10 +105,10 @@ Map selected action to the corresponding skill invocation:
 action=load → Skill("context-memory:context-loader", {task, run_dir})
 action=compact → Skill("context-memory:session-compactor", {run_dir})
 action=claude-plan → Skill("context-memory:doc-planner", {run_dir})
-action=claude-generate full → launch team workflow (see Step 3)
-action=claude-generate related → launch team workflow (see Step 3)
-action=claude-update full → launch team workflow (see Step 3)
-action=claude-update related → launch team workflow (see Step 3)
+action=claude-generate full → MANDATORY: go to Step 3 (team workflow with gemini-core + codex-core agents)
+action=claude-generate related → MANDATORY: go to Step 3 (team workflow with gemini-core + codex-core agents)
+action=claude-update full → MANDATORY: go to Step 3 (team workflow with gemini-core + codex-core agents)
+action=claude-update related → MANDATORY: go to Step 3 (team workflow with gemini-core + codex-core agents)
 action=swagger → Skill("context-memory:swagger-generator", {run_dir})
 action=tech-rules → Skill("context-memory:tech-rules-generator", {run_dir})
 action=skill-index → Skill("context-memory:skill-indexer", {run_dir})
@@ -118,6 +120,12 @@ action=workflow → Skill("context-memory:workflow-memory", {run_dir})
 ```
 
 ### Step 3: Multi-Model Workflows (for claude-generate/claude-update actions)
+
+**⛔ STOP — Read this before proceeding.**
+
+This step uses a TEAM of typed agents to call external models (Gemini + Codex CLI). You are the orchestrator — you MUST NOT generate CLAUDE.md content yourself. You prepare prompts and route them through the agents below. The agents call gemini-cli/codex-cli skills which invoke `gemini` and `codex` CLI binaries.
+
+**Do NOT call `doc-full-generator` / `doc-related-generator` / `doc-full-updater` / `doc-incremental-updater` skills directly. Those are reference specs for prompt structure only.**
 
 #### MANDATORY Agent Type Restrictions
 
@@ -142,22 +150,41 @@ You MUST ONLY invoke these agent types in this workflow.
 
 For `claude-generate` and `claude-update` actions, orchestrate via parallel `Agent` calls:
 
-1. **Scan**: `Task(subagent_type="context-memory:project-scanner", name="scanner", prompt="run_dir=${run_dir} mode=scan")` → `${run_dir}/modules.json`
-2. **Generate** (per module layer, 3→2→1):
-   - Try **primary path** — launch parallel Task calls in a single message:
-     - `Task(subagent_type="context-memory:gemini-core", name="gemini-gen", prompt="run_dir=${run_dir} role=doc-generator module=${module}")`
-     - `Task(subagent_type="context-memory:codex-core", name="codex-gen", prompt="run_dir=${run_dir} role=doc-generator module=${module}")`
-     - Both run concurrently. Each blocks until completion.
-     - Collect `${run_dir}/gemini-docs-{module}.md` and `${run_dir}/codex-docs-{module}.md`
-   - If **both fail** → **fallback**: Claude lead generates docs inline using Read + project context
+1. **Scan**: `Agent(subagent_type="context-memory:project-scanner", name="scanner", prompt="run_dir=${run_dir} mode=scan")` → `${run_dir}/modules.json`
+
+2. **Generate** — process layers in order (3→2→1). For EACH layer, launch a pair of agents in parallel (single message):
+
+   ```
+   # Launch both agents for the current layer in ONE message (parallel execution)
+   Agent(
+     subagent_type="context-memory:gemini-core",
+     name="gemini-layer-{N}",
+     prompt="run_dir=${run_dir} role=doc-generator modules=[list of modules in layer {N}]"
+   )
+   Agent(
+     subagent_type="context-memory:codex-core",
+     name="codex-layer-{N}",
+     prompt="run_dir=${run_dir} role=doc-generator modules=[list of modules in layer {N}]"
+   )
+   ```
+
+   - Each agent processes ALL modules in its layer sequentially (calling gemini-cli/codex-cli skill per module).
+   - Both agents run concurrently for the same layer.
+   - Wait for both to complete before processing the next layer (lower-layer docs inform upper layers).
+   - Outputs: `${run_dir}/gemini-docs-{module}.md` and `${run_dir}/codex-docs-{module}.md`
+   - If **both fail** for a module → fallback: Claude lead generates inline using Read + project context
    - If **one succeeds** → use the successful output as sole source
+
 3. **Merge**: For each module, Claude lead reads available outputs and produces `${run_dir}/merged-docs-{module}.md`:
    - Compare structure, completeness, and accuracy
    - Take the best sections from each source
-   - Ensure consistent format: sections, code examples, dependency notes
-4. **Write**: `Task(subagent_type="context-memory:doc-worker", name="writer", prompt="run_dir=${run_dir} plan=write-claude-md")` reads `merged-docs-{module}.md` → writes `{module}/CLAUDE.md`
-5. **Audit**: `Task(subagent_type="context-memory:codex-core", name="auditor", prompt="run_dir=${run_dir} role=auditor")` → `${run_dir}/codex-audit.md`
+   - Ensure consistent format
+
+4. **Write**: `Agent(subagent_type="context-memory:doc-worker", name="writer", prompt="run_dir=${run_dir} plan=write-claude-md")` reads `merged-docs-{module}.md` → writes `{module}/CLAUDE.md`
+
+5. **Audit**: `Agent(subagent_type="context-memory:codex-core", name="auditor", prompt="run_dir=${run_dir} role=auditor")` → `${run_dir}/codex-audit.md`
    - If auditor unavailable, Claude lead performs inline quality review
+
 6. **Summary**: Report artifacts created and audit results
 
 #### Fallback Chain

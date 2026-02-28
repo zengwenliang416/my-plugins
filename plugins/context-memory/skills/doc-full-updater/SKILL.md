@@ -37,21 +37,52 @@ Update all project CLAUDE.md files using multi-model analysis (Codex + Gemini), 
 
 ## Critical Constraint: External Model Required
 
-**You MUST use `Skill("context-memory:gemini-cli", ...)` and `Skill("context-memory:codex-cli", ...)` for ALL CLAUDE.md content generation and auditing.** Do NOT generate or update CLAUDE.md content inline — your role is to prepare prompts, route to external models, and merge their outputs.
+**You MUST call `gemini` and `codex` CLI directly via Bash for ALL CLAUDE.md content generation and auditing.** Do NOT generate or update content inline or spawn generic agents — your role is to prepare prompts, call external model CLIs, and merge their outputs.
+
+### Direct CLI Invocation (Mandatory)
+
+**Gemini + Codex in parallel (preferred):**
+
+```bash
+# Run both in parallel Bash calls
+gemini -p "$(cat ${run_dir}/prompts/${module_name}.md)" --approval-mode plan -o text
+codex exec "$(cat ${run_dir}/prompts/${module_name}.md)" -s read-only
+```
+
+**Codex for auditing:**
+
+```bash
+codex exec "$(cat ${run_dir}/prompts/audit.md)" -s read-only
+```
 
 Fallback chain (strict order):
 
-1. Both `gemini-cli` + `codex-cli` in parallel — preferred
-2. Single model — if one fails
-3. Claude inline — **ONLY if BOTH external models fail**, and you MUST log the failure reason
+1. Both `gemini` + `codex` CLI in parallel — preferred
+2. Single CLI — if one fails
+3. Claude inline — **ONLY if BOTH CLI calls fail**, and you MUST log the failure reason
+
+### Role Prompt (prepend to every prompt)
+
+**For Gemini (doc-generator):**
+
+> You generate comprehensive CLAUDE.md documentation for code modules. Start with `# {module_name}`. Use tables for file listings and API surfaces. Include file path references (`path:line`). Keep descriptions concise. Do not invent APIs or features not in the source code.
+
+**For Codex (doc-generator):**
+
+> You generate CLAUDE.md documentation focusing on implementation details and code structure. Start with `# {module_name}`. Use tables. Include file path references. Emphasize code patterns, error handling, data flow, test coverage, and build config. Do not invent information.
+
+**For Codex (auditor):**
+
+> You audit CLAUDE.md documentation for quality and completeness. Check: every exported symbol documented, every file listed, dependencies accurate, no invented information. Output JSON with findings array.
 
 ### FORBIDDEN Anti-Patterns
 
-| ❌ Forbidden                                             | ✅ Required Instead                                                |
-| -------------------------------------------------------- | ------------------------------------------------------------------ |
-| Spawning `general-purpose` agents to update CLAUDE.md    | Call `Skill("context-memory:gemini-cli/codex-cli", ...)` per module |
-| Batching modules into generic agents for inline gen      | Process per module through gemini-cli + codex-cli skills           |
-| Generating CLAUDE.md content without external model call | ALWAYS route through gemini-cli or codex-cli first                 |
+| ❌ Forbidden                                            | ✅ Required Instead                                     |
+| ------------------------------------------------------- | ------------------------------------------------------- |
+| Spawning `general-purpose` agents to update CLAUDE.md   | Call `gemini`/`codex` CLI directly via Bash              |
+| Batching modules into generic agents for inline gen     | Process per module through direct CLI calls              |
+| Generating CLAUDE.md content without external model call | ALWAYS call `gemini` or `codex` CLI first               |
+| Using `Skill()` nesting to invoke gemini-cli/codex-cli  | Use `Bash("gemini -p ...")` directly                    |
 
 ## Architecture
 
@@ -59,12 +90,12 @@ Fallback chain (strict order):
 module-discovery → modules.json
     ↓
 For each layer (3→2→1):
-    ├─ codex-core(doc-generator) ─┐ PARALLEL
-    └─ gemini-core(doc-generator) ─┘
+    ├─ Bash: gemini -p "..." ─┐ PARALLEL
+    └─ Bash: codex exec "..." ─┘
     → Claude merges best output
-    → doc-worker writes CLAUDE.md
+    → Write CLAUDE.md
     ↓
-codex-core(auditor) → quality review
+Bash: codex exec "<audit prompt>" → quality review
 ```
 
 ## Steps
@@ -84,7 +115,10 @@ codex-core(auditor) → quality review
    - Current CLAUDE.md content (if exists)
    - Module file list and structure
    - Already-updated lower-layer CLAUDE.md files (for cross-references)
-     d. Call both `Skill("context-memory:codex-cli", {role: "doc-generator", prompt: <update_prompt>, run_dir, session_id})` and `Skill("context-memory:gemini-cli", {role: "doc-generator", prompt: <update_prompt>, run_dir, session_id})` in parallel.
+     d. Write prompt to `${run_dir}/prompts/${module_name}.md` via Write tool.
+     e. Call both CLIs in parallel Bash calls:
+        - `Bash("gemini -p \"$(cat ${run_dir}/prompts/${module_name}.md)\" --approval-mode plan -o text")`
+        - `Bash("codex exec \"$(cat ${run_dir}/prompts/${module_name}.md)\" -s read-only")`
      e. Merge outputs: take the more complete version, supplement with unique details from the other.
      f. Write merged content to `${run_dir}/merged-docs-{module_name}.md`.
 
@@ -95,7 +129,7 @@ codex-core(auditor) → quality review
 
 ### Phase 4: Quality Audit
 
-7. Call `Skill("context-memory:codex-cli", {role: "auditor", prompt: <audit_prompt>, run_dir, session_id})` to review all generated CLAUDE.md files.
+7. Write audit prompt to `${run_dir}/prompts/audit.md` and call `Bash("codex exec \"$(cat ${run_dir}/prompts/audit.md)\" -s read-only")` to review all generated CLAUDE.md files.
 8. Write audit report to `${run_dir}/audit-report.md`.
 9. If audit finds critical issues, flag them but do not auto-fix.
 

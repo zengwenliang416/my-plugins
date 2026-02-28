@@ -73,8 +73,8 @@ Skill("context-memory:module-discovery", {run_dir: "openspec/changes/my-change/"
 | ------------------ | ---------------------------------------------------- |
 | `module-discovery` | Scan project tree, classify modules, group by layer  |
 | `change-detector`  | Git diff to affected modules with impact propagation |
-| `codex-cli`        | Codex wrapper via codeagent-wrapper                  |
-| `gemini-cli`       | Gemini wrapper via codeagent-wrapper                 |
+| `codex-cli`        | Codex wrapper via CLI subprocess                     |
+| `gemini-cli`       | Gemini wrapper via CLI subprocess                    |
 
 ## Agent Team
 
@@ -85,20 +85,25 @@ Skill("context-memory:module-discovery", {run_dir: "openspec/changes/my-change/"
 
 ## Multi-Model Pipeline
 
+Two invocation paths:
+
+### Path A: Direct CLI (doc generation skills)
+
 ```
-Command (memory.md)
-  → Agent (gemini-core / codex-core)
-    → Skill (gemini-cli / codex-cli)
-      → Script (invoke-gemini.ts / invoke-codex.ts)
-        → codeagent-wrapper
-          → External Model (Gemini / Codex)
+Skill (doc-full-generator / doc-*-updater / doc-related-generator)
+  → Build prompt + Write to file
+    → Bash: gemini -p "$(cat prompt.md)" --approval-mode plan -o text
+    → Bash: codex exec "$(cat prompt.md)" -s read-only
 ```
 
-Each skill includes:
+### Path B: Agent → Skill → Script (other skills)
 
-- Role-specific prompt templates in `references/roles/{role}.md`
-- 3-step workflow: Build Prompt → Call Script → Capture Output
-- Constraints table enforcing script invocation (no inline generation)
+```
+Agent (gemini-core / codex-core)
+  → Skill (gemini-cli / codex-cli)
+    → Script (invoke-gemini.ts / invoke-codex.ts)
+      → CLI: gemini / codex
+```
 
 ## Multi-Model Fallback
 

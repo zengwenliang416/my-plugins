@@ -3,7 +3,7 @@
  * Gemini CLI wrapper for context-memory skill execution.
  * Calls `gemini` directly in non-interactive (headless) mode.
  * Usage:
- *   npx tsx invoke-gemini.ts --prompt "<prompt>" [--role <role>] [--workdir <path>]
+ *   npx tsx invoke-gemini.ts --prompt "<prompt>" [--role <role>] [--workdir <path>] [--session <id>]
  */
 
 import { spawnSync } from "child_process";
@@ -15,21 +15,23 @@ interface ParsedArgs {
   role: string;
   prompt: string;
   workdir: string;
+  session: string;
 }
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 function parseArgs(argv: string[]): ParsedArgs {
-  const parsed: ParsedArgs = { role: "doc-generator", prompt: "", workdir: "" };
+  const parsed: ParsedArgs = { role: "doc-generator", prompt: "", workdir: "", session: "" };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === "--role") parsed.role = argv[++i] || parsed.role;
     else if (arg === "--prompt") parsed.prompt = argv[++i] || "";
     else if (arg === "--workdir") parsed.workdir = argv[++i] || "";
+    else if (arg === "--session") parsed.session = argv[++i] || "";
     else if (arg === "--help" || arg === "-h") {
       console.log(
-        "Usage: npx tsx invoke-gemini.ts --prompt <prompt> [--role <role>] [--workdir <path>]",
+        "Usage: npx tsx invoke-gemini.ts --prompt <prompt> [--role <role>] [--workdir <path>] [--session <id>]",
       );
       process.exit(0);
     }
@@ -54,6 +56,7 @@ function main(): void {
     : parsed.prompt;
 
   const args = ["-p", finalPrompt, "--approval-mode", "plan", "-o", "text"];
+  if (parsed.session) args.push("--session", parsed.session);
   const result = spawnSync("gemini", args, {
     stdio: "inherit",
     cwd: parsed.workdir || undefined,

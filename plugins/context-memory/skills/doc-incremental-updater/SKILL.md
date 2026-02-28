@@ -36,21 +36,41 @@ Update only the CLAUDE.md files affected by recent code changes. Uses change-det
 
 ## Critical Constraint: External Model Required
 
-**You MUST use `Skill("context-memory:codex-cli", ...)` and/or `Skill("context-memory:gemini-cli", ...)` for CLAUDE.md content generation.** Do NOT generate CLAUDE.md content inline (except for `config` change type which permits inline updates).
+**You MUST call `gemini` and/or `codex` CLI directly via Bash for CLAUDE.md content generation.** Do NOT generate content inline or spawn generic agents (except for `config` change type which permits inline updates).
+
+### Direct CLI Invocation (Mandatory)
+
+**For `api` changes (both in parallel):**
+
+```bash
+gemini -p "$(cat ${run_dir}/prompts/${module_name}.md)" --approval-mode plan -o text
+codex exec "$(cat ${run_dir}/prompts/${module_name}.md)" -s read-only
+```
+
+**For `internal` changes (codex only, faster):**
+
+```bash
+codex exec "$(cat ${run_dir}/prompts/${module_name}.md)" -s read-only
+```
 
 Fallback chain (strict order):
 
-1. Both `codex-cli` + `gemini-cli` in parallel — for `api` changes
-2. `codex-cli` only — for `internal` changes (faster)
-3. Claude inline — **ONLY for `config` changes**, or if BOTH external models fail (log failure reason)
+1. Both `gemini` + `codex` CLI in parallel — for `api` changes
+2. `codex` CLI only — for `internal` changes (faster)
+3. Claude inline — **ONLY for `config` changes**, or if BOTH CLI calls fail (log failure reason)
+
+### Role Prompt (prepend to every prompt)
+
+> You update CLAUDE.md documentation based on code changes. Preserve existing structure and sections. Only modify sections affected by the diff. Start with `# {module_name}`. Use tables. Include file path references. Do not invent information.
 
 ### FORBIDDEN Anti-Patterns
 
-| ❌ Forbidden                                             | ✅ Required Instead                                                |
-| -------------------------------------------------------- | ------------------------------------------------------------------ |
-| Spawning `general-purpose` agents to update CLAUDE.md    | Call `Skill("context-memory:codex-cli/gemini-cli", ...)` per module |
-| Batching modules into generic agents for inline gen      | Process per module through codex-cli + gemini-cli skills           |
-| Using Claude inline for `api`/`internal` change types    | ALWAYS use external models for non-config changes                  |
+| ❌ Forbidden                                            | ✅ Required Instead                                     |
+| ------------------------------------------------------- | ------------------------------------------------------- |
+| Spawning `general-purpose` agents to update CLAUDE.md   | Call `gemini`/`codex` CLI directly via Bash              |
+| Batching modules into generic agents for inline gen     | Process per module through direct CLI calls              |
+| Using Claude inline for `api`/`internal` change types   | ALWAYS call external model CLIs for non-config changes   |
+| Using `Skill()` nesting to invoke gemini-cli/codex-cli  | Use `Bash("gemini -p ...")` directly                    |
 
 ## Architecture
 
@@ -58,8 +78,8 @@ Fallback chain (strict order):
 change-detector → changed-modules.json
     ↓
 For each changed/impacted module:
-    ├─ Skill:codex-cli(doc-generator) ─┐ PARALLEL
-    └─ Skill:gemini-cli(doc-generator) ─┘
+    ├─ Bash: gemini -p "..." ─┐ PARALLEL (api changes)
+    └─ Bash: codex exec "..." ─┘
     → Claude merges incremental diff
     → Write updated CLAUDE.md
 ```
@@ -81,8 +101,12 @@ For each changed/impacted module:
    - Current CLAUDE.md content
    - Specific changes made (diff summary)
    - Change type (api, internal, config, test)
-     d. For `api` changes: call both `Skill("context-memory:codex-cli", {role: "doc-generator", ...})` and `Skill("context-memory:gemini-cli", {role: "doc-generator", ...})`.
-     e. For `internal` changes: call `Skill("context-memory:codex-cli", {role: "doc-generator", ...})` only (faster).
+     d. Write prompt to `${run_dir}/prompts/${module_name}.md` via Write tool.
+     e. For `api` changes: call both CLIs in parallel Bash calls:
+        - `Bash("gemini -p \"$(cat ${run_dir}/prompts/${module_name}.md)\" --approval-mode plan -o text")`
+        - `Bash("codex exec \"$(cat ${run_dir}/prompts/${module_name}.md)\" -s read-only")`
+     f. For `internal` changes: call Codex only:
+        - `Bash("codex exec \"$(cat ${run_dir}/prompts/${module_name}.md)\" -s read-only")`
      f. For `config` changes: use Claude inline (simple updates).
      g. For `test` changes: skip CLAUDE.md update (tests don't affect docs).
 
