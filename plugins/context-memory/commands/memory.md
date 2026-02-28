@@ -19,31 +19,33 @@ Single entry point for all context-memory workflows. Routes to the appropriate s
 ## Required Constraints
 
 - All file writes go to `openspec/changes/{run_id}/` or `.claude/memory/`
-- Multi-model outputs are reviewed by Claude before delivery
+- Gemini model outputs are reviewed by Claude before delivery
 - Session IDs are preserved for multi-turn model interactions
 
 ## Menu Structure
 
-When invoked without arguments, present this interactive menu via `AskUserQuestion`:
+When invoked without arguments, present this interactive menu via `AskUserQuestion`.
 
-### Category 1: Context
+### Category 1: Context & Memory
 
-| Action    | Skill               | Description                            |
-| --------- | ------------------- | -------------------------------------- |
-| `load`    | `context-loader`    | Load project context for current task  |
-| `compact` | `session-compactor` | Compact session into persistent memory |
+| Action     | Skill               | Description                            |
+| ---------- | ------------------- | -------------------------------------- |
+| `load`     | `context-loader`    | Load project context for current task  |
+| `compact`  | `session-compactor` | Compact session into persistent memory |
+| `style`    | `style-memory`      | Extract style patterns                 |
+| `workflow` | `workflow-memory`   | Archive workflow state                 |
 
 ### Category 2: CLAUDE.md
 
-| Action                    | Routing                         | Description                  |
-| ------------------------- | ------------------------------- | ---------------------------- |
-| `claude-plan`             | Skill: `doc-planner`            | Plan documentation scope     |
-| `claude-generate full`    | **Step 3 team workflow**        | Generate all CLAUDE.md files |
-| `claude-generate related` | **Step 3 team workflow**        | Generate for changed modules |
-| `claude-update full`      | **Step 3 team workflow**        | Update all CLAUDE.md         |
-| `claude-update related`   | **Step 3 team workflow**        | Update changed modules       |
+| Action                    | Routing                  | Description                  |
+| ------------------------- | ------------------------ | ---------------------------- |
+| `claude-plan`             | Skill: `doc-planner`     | Plan documentation scope     |
+| `claude-generate full`    | **Step 4 Gemini workflow** | Generate all CLAUDE.md files |
+| `claude-generate related` | **Step 4 Gemini workflow** | Generate for changed modules |
+| `claude-update full`      | **Step 4 Gemini workflow** | Update all CLAUDE.md         |
+| `claude-update related`   | **Step 4 Gemini workflow** | Update changed modules       |
 
-**⚠️ `claude-generate` and `claude-update` actions MUST go through Step 3 (agent team workflow). Do NOT call `doc-full-generator`, `doc-related-generator`, `doc-full-updater`, or `doc-incremental-updater` skills directly — they are reference specs only.**
+**`claude-generate` and `claude-update` actions MUST go through Step 4 (Gemini agent workflow). Do NOT call `doc-full-generator`, `doc-related-generator`, `doc-full-updater`, or `doc-incremental-updater` skills directly — they are reference specs only.**
 
 ### Category 3: API & Rules
 
@@ -60,21 +62,54 @@ When invoked without arguments, present this interactive menu via `AskUserQuesti
 | `code-map`    | `code-map-generator` | Generate code maps       |
 | `skill-load`  | `skill-loader`       | Load SKILL packages      |
 
-### Category 5: Memory
-
-| Action     | Skill             | Description            |
-| ---------- | ----------------- | ---------------------- |
-| `style`    | `style-memory`    | Extract style patterns |
-| `workflow` | `workflow-memory` | Archive workflow state |
-
 ## Steps
 
-### Step 0: Parse Arguments
+### Step 1: Determine Action
+
+If an `action` argument is provided, skip directly to Step 2.
+
+Otherwise, present the interactive menu using `AskUserQuestion`:
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "Which workflow do you want to run?",
+    header: "Workflow",
+    multiSelect: false,
+    options: [
+      { label: "Context & Memory", description: "Load context, compact session, extract style, archive workflow" },
+      { label: "CLAUDE.md", description: "Plan, generate, or update CLAUDE.md documentation" },
+      { label: "API & Rules", description: "Generate OpenAPI docs or tech stack rules" },
+      { label: "SKILL Package", description: "Index skills, generate code maps, load packages" }
+    ]
+  }]
+})
+```
+
+After user selects a category, ask a follow-up question to pick the specific action within that category. For example, if user selects "Context & Memory":
+
+```
+AskUserQuestion({
+  questions: [{
+    question: "Which context/memory action?",
+    header: "Action",
+    multiSelect: false,
+    options: [
+      { label: "load", description: "Load project context for current task" },
+      { label: "compact", description: "Compact session into persistent memory" },
+      { label: "style", description: "Extract style patterns" },
+      { label: "workflow", description: "Archive workflow state" }
+    ]
+  }]
+})
+```
+
+### Step 2: Setup Workspace
 
 ```bash
-# If --run-id provided, use as CHANGE_ID (resume mode)
-# Otherwise derive from action: kebab-case
+# Derive run_id from selected action
 # Examples: "memory-doc-generation", "memory-style-extraction"
+# If --run-id provided, use as CHANGE_ID (resume mode)
 # Fallback: "memory-$(date +%Y%m%d-%H%M%S)"
 run_id="${args[--run-id]:-memory-${slug_from_action}}"
 run_dir="openspec/changes/${run_id}"
@@ -88,27 +123,18 @@ mkdir -p "${run_dir}"
 
 Mark items `[x]` as each step completes.
 
-```
-
-If an `action` argument is provided, skip to Step 2 with that action.
-
-### Step 1: Interactive Selection
-
-Use `AskUserQuestion` with categories above. Present as grouped options.
-
-### Step 2: Route to Skill
+### Step 3: Route to Skill
 
 Map selected action to the corresponding skill invocation:
 
 ```
-
 action=load → Skill("context-memory:context-loader", {task, run_dir})
 action=compact → Skill("context-memory:session-compactor", {run_dir})
 action=claude-plan → Skill("context-memory:doc-planner", {run_dir})
-action=claude-generate full → MANDATORY: go to Step 3 (team workflow with gemini-core + codex-core agents)
-action=claude-generate related → MANDATORY: go to Step 3 (team workflow with gemini-core + codex-core agents)
-action=claude-update full → MANDATORY: go to Step 3 (team workflow with gemini-core + codex-core agents)
-action=claude-update related → MANDATORY: go to Step 3 (team workflow with gemini-core + codex-core agents)
+action=claude-generate full → MANDATORY: go to Step 4 (Gemini workflow)
+action=claude-generate related → MANDATORY: go to Step 4 (Gemini workflow)
+action=claude-update full → MANDATORY: go to Step 4 (Gemini workflow)
+action=claude-update related → MANDATORY: go to Step 4 (Gemini workflow)
 action=swagger → Skill("context-memory:swagger-generator", {run_dir})
 action=tech-rules → Skill("context-memory:tech-rules-generator", {run_dir})
 action=skill-index → Skill("context-memory:skill-indexer", {run_dir})
@@ -116,96 +142,86 @@ action=code-map → Skill("context-memory:code-map-generator", {run_dir})
 action=skill-load → Skill("context-memory:skill-loader")
 action=style → Skill("context-memory:style-memory", {run_dir})
 action=workflow → Skill("context-memory:workflow-memory", {run_dir})
-
 ```
 
-### Step 3: Multi-Model Workflows (for claude-generate/claude-update actions)
+### Step 4: Gemini Doc Workflow (for claude-generate/claude-update actions)
 
-**⛔ STOP — Read this before proceeding.**
-
-This step uses a TEAM of typed agents to call external models (Gemini + Codex CLI). You are the orchestrator — you MUST NOT generate CLAUDE.md content yourself. You prepare prompts and route them through the agents below. The agents call gemini-cli/codex-cli skills which invoke `gemini` and `codex` CLI binaries.
+**You are the orchestrator — you MUST NOT generate CLAUDE.md content yourself.** Prepare prompts and route them through `context-memory:gemini-core` agents which call `gemini-cli` skill → `invoke-gemini.ts` → `gemini` CLI.
 
 **Do NOT call `doc-full-generator` / `doc-related-generator` / `doc-full-updater` / `doc-incremental-updater` skills directly. Those are reference specs for prompt structure only.**
 
 #### MANDATORY Agent Type Restrictions
 
-You MUST ONLY invoke these agent types in this workflow.
-
 | Step     | `subagent_type`                  | Purpose          |
 | -------- | -------------------------------- | ---------------- |
 | Scan     | `context-memory:project-scanner` | Module discovery |
 | Generate | `context-memory:gemini-core`     | Gemini doc-gen   |
-| Generate | `context-memory:codex-core`      | Codex doc-gen    |
 | Write    | `context-memory:doc-worker`      | File writing     |
-| Audit    | `context-memory:codex-core`      | Quality review   |
+| Audit    | `context-memory:gemini-core`     | Quality review   |
 
 #### FORBIDDEN Anti-Patterns
 
-| ❌ Forbidden                                         | ✅ Required Instead                                        |
-| ---------------------------------------------------- | ---------------------------------------------------------- |
-| Spawning `general-purpose` agents for doc generation | Use `context-memory:gemini-core` + `context-memory:codex-core` |
-| Batching multiple modules into one generic agent     | Route each module through the agents above per layer       |
-| Generating CLAUDE.md content inline (skipping agents)| ALL content generation through gemini-core/codex-core      |
-| Skipping external model invocation                   | ALWAYS attempt gemini-core + codex-core before fallback    |
+| Forbidden                                            | Required Instead                                  |
+| ---------------------------------------------------- | ------------------------------------------------- |
+| Spawning `general-purpose` agents for doc generation | Use `context-memory:gemini-core` agents only      |
+| Batching multiple modules into one agent             | One gemini-core agent per module, parallel launch  |
+| Generating CLAUDE.md content inline (skipping agents)| ALL content generation through gemini-core        |
+| Skipping Gemini invocation                           | ALWAYS attempt gemini-core before Claude fallback |
 
-For `claude-generate` and `claude-update` actions, orchestrate via parallel `Agent` calls:
+#### Workflow
 
 1. **Scan**: `Agent(subagent_type="context-memory:project-scanner", name="scanner", prompt="run_dir=${run_dir} mode=scan")` → `${run_dir}/modules.json`
 
-2. **Generate** — process layers in order (3→2→1). For EACH layer, launch a pair of agents in parallel (single message):
+2. **Generate** — process layers in order (3→2→1). For EACH layer, spawn one `gemini-core` agent **per module**, all in parallel (single message):
 
    ```
-   # Launch both agents for the current layer in ONE message (parallel execution)
+   # Layer N has modules [mod-a, mod-b, mod-c] — launch ALL in one message
    Agent(
      subagent_type="context-memory:gemini-core",
-     name="gemini-layer-{N}",
-     prompt="run_dir=${run_dir} role=doc-generator modules=[list of modules in layer {N}]"
+     name="gemini-mod-a",
+     prompt="run_dir=${run_dir} role=doc-generator modules=[mod-a]"
    )
    Agent(
-     subagent_type="context-memory:codex-core",
-     name="codex-layer-{N}",
-     prompt="run_dir=${run_dir} role=doc-generator modules=[list of modules in layer {N}]"
+     subagent_type="context-memory:gemini-core",
+     name="gemini-mod-b",
+     prompt="run_dir=${run_dir} role=doc-generator modules=[mod-b]"
+   )
+   Agent(
+     subagent_type="context-memory:gemini-core",
+     name="gemini-mod-c",
+     prompt="run_dir=${run_dir} role=doc-generator modules=[mod-c]"
    )
    ```
 
-   - Each agent processes ALL modules in its layer sequentially (calling gemini-cli/codex-cli skill per module).
-   - Both agents run concurrently for the same layer.
-   - Wait for both to complete before processing the next layer (lower-layer docs inform upper layers).
-   - Outputs: `${run_dir}/gemini-docs-{module}.md` and `${run_dir}/codex-docs-{module}.md`
-   - If **both fail** for a module → fallback: Claude lead generates inline using Read + project context
-   - If **one succeeds** → use the successful output as sole source
+   - **One agent per module**, each calls `gemini-cli` skill once for its module.
+   - All agents in the same layer run concurrently (launched in a single message).
+   - Wait for ALL agents in current layer to complete before starting the next layer (lower-layer docs inform upper layers).
+   - Outputs: `${run_dir}/gemini-docs-{module}.md` per agent
+   - If Gemini fails for a module → fallback: Claude lead generates inline using Read + project context
 
-3. **Merge**: For each module, Claude lead reads available outputs and produces `${run_dir}/merged-docs-{module}.md`:
-   - Compare structure, completeness, and accuracy
-   - Take the best sections from each source
-   - Ensure consistent format
+3. **Write**: `Agent(subagent_type="context-memory:doc-worker", name="writer", prompt="run_dir=${run_dir} plan=write-claude-md")` reads `gemini-docs-{module}.md` → writes `{module}/CLAUDE.md`
 
-4. **Write**: `Agent(subagent_type="context-memory:doc-worker", name="writer", prompt="run_dir=${run_dir} plan=write-claude-md")` reads `merged-docs-{module}.md` → writes `{module}/CLAUDE.md`
-
-5. **Audit**: `Agent(subagent_type="context-memory:codex-core", name="auditor", prompt="run_dir=${run_dir} role=auditor")` → `${run_dir}/codex-audit.md`
+4. **Audit**: `Agent(subagent_type="context-memory:gemini-core", name="auditor", prompt="run_dir=${run_dir} role=auditor")` → `${run_dir}/gemini-audit.md`
    - If auditor unavailable, Claude lead performs inline quality review
 
-6. **Summary**: Report artifacts created and audit results
+5. **Summary**: Report artifacts created and audit results
 
 #### Fallback Chain
 
 ```
-
-Gemini + Codex (parallel, preferred)
-→ Single model (if one fails)
-→ Claude inline (last resort, if both fail)
-
+Gemini (preferred)
+→ Claude inline (if Gemini fails)
 ```
 
 #### Error Handling
 
-- Each Task call has implicit timeout (agent turn limit)
+- Each Agent call has implicit timeout (agent turn limit)
 - If scan fails → abort workflow, report error to user
-- If all doc-generation fails for a module → skip module, log warning
+- If Gemini fails for a module → Claude lead generates inline for that module
+- If all generation fails → skip module, log warning
 
-### Step 4: Delivery
+### Step 5: Delivery
 
 - Report artifacts created
 - Show next recommended actions
-- If team workflow, include quality audit summary
-```
+- If Gemini workflow, include quality audit summary

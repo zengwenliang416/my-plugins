@@ -83,37 +83,25 @@ Skill("context-memory:module-discovery", {run_dir: "openspec/changes/my-change/"
 - `project-scanner`: Investigation agent (`scan`, `detect`, `analyze-deps`). Falls back to Glob/Grep when auggie-mcp unavailable.
 - `doc-worker`: Execution agent for file writing and SKILL packaging. Runs in same workspace as other agents (no worktree isolation).
 
-## Multi-Model Pipeline
+## Gemini Pipeline
 
-Two invocation paths:
-
-### Path A: Direct CLI (doc generation skills)
+Doc generation uses Gemini via the agent → skill → script chain:
 
 ```
-Skill (doc-full-generator / doc-*-updater / doc-related-generator)
-  → Build prompt + Write to file
-    → Bash: gemini -p "$(cat prompt.md)" --approval-mode plan -o text
-    → Bash: codex exec "$(cat prompt.md)" -s read-only
+Agent (gemini-core)
+  → Skill (gemini-cli)
+    → Script (invoke-gemini.ts)
+      → CLI: gemini -p "<prompt>" --approval-mode plan -o text
 ```
 
-### Path B: Agent → Skill → Script (other skills)
+### Fallback Chain
 
 ```
-Agent (gemini-core / codex-core)
-  → Skill (gemini-cli / codex-cli)
-    → Script (invoke-gemini.ts / invoke-codex.ts)
-      → CLI: gemini / codex
+Gemini (preferred)
+  → Claude inline (if Gemini fails)
 ```
 
-## Multi-Model Fallback
-
-```
-Gemini + Codex (parallel, preferred)
-  → Single model (if one fails)
-    → Claude inline (last resort, if both fail)
-```
-
-All external model output is reviewed by Claude lead before writing.
+All Gemini output is reviewed by Claude lead before writing.
 
 ## Artifact Storage
 
