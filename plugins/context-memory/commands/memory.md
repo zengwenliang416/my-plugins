@@ -26,33 +26,26 @@ Single entry point for all context-memory workflows. Routes to the appropriate s
 
 When invoked without arguments, present this interactive menu via `AskUserQuestion`:
 
-### Category 1: Context
-
-| Action    | Skill               | Description                            |
-| --------- | ------------------- | -------------------------------------- |
-| `load`    | `context-loader`    | Load project context for current task  |
-| `compact` | `session-compactor` | Compact session into persistent memory |
-
-### Category 2: CLAUDE.md
+### Category 1: CLAUDE.md Documentation
 
 | Action                    | Routing                         | Description                  |
 | ------------------------- | ------------------------------- | ---------------------------- |
 | `claude-plan`             | Skill: `doc-planner`            | Plan documentation scope     |
-| `claude-generate full`    | **Step 3 team workflow**        | Generate all CLAUDE.md files |
-| `claude-generate related` | **Step 3 team workflow**        | Generate for changed modules |
-| `claude-update full`      | **Step 3 team workflow**        | Update all CLAUDE.md         |
-| `claude-update related`   | **Step 3 team workflow**        | Update changed modules       |
+| `claude-generate full`    | **Step 5 team workflow**        | Generate all CLAUDE.md files |
+| `claude-generate related` | **Step 5 team workflow**        | Generate for changed modules |
+| `claude-update full`      | **Step 5 team workflow**        | Update all CLAUDE.md         |
+| `claude-update related`   | **Step 5 team workflow**        | Update changed modules       |
 
 **⚠️ `claude-generate` and `claude-update` actions MUST go through Step 5 (agent team workflow). Do NOT call `doc-full-generator`, `doc-related-generator`, `doc-full-updater`, or `doc-incremental-updater` skills directly — they are reference specs only.**
 
-### Category 3: API & Rules
+### Category 2: API & Rules
 
 | Action       | Skill                  | Description               |
 | ------------ | ---------------------- | ------------------------- |
 | `swagger`    | `swagger-generator`    | Generate OpenAPI docs     |
 | `tech-rules` | `tech-rules-generator` | Generate tech stack rules |
 
-### Category 4: SKILL Package
+### Category 3: SKILL Package
 
 | Action        | Skill                | Description              |
 | ------------- | -------------------- | ------------------------ |
@@ -60,12 +53,14 @@ When invoked without arguments, present this interactive menu via `AskUserQuesti
 | `code-map`    | `code-map-generator` | Generate code maps       |
 | `skill-load`  | `skill-loader`       | Load SKILL packages      |
 
-### Category 5: Memory
+### Category 4: Context & Memory
 
-| Action     | Skill             | Description            |
-| ---------- | ----------------- | ---------------------- |
-| `style`    | `style-memory`    | Extract style patterns |
-| `workflow` | `workflow-memory` | Archive workflow state |
+| Action     | Skill               | Description                            |
+| ---------- | ------------------- | -------------------------------------- |
+| `load`     | `context-loader`    | Load project context for current task  |
+| `compact`  | `session-compactor` | Compact session into persistent memory |
+| `style`    | `style-memory`      | Extract style patterns                 |
+| `workflow` | `workflow-memory`   | Archive workflow state                 |
 
 ## Steps
 
