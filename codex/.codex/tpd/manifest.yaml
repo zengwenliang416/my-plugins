@@ -1,0 +1,68 @@
+{
+  "tpd_version": "2.1.0",
+  "updated_at": "2026-02-28",
+  "entries": {
+    "prompts": {
+      "tpd-init": ".codex/prompts/tpd-init.md",
+      "tpd-thinking": ".codex/prompts/tpd-thinking.md",
+      "tpd-plan": ".codex/prompts/tpd-plan.md",
+      "tpd-dev": ".codex/prompts/tpd-dev.md"
+    },
+    "skills": {
+      "tpd-architecture-analyzer": ".agents/skills/tpd-architecture-analyzer/SKILL.md",
+      "tpd-code-implementer": ".agents/skills/tpd-code-implementer/SKILL.md",
+      "tpd-codex-cli": ".agents/skills/tpd-codex-cli/SKILL.md",
+      "tpd-complexity-analyzer": ".agents/skills/tpd-complexity-analyzer/SKILL.md",
+      "tpd-conclusion-generator": ".agents/skills/tpd-conclusion-generator/SKILL.md",
+      "tpd-context-retriever": ".agents/skills/tpd-context-retriever/SKILL.md",
+      "tpd-gemini-cli": ".agents/skills/tpd-gemini-cli/SKILL.md",
+      "tpd-handoff-generator": ".agents/skills/tpd-handoff-generator/SKILL.md",
+      "tpd-plan-context-retriever": ".agents/skills/tpd-plan-context-retriever/SKILL.md",
+      "tpd-plan-synthesizer": ".agents/skills/tpd-plan-synthesizer/SKILL.md",
+      "tpd-requirement-parser": ".agents/skills/tpd-requirement-parser/SKILL.md",
+      "tpd-risk-assessor": ".agents/skills/tpd-risk-assessor/SKILL.md",
+      "tpd-task-decomposer": ".agents/skills/tpd-task-decomposer/SKILL.md",
+      "tpd-thought-synthesizer": ".agents/skills/tpd-thought-synthesizer/SKILL.md"
+    },
+    "agents": {
+      "tpd-context-explorer": ".codex/agents/tpd-context-explorer.toml",
+      "tpd-codex-core": ".codex/agents/tpd-codex-core.toml",
+      "tpd-gemini-core": ".codex/agents/tpd-gemini-core.toml"
+    },
+    "codex_config": {
+      "project_config": ".codex/config.toml"
+    }
+  },
+  "message_contracts": {
+    "thinking": [
+      "boundary_ready",
+      "constraint_ready",
+      "constraint_question",
+      "constraint_answer",
+      "phase_broadcast",
+      "heartbeat",
+      "error"
+    ],
+    "plan": [
+      "context_ready",
+      "arch_ready",
+      "arch_question",
+      "arch_answer",
+      "risk_alert",
+      "phase_broadcast",
+      "heartbeat",
+      "error"
+    ],
+    "dev": [
+      "scope_confirmed",
+      "analysis_ready",
+      "prototype_ready",
+      "audit_blocker",
+      "fix_request",
+      "fix_done",
+      "phase_broadcast",
+      "heartbeat",
+      "error"
+    ]
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "docflow_version": "1.2.0",
+  "updated_at": "2026-02-28",
+  "entries": {
+    "prompts": {
+      "docflow-init-doc": ".codex/prompts/docflow-init-doc.md",
+      "docflow-with-scout": ".codex/prompts/docflow-with-scout.md",
+      "docflow-what": ".codex/prompts/docflow-what.md"
+    },
+    "skills": {
+      "docflow-commit": ".agents/skills/docflow-commit/SKILL.md",
+      "docflow-doc-workflow": ".agents/skills/docflow-doc-workflow/SKILL.md",
+      "docflow-investigate": ".agents/skills/docflow-investigate/SKILL.md",
+      "docflow-read-doc": ".agents/skills/docflow-read-doc/SKILL.md",
+      "docflow-update-doc": ".agents/skills/docflow-update-doc/SKILL.md"
+    },
+    "agents": {
+      "docflow-investigator": ".codex/agents/docflow-investigator.toml",
+      "docflow-scout": ".codex/agents/docflow-scout.toml",
+      "docflow-recorder": ".codex/agents/docflow-recorder.toml",
+      "docflow-worker": ".codex/agents/docflow-worker.toml"
+    },
+    "codex_config": {
+      "project_config": ".codex/config.toml"
+    }
+  },
+  "message_contracts": {
+    "init_doc": [
+      "SCOUT_REPORT_READY",
+      "SCOUT_CROSSCHECK_REQUEST",
+      "SCOUT_CROSSCHECK_RESULT",
+      "DOC_PLAN_READY",
+      "DOC_DRAFT_READY",
+      "DOC_CONFLICT_RESOLVE",
+      "DOC_CONFLICT_FIXED"
+    ],
+    "with_scout": [
+      "INVESTIGATION_READY",
+      "INVESTIGATION_REVIEW_REQUEST",
+      "INVESTIGATION_REVIEW_RESULT",
+      "EXECUTION_PLAN_SHARED",
+      "WORKER_PROGRESS",
+      "WORKER_BLOCKED",
+      "EXECUTION_RESULT",
+      "EXECUTION_FIX_REQUEST",
+      "EXECUTION_FIX_APPLIED"
+    ]
+  }
+}

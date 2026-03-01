@@ -1,0 +1,42 @@
+[
+  {
+    "id": "tpd-init-001",
+    "entry": "tpd-init",
+    "sample_input": "初始化 tpd",
+    "must_contain": [
+      "OpenSpec",
+      "mcp__codex__codex",
+      "Hard Stop"
+    ]
+  },
+  {
+    "id": "tpd-thinking-001",
+    "entry": "tpd-thinking",
+    "sample_input": "分析登录限流方案",
+    "must_contain": [
+      "消息协议",
+      "TaskOutput",
+      "handoff.json"
+    ]
+  },
+  {
+    "id": "tpd-plan-001",
+    "entry": "tpd-plan",
+    "sample_input": "生成 proposal 计划",
+    "must_contain": [
+      "specs/*/spec.md",
+      "openspec validate",
+      "Hard Stop"
+    ]
+  },
+  {
+    "id": "tpd-dev-001",
+    "entry": "tpd-dev",
+    "sample_input": "开始最小任务开发",
+    "must_contain": [
+      "修复循环最多 2 轮",
+      "TaskOutput",
+      "tpd-code-implementer"
+    ]
+  }
+]

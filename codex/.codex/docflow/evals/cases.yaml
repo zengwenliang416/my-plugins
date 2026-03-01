@@ -1,0 +1,34 @@
+[
+  {
+    "id": "clarify-001",
+    "entry": "docflow-what",
+    "sample_input": "修一下登录问题",
+    "must_contain": [
+      "可选项",
+      "/prompts:docflow-with-scout",
+      "不直接进入大规模实现"
+    ]
+  },
+  {
+    "id": "investigate-exec-001",
+    "entry": "docflow-with-scout",
+    "sample_input": "修复支付回调重复入库",
+    "must_contain": [
+      "文档优先",
+      "最多 2 轮",
+      "INVESTIGATION_READY",
+      "EXECUTION_RESULT"
+    ]
+  },
+  {
+    "id": "init-doc-001",
+    "entry": "docflow-init-doc",
+    "sample_input": "初始化文档",
+    "must_contain": [
+      "llmdoc",
+      "SCOUT_REPORT_READY",
+      "DOC_DRAFT_READY",
+      "Final Indexing"
+    ]
+  }
+]

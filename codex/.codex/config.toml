@@ -1,0 +1,115 @@
+# Codex CLI project configuration
+# Official multi-agent setup for TPD and Docflow workflows
+
+[agents]
+max_threads = 6
+max_depth = 1
+
+[agents.tpd_context_explorer]
+description = "TPD context exploration role for boundary and plan-context evidence gathering"
+config_file = "agents/tpd-context-explorer.toml"
+
+[agents.tpd_codex_core]
+description = "TPD Codex core role for constraint/architect/implementer/auditor outputs"
+config_file = "agents/tpd-codex-core.toml"
+
+[agents.tpd_gemini_core]
+description = "TPD Gemini core role for constraint/architect/implementer/auditor outputs"
+config_file = "agents/tpd-gemini-core.toml"
+
+[agents.docflow_investigator]
+description = "Docflow investigator role for documentation-first evidence synthesis"
+config_file = "agents/docflow-investigator.toml"
+
+[agents.docflow_scout]
+description = "Docflow scout role for deep investigation and persistent report generation"
+config_file = "agents/docflow-scout.toml"
+
+[agents.docflow_recorder]
+description = "Docflow recorder role for llmdoc drafting and conflict-resolution loops"
+config_file = "agents/docflow-recorder.toml"
+
+[agents.docflow_worker]
+description = "Docflow worker role for deterministic execution and fix loops"
+config_file = "agents/docflow-worker.toml"
+
+[skills]
+enabled = true
+
+# Explicit official skill routing (path points to directory containing SKILL.md)
+
+[[skills.config]]
+path = "../.agents/skills/tpd-architecture-analyzer"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/tpd-code-implementer"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/tpd-codex-cli"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/tpd-complexity-analyzer"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/tpd-conclusion-generator"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/tpd-context-retriever"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/tpd-gemini-cli"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/tpd-handoff-generator"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/tpd-plan-context-retriever"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/tpd-plan-synthesizer"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/tpd-requirement-parser"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/tpd-risk-assessor"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/tpd-task-decomposer"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/tpd-thought-synthesizer"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/docflow-commit"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/docflow-doc-workflow"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/docflow-investigate"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/docflow-read-doc"
+enabled = true
+
+[[skills.config]]
+path = "../.agents/skills/docflow-update-doc"
+enabled = true
