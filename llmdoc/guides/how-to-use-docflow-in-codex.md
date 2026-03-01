@@ -48,7 +48,9 @@ If checks fail, use `.codex/docflow/manifest.yaml` and `.codex/docflow/evals/cas
 
 ## 6. Source of Truth
 
-- Adapter mapping: `plugins/docflow/CODEX-ADAPTER.md`
-- Codex rule set: `plugins/docflow/AGENTS.md`
+- Project role registry: `.codex/config.toml`
+- Docflow role files: `.codex/agents/docflow-*.toml`
 - Prompt assets: `.codex/prompts/docflow-*.md`
-- Skills and agents: `.codex/skills/docflow-*/SKILL.md`, `.codex/agents/docflow-*.md`
+- Official skill assets: `.agents/skills/docflow-*/SKILL.md`
+- Manifest and evals: `.codex/docflow/manifest.yaml`, `.codex/docflow/evals/*`
+- Legacy plugin source (mapping reference): `plugins/docflow/*`
