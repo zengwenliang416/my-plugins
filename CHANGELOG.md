@@ -42,6 +42,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 更新 ui-design 智能体/技能编排与文档
 - 调整外部模型调用脚本与配套参考资源
 - 更新 llmdoc 指南、架构与索引文档
+- 对齐 TPD/Docflow 到 Codex CLI 官方布局：`.codex/config.toml` + `.codex/agents/*.toml` + `.agents/skills/*`
+- 将安装策略统一为 merge + config 追加合并，避免覆盖同事现有 `config.toml`
+- 新增 Codex 迁移 OpenSpec 变更集（tpd/docflow/skill best practices）并补齐分批子任务计划
 
 ### Added
 
@@ -62,6 +65,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add context-memory plugin for intelligent context management (context-memory)
 - Add hooks detection support to sync-plugins.sh script (scripts)
 - 新增或整理 docflow 在 codex 侧的 prompts/skills/agents 与 manifest 资产
+- 新增 `codex/` 预览包（`codex/.codex` + `codex/.agents`）用于项目级/用户级安装
+- 新增 `codex/install-codex-bundle.sh` 一键安装脚本（支持 `user|project`、`merge|replace`、备份、dry-run、校验）
+- 新增 `codex/CLAUDE-CODE-TO-CODEX-CLI-MIGRATION-GUIDE.md`，沉淀 Claude Code -> Codex CLI 官方迁移指南与溯源链接
+
+### Removed
+
+- 删除项目根 `.codex` 下 docflow legacy 资产（`agents/*.md`、`skills/docflow-*`、`prompts/docflow-*`、`docflow/evals/*`）
+- 删除项目根 `.codex/skills/migrate-to-{codefree,trae}` 旧副本，统一迁移到 `codex/.codex/skills/`
 
 ### Fixed
 
