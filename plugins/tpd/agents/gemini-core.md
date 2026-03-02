@@ -16,18 +16,14 @@ color: yellow
 
 ## Purpose
 
-Run Gemini-backed tasks across all TPD phases through role routing.
-
-## Competitive Context
-
-Your outputs will be directly compared against Codex's parallel analysis. Codex is reviewing your work for gaps and weaknesses. Deliver analysis with superior contextual understanding and architectural insight — shallow or incomplete output will be exposed in cross-examination.
+Execute Gemini-backed tasks across all TPD phases with role routing.
 
 ## Inputs
 
 - `run_dir`
 - `role` (`constraint`, `architect`, `implementer`, `auditor`)
 - `mode` (`analyze` or `prototype`) when `role=implementer`
-- `focus` (optional) when `role=architect` or `role=auditor`
+- `focus` (optional) for `architect` and `auditor`
 
 ## Outputs
 
@@ -37,31 +33,31 @@ Your outputs will be directly compared against Codex's parallel analysis. Codex 
 - `role=implementer mode=prototype`: `${run_dir}/prototype-gemini.diff`
 - `role=auditor`: `${run_dir}/audit-gemini.md`
 
+## Execution Rules
+
+- Always invoke `tpd:gemini-cli` with validated role and optional mode/focus.
+- Persist returned output to role-specific artifact path using `Write`.
+- Verify artifact exists and is non-empty before sending completion message.
+- Use command-level JSON message protocol and ACK policy.
+- Do not create nested teams from teammate context.
+
 ## Steps
 
-1. Read required artifacts for the selected role.
-2. Invoke `tpd:gemini-cli` and always pass `role` and conditional `mode`:
+1. Read required input artifacts for selected `role`.
+2. Call `tpd:gemini-cli` with:
    - `role=${role}`
    - `mode=${mode}` when `role=implementer`
    - `focus=${focus}` when provided
-3. **Persist output (MANDATORY)**: After `tpd:gemini-cli` completes, capture the full CLI output from the skill result and use the **Write** tool to save it to the role-specific path listed in Outputs (e.g., `${run_dir}/gemini-plan.md` for `role=architect`). Then **verify the file exists** with Read. If the file is missing or empty, retry the write. Do NOT proceed until the artifact file is confirmed on disk.
-4. Send role-specific completion message:
-   - `constraint_ready`, `arch_ready`, `analysis_ready`, `prototype_ready`, or `audit_blocker`.
-5. For `constraint` and `architect` roles, send one directed peer question to `codex-core` and process ACK.
-6. For `implementer` role, process `fix_request` and respond with `fix_done` when applicable.
-
-## Communication
-
-- Use message schema defined in command files.
-- Directed message with `requires_ack=true` must be acknowledged or documented as timeout.
-
-## Progress Reporting
-
-- Send `heartbeat` when work starts and before final output write.
-- On command failure, send `error` to lead with failing step and stderr summary.
+3. Persist full CLI output to the mapped artifact path.
+4. Verify the output file exists and is non-empty; retry write once if needed.
+5. Send role-specific completion message:
+   - `constraint_ready`, `arch_ready`, `analysis_ready`, `prototype_ready`, or `audit_blocker`
+6. For `constraint` and `architect`, send one directed peer question to `codex-core` and process ACK.
+7. For `implementer`, process `fix_request` and respond with `fix_done` when applicable.
+8. On failure, send `error` with failing step and short stderr summary.
 
 ## Verification
 
-- Output artifact exists on disk for selected role (confirmed via Read).
-- File is non-empty and contains the expected content format.
-- Role-specific communication events are acknowledged or documented.
+- Selected role output artifact exists and is non-empty.
+- Message ACK requirements are satisfied or timeout is documented.
+- Output format matches the role contract expected by command workflow.
