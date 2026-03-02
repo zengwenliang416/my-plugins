@@ -1,12 +1,12 @@
 ---
-description: "TPD Plan phase with Team-first orchestration: context -> architecture -> ambiguity resolution -> decomposition -> risk -> final plan"
-argument-hint: "[proposal_id] [--task-type=frontend|backend|fullstack] [--loop]"
+description: "TPD Plan phase: requirements -> architecture -> decomposition -> OpenSpec validate"
+argument-hint: "[proposal_id]"
 allowed-tools:
   - Read
   - Write
   - Bash
   - AskUserQuestion
-  - Skill
+  - Agent
   - Task
   - TeamCreate
   - TeamDelete
@@ -17,239 +17,130 @@ allowed-tools:
   - Glob
   - Grep
   - mcp__auggie-mcp__codebase-retrieval
-  - mcp__codex__codex
-  - mcp__gemini__gemini
 ---
 
 # /tpd:plan
 
 ## Purpose
 
-Convert an OpenSpec proposal into a zero-decision executable plan under `openspec/changes/<proposal_id>/plan/`.
+Convert a proposal into an executable plan and generate OpenSpec root artifacts required by strict validation.
 
-## Required Constraints
+## Delegation Chain
 
-- Do not implement code in this phase.
-- Resolve all referenced artifacts through manifests when available.
-- Keep outputs compatible with dev phase artifact contracts.
-- Generate OpenSpec-required files (`tasks.md`, `specs/`) at the change root for `openspec validate` compatibility.
+- Command only orchestrates flow and dispatch.
+- Command must not execute phase skills directly.
+- Execution chain is fixed: `Command -> Agent -> Skills`.
 
-## Team Roles
+## Parameter Policy
 
-- `context-explorer`: targeted context retrieval (`mode=plan-context`).
-- `codex-core`: Codex role-routed planning (`role=architect`).
-- `gemini-core`: Gemini role-routed planning (`role=architect`).
+- Optional input: `proposal_id`.
+- If omitted, use active OpenSpec change from `openspec view`.
+- Mode is not controlled by command parameters.
+- Default task type is fixed to `fullstack`.
 
-## Message Protocol
+## OpenSpec Hard Requirements
 
-All team messages follow:
+To pass `openspec validate --strict`, this phase must output at change root:
 
-```json
-{
-  "type": "context_ready|arch_ready|arch_question|arch_answer|risk_alert|phase_broadcast|heartbeat|error",
-  "from": "agent-name|lead",
-  "to": "agent-name|lead|all",
-  "proposal_id": "<proposal_id>",
-  "task_id": "<task_id>",
-  "requires_ack": true,
-  "payload": {}
-}
-```
+- `openspec/changes/<proposal_id>/tasks.md`
+- `openspec/changes/<proposal_id>/specs/<capability>/spec.md`
 
-Communication rules:
+Spec minimum format requirements:
 
-- Architect agents must exchange at least one directed message (`arch_question` / `arch_answer`).
-- Lead records unresolved communication or architecture conflicts in `decision-log.md`.
-- Directed messages requiring ACK are retried once before fallback.
+- Use `## ADDED Requirements` or `## MODIFIED Requirements`
+- Each `### Requirement:` must include at least one `#### Scenario:`
 
-## Progress Visibility Rules
+## Required Artifacts (Minimal)
 
-- Write step start and completion events to `team/phase-events.jsonl`.
-- Print phase marker before and after each major step.
-- On failure, log exact error to `team/phase-events.jsonl` and include step id.
-- During waits longer than 60 seconds, append heartbeat snapshots to `team/heartbeat.jsonl`.
-- If hook logs exist, append recent entries to `team/hooks-snapshot.jsonl`.
+- `plan.md`
+- `constraints.md`
+- `tasks.md`
+- `pbt.md`
+- `meta/artifact-manifest.json`
+- `openspec/changes/<proposal_id>/tasks.md`
+- `openspec/changes/<proposal_id>/specs/<capability>/spec.md` (at least one)
 
-## Required Artifacts
-
-Plan-phase artifacts (under `${PLAN_DIR}/`):
+## Optional Artifacts
 
 - `requirements.md`
 - `context.md`
 - `codex-plan.md`
 - `gemini-plan.md`
 - `architecture.md`
-- `constraints.md`
-- `tasks.md`
 - `risks.md`
-- `pbt.md`
-- `plan.md`
 - `decision-log.md`
 - `timeline.md`
-- `meta/artifact-manifest.json`
 - `team/phase-events.jsonl`
 - `team/heartbeat.jsonl`
 - `team/mailbox.jsonl`
-
-OpenSpec-required artifacts (at change root `openspec/changes/<proposal_id>/`):
-
-- `tasks.md` — derived from plan tasks for OpenSpec checklist format
-- `specs/<capability>/spec.md` — delta specs with `## ADDED/MODIFIED Requirements` + `#### Scenario:` blocks
-
-Optional artifacts:
-
 - `team/hooks-snapshot.jsonl`
 - `team/communication-failures.md`
 
+## Agent Result Handling
+
+- Lead agent is coordinator-only in team mode.
+- After each dispatch batch, immediately wait for completion (blocking `Agent` first, fallback blocking `Task`).
+- During wait, lead agent must not run phase work (no self execution of parse/synthesis/decomposition).
+- Do not call `TaskOutput`.
+- Do not create nested teams from teammate context.
+
+## Agent Dispatch Contracts
+
+- `context-explorer` (plan-context): build `requirements.md` and `context.md`.
+- `codex-core` (architect): backend/data/api architecture to `codex-plan.md`.
+- `gemini-core` (architect): frontend/ux integration architecture to `gemini-plan.md`.
+- `codex-core` (architect, synthesis task): assemble `architecture.md`, `constraints.md`, `tasks.md`, `pbt.md`, `plan.md`, and manifest.
+
 ## Steps
-
-## Task Result Handling
-
-Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
-
-**FORBIDDEN — never do this:**
-
-- MUST NOT call `TaskOutput` — this tool does not exist
-- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
-
-**CORRECT — always use direct return:**
-
-- The result comes from the `Task` call itself, no extra step needed
 
 ### Step 0: Initialize
 
-1. Resolve proposal id:
-   - from argument, or
-   - from `openspec view` active change selection.
-2. Ensure proposal exists under `openspec/changes/${PROPOSAL_ID}`.
-3. Initialize plan directories:
-   ```bash
-   PLAN_DIR="openspec/changes/${PROPOSAL_ID}/plan"
-   PLAN_META_DIR="${PLAN_DIR}/meta"
-   THINKING_DIR="openspec/changes/${PROPOSAL_ID}/thinking"
-   TEAM_DIR="${PLAN_DIR}/team"
-   mkdir -p "${PLAN_META_DIR}" "${TEAM_DIR}"
-   ```
-4. Initialize tracking files:
-   - `${TEAM_DIR}/phase-events.jsonl`
-   - `${TEAM_DIR}/heartbeat.jsonl`
-   - `${TEAM_DIR}/mailbox.jsonl`
-5. Write `input.md` with task type and assumptions.
+1. Resolve `PROPOSAL_ID` (argument or active change).
+2. Initialize `openspec/changes/${PROPOSAL_ID}/plan/`.
+3. Set effective task type to default `fullstack`.
 
-### Step 1: Build Team and Retrieve Context
+### Step 1: Requirements and Context
 
-1. Create team:
-   ```text
-   TeamCreate(team_name="tpd-plan-${PROPOSAL_ID}", description="Plan context and architecture team")
-   ```
-2. Parse requirements:
-   ```text
-   Skill(skill="tpd:requirement-parser", args="run_dir=${PLAN_DIR}")
-   ```
-3. Verify `requirements.md`.
-4. Spawn context-explorer teammate:
-   ```text
-   Task(name="context-explorer", subagent_type="tpd:context-explorer", team_name="tpd-plan-${PROPOSAL_ID}", prompt="mode=plan-context run_dir=${PLAN_DIR} thinking_dir=${THINKING_DIR}")
-   ```
-   # Task call blocks until the teammate finishes.
-   # Result is returned directly — no TaskOutput needed.
-5. Verify `context.md`.
-6. Broadcast context completion and log message envelope.
+1. Dispatch `context-explorer` for requirements normalization and context retrieval.
+2. Wait for completion and verify `requirements.md` / `context.md`.
 
-### Step 2: Parallel Architecture Planning with Communication
+### Step 2: Architecture
 
-1. Spawn `codex-core` and `gemini-core` teammates in a single message (parallel execution):
-   ```text
-   Task(name="codex-core", subagent_type="tpd:codex-core", team_name="tpd-plan-${PROPOSAL_ID}", prompt="role=architect run_dir=${PLAN_DIR} Read requirements.md and context.md. Send one directed message to peer (arch_question) and process ACK. Send one heartbeat update. Use Write to persist plan draft to ${PLAN_DIR}/codex-plan.md, then verify with Read that the file exists and is non-empty.")
-   Task(name="gemini-core", subagent_type="tpd:gemini-core", team_name="tpd-plan-${PROPOSAL_ID}", prompt="role=architect run_dir=${PLAN_DIR} Read requirements.md and context.md. Send one directed message to peer (arch_question) and process ACK. Send one heartbeat update. Use Write to persist plan draft to ${PLAN_DIR}/gemini-plan.md, then verify with Read that the file exists and is non-empty.")
-   ```
-   # All teammates launched in a single message (parallel execution).
-   # Each Task call blocks until the teammate finishes.
-   # Results are returned directly — no TaskOutput needed.
-2. Verify `codex-plan.md` and `gemini-plan.md` exist and are non-empty. If either is missing, check the direct return value from the Task call for content and write it manually as fallback.
+1. Dispatch `codex-core` and `gemini-core` in architect role (fullstack baseline).
+2. Wait until both teammates complete.
+3. If architecture conflicts remain unresolved: **HARD STOP** with `AskUserQuestion`.
 
-### Step 3: Ambiguity Resolution
+### Step 3: Plan Synthesis
 
-1. Compare two architecture drafts.
-2. If unresolved differences remain: **⏸️ HARD STOP**: MUST call `AskUserQuestion` with one focused question per decision. Do NOT proceed until user responds to each ambiguity.
-3. Write all decisions and rationale to `decision-log.md`.
+1. Dispatch one `codex-core` teammate to run synthesis/decomposition/risk/plan assembly work.
+2. Wait until synthesis teammate completes.
+3. Ensure minimal required plan artifacts are generated.
 
-### Step 4: Synthesis Pipeline
+### Step 4: OpenSpec Root Artifacts
 
-Run skills in sequence:
-
-```text
-Skill(skill="tpd:architecture-analyzer", args="run_dir=${PLAN_DIR} task_type=${TASK_TYPE}")
-Skill(skill="tpd:task-decomposer", args="run_dir=${PLAN_DIR} task_type=${TASK_TYPE}")
-Skill(skill="tpd:risk-assessor", args="run_dir=${PLAN_DIR}")
-Skill(skill="tpd:plan-synthesizer", args="run_dir=${PLAN_DIR} proposal_id=${PROPOSAL_ID}")
-```
-
-Verify required artifacts after each call.
-
-### Step 4.5: Generate OpenSpec-Compatible Artifacts
-
-1. Set `CHANGE_DIR="openspec/changes/${PROPOSAL_ID}"`.
-2. Generate root-level `tasks.md` if not already present:
-   - Derive from `${PLAN_DIR}/tasks.md`, converting to OpenSpec checklist format:
-
-     ```markdown
-     ## 1. [Phase/Group Name]
-
-     - [ ] 1.1 [Task description]
-     - [ ] 1.2 [Task description]
-     ```
-
-   - Write to `${CHANGE_DIR}/tasks.md`.
-
-3. Generate `specs/` directory with delta spec files:
-   - Read `${PLAN_DIR}/architecture.md` and `${PLAN_DIR}/requirements.md` to identify affected capabilities.
-   - For each capability, create `${CHANGE_DIR}/specs/<capability>/spec.md` with:
-
-     ```markdown
-     ## ADDED Requirements
-
-     ### Requirement: [Requirement name]
-
-     The system SHALL [requirement description using SHALL/MUST].
-
-     #### Scenario: [Scenario name]
-
-     - **WHEN** [condition]
-     - **THEN** [expected result]
-     ```
-
-   - Use `## ADDED Requirements` for new capabilities, `## MODIFIED Requirements` for changes to existing specs.
-   - Every `### Requirement:` block MUST have at least one `#### Scenario:` block.
-
-4. Verify `${CHANGE_DIR}/tasks.md` and at least one `${CHANGE_DIR}/specs/*/spec.md` exist.
+1. Generate root `tasks.md` from plan tasks.
+2. Generate at least one capability spec at `specs/*/spec.md` with required format.
 
 ### Step 5: Validate
 
-1. Run strict validation:
+1. Run:
    ```bash
    openspec validate "${PROPOSAL_ID}" --type change --strict --no-interactive
    ```
-2. If validation fails, read the error output, fix the generated OpenSpec artifacts (commonly: missing `#### Scenario:`, wrong header format, or empty specs), and rerun.
-3. Build `meta/artifact-manifest.json` for downstream dev phase.
+2. If validation fails, fix root artifacts and rerun.
 
 ### Step 6: Finalize
 
-1. Broadcast final summary to team.
-2. Send shutdown messages.
-3. Delete team.
+1. Build/update manifest.
+2. Broadcast summary and close team.
 
 ## Fallback Policy
 
-- If Team API fails, run architect agents with standalone `Task` calls and keep the same outputs.
-- If one architecture task fails, continue with the other and record missing perspective.
-- If strict validation keeps failing, stop and return errors with file paths.
-- If hook logs are unavailable, continue without hook snapshot output.
+- Team API unavailable -> degrade to standalone blocking calls.
+- One model perspective unavailable -> continue and record coverage gap.
 
 ## Verification
 
-- `plan.md`, `tasks.md`, and `meta/artifact-manifest.json` exist under `${PLAN_DIR}/`.
-- `proposal.md`, `tasks.md`, and `specs/*/spec.md` exist at change root.
-- `openspec validate "${PROPOSAL_ID}" --type change --strict --no-interactive` succeeds.
-- `team/phase-events.jsonl` and `team/heartbeat.jsonl` contain entries.
-- Architecture decision points are resolved or explicitly marked for user follow-up.
+- Root `tasks.md` and at least one `specs/*/spec.md` exist.
+- Strict validation passes.
+- Minimal plan artifacts exist.

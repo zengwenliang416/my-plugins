@@ -1,12 +1,12 @@
 ---
-description: "TPD Thinking phase with Team-first orchestration: complexity -> boundary exploration -> constraint analysis -> synthesis -> handoff"
-argument-hint: "[--depth=auto|light|deep|ultra] [--parallel] [--verbose] <problem description>"
+description: "TPD Thinking phase: problem analysis -> boundary exploration -> synthesis -> handoff"
+argument-hint: "<problem description>"
 allowed-tools:
   - Read
   - Write
   - Bash
   - AskUserQuestion
-  - Skill
+  - Agent
   - Task
   - TeamCreate
   - TeamDelete
@@ -21,219 +21,116 @@ allowed-tools:
 
 ## Purpose
 
-Produce a constraint set and handoff artifacts under `openspec/changes/<proposal_id>/thinking/`.
+Produce thinking outputs for OpenSpec change initialization.
 
-## Required Constraints
+## Delegation Chain
 
-- Write TPD artifacts under `openspec/changes/<proposal_id>/thinking/`.
-- Also write OpenSpec-required files at the change root: `openspec/changes/<proposal_id>/proposal.md`.
-- Do not modify project source code.
-- Use context-boundary split for investigation tasks.
-- Keep artifact names compatible with downstream plan phase.
+- Command only orchestrates flow and dispatch.
+- Command must not execute phase skills directly.
+- Execution chain is fixed: `Command -> Agent -> Skills`.
 
-## Team Roles
+## Parameter Policy
 
-- `context-explorer`: boundary/context investigation.
-- `codex-core`: Codex role-routed reasoning (`constraint`).
-- `gemini-core`: Gemini role-routed reasoning (`constraint`).
+- Only one input is required: problem description.
+- Mode is not controlled by command parameters.
+- Default depth is fixed to `ultra`.
 
-## Message Protocol
+## OpenSpec Hard Requirements
 
-All team messages must use this schema:
+For OpenSpec chain continuity, this phase must ensure:
 
-```json
-{
-  "type": "boundary_ready|constraint_ready|constraint_question|constraint_answer|phase_broadcast|heartbeat|error",
-  "from": "agent-name|lead",
-  "to": "agent-name|lead|all",
-  "proposal_id": "<proposal_id>",
-  "task_id": "<task_id>",
-  "requires_ack": true,
-  "payload": {}
-}
-```
+- `openspec/changes/<proposal_id>/proposal.md`
+- `openspec/changes/<proposal_id>/thinking/handoff.json`
 
-Acknowledgment rules:
+Notes:
 
-- Directed message with `requires_ack=true` must get an ACK.
-- If ACK is missing after one retry, lead marks communication timeout and continues with fallback notes.
+- OpenSpec strict validation is enforced at plan phase.
+- Do not modify project source code in this phase.
 
-## Progress Visibility Rules
+## Required Artifacts (Minimal)
 
-- Before each step: append `start` event to `team/phase-events.jsonl` and print phase marker.
-- After each step: append `done` event and print completion marker.
-- On failure: append `error` event with exact stderr summary and failing step.
-- During waits longer than 60 seconds: append heartbeat snapshot every 60 seconds to `team/heartbeat.jsonl`.
-- If hook logs exist, append recent teammate/task events to `team/hooks-snapshot.jsonl`.
+- `conclusion.md`
+- `handoff.json`
+- `openspec/changes/<proposal_id>/proposal.md`
 
-## Artifacts
+## Optional Artifacts
 
-Required outputs:
-
-- `input.md`
 - `complexity-analysis.md`
 - `explore-*.json`
-- `codex-thought.md` (for deep/ultra)
-- `gemini-thought.md` (for deep/ultra)
+- `codex-thought.md`
+- `gemini-thought.md`
 - `synthesis.md`
-- `conclusion.md`
 - `handoff.md`
-- `handoff.json`
 - `meta/artifact-manifest.json`
 - `team/phase-events.jsonl`
 - `team/heartbeat.jsonl`
 - `team/mailbox.jsonl`
-
-OpenSpec-required outputs (at change root `openspec/changes/<proposal_id>/`):
-
-- `proposal.md`
-
-Optional outputs:
-
 - `team/hooks-snapshot.jsonl`
 - `team/communication-failures.md`
 
+## Agent Result Handling
+
+- Lead agent is coordinator-only in team mode.
+- After each dispatch batch, immediately wait for completion (blocking `Agent` first, fallback blocking `Task`).
+- During wait, lead agent must not run phase work (no self execution of analysis/synthesis/generation).
+- Do not call `TaskOutput`.
+- Do not create nested teams from teammate context.
+
+## Agent Dispatch Contracts
+
+- `context-explorer` (boundary): split boundaries and output `explore-*.json`.
+- `codex-core` (constraint): backend/architecture constraints and `codex-thought.md`.
+- `gemini-core` (constraint): frontend/UX constraints and `gemini-thought.md`.
+- `codex-core` (constraint, synthesis task): consolidate evidence and produce `synthesis.md`, `conclusion.md`, `handoff.json`.
+
 ## Steps
-
-## Task Result Handling
-
-Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
-
-**FORBIDDEN — never do this:**
-
-- MUST NOT call `TaskOutput` — this tool does not exist
-- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
-
-**CORRECT — always use direct return:**
-
-- The result comes from the `Task` call itself, no extra step needed
 
 ### Step 0: Initialize
 
-1. Resolve OpenSpec state:
-   ```bash
-   openspec view 2>/dev/null || openspec list 2>/dev/null || ls -la openspec 2>/dev/null
-   ```
-2. Parse arguments and derive `PROPOSAL_ID` from the problem slug.
-3. Initialize directories:
-   ```bash
-   THINKING_DIR="openspec/changes/${PROPOSAL_ID}/thinking"
-   THINKING_META_DIR="${THINKING_DIR}/meta"
-   TEAM_DIR="${THINKING_DIR}/team"
-   mkdir -p "${THINKING_META_DIR}" "${TEAM_DIR}"
-   ```
-4. Initialize tracking files:
-   - `${TEAM_DIR}/phase-events.jsonl`
-   - `${TEAM_DIR}/heartbeat.jsonl`
-   - `${TEAM_DIR}/mailbox.jsonl`
-5. Write `input.md` and initial `state.json`.
+1. Resolve OpenSpec state and derive `PROPOSAL_ID`.
+2. Initialize `openspec/changes/${PROPOSAL_ID}/thinking/`.
+3. Write `input.md`.
 
-### Step 1: Complexity Routing
+### Step 1: Complexity Baseline
 
-1. Run:
-   ```text
-   Skill(skill="tpd:complexity-analyzer", args="run_dir=${THINKING_DIR}")
-   ```
-2. Verify `complexity-analysis.md` exists.
-3. Resolve `DEPTH` (`light|deep|ultra`).
-4. If score is medium and depth is auto: **⏸️ HARD STOP**: MUST call `AskUserQuestion` to confirm depth selection. Do NOT proceed until user responds.
+1. Keep depth fixed to default `ultra` (no parameter override).
+2. If baseline evidence is needed, dispatch one `codex-core` teammate and wait.
 
-### Step 2: Create Team and Boundary Tasks
+### Step 2: Boundary Exploration
 
-1. Create team:
-   ```text
-   TeamCreate(team_name="tpd-thinking-${PROPOSAL_ID}", description="Thinking boundary and constraint team")
-   ```
-2. Track boundary work items:
-   ```text
-   TaskCreate(subject="Explore boundary: <boundary-name>", description="Investigate <boundary> context", activeForm="Exploring <boundary> boundary")
-   ```
-   Repeat for each distinct boundary (2-4 items).
-3. Spawn boundary exploration teammates (launch all in a single message for parallel execution):
-   ```text
-   Task(name="explorer-1", subagent_type="tpd:context-explorer", team_name="tpd-thinking-${PROPOSAL_ID}", prompt="mode=boundary boundary=<boundary-1> run_dir=${THINKING_DIR}")
-   Task(name="explorer-2", subagent_type="tpd:context-explorer", team_name="tpd-thinking-${PROPOSAL_ID}", prompt="mode=boundary boundary=<boundary-2> run_dir=${THINKING_DIR}")
-   ```
-   # All teammates launched in a single message (parallel execution).
-   # Each Task call blocks until the teammate finishes.
-   # Results are returned directly — no TaskOutput needed.
-4. Broadcast phase start and log message envelope to `mailbox.jsonl`.
-5. If `~/.claude/logs/hook-events/task-completed.jsonl` or `~/.claude/logs/hook-events/teammate-idle.jsonl` exists, append latest lines to `hooks-snapshot.jsonl`.
-6. Verify at least one `explore-*.json` artifact.
+1. Create team and boundary work items.
+2. Dispatch `context-explorer` teammates for all boundaries in one batch.
+3. Wait until all dispatched teammates complete.
+4. Ensure boundary evidence is captured.
 
-### Step 3: Constraint Analysis and Agent Communication
+### Step 3: Constraint Synthesis
 
-1. Skip this step when `DEPTH=light`.
-2. Spawn `codex-core` and `gemini-core` teammates in a single message (parallel execution):
-   ```text
-   Task(name="codex-core", subagent_type="tpd:codex-core", team_name="tpd-thinking-${PROPOSAL_ID}", prompt="role=constraint run_dir=${THINKING_DIR} Read all boundary artifacts. Send one directed message to peer (constraint_question), wait for ACK and respond (constraint_answer). Use Write to persist output to ${THINKING_DIR}/codex-thought.md, then verify with Read that the file exists and is non-empty. Send one heartbeat message before completion.")
-   Task(name="gemini-core", subagent_type="tpd:gemini-core", team_name="tpd-thinking-${PROPOSAL_ID}", prompt="role=constraint run_dir=${THINKING_DIR} Read all boundary artifacts. Send one directed message to peer (constraint_question), wait for ACK and respond (constraint_answer). Use Write to persist output to ${THINKING_DIR}/gemini-thought.md, then verify with Read that the file exists and is non-empty. Send one heartbeat message before completion.")
-   ```
-   # All teammates launched in a single message (parallel execution).
-   # Each Task call blocks until the teammate finishes.
-   # Results are returned directly — no TaskOutput needed.
-3. Verify artifacts exist. If either `*-thought.md` is missing, check the direct return value from the Task call for content and write it manually as fallback.
+1. Dispatch `codex-core` and `gemini-core` in constraint role.
+2. Wait until both teammates complete.
+3. Dispatch one `codex-core` teammate for synthesis/handoff generation and wait.
+4. If unresolved decisions remain: **HARD STOP** with `AskUserQuestion`.
 
-### Step 4: Synthesis
+### Step 4: Conclusion and Handoff
 
-1. Run:
-   ```text
-   Skill(skill="tpd:thought-synthesizer", args="run_dir=${THINKING_DIR} depth=${DEPTH}")
-   ```
-2. Verify `synthesis.md`.
-3. If unresolved questions remain: **⏸️ HARD STOP**: MUST call `AskUserQuestion` to present unresolved questions. Do NOT proceed until user responds. Append clarifications to `synthesis.md`.
+1. Confirm dispatched synthesis teammate produced `conclusion.md` and `handoff.json`.
+2. Ensure `handoff.json` exists and is valid JSON.
 
-### Step 5: Conclusion and Handoff
+### Step 5: Proposal
 
-1. Run:
-   ```text
-   Skill(skill="tpd:conclusion-generator", args="run_dir=${THINKING_DIR}")
-   Skill(skill="tpd:handoff-generator", args="run_dir=${THINKING_DIR} proposal_id=${PROPOSAL_ID}")
-   ```
-2. Verify `conclusion.md`, `handoff.md`, `handoff.json`.
-3. Build `meta/artifact-manifest.json`.
-
-### Step 5.5: Generate OpenSpec Proposal
-
-1. Set `CHANGE_DIR="openspec/changes/${PROPOSAL_ID}"`.
-2. If `${CHANGE_DIR}/proposal.md` does not already exist, generate it from thinking artifacts:
-
-   ```markdown
-   # Change: [Brief title derived from input.md problem description]
-
-   ## Why
-
-   [1-2 sentences from input.md problem statement]
-
-   ## What Changes
-
-   [Bullet list from conclusion.md key findings and recommendations]
-
-   ## Impact
-
-   - Affected specs: [derive from synthesis.md affected boundaries]
-   - Affected code: [derive from explore-*.json investigated paths]
-   ```
-
-3. Verify `${CHANGE_DIR}/proposal.md` exists and is non-empty.
+1. Ensure `openspec/changes/${PROPOSAL_ID}/proposal.md` exists.
+2. If missing, generate minimal `Why / What Changes / Impact` sections.
 
 ### Step 6: Finalize
 
-1. Send shutdown broadcast to all teammates.
-2. Delete team with `TeamDelete`.
-3. Update `state.json` to `completed`.
+1. Broadcast summary and close team.
 
 ## Fallback Policy
 
-- If `TeamCreate` fails, fall back to standalone `Task` execution while preserving the same artifacts.
-- If one model task fails, continue with available artifacts and record gap in `synthesis.md`.
-- If handoff generation fails, stop and return actionable error.
-- If hook logs are unavailable, continue without hook snapshot output.
+- Team API unavailable -> degrade to standalone blocking calls with same minimal contract.
+- Single model unavailable -> continue with available evidence and mark gap.
 
 ## Verification
 
-- Every required artifact exists.
+- `proposal.md` and `handoff.json` exist.
 - `handoff.json` is valid JSON.
-- `proposal.md` exists at change root and contains Why/What Changes/Impact sections.
-- `team/phase-events.jsonl` and `team/heartbeat.jsonl` contain entries.
-- No write outside `openspec/changes/<proposal_id>/` (thinking/ for TPD artifacts, root for OpenSpec files).
+- Any unresolved decisions are explicitly documented.

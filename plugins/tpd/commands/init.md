@@ -1,6 +1,6 @@
 ---
-description: "Initialize OpenSpec environment and validate required tooling for TPD workflow"
-argument-hint: "[--skip-install]"
+description: "Initialize OpenSpec environment and validate TPD prerequisites"
+argument-hint: ""
 allowed-tools:
   - Bash
   - AskUserQuestion
@@ -12,48 +12,46 @@ allowed-tools:
 
 ## Purpose
 
-Prepare the local environment for TPD workflows.
+Prepare OpenSpec baseline and report environment readiness.
+
+## Parameter Policy
+
+- No parameter is required.
+- Installation behavior is decided interactively when prerequisites are missing.
 
 ## Steps
 
-### Step 1: Detect Platform
+### Step 1: Runtime Check
 
-1. Detect OS with `uname -s` (or PowerShell-compatible check on Windows).
-2. Select platform-specific command syntax.
+1. Check `node`, `npm`, and `openspec --version`.
+2. If OpenSpec missing, ask user whether to install.
 
-### Step 2: Ensure OpenSpec CLI
+### Step 2: OpenSpec Project Check
 
-1. Check installation with `openspec --version`.
-2. If missing and `--skip-install` is not set, install:
-   ```bash
-   npm install -g @fission-ai/openspec@latest
-   ```
-3. Verify installation again.
-
-### Step 3: Initialize Project
-
-1. Run in project root:
+1. If `openspec/` does not exist, run:
    ```bash
    openspec init --tools claude
    ```
-2. If `openspec/` already exists: **⏸️ HARD STOP**: MUST call `AskUserQuestion` to ask whether to overwrite or keep existing. Do NOT proceed until user responds.
-3. Verify minimum structure: `openspec/project.md` and `openspec/changes/`.
+2. If `openspec/` exists: **HARD STOP** and ask whether to keep or reinitialize.
 
-### Step 4: Validate Required MCP Tools
+### Step 3: MCP Readiness
 
-Check availability of:
+1. Check availability of:
+   - `mcp__codex__codex`
+   - `mcp__gemini__gemini`
+2. Missing MCP should be reported with action hints (do not abort all checks).
 
-- `mcp__codex__codex`
-- `mcp__gemini__gemini`
+### Step 4: Summary
 
-If unavailable, provide installation guidance and continue with partial readiness report.
+Output a compact readiness report:
 
-### Step 5: Print Summary
-
-Report:
-
-- OpenSpec CLI status
-- OpenSpec project initialization status
+- OpenSpec status
+- Project structure status
 - Codex MCP status
 - Gemini MCP status
-- Next actions for incomplete items
+- Next actions
+
+## Verification
+
+- Report includes all status fields above.
+- Hard stop is enforced before overwriting existing OpenSpec data.

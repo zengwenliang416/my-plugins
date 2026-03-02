@@ -1,12 +1,12 @@
 ---
-description: "TPD Dev phase with Team-first orchestration: minimal scope -> analyze -> prototype -> audit -> refactor -> archive"
-argument-hint: "[feature-description] [--proposal-id=<proposal_id>] [--task-type=frontend|backend|fullstack]"
+description: "TPD Dev phase: minimal-scope implementation -> review -> progress update"
+argument-hint: "[proposal_id] [scope]"
 allowed-tools:
   - Read
   - Write
   - Bash
   - AskUserQuestion
-  - Skill
+  - Agent
   - Task
   - TeamCreate
   - TeamDelete
@@ -20,201 +20,104 @@ allowed-tools:
 
 ## Purpose
 
-Implement one minimal verifiable phase from `tasks.md` and produce audited changes under `openspec/changes/<proposal_id>/dev/`.
+Implement one minimal verifiable scope from OpenSpec tasks and update progress.
 
-## Required Constraints
+## Delegation Chain
 
-- Always confirm `proposal_id` before development.
-- Use plan manifest to resolve `architecture.md`, `constraints.md`, `pbt.md`, `risks.md`, `context.md`.
-- Implement only selected scope (1-3 tasks).
-- Do not apply external model output directly without refactor and side-effect review.
+- Command only orchestrates flow and dispatch.
+- Command must not execute phase skills directly.
+- Execution chain is fixed: `Command -> Agent -> Skills`.
 
-## Team Roles
+## Parameter Policy
 
-- `codex-core`: role-routed implementation and audit (`implementer`, `auditor`).
-- `gemini-core`: role-routed implementation and audit (`implementer`, `auditor`).
+- Optional inputs: `proposal_id` and scope note.
+- If `proposal_id` is omitted, use active OpenSpec change.
+- Mode is not controlled by command parameters.
+- Default task type is fixed to `fullstack`.
+- Default fix-loop cap is fixed to `max 2` rounds.
 
-## Message Protocol
+## OpenSpec Hard Requirements
 
-Use this schema in every directed or broadcast message:
+- Use `openspec/changes/<proposal_id>/tasks.md` as source of truth.
+- Only mark tasks complete after implementation and review.
 
-```json
-{
-  "type": "scope_confirmed|analysis_ready|prototype_ready|audit_blocker|fix_request|fix_done|phase_broadcast|heartbeat|error",
-  "from": "agent-name|lead",
-  "to": "agent-name|lead|all",
-  "proposal_id": "<proposal_id>",
-  "task_id": "<task_id>",
-  "requires_ack": true,
-  "payload": {}
-}
-```
-
-Communication and ACK policy:
-
-- Every `audit_blocker` or `fix_request` must receive ACK.
-- Lead retries once if ACK is missing.
-- After retry failure, lead records timeout in `team/communication-failures.md` and falls back to manual review path.
-
-## Progress Visibility Rules
-
-- Write step start and completion events to `team/phase-events.jsonl`.
-- Print phase marker before and after each major step.
-- On failure, log exact error and step id in `team/phase-events.jsonl`.
-- During waits longer than 60 seconds, append heartbeat snapshots to `team/heartbeat.jsonl`.
-- If hook logs exist, append latest `TeammateIdle` and `TaskCompleted` events to `team/hooks-snapshot.jsonl`.
-
-## Required Artifacts
+## Required Artifacts (Minimal)
 
 - `tasks-scope.md`
+- `changes.md`
+- `tasks-progress.md`
+
+## Optional Artifacts
+
 - `context.md`
 - `analysis-codex.md`
+- `analysis-gemini.md`
 - `prototype-codex.diff`
-- `prototype-gemini.diff` (if frontend/fullstack)
-- `changes.md`
+- `prototype-gemini.diff`
 - `audit-codex.md`
 - `audit-gemini.md`
-- `tasks-progress.md`
 - `team/mailbox.jsonl`
 - `team/phase-events.jsonl`
 - `team/heartbeat.jsonl`
-
-Optional artifacts:
-
 - `team/hooks-snapshot.jsonl`
 - `team/communication-failures.md`
 
+## Agent Result Handling
+
+- Lead agent is coordinator-only in team mode.
+- After each dispatch batch, immediately wait for completion (blocking `Agent` first, fallback blocking `Task`).
+- During wait, lead agent must not run phase work (no self execution of coding/review/fix loops).
+- Do not call `TaskOutput`.
+- Do not create nested teams from teammate context.
+
+## Agent Dispatch Contracts
+
+- `context-explorer` (plan-context): collect incremental implementation context into `context.md`.
+- `codex-core` (implementer): backend/fullstack analysis + prototype diff + fix application.
+- `gemini-core` (implementer): frontend/ux prototype diff + fix application.
+- `codex-core` / `gemini-core` (auditor): parallel audits and blocker reporting.
+- `codex-core` (implementer, finalize task): consolidate reviewed patches into `changes.md`.
+
 ## Steps
 
-## Task Result Handling
+### Step 0: Resolve Inputs
 
-Each `Task` call **blocks** until the teammate finishes and returns the result directly in the call response.
-
-**FORBIDDEN — never do this:**
-
-- MUST NOT call `TaskOutput` — this tool does not exist
-- MUST NOT manually construct task IDs (e.g., `agent-name@worktree-id`)
-
-**CORRECT — always use direct return:**
-
-- The result comes from the `Task` call itself, no extra step needed
-
-### Step 0: Resolve OpenSpec and Artifacts
-
-1. Resolve proposal id from argument or `openspec view`.
-2. Apply proposal:
-   ```text
-   /openspec:apply ${PROPOSAL_ID}
-   ```
-3. Resolve plan manifest and required artifacts:
-
-   ```bash
-   PLAN_DIR="openspec/changes/${PROPOSAL_ID}/plan"
-   DEV_DIR="openspec/changes/${PROPOSAL_ID}/dev"
-   PLAN_MANIFEST="${PLAN_DIR}/meta/artifact-manifest.json"
-   TEAM_DIR="${DEV_DIR}/team"
-   mkdir -p "${TEAM_DIR}"
-
-   PLAN_ARCHITECTURE_MD=$(jq -r '.artifacts[]? | select(.name=="architecture.md") | .path' "${PLAN_MANIFEST}" | head -n1)
-   PLAN_CONSTRAINTS_MD=$(jq -r '.artifacts[]? | select(.name=="constraints.md") | .path' "${PLAN_MANIFEST}" | head -n1)
-   PLAN_PBT_MD=$(jq -r '.artifacts[]? | select(.name=="pbt.md") | .path' "${PLAN_MANIFEST}" | head -n1)
-   PLAN_RISKS_MD=$(jq -r '.artifacts[]? | select(.name=="risks.md") | .path' "${PLAN_MANIFEST}" | head -n1)
-   PLAN_CONTEXT_MD=$(jq -r '.artifacts[]? | select(.name=="context.md") | .path' "${PLAN_MANIFEST}" | head -n1)
-   ```
-
-4. Initialize tracking files:
-   - `${TEAM_DIR}/phase-events.jsonl`
-   - `${TEAM_DIR}/heartbeat.jsonl`
-   - `${TEAM_DIR}/mailbox.jsonl`
-5. Verify all required plan artifacts exist.
+1. Resolve `PROPOSAL_ID` and load plan/root artifacts.
+2. Initialize `openspec/changes/${PROPOSAL_ID}/dev/`.
+3. Set effective task type to default `fullstack`.
 
 ### Step 1: Select Minimal Scope
 
-1. Read `openspec/changes/${PROPOSAL_ID}/tasks.md`.
-2. Pick 1-3 tasks forming a verifiable closed loop.
-3. Write `tasks-scope.md` with constraints and test requirements from `pbt.md`.
-4. **⏸️ HARD STOP**: MUST call `AskUserQuestion` to present selected scope. Do NOT proceed until user confirms. Show task IDs, descriptions, and estimated complexity.
+1. Select 1-3 tasks from root `tasks.md`.
+2. Write `tasks-scope.md` with acceptance and test expectations.
+3. **HARD STOP**: confirm selected scope with `AskUserQuestion`.
 
-### Step 2: Create Team and Analysis Tasks
+### Step 2: Implement and Review
 
-1. Create team:
-   ```text
-   TeamCreate(team_name="tpd-dev-${PROPOSAL_ID}", description="Implementation and audit team")
-   ```
-2. Broadcast `scope_confirmed` and log message envelope.
-3. Run context retrieval skill:
-   ```text
-   Skill(skill="tpd:context-retriever", args="run_dir=${DEV_DIR} mode=incremental base_context=${PLAN_CONTEXT_MD}")
-   ```
-4. Spawn codex-core analysis teammate:
-   ```text
-   Task(name="codex-core-analyze", subagent_type="tpd:codex-core", team_name="tpd-dev-${PROPOSAL_ID}", prompt="role=implementer mode=analyze run_dir=${DEV_DIR} Read tasks-scope.md and context.md. Produce analysis-codex.md with implementation strategy.")
-   ```
-   # Task call blocks until the teammate finishes.
-   # Result is returned directly — no TaskOutput needed.
-5. Verify `analysis-codex.md` exists.
+1. Dispatch `context-explorer` for incremental context retrieval if needed, then wait.
+2. Dispatch `codex-core` and `gemini-core` implementers for analysis/prototype generation, then wait.
+3. Dispatch `codex-core` and `gemini-core` auditors; if blockers exist, dispatch implementer fix tasks (`max 2` rounds), waiting after each round.
+4. Dispatch one `codex-core` finalize task to assemble `changes.md`, then wait.
 
-### Step 3: Prototype Round (Parallel)
+### Step 3: Update Progress
 
-1. Spawn implementer teammates in a single message (parallel execution):
-   ```text
-   Task(name="codex-core-proto", subagent_type="tpd:codex-core", team_name="tpd-dev-${PROPOSAL_ID}", prompt="role=implementer mode=prototype run_dir=${DEV_DIR} Read analysis-codex.md and tasks-scope.md. Generate prototype-codex.diff. Notify prototype_ready and send one heartbeat update.")
-   Task(name="gemini-core-proto", subagent_type="tpd:gemini-core", team_name="tpd-dev-${PROPOSAL_ID}", prompt="role=implementer mode=prototype run_dir=${DEV_DIR} Read analysis-codex.md and tasks-scope.md. Generate prototype-gemini.diff. Notify prototype_ready and send one heartbeat update.")
-   ```
-   # All teammates launched in a single message (parallel execution).
-   # Each Task call blocks until the teammate finishes.
-   # Results are returned directly — no TaskOutput needed.
-   Note: Only spawn `gemini-core-proto` when task type is frontend/fullstack.
-2. Verify prototype artifacts exist.
-
-### Step 4: Audit Round (Parallel)
-
-1. Spawn auditor teammates in a single message (parallel execution):
-   ```text
-   Task(name="codex-core-audit", subagent_type="tpd:codex-core", team_name="tpd-dev-${PROPOSAL_ID}", prompt="role=auditor run_dir=${DEV_DIR} Review prototype diffs against constraints and pbt. Produce audit-codex.md. Send audit_blocker or analysis_ready to lead.")
-   Task(name="gemini-core-audit", subagent_type="tpd:gemini-core", team_name="tpd-dev-${PROPOSAL_ID}", prompt="role=auditor run_dir=${DEV_DIR} Review prototype diffs against constraints and pbt. Produce audit-gemini.md. Send audit_blocker or analysis_ready to lead.")
-   ```
-   # All teammates launched in a single message (parallel execution).
-   # Each Task call blocks until the teammate finishes.
-   # Results are returned directly — no TaskOutput needed.
-2. If blocker exists, send `fix_request` to implementers and iterate prototype+audit loop.
-3. Maximum iterations: 2. After limit, record fallback and move to manual review path.
-
-### Step 5: Refactor and Side-effect Review
-
-1. Run:
-   ```text
-   Skill(skill="tpd:code-implementer", args="run_dir=${DEV_DIR} constraints_ref=${PLAN_CONSTRAINTS_MD} pbt_ref=${PLAN_PBT_MD}")
-   ```
-2. Verify `changes.md` exists.
-3. Confirm constraints compliance and side-effect boundaries.
-
-### Step 6: Progress and Archival
-
-1. Update completed items in `tasks.md`.
+1. Update root `tasks.md` completion state.
 2. Write `tasks-progress.md`.
-3. **⏸️ HARD STOP**: MUST call `AskUserQuestion` to ask whether to continue next minimal phase. Do NOT proceed until user responds. Options: "Continue next phase" / "Done for now" / "Review changes first".
-4. When all tasks are done, run:
-   ```text
-   /openspec:archive
-   ```
+3. **HARD STOP**: ask whether to continue next minimal scope.
 
-### Step 7: Team Shutdown
+### Step 4: Finalize
 
-1. Broadcast completion summary.
-2. Send shutdown messages.
-3. Delete team.
+1. Broadcast summary and close team.
+2. If all tasks complete, run `/openspec:archive`.
 
 ## Fallback Policy
 
-- If Team API is unavailable, use standalone `Task` calls with same artifact contract.
-- If one model fails, continue with remaining model and record gap.
-- If communication timeout persists, stop iterative loop and require user decision.
-- If hook logs are unavailable, continue without hook snapshot output.
+- Team API unavailable -> degrade to standalone blocking calls.
+- One model unavailable -> continue with available model and document risk.
+- Exceeded fix-loop cap -> stop auto-loop and request user decision.
 
 ## Verification
 
-- Required artifacts exist for the current minimal phase.
-- Communication failures are either resolved or documented.
-- `team/phase-events.jsonl` and `team/heartbeat.jsonl` contain entries.
-- `tasks.md` progress reflects completed work only.
+- `tasks-scope.md`, `changes.md`, and `tasks-progress.md` exist.
+- Root `tasks.md` matches actual completed scope.
+- Residual blockers are explicitly documented.
