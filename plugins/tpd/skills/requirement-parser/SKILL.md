@@ -1,6 +1,11 @@
 ---
 name: requirement-parser
-description: "Normalize proposal and request input into structured requirements"
+description: |
+  [Trigger] Run at the start of `tpd:plan` after proposal selection.
+  [Output] `${run_dir}/requirements.md` with structured functional and non-functional requirements.
+  [Skip] Do not run when requirement sources are unavailable.
+  [Ask] User clarification is requested by command layer if ambiguities remain.
+  [Resource Usage] Use `references/requirements-structure.md`, `references/definition-of-ready.md`, and assets templates.
 allowed-tools:
   - Read
   - Write
@@ -14,19 +19,50 @@ arguments:
 # requirement-parser
 
 ## Purpose
-Extract functional and non-functional requirements for plan phase.
+
+Normalize proposal and thinking inputs into testable requirements for plan synthesis.
+
+## Parameter Policy
+
+- Only `run_dir` is required.
+- Requirement source is auto-resolved from OpenSpec chain (proposal and thinking artifacts).
 
 ## Inputs
-- Proposal artifacts and optional user clarifications.
+
+Required source (at least one):
+
+- `${run_dir}/proposal.md`
+- `${run_dir}/../proposal.md`
+- `${run_dir}/../thinking/handoff.json`
+
+Optional:
+
+- `${run_dir}/clarifications.md`
+- `references/requirements-structure.md`
+- `references/definition-of-ready.md`
 
 ## Outputs
+
 - `${run_dir}/requirements.md`
 
-## Steps
-1. Read proposal and available thinking artifacts.
-2. Extract explicit requirements and assumptions.
-3. Separate mandatory and optional requirements.
-4. Write `requirements.md`.
+## Execution Flow
+
+1. Resolve and validate available requirement sources.
+2. Extract explicit requirements, assumptions, constraints, and open questions.
+3. Normalize into categories:
+   - functional requirements
+   - non-functional requirements
+   - constraints and assumptions
+4. Enforce testability with Definition-of-Ready checks.
+5. Write `requirements.md` for downstream planning skills.
+
+## Failure Handling
+
+- If no requirement source can be resolved, return blocking status with missing paths.
+- If requirements are ambiguous, record ambiguity explicitly instead of guessing.
 
 ## Verification
-- Requirements are testable and grouped by category.
+
+- `requirements.md` exists and is non-empty.
+- Requirements are grouped and testable.
+- Ambiguities are listed as explicit follow-up items.

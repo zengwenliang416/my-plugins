@@ -1,6 +1,11 @@
 ---
 name: conclusion-generator
-description: "Generate thinking phase conclusion from synthesis and constraints"
+description: |
+  [Trigger] Run after synthesis is complete in `tpd:thinking`.
+  [Output] `${run_dir}/conclusion.md` for plan handoff.
+  [Skip] Do not run when `${run_dir}/synthesis.md` is missing.
+  [Ask] No direct user question in this skill.
+  [Resource Usage] Use `references/conclusion-templates.md`, `references/output-formats.md`, and `assets/final-conclusion.template.md`.
 allowed-tools:
   - Read
   - Write
@@ -14,20 +19,38 @@ arguments:
 # conclusion-generator
 
 ## Purpose
-Produce final thinking conclusion for plan handoff.
+
+Generate the final thinking conclusion with stable constraints, principal risks, and plan-phase action focus.
 
 ## Inputs
-- `${run_dir}/synthesis.md`
-- Optional `${run_dir}/clarifications.md`
+
+- `${run_dir}/synthesis.md` (required)
+- `${run_dir}/clarifications.md` (optional)
+- `references/conclusion-templates.md`
 
 ## Outputs
+
 - `${run_dir}/conclusion.md`
 
-## Steps
-1. Read synthesis and optional clarifications.
-2. Summarize stable constraints, risks, and success criteria.
-3. Record open questions that need planning decisions.
-4. Write `conclusion.md`.
+## Execution Flow
+
+1. Validate `synthesis.md` exists and is non-empty.
+2. Extract confirmed constraints, risk hotspots, and decision priorities.
+3. Merge optional user clarifications when present.
+4. Produce concise plan-facing sections:
+   - confirmed constraints
+   - key risks and mitigation direction
+   - success criteria
+   - unresolved decisions (if any)
+5. Write `conclusion.md` using `assets/final-conclusion.template.md` conventions.
+
+## Failure Handling
+
+- If `synthesis.md` is missing, return blocking status with remediation note.
+- Do not fabricate constraints not present in source artifacts.
 
 ## Verification
-- Output includes constraints, risks, and success criteria sections.
+
+- `conclusion.md` exists and is non-empty.
+- Includes sections for constraints, risks, and success criteria.
+- Unresolved decisions are explicit and actionable.

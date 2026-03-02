@@ -1,6 +1,11 @@
 ---
 name: architecture-analyzer
-description: "Integrate multi-model planning outputs into unified architecture and constraints"
+description: |
+  [Trigger] Run in `tpd:plan` after codex/gemini architecture drafts are available.
+  [Output] `${run_dir}/architecture.md` and `${run_dir}/constraints.md`.
+  [Skip] Do not run when required planner outputs are missing.
+  [Ask] Unresolved conflicts are surfaced for command-layer decision.
+  [Resource Usage] Use architecture references and templates under this skill directory.
 allowed-tools:
   - Read
   - Write
@@ -9,34 +14,48 @@ arguments:
     type: string
     required: true
     description: Plan run directory
-  - name: task_type
-    type: string
-    required: false
-    description: fullstack, frontend, or backend
 ---
 
 # architecture-analyzer
 
 ## Purpose
-Integrate `codex-plan.md` and `gemini-plan.md` into canonical planning artifacts.
+
+Integrate multi-model planning outputs into one canonical architecture and constraint set.
+
+## Parameter Policy
+
+- Only `run_dir` is required.
+- Default task type is fixed to `fullstack`.
+- No mode switching via parameters.
 
 ## Inputs
+
 - `${run_dir}/requirements.md`
 - `${run_dir}/context.md`
-- `${run_dir}/codex-plan.md` (if backend/fullstack)
-- `${run_dir}/gemini-plan.md` (if frontend/fullstack)
+- `${run_dir}/codex-plan.md` (expected for fullstack)
+- `${run_dir}/gemini-plan.md` (expected for fullstack)
 
 ## Outputs
+
 - `${run_dir}/architecture.md`
 - `${run_dir}/constraints.md`
 
-## Steps
-1. Validate required planner outputs based on `task_type`.
-2. Extract architecture decisions from available planner files.
-3. Resolve conflicts and mark unresolved points explicitly.
-4. Write `architecture.md` as integrated design.
-5. Write `constraints.md` with hard and soft constraints.
+## Execution Flow
+
+1. Use fullstack baseline by default.
+2. Validate planner artifacts required by fullstack baseline.
+3. Extract architecture decisions, interfaces, and dependencies.
+4. Merge aligned decisions and mark unresolved conflicts explicitly.
+5. Write integrated outputs.
+
+## Failure Handling
+
+- Missing mandatory planner inputs -> blocking failure with missing-file list.
+- If one model artifact is missing, continue with available side and record coverage gap.
+- Major model conflicts -> output with unresolved decision markers.
 
 ## Verification
-- Output files exist.
-- `constraints.md` includes at least one hard constraint.
+
+- Both output files exist and are non-empty.
+- `constraints.md` contains hard constraints.
+- `architecture.md` records fullstack baseline and any fallback decisions.

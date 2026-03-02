@@ -1,6 +1,11 @@
 ---
 name: plan-synthesizer
-description: "Assemble final execution plan from architecture, tasks, risks, and constraints"
+description: |
+  [Trigger] Run near the end of `tpd:plan` after architecture/tasks/risks are available.
+  [Output] `${run_dir}/plan.md`, `${run_dir}/decision-log.md`, `${run_dir}/timeline.md`.
+  [Skip] Do not run when any core planning artifact is missing.
+  [Ask] No direct user interaction in this skill; unresolved decisions are recorded.
+  [Resource Usage] Use templates and references in this skill directory.
 allowed-tools:
   - Read
   - Write
@@ -9,18 +14,21 @@ arguments:
     type: string
     required: true
     description: Plan run directory
-  - name: proposal_id
-    type: string
-    required: false
-    description: OpenSpec proposal id
 ---
 
 # plan-synthesizer
 
 ## Purpose
-Generate final plan documents consumed by dev phase.
+
+Assemble final execution plan artifacts consumed by `tpd:dev`.
+
+## Parameter Policy
+
+- Only `run_dir` is required.
+- `proposal_id` is inferred from path context when needed.
 
 ## Inputs
+
 - `${run_dir}/architecture.md`
 - `${run_dir}/constraints.md`
 - `${run_dir}/tasks.md`
@@ -28,15 +36,25 @@ Generate final plan documents consumed by dev phase.
 - `${run_dir}/pbt.md`
 
 ## Outputs
+
 - `${run_dir}/plan.md`
 - `${run_dir}/decision-log.md`
 - `${run_dir}/timeline.md`
 
-## Steps
-1. Merge planning artifacts.
-2. Ensure each task has verification criteria.
+## Execution Flow
+
+1. Validate required planning artifacts.
+2. Merge scope, sequence, constraints, risks, and verification strategy.
 3. Capture unresolved decisions in `decision-log.md`.
-4. Write timeline and final plan.
+4. Generate timeline and final plan.
+
+## Failure Handling
+
+- Missing inputs -> blocking failure.
+- Conflicts without resolution -> keep outputs with explicit blockers.
 
 ## Verification
-- `plan.md` includes scope, sequence, and verification strategy.
+
+- All outputs exist and are non-empty.
+- `plan.md` includes scope, order, and verification strategy.
+- `decision-log.md` contains unresolved blockers when present.

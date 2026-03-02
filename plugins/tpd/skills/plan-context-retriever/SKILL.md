@@ -1,6 +1,11 @@
 ---
 name: plan-context-retriever
-description: "Retrieve planning context and evidence cache"
+description: |
+  [Trigger] Run in `tpd:plan` after requirements parsing.
+  [Output] `${run_dir}/context.md` and `${run_dir}/meta/evidence-capture.json`.
+  [Skip] Do not run when requirement inputs are unavailable.
+  [Ask] No direct user interaction in this skill.
+  [Resource Usage] Use retrieval references, evidence rules, and context templates.
 allowed-tools:
   - Read
   - Write
@@ -10,25 +15,43 @@ arguments:
     type: string
     required: true
     description: Plan run directory
-  - name: proposal_id
-    type: string
-    required: false
-    description: OpenSpec proposal id
 ---
 
 # plan-context-retriever
 
 ## Purpose
-Create planning context artifacts and evidence cache for architecture synthesis.
+
+Create planning context and evidence capture artifacts for architecture synthesis.
+
+## Parameter Policy
+
+- Only `run_dir` is required.
+- Proposal linkage is inferred from directory context.
+
+## Inputs
+
+- `${run_dir}/requirements.md`
+- optional thinking handoff artifacts
+- retrieval strategy references
 
 ## Outputs
+
 - `${run_dir}/context.md`
 - `${run_dir}/meta/evidence-capture.json`
 
-## Steps
-1. Read requirements and optional thinking handoff.
-2. Retrieve code context with semantic search.
-3. Write context summary and evidence capture JSON.
+## Execution Flow
+
+1. Validate requirements input.
+2. Reuse thinking evidence when available.
+3. Retrieve additional repository context.
+4. Write context summary and evidence capture JSON.
+
+## Failure Handling
+
+- Missing requirements -> blocking failure.
+- Partial evidence -> keep output and mark gaps.
 
 ## Verification
-- Both output artifacts exist.
+
+- Both output files exist and are non-empty.
+- Evidence JSON is valid and references source paths.
