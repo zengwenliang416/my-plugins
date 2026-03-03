@@ -5,13 +5,11 @@
 # Lifecycle: TaskCompleted
 # Matcher: * (wildcard, no tool filtering)
 # Timeout: 5s (budget: <300ms)
-# Fail-open: exit 0 + {} on any error (HC-9)
+# Decision control: exit code only (no stdout JSON)
+# Fail-open: exit 0 on any error (HC-9)
 # =============================================================================
 
 set -euo pipefail
-
-# Fail-open trap: any error returns {} and exits 0
-trap 'echo "{}"; exit 0' ERR
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -24,6 +22,9 @@ log_warn() { echo -e "${YELLOW}[TASK-COMPLETED]${NC} $1" >&2; }
 log_error() { echo -e "${RED}[TASK-COMPLETED]${NC} $1" >&2; }
 log_debug() { echo -e "${BLUE}[TASK-COMPLETED]${NC} $1" >&2; }
 
+# Fail-open trap: orchestration events are exit-code only; never write stdout
+trap 'log_warn "Unexpected error, fail-open with exit 0"; exit 0' ERR
+
 # =============================================================================
 # Input validation
 # =============================================================================
@@ -32,7 +33,6 @@ input=$(cat)
 
 if ! echo "$input" | jq empty 2>/dev/null; then
   log_warn "Invalid JSON input, failing open"
-  echo '{}'
   exit 0
 fi
 
@@ -40,13 +40,15 @@ fi
 # Field extraction (best-effort, schemas may evolve)
 # =============================================================================
 
-hook_event=$(echo "$input" | jq -r '.hook_event_name // empty')
 task_id=$(echo "$input" | jq -r '.task_id // empty')
-task_status=$(echo "$input" | jq -r '.status // empty')
+task_subject=$(echo "$input" | jq -r '.task_subject // empty')
+task_status=$(echo "$input" | jq -r '.task_status // .status // empty')
+teammate=$(echo "$input" | jq -r '.teammate_name // empty')
+team_name=$(echo "$input" | jq -r '.team_name // empty')
 session_id=$(echo "$input" | jq -r '.session_id // empty')
 timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
-log_info "TaskCompleted event: task=${task_id:-unknown} status=${task_status:-unknown}"
+log_info "TaskCompleted event: team=${team_name:-unknown} task=${task_id:-unknown} status=${task_status:-unknown}"
 
 # =============================================================================
 # JSONL logging with rotation (HC-11: 10k threshold, tail 5k)
@@ -59,9 +61,12 @@ mkdir -p "${LOG_DIR}"
 log_entry=$(jq -n -c \
   --arg ts "$timestamp" \
   --arg tid "$task_id" \
+  --arg subj "$task_subject" \
   --arg st "$task_status" \
+  --arg tm "$teammate" \
+  --arg team "$team_name" \
   --arg sid "$session_id" \
-  '{timestamp: $ts, task_id: $tid, status: $st, session_id: $sid}')
+  '{timestamp: $ts, task_id: $tid, task_subject: $subj, status: $st, teammate: $tm, team_name: $team, session_id: $sid}')
 
 echo "$log_entry" >> "$LOG_FILE"
 
@@ -72,12 +77,4 @@ if [ "${line_count}" -gt 10000 ]; then
   log_debug "Log rotated: ${line_count} -> 5000 lines"
 fi
 
-# =============================================================================
-# Output: orchestration directive
-# =============================================================================
-
-jq -n -c \
-  --arg tid "$task_id" \
-  --arg st "$task_status" \
-  --arg ts "$timestamp" \
-  '{hookSpecificOutput: {orchestrationDirective: "acknowledge", metrics: {task_id: $tid, status: $st, event_time: $ts}}}'
+exit 0

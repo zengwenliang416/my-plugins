@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix TeammateIdle/TaskCompleted hooks to use exit-code-only control (no stdout JSON) and prevent `TeammateIdle hook error` validation failures (hooks)
 - Remove `--approval-mode plan` from invoke-gemini.ts — headless mode works without it (context-memory)
 - Remove Claude inline fallback from gemini-cli and codex-cli — fail-fast if Gemini unavailable (context-memory)
 - Enforce MANDATORY Hard Stop for AskUserQuestion across all plugins to prevent models from skipping menus (brainstorm, d2c, refactor, ui-design, tpd)
